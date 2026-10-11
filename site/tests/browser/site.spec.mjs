@@ -433,6 +433,16 @@ test("gift contents stay hidden until entering; leaving removes the temporary sl
     await expect(page.locator("#slide-title")).toHaveText("Pretty neat, right?");
     await finishRibbonAnimation(page);
     await page.clock.runFor(3000);
+    for (const theme of ["light", "dark"]) {
+        await page.evaluate(theme => document.documentElement.dataset.theme = theme, theme);
+        const colors = await page.locator("#slide").evaluate(node => ({
+            background: getComputedStyle(node).backgroundImage,
+            ink: getComputedStyle(node).color
+        }));
+        expect(colors.background).toContain("rgb(255, 129, 164)");
+        expect(colors.background).toContain("rgb(131, 202, 250)");
+        expect(colors.ink).toBe("rgb(25, 35, 50)");
+    }
     await page.locator("#slide").dispatchEvent("wheel", { deltaX: 0, deltaY: 150 });
     await expect(page.locator("#slide-counter")).toHaveText("Slide \u{1f381} / 3");
     await page.locator("#slide").dispatchEvent("wheel", { deltaX: 100, deltaY: 0 });
@@ -1502,6 +1512,32 @@ test("aiming keeps a visual hand through brief gaps and recovery resumes with a 
     await expect(page.locator("#assistance")).toHaveAttribute("data-step", "ribbonForward");
 });
 
+
+test("low-confidence pose remnants no longer count as presence", async ({ page }) => {
+    await mockCamera(page);
+    await page.clock.install();
+    await page.goto("./");
+    await page.locator("#start-camera").click();
+    await holdHandsInFrame(page);
+    await page.locator("#presence-demo").evaluate(node => node.scrollIntoView({ behavior: "instant" }));
+    await page.evaluate(() => {
+        window.demoCamera.coordinate = () => ({ x: .5, y: .5, confidence: .95 });
+        window.demoCamera.frame(true);
+    });
+    await page.clock.runFor(100);
+    await page.evaluate(() => {
+        window.demoCamera.coordinate = () => ({ x: .5, y: .5, confidence: .7 });
+        window.demoCamera.frame(true);
+    });
+    await page.clock.runFor(700);
+    await expect(page.locator("#away-screen")).toHaveClass(/is-dark/);
+    await page.evaluate(() => {
+        window.demoCamera.coordinate = () => ({ x: .5, y: .5, confidence: .95 });
+        window.demoCamera.frame(true);
+    });
+    await page.clock.runFor(1200);
+    await expect(page.locator("#away-screen")).toBeHidden();
+});
 
 for (const reducedMotion of ["reduce", "no-preference"]) {
     test(`an uninterrupted absence reveals the four-season easter egg (${reducedMotion})`, async ({ page }) => {

@@ -85,7 +85,9 @@ validation leaves the active configuration intact. `recalibrate` resets progress
 The session's optional `onFrame(session)` callback reads `coordinate(index,
 system)` for imperative animation/XYZ feedback without reactive updates; system
 0 is normalized image XYZ, 1 world metres, 2 world metres with Y up. Missing
-coordinates return `null`. Keep callbacks short to avoid delaying inference.
+coordinates return `null`. Each coordinate includes `confidence` (0 to 1),
+the minimum of the model's visibility and presence scores, for filtering observations.
+Keep callbacks short to avoid delaying inference.
 
 React exports `useMIG` from `motion-input-grid/react`. Attach its `video` and
 `canvas` refs and bind `start`, `stop`, `recalibrate`, `importJSON`. Vue exports the

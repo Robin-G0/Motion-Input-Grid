@@ -39,6 +39,7 @@ test("the published WASM engine recognizes both swipe directions with either ana
                     // Keeping either hand in the trigger must not repeatedly change the slide.
                     for (let index = 0; index < 50; ++index) assert.deepEqual(observe(finish), []);
                     assert.notEqual(tracker.coordinate(11, 0), null);
+                    assert.equal(tracker.coordinate(11, 0).confidence, 1);
                     tracker.bodyBuffer().fill(0);
                     tracker.update(timestamp += 20, ++sequence, 1, 0, 0);
                     assert.equal(tracker.coordinate(11, 0), null);

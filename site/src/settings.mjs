@@ -1,4 +1,4 @@
-// Edit public links and timing here without changing the camera or page code.
+// Edit public links, timing and tracking thresholds here.
 export const settings = {
     links: {
         repository: "https://github.com/Robin-G0/Motion-Input-Grid",
@@ -9,5 +9,6 @@ export const settings = {
     },
     absenceDelay: 600,
     returnDelay: 300,
+    presenceConfidence: .8,
     slideDelay: 800
 };

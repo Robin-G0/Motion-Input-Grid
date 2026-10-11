@@ -14,6 +14,8 @@ import { settings } from "./settings.mjs";
 import { translations } from "./translations.mjs";
 import { SlideController } from "./slides.mjs";
 import { PresenceMonitor } from "./presence.mjs";
+import { bodyPresent } from "./body-presence.mjs";
+import { handPosition } from "./hand-focus.mjs";
 import { cameraError, createCameraSession } from "./camera.mjs";
 
 const element = id => document.getElementById(id);
@@ -188,7 +190,7 @@ function prepareHandScrolling(handsVisible, time) {
 }
 
 function updateHandHint(currentSession, time) {
-    const visibleHands = [15, 16].filter(index => handInFrame(currentSession.coordinate(index))).length;
+    const visibleHands = [15, 16].filter(index => handInFrame(handPosition(currentSession, index))).length;
     const handsVisible = visibleHands > 0;
     guide.setHandsVisible(handsVisible);
     prepareHandScrolling(handsVisible, time);
@@ -231,7 +233,7 @@ function handlePresence(currentSession) {
             if (cooldown.locked) break;
         }
     } else cameraSwipes.reset();
-    presence.update(Boolean(currentSession.coordinate(11) && currentSession.coordinate(12)), time);
+    presence.update(bodyPresent(currentSession, settings.presenceConfidence), time);
     updatePresence(time);
 }
 

@@ -92,6 +92,8 @@ les options Vue restent fixes jusqu'au démontage. Les deux nettoient à la sort
 La session propose aussi `onFrame(session)` pour lire `coordinate(index, system)`
 sans mise à jour réactive : 0 pour XYZ image normalisé, 1 pour mètres monde,
 2 pour mètres monde avec Y vers le haut. Un point absent renvoie `null`.
+Chaque coordonnée inclut `confidence` (de 0 à 1), le minimum des scores de
+visibilité et de présence du modèle, pour filtrer les observations.
 Gardez ces callbacks courts pour ne pas ralentir l'inférence.
 
 Seules les nouvelles frames sont traitées, hors état réactif ; `tracking.hands`

@@ -1,4 +1,4 @@
-import { centredWrist, validWrist } from "./hand-focus.mjs";
+import { centredWrist, validWrist, handPosition } from "./hand-focus.mjs";
 
 // A gesture starts in the centre, then follows the wrist across the camera frame.
 export class CameraSwipes {
@@ -22,7 +22,7 @@ export class CameraSwipes {
     isArmed(time, session, sourceLandmark = null) {
         for (const [landmark, hand] of this.readyHands) {
             if (sourceLandmark !== null && landmark !== sourceLandmark) continue;
-            if (session && !validWrist(session.coordinate(landmark))) continue;
+            if (session && !handPosition(session, landmark)) continue;
             if (time - hand.lastTime <= this.gap && time - hand.startTime <= this.duration) return true;
         }
         return false;
@@ -96,7 +96,7 @@ export class CameraSwipes {
     update(session, time, { horizontal = true } = {}) {
         const actions = [];
         for (const landmark of [15, 16]) {
-            const point = session.coordinate(landmark);
+            const point = handPosition(session, landmark);
             if (!validWrist(point)) {
                 this.centres.delete(landmark);
                 if (time - (this.readyHands.get(landmark)?.lastTime ?? -Infinity) > this.gap) {
