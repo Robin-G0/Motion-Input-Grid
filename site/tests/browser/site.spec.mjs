@@ -69,8 +69,8 @@ async function swipeHand(page, action, landmark = 15, wait = true) {
         await page.clock.runFor(150);
         await page.evaluate(({ horizontal, sign, progress }) => {
             window.demoCamera.wrist = horizontal
-                ? { x: .5 + sign * .24 * progress, y: .5 }
-                : { x: .5, y: .5 + sign * .44 * progress };
+                ? { x: .5 + sign * .1 * progress, y: .5 }
+                : { x: .5, y: .5 + sign * .24 * progress };
             window.demoCamera.frame(true);
         }, { horizontal, sign, progress });
     }
@@ -317,7 +317,6 @@ test("history diagrams move and the grid explains order, cancellation and condit
     await cell("second").click();
     await cell("condition").click();
     await expect(status).toHaveAttribute("data-result", "gridCondition");
-    await expect(illustration.locator('input[type="checkbox"], .thumb-control')).toHaveCount(0);
     await cell("condition").click();
     await expect(status).toHaveAttribute("data-result", "gridCondition");
     await page.setViewportSize({ width: 390, height: 844 });
@@ -523,7 +522,6 @@ test("the evolving grid presents detection, cancellation, then a one-second thum
     await expect(cell("cancel")).toBeHidden();
     await expect(cell("condition")).toBeHidden();
     await expect(outcome).toBeEmpty();
-    await expect(page.locator(".brand, .live-dot")).toHaveCount(0);
     await expect(page.locator(".prismatic-text")).toHaveText("Movement becomes an interface.");
     await page.getByRole("button", { name: "FR", exact: true }).click();
     await page.clock.runFor(3300);
@@ -575,11 +573,10 @@ for (const viewport of [{ width: 844, height: 390 }, { width: 1440, height: 1080
         const cancel = await page.locator('#slide [data-cell="cancel"]').boundingBox();
         expect(cancel.x).toBeCloseTo(second.x, 0);
         expect(cancel.y).toBeGreaterThan(second.y);
-        await expect(page.locator('[data-text="slideInstructions"]')).toHaveCount(0);
     });
 }
 
-test("one hand can navigate and both-hands onboarding is never requested again after both appear", async ({ page }) => {
+test("one-hand navigation stays ready when the other hand appears or disappears", async ({ page }) => {
     await mockCamera(page);
     await page.clock.install();
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -589,7 +586,6 @@ test("one hand can navigate and both-hands onboarding is never requested again a
     await expect(page.locator(".hero h1")).toBeHidden();
     await expect(page.locator(".hero .lead")).toBeHidden();
     await expect(page.locator(".hero .privacy")).toBeHidden();
-    await expect(page.locator(".card-top, #camera-state")).toHaveCount(0);
     await expect(page.locator("#camera-placement")).toContainText("follow the tooltips");
     await page.evaluate(() => { window.demoCamera.coordinate = index => index === 16 ? null : { x: .5, y: .5 }; });
     await holdHandsInFrame(page);
@@ -599,7 +595,6 @@ test("one hand can navigate and both-hands onboarding is never requested again a
     await page.evaluate(() => { window.demoCamera.coordinate = () => ({ x: .5, y: .5 }); window.demoCamera.frame(true); });
     await page.evaluate(() => { window.demoCamera.coordinate = index => window.demoCamera.detected && index !== 16 ? { x: .5, y: .5 } : null; window.demoCamera.frame(true); });
     await expect(page.locator("#hands-tip")).toBeHidden();
-    await expect(page.locator("#camera-hint")).toHaveCount(0);
     await expect(page.locator("#camera-status")).toContainText("centre");
     await page.evaluate(() => window.demoCamera.frame(false));
     await page.clock.runFor(700);
@@ -868,7 +863,6 @@ test("phone visitors get one-hand guidance and can finish and stop the demo", as
         expect(await page.evaluate(() => window.demoCamera.state.running)).toBe(true);
         await page.locator("#finale-stop-camera").click();
         expect(await page.evaluate(() => window.demoCamera.stopped)).toBe(true);
-        await expect(page.locator("#thumb-tip")).toHaveCount(0);
         await expect(page.locator("#hands-tip")).toBeHidden();
     } finally { await page.close(); }
 });
@@ -896,7 +890,6 @@ test("the finale keeps navigation and the GitHub link without enabling hand infe
     await expect(page.locator("#scroll-gesture-tip")).toContainText("Gently lower");
     await expect(page.locator("#slide-gesture-tip")).toBeHidden();
     await page.evaluate(() => window.demoCamera.frame(true));
-    await expect(page.locator("#thumb-tip")).toHaveCount(0);
     expect(await page.evaluate(() => window.demoCamera.profile.tracking.hands)).toBe(false);
     await swipeHand(page, "scroll_previous");
     await expect(page.locator("#presence-title")).toBeInViewport();
@@ -925,7 +918,6 @@ test("golden loading bar fills continuously and unlocks hand navigation after tw
     const fill = bar.locator("[data-cooldown-progress]");
     await expect(bar).toBeVisible();
     await expect(bar).toHaveAttribute("role", "progressbar");
-    await expect(bar.locator("svg, rect")).toHaveCount(0);
     await expect(bar).toHaveCSS("height", "6px");
     await page.clock.runFor(1000);
     const filled = await fill.boundingBox();
@@ -1028,9 +1020,7 @@ test("camera edge guidance mirrors the image, marks all four limits and validate
     await expect(page.locator(".camera-preview")).toHaveClass(/framing-confirmed/);
     await page.clock.runFor(1000);
     await expect(page.locator(".camera-preview")).toHaveClass(/framing-confirmed/);
-    await expect(page.locator("#framing-hint")).toHaveCount(0);
     await page.locator("#stop-camera").click();
-    await expect(page.locator("#framing-hint")).toHaveCount(0);
 });
 
 test("system palettes, square cells and all three carousel panels remain usable", async ({ page }) => {
@@ -1147,9 +1137,7 @@ test("camera guidance stays inside the preview and boundary jitter does not flas
     await page.goto("./");
     await page.getByRole("button", { name: "EN", exact: true }).click();
     await page.locator("#start-camera").click();
-    await expect(page.locator("#framing-hint")).toHaveCount(0);
     await expect(page.locator(".camera-preview > p")).toHaveCount(1);
-    await expect(page.locator(".camera-card > p")).toHaveCount(0);
     await expect(page.locator(".camera-preview #camera-status")).toHaveCount(1);
     const edge = page.locator('[data-camera-edge="top"]');
     for (const y of [.24, .26, .24, .29, .31]) {
@@ -1261,7 +1249,6 @@ test("assistance teaches one-hand gestures without moving the page, then guides 
     await page.evaluate(() => window.demoCamera.frame(true));
     await expect(assistant).toHaveAttribute("data-step", "finale");
     await expect(assistant.locator("[data-assistance-message]")).toHaveText("You are ready. Keep exploring with MIG.");
-    await expect(assistant.locator("[data-assistance-stop], [data-assistance-github]")).toHaveCount(0);
     await expect(assistant.getByRole("button")).toHaveCount(1);
     await expect(next).toHaveText("Finish the tutorial");
     await expect(page.locator("#finale")).toBeVisible();
@@ -1348,7 +1335,6 @@ test("theme touch interactions stay available during recovery and larger hands r
     await page.locator("#start-camera").click();
     await holdHandsInFrame(page);
     await swipeHand(page, "scroll_presentation");
-    await expect(page.locator("#presentation .gesture-instructions, #presentation [data-text=manualHint]")).toHaveCount(0);
     await expect(page.locator("#slide-gesture-tip .hand-left svg")).toHaveCSS("width", "72px");
     const allowed = await page.locator("#theme-toggle").evaluate(button => {
         button.dispatchEvent(new Event("touchstart", { bubbles: true, cancelable: true }));

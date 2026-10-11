@@ -9,7 +9,7 @@ function plausibleTravel(previous, point, time) {
 // A gesture starts in the centre, then follows the wrist across the camera frame.
 export class CameraSwipes {
     constructor({ distance = .08, horizontalDuration = 100, centreDuration = 150,
-        raiseDistance = .28, raiseDuration = 250, raiseDrift = .2, duration = 2500, gap = 450 } = {}) {
+        raiseDistance = .196, raiseDuration = 175, raiseDrift = .2, duration = 2500, gap = 450 } = {}) {
         this.distance = distance;
         this.horizontalDuration = horizontalDuration;
         this.centreDuration = centreDuration;

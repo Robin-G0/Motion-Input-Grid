@@ -7,7 +7,7 @@ import { settings } from "../src/settings.mjs";
 import { cameraError } from "../src/camera.mjs";
 
 test("presence waits for a person and ignores a brief dropout", () => {
-    const presence = new PresenceMonitor();
+    const presence = new PresenceMonitor(settings);
     assert.equal(presence.update(false, 0), "waiting");
     assert.equal(presence.update(false, 500), "waiting");
     assert.equal(presence.update(true, 600), "present");
@@ -16,17 +16,17 @@ test("presence waits for a person and ignores a brief dropout", () => {
 });
 
 test("sustained departure hides the page; stable return opens it", () => {
-    const presence = new PresenceMonitor();
+    const presence = new PresenceMonitor(settings);
     presence.update(true, 0);
-    for (let time = 100; time <= 1500; time += 100) {
+    for (let time = 100; time <= 600; time += 100) {
         assert.equal(presence.update(false, time), "present");
     }
-    assert.equal(presence.update(false, 1600), "away");
-    assert.equal(presence.update(true, 1700), "away");
-    assert.equal(presence.update(false, 1800), "away");
-    assert.equal(presence.update(true, 1900), "away");
-    assert.equal(presence.update(true, 2200), "away");
-    assert.equal(presence.update(true, 2400), "present");
+    assert.equal(presence.update(false, 700), "away");
+    assert.equal(presence.update(true, 800), "away");
+    assert.equal(presence.update(false, 900), "away");
+    assert.equal(presence.update(true, 1000), "away");
+    assert.equal(presence.update(true, 1299), "away");
+    assert.equal(presence.update(true, 1300), "present");
     presence.reset();
     assert.equal(presence.state, "waiting");
 });
@@ -99,7 +99,7 @@ test("either wrist must dwell in the centre before a sweep and return there befo
     const { CameraSwipes } = await import("../src/camera-swipes.mjs");
     for (const landmark of [15, 16]) {
         for (const [dx, dy, action] of [[.1, 0, "next_slide"], [-.1, 0, "previous_slide"],
-            [0, -.44, "scroll_presentation"], [0, .44, "scroll_previous"]]) {
+            [0, -.24, "scroll_presentation"], [0, .24, "scroll_previous"]]) {
             const swipes = new CameraSwipes();
             let wrist = { x: .1, y: .1 };
             const session = { coordinate: index => index === landmark ? wrist : null };
@@ -141,20 +141,10 @@ test("short horizontal gestures need 100 ms and a fresh stable centre for the ne
     }
 });
 
-test("site presence settings hide promptly but ignore a brief loss of tracking", () => {
-    const presence = new PresenceMonitor(settings);
-    assert.equal(presence.update(true, 0), "present");
-    assert.equal(presence.update(false, 100), "present");
-    assert.equal(presence.update(false, 500), "present");
-    assert.equal(presence.update(false, 700), "away");
-    assert.equal(presence.update(true, 800), "away");
-    assert.equal(presence.update(true, 1100), "present");
-});
-
 test("small, diagonal and instantaneous hand lifts do not scroll", async () => {
     const { CameraSwipes } = await import("../src/camera-swipes.mjs");
     for (const samples of [
-        [[0, .5, .5], [150, .5, .4], [300, .5, .3]],
+        [[0, .5, .5], [150, .5, .41], [300, .5, .32]],
         [[0, .5, .5], [150, .7, .2], [300, .9, 0]],
         [[0, .5, .5], [100, .5, .06]]
     ]) {
@@ -166,6 +156,26 @@ test("small, diagonal and instantaneous hand lifts do not scroll", async () => {
         for (const [time, x, y] of samples) {
             wrist = { x, y };
             assert.ok(!swipes.update(session, time).includes("scroll_presentation"));
+        }
+    }
+});
+
+test("either hand scrolls in both directions with 19.6 percent travel and 175 ms", async () => {
+    const { CameraSwipes } = await import("../src/camera-swipes.mjs");
+    for (const landmark of [15, 16]) {
+        for (const direction of [-1, 1]) {
+            for (const limitedBy of ["distance", "duration"]) {
+                const swipes = new CameraSwipes();
+                let wrist = { x: .5, y: .5 };
+                const session = { coordinate: index => index === landmark ? wrist : null };
+                swipes.update(session, 0);
+                swipes.update(session, 150);
+                wrist.y = .5 + direction * (limitedBy === "distance" ? .195 : .197);
+                assert.deepEqual(swipes.update(session, limitedBy === "duration" ? 324 : 325), []);
+                wrist.y = .5 + direction * .197;
+                assert.deepEqual(swipes.update(session, 325), [direction > 0 ? "scroll_previous" : "scroll_presentation"]);
+                assert.deepEqual(swipes.update(session, 400), []);
+            }
         }
     }
 });

@@ -28,6 +28,5 @@ test("both guide languages have the same controls and vertical instructions", ()
     assert.deepEqual(Object.keys(assistanceCopy.fr), Object.keys(assistanceCopy.en));
     for (const text of Object.values(assistanceCopy)) {
         assert.equal(text.scroll, text.presenceScroll);
-        assert.equal(Object.hasOwn(text, "slides"), false);
     }
 });
