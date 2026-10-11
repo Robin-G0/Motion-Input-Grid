@@ -8,9 +8,10 @@ const navigation = {
     scroll: ["scroll_presentation", "ribbonForward"],
     ribbonForward: ["next_slide", "ribbonBack"],
     ribbonBack: ["previous_slide", "presenceScroll"],
+    ribbonBrowse: ["next_slide", "ribbonBrowse"],
     presenceScroll: ["scroll_presentation", "presence"]
 };
-const presentationSteps = new Set(["ribbonForward", "ribbonBack", "gift", "presenceScroll"]);
+const presentationSteps = new Set(["ribbonForward", "ribbonBack", "ribbonBrowse", "gift", "presenceScroll"]);
 
 // An optional tour consumes practice gestures without moving the real page.
 export class Assistance {
@@ -52,6 +53,8 @@ export class Assistance {
     }
 
     go(step) {
+        if (step === "presenceScroll" && !this.options.presentationComplete()) step = "ribbonBrowse";
+        else if (step === "ribbonBrowse" && this.options.presentationComplete()) step = "presenceScroll";
         clearTimeout(this.cooldownTimer);
         this.step = step;
         this.centredSince = null;
@@ -75,7 +78,7 @@ export class Assistance {
         this.highlight = document.querySelector(target);
         this.highlight?.classList.add("assistance-highlight");
         this.root.dataset.step = this.step;
-        const direction = { right: "right", left: "left", down: "down", up: "up", scroll: "up", presenceScroll: "up", ribbonForward: "left", ribbonBack: "right" }[this.step];
+        const direction = { right: "right", left: "left", down: "down", up: "up", scroll: "up", presenceScroll: "up", ribbonForward: "left", ribbonBack: "right", ribbonBrowse: "left" }[this.step];
         const gesture = this.root.querySelector("[data-assistance-gesture]");
         gesture.hidden = !direction;
         gesture.dataset.direction = direction ?? "";
@@ -152,6 +155,10 @@ export class Assistance {
 
     slideChanged() {
         if (this.step === "gift" && !this.options.giftActive()) this.go("presenceScroll");
+        else if (["ribbonBrowse", "presenceScroll"].includes(this.step)) {
+            const next = this.options.presentationComplete() ? "presenceScroll" : "ribbonBrowse";
+            if (this.step !== next) this.go(next);
+        }
     }
 
     renderHint(time) {

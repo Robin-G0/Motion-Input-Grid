@@ -32,7 +32,7 @@ export class NavigationInputGuard {
     }
 
     inGuide(event) {
-        return event.target instanceof HTMLElement && Boolean(event.target.closest("#assistance"));
+        return event.target instanceof HTMLElement && Boolean(event.target.closest("#assistance, #camera-debug"));
     }
 
     allowsTouch(event) {
@@ -44,7 +44,7 @@ export class NavigationInputGuard {
 
     keyDown(event) {
         const target = event.target instanceof HTMLElement ? event.target : null;
-        if (target?.closest("#assistance")) return;
+        if (target?.closest("#assistance, #camera-debug")) return;
         const navigationEnter = event.key === "Enter" && target?.closest("#previous-slide, #next-slide");
         if (!this.navigationKeys.has(event.key) && !navigationEnter) return;
         // Editing a diagram or stopping the camera remains possible.

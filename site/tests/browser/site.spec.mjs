@@ -43,7 +43,9 @@ async function holdHandsInFrame(page) {
 // CSS/Web Animations have a separate timeline from Playwright's simulated timers.
 async function finishRibbonAnimation(page) {
     await page.evaluate(() => {
-        for (const animation of document.querySelector(".carousel-track").getAnimations({ subtree: true })) animation.finish();
+        for (const animation of document.querySelector(".carousel-track").getAnimations({ subtree: true })) {
+            if (Number.isFinite(animation.effect.getComputedTiming().endTime)) animation.finish();
+        }
     });
 }
 
@@ -429,6 +431,10 @@ test("gift contents stay hidden until entering; leaving removes the temporary sl
     await expect(page.locator("#slide-title")).toHaveText("Alors, chouette non ?");
     await expect(page.locator("#slide-description")).toContainText("easter egg");
     await expect(page.locator("#history-illustration")).toBeHidden();
+    await expect(page.locator("#slide")).toHaveCSS("animation-name", "prism-colours");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await expect(page.locator("#slide")).toHaveCSS("animation-name", "none");
+    await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.getByRole("button", { name: "EN", exact: true }).click();
     await expect(page.locator("#slide-title")).toHaveText("Pretty neat, right?");
     await finishRibbonAnimation(page);
@@ -1224,6 +1230,12 @@ test("assistance teaches one-hand gestures without moving the page, then guides 
     await finishRibbonAnimation(page);
     await page.clock.runFor(2200);
     await page.locator("#previous-slide").click();
+    await expect(assistant).toHaveAttribute("data-step", "ribbonBrowse");
+    await focusPresentation(page);
+    await swipeHand(page, "next_slide");
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 2 / 3");
+    await expect(assistant).toHaveAttribute("data-step", "ribbonBrowse");
+    await swipeHand(page, "next_slide");
     await expect(assistant).toHaveAttribute("data-step", "presenceScroll");
     await expect(assistant.locator("[data-assistance-message]")).toHaveText("Raise your hand to continue.");
     await swipeHand(page, "scroll_presentation");
@@ -1458,7 +1470,7 @@ test("the guide follows manual scrolling past the ribbon and back to previous se
     await expect(page.locator("[data-assistance-message]")).toHaveText("Sortez du cadre.");
     await focusPresentation(page);
     await page.clock.runFor(100);
-    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "presenceScroll");
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "ribbonBrowse");
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
     await page.clock.runFor(100);
     await expect(page.locator("#assistance")).toHaveAttribute("data-step", "scroll");
@@ -1512,6 +1524,53 @@ test("aiming keeps a visual hand through brief gaps and recovery resumes with a 
     await expect(page.locator("#assistance")).toHaveAttribute("data-step", "ribbonForward");
 });
 
+
+test("C loads diagnostics on demand, switches overlays and stops sampling when closed", async ({ page }) => {
+    await mockCamera(page);
+    await page.clock.install();
+    const modules = [];
+    page.on("request", request => {
+        if (/debug-(panel|overlay)\.mjs/.test(request.url())) modules.push(request.url());
+    });
+    await page.goto("./");
+    await page.locator("#start-camera").click();
+    expect(modules).toEqual([]);
+    await page.keyboard.press("c");
+    const debug = page.locator("#camera-debug");
+    await expect(debug).toBeVisible();
+    expect(modules.length).toBe(2);
+    await page.evaluate(() => {
+        const camera = window.demoCamera;
+        camera.reads = [];
+        camera.coordinate = index => { camera.reads.push(index); return { x: .5, y: .5, confidence: .9 }; };
+    });
+    await page.clock.runFor(150);
+    await page.evaluate(() => window.demoCamera.frame(true));
+    expect(await page.evaluate(() => window.demoCamera.reads.includes(32))).toBe(true);
+    await debug.locator('input[value="points"]').uncheck();
+    for (const layer of ["hands", "centre", "edges", "thresholds"]) {
+        await debug.locator(`input[value="${layer}"]`).uncheck();
+    }
+    await expect(debug.locator("input:checked")).toHaveCount(0);
+    await page.clock.runFor(150);
+    await page.evaluate(() => { window.demoCamera.reads = []; window.demoCamera.frame(true); });
+    expect(await page.evaluate(() => window.demoCamera.reads.includes(32))).toBe(false);
+    for (const action of ["a", "b", "c", "d"]) {
+        await page.evaluate(action => window.demoCamera.action(action), action);
+    }
+    await expect(debug.locator("ol li")).toHaveCount(3);
+    await test.info().attach("camera-debug", { body: await debug.screenshot(), contentType: "image/png" });
+    await debug.locator("button").click();
+    await expect(debug).toBeHidden();
+    expect(await debug.locator("canvas").evaluate(canvas => canvas.width)).toBe(0);
+    await page.clock.runFor(150);
+    await page.evaluate(() => { window.demoCamera.reads = []; window.demoCamera.frame(true); });
+    expect(await page.evaluate(() => window.demoCamera.reads.includes(32))).toBe(false);
+    await page.keyboard.press("c");
+    await expect(debug).toBeVisible();
+    await page.keyboard.press("c");
+    await expect(debug).toBeHidden();
+});
 
 test("low-confidence pose remnants no longer count as presence", async ({ page }) => {
     await mockCamera(page);

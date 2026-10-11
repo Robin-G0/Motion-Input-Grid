@@ -67,7 +67,7 @@ video:not([src]) { background: transparent; }
 .slide[data-color="peach"] { background: var(--peach); }
 .slide[data-color="lilac"] { background: var(--lilac); }
 .slide[data-returned="true"] { grid-template-columns: 1fr; text-align: center; place-items: center; }
-#slide[data-returned="true"] { color: #192332; background: linear-gradient(120deg, #ff81a4, #ffb96e 20%, #ffe484 38%, #79ddb7 55%, #83cafa 72%, #b799ef); }
+#slide[data-returned="true"] { color: #192332; background: linear-gradient(120deg, #ff81a4, #ffb96e 20%, #ffe484 38%, #79ddb7 55%, #83cafa 72%, #b799ef); background-size: 250% 100%; }
 .slide[data-returned="true"] .slide-art { display: none; }
 .slide[data-returned="true"] .slide-copy > p, .slide[data-returned="true"] h3 { max-width: 740px; margin-inline: auto; }
 .slide-tag { font-size: 13px; font-weight: 650; }
@@ -206,6 +206,7 @@ body.is-away { background: #000; }
 @media (prefers-reduced-motion: no-preference) {
     html { scroll-behavior: smooth; }
     .prismatic-text { animation: prism-colours 4s linear infinite alternate; }
+    #slide[data-returned="true"] { animation: prism-colours 4s linear infinite alternate; }
     .primary::after { animation: prism-shine 3.5s ease-in-out infinite; }
     .gesture-tip, .hands-tip { animation: prism-colours 4s linear infinite alternate; }
     .hand-left svg { animation: hand-sweep-left 6.4s ease-in-out infinite; }
@@ -468,6 +469,14 @@ body.is-away { background: #000; }
 }
 
 .slide[data-wrapped="true"] { overflow: hidden; background: repeating-linear-gradient(45deg, #b93048 0 24px, #d74a60 24px 48px); }
+#camera-debug { position: fixed; z-index: 200; top: 12px; right: 12px; width: min(460px, calc(100vw - 24px)); max-height: calc(100svh - 24px); overflow: auto; overscroll-behavior: contain; padding: 12px; border: 1px solid var(--border); border-radius: 16px; color: var(--ink); background: var(--paper); box-shadow: 0 8px 32px #0006; font-size: 12px; }
+#camera-debug header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+#camera-debug button { border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px; color: var(--ink); background: var(--button-hover); }
+#camera-debug canvas { position: static; inset: auto; width: 100%; height: auto; transform: none; display: block; border-radius: 10px; }
+#camera-debug fieldset { display: grid; gap: 6px; margin: 10px 0; padding: 8px; border: 1px solid var(--border); border-radius: 10px; }
+#camera-debug label { display: flex; align-items: center; gap: 8px; }
+#camera-debug pre { white-space: pre-wrap; font-size: 11px; line-height: 1.6; }
+#camera-debug ol { padding-left: 24px; margin-bottom: 0; }
 .slide[data-wrapped="true"] > * { visibility: hidden; }
 .slide[data-wrapped="true"]::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 42%, #f5d386 42% 58%, transparent 58%), linear-gradient(transparent 42%, #f5d386 42% 58%, transparent 58%); }
 .slide[data-wrapped="true"]::after { content: "\1f380"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 90px; }

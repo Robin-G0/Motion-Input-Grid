@@ -51,6 +51,32 @@ let greenSince = null;
 let handScrollReady = false;
 let demoStarted = false;
 let presenceTimer = null;
+let debugPanel = null;
+let debugWanted = false;
+let debugLoading = null;
+
+async function toggleDebug() {
+    debugWanted = !debugWanted;
+    if (!debugPanel && debugWanted) {
+        debugLoading ??= import("./debug-panel.mjs").then(({ DebugPanel }) => {
+            debugPanel = new DebugPanel(element("camera-video"), toggleDebug);
+        });
+        await debugLoading;
+    }
+    if (debugPanel && debugPanel.active !== debugWanted) debugPanel.toggle(language);
+    if (!debugPanel?.active) return;
+    if (session?.state.running) updateDebug(session, performance.now());
+    else debugPanel.stopped();
+}
+
+function updateDebug(currentSession, time) {
+    if (!debugPanel?.active) return;
+    debugPanel.update(currentSession, time, {
+        gate: away ? "away" : !handScrollReady ? "onboarding" : cooldown.locked ? "cooldown" : null,
+        guide: assistance.step,
+        horizontal: assistance.practice || slideFocused()
+    }, cameraSwipes, settings.presenceConfidence);
+}
 const phone = matchMedia("(pointer: coarse)").matches && Math.min(innerWidth, innerHeight) <= 800;
 document.body.classList.toggle("phone", phone);
 const cooldown = new NavigationCooldown(element("navigation-cooldown"), () => {
@@ -84,6 +110,7 @@ const assistance = new Assistance(element("assistance"), {
     resumeHints: () => { if (handScrollReady && session?.state.running) guide.start(); },
     cooldown: () => cooldown.start(),
     giftActive: () => slides.index === "gift",
+    presentationComplete: () => slides.index === slides.count - 1,
     navigate: action => {
         guide.resume();
         if (action === "scroll_presentation") { guide.navigate(1); cooldown.start(true); }
@@ -123,6 +150,7 @@ function renderLanguage() {
     const text = translations[language];
     theme.render();
     assistance.render();
+    if (debugPanel?.active) debugPanel.setLanguage(language);
     document.documentElement.lang = language;
     document.title = text.title;
     document.querySelectorAll("[data-text]").forEach(node => {
@@ -235,6 +263,7 @@ function handlePresence(currentSession) {
     } else cameraSwipes.reset();
     presence.update(bodyPresent(currentSession, settings.presenceConfidence), time);
     updatePresence(time);
+    updateDebug(currentSession, time);
 }
 
 function updatePresence(time) {
@@ -276,19 +305,26 @@ function updatePresence(time) {
 }
 
 function handleAction(event) {
-    if (away || !session?.state.running || !handScrollReady || cooldown.locked) return;
+    const gate = away ? "away" : !session?.state.running ? "stopped"
+        : !handScrollReady ? "onboarding" : cooldown.locked ? "cooldown" : null;
+    if (gate) { debugPanel?.event(event.action, gate); return; }
     const sourceLandmark = event.id?.endsWith("left_wrist") ? 15
         : event.id?.endsWith("right_wrist") ? 16 : null;
-    if (!event.centred && !cameraSwipes.isArmed(performance.now(), session, sourceLandmark)) return;
-    if (assistance.action(event.action)) return;
+    if (!event.centred && !cameraSwipes.isArmed(performance.now(), session, sourceLandmark)) {
+        debugPanel?.event(event.action, "unarmed");
+        return;
+    }
+    if (assistance.action(event.action)) { debugPanel?.event(event.action, "guide"); return; }
     if (event.action === "scroll_presentation" || event.action === "scroll_previous") {
         if (guide.navigate(event.action === "scroll_presentation" ? 1 : -1)) {
+            debugPanel?.event(event.action, "accepted");
             demoStarted = true;
             renderHandInstructions();
             setStatus(status);
             cooldown.start(true);
             cameraSwipes.reset();
         } else {
+            debugPanel?.event(event.action, "boundary");
             boundaries.show(element("page-content"), event.action === "scroll_previous" ? "top" : "bottom");
             cooldown.start();
             cameraSwipes.reset();
@@ -296,6 +332,7 @@ function handleAction(event) {
         return;
     }
     if (slideFocused() && slides.gesture(event.action, performance.now())) {
+        debugPanel?.event(event.action, "accepted");
         demoStarted = true;
         renderHandInstructions();
         setStatus(status);
@@ -303,6 +340,8 @@ function handleAction(event) {
         guide.completeSwipe();
         renderSlide();
         cooldown.start(false, ribbon.animation);
+    } else {
+        debugPanel?.event(event.action, "outside");
     }
 }
 
@@ -333,6 +372,7 @@ function releaseCamera() {
     handsMissingSince = null;
     greenSince = null;
     handScrollReady = false;
+    debugPanel?.stopped();
     element("hands-tip").hidden = true;
     element("camera-placement").hidden = true;
     departureStartedAt = null;
@@ -521,6 +561,11 @@ element("slide").addEventListener("pointerup", event => {
 });
 element("slide").addEventListener("pointercancel", () => { swipeStart = null; });
 document.addEventListener("keydown", event => {
+    if (event.key.toLowerCase() === "c" && !event.repeat && !event.ctrlKey && !event.altKey && !event.metaKey
+        && !event.target.closest("input, textarea, select, [contenteditable]")) {
+        event.preventDefault();
+        void toggleDebug();
+    }
     if (event.key === "Escape") stopCamera();
 });
 document.addEventListener("visibilitychange", () => {
