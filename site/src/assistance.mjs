@@ -1,5 +1,6 @@
 import { assistanceCopy } from "./assistance-copy.mjs";
 import { AimMarker } from "./aim-marker.mjs";
+import { focusedWrist, centredWrist } from "./hand-focus.mjs";
 
 const exercises = { right: "previous_slide", left: "next_slide", down: "scroll_previous", up: "scroll_presentation" };
 const successors = { left: "down", down: "up", up: "scroll" };
@@ -23,6 +24,8 @@ export class Assistance {
         this.highlight = null;
         this.focusBefore = null;
         this.busy = false;
+        this.cooldownTimer = null;
+        this.focusedHand = null;
         this.marker = new AimMarker();
         this.pointer = root.querySelector("[data-assistance-pointer]");
         this.hint = root.querySelector("[data-assistance-hint]");
@@ -48,10 +51,12 @@ export class Assistance {
     }
 
     go(step) {
+        clearTimeout(this.cooldownTimer);
         this.step = step;
         if (step === "grid") this.options.showGrid();
         this.centredSince = null;
         this.marker.reset();
+        this.focusedHand = null;
         this.pointer.hidden = true;
         this.stepStarted = performance.now();
         this.options.resetGestures();
@@ -148,6 +153,14 @@ export class Assistance {
         if (!this.hint.hidden) this.hint.textContent = this.text.cover;
     }
 
+    cooldownComplete() {
+        if (this.step !== "cooldown") return;
+        clearTimeout(this.cooldownTimer);
+        this.cooldownTimer = setTimeout(() => {
+            if (this.step === "cooldown" && !this.options.locked()) this.go("left");
+        }, 300);
+    }
+
     action(action) {
         if (!this.step) return false;
         if (this.practice) {
@@ -172,33 +185,32 @@ export class Assistance {
 
     observe(session, time, recoveryAllowed) {
         if (!this.step) return;
-        const hands = [15, 16].map(index => session.coordinate(index)).filter(point =>
-            point && Number.isFinite(point.x) && Number.isFinite(point.y)
-            && point.x >= 0 && point.x <= 1 && point.y >= 0 && point.y <= 1);
+        const focused = focusedWrist(session, this.focusedHand);
+        if (focused && focused.landmark !== this.focusedHand) this.marker.reset();
+        this.focusedHand = focused?.landmark ?? this.focusedHand;
         this.renderHint(time);
-        if (hands.length) this.missingSince = null;
+        if (focused) this.missingSince = null;
         else this.missingSince ??= time;
-        if (recoveryAllowed && !this.blocking && this.step !== "away" && time - this.missingSince >= 4000 && !hands.length) {
+        if (recoveryAllowed && !this.blocking && this.step !== "away" && time - this.missingSince >= 4000 && !focused) {
             this.returnStep = this.step;
             this.options.pauseHints();
             this.go("recover");
         }
         if (!["aim", "recover"].includes(this.step)) return;
-        if (hands.length > 1) this.marker.reset();
-        const position = this.marker.update(hands.length === 1 ? hands[0] : null, time);
+        const position = this.marker.update(focused?.point ?? null, time);
         this.pointer.hidden = !position;
         if (position) {
             this.pointer.style.left = `${(1 - position.x) * 100}%`;
             this.pointer.style.top = `${position.y * 100}%`;
         }
-        if (hands.length !== 1) {
+        if (!focused) {
             this.centredSince = null;
-            this.setMessage(this.text[hands.length > 1 ? "twoHands" : this.step]);
+            this.setMessage(this.text[this.step]);
             return;
         }
-        const hand = hands[0];
+        const hand = focused.point;
         this.setMessage(this.text[this.step]);
-        const centred = Math.abs(hand.x - .5) < .1 && Math.abs(hand.y - .5) < .1;
+        const centred = centredWrist(hand, this.centredSince === null ? .2 : .24);
         this.centredSince = centred ? this.centredSince ?? time : null;
         if (this.centredSince !== null && time - this.centredSince >= 600) this.finishAim();
     }
@@ -216,6 +228,7 @@ export class Assistance {
     returned() { if (this.step === "away") this.go("finale"); }
 
     close() {
+        clearTimeout(this.cooldownTimer);
         this.step = null;
         this.returnStep = null;
         this.missingSince = null;

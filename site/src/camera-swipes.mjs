@@ -1,6 +1,8 @@
+import { centredWrist, validWrist } from "./hand-focus.mjs";
+
 // A gesture starts in the centre, then follows the wrist across the camera frame.
 export class CameraSwipes {
-    constructor({ distance = .16, raiseDistance = .4, raiseDuration = 250, raiseDrift = .16, duration = 2500, gap = 450 } = {}) {
+    constructor({ distance = .16, raiseDistance = .28, raiseDuration = 250, raiseDrift = .2, duration = 2500, gap = 450 } = {}) {
         this.distance = distance;
         this.raiseDistance = raiseDistance;
         this.raiseDuration = raiseDuration;
@@ -27,26 +29,32 @@ export class CameraSwipes {
 
     accept(landmark, point, time) {
         const ready = this.readyHands.get(landmark);
+        if (ready && centredWrist(point)
+            && Math.hypot(point.x - ready.lastX, point.y - ready.lastY) < .025) ready.startTime = time;
         if (ready && time - ready.lastTime <= this.gap && time - ready.startTime <= this.duration) {
             ready.lastTime = time;
+            ready.lastX = point.x;
+            ready.lastY = point.y;
             return true;
         }
         this.readyHands.delete(landmark);
         this.hands.delete(landmark);
         this.verticalHands.delete(landmark);
-        if (Math.abs(point.x - .5) > .15 || Math.abs(point.y - .5) > .15) {
+        if (!centredWrist(point)) {
             this.centres.delete(landmark);
             return false;
         }
         const centre = this.centres.get(landmark);
         if (!centre || time - centre.lastTime > this.gap) {
-            this.centres.set(landmark, { startTime: time, lastTime: time });
+            this.centres.set(landmark, { x: point.x, y: point.y, startTime: time, lastTime: time });
             return false;
         }
         centre.lastTime = time;
         if (time - centre.startTime < 150) return false;
         this.centres.delete(landmark);
-        this.readyHands.set(landmark, { startTime: time, lastTime: time });
+        this.readyHands.set(landmark, { lastX: point.x, lastY: point.y, startTime: time, lastTime: time });
+        this.hands.set(landmark, { start: centre.x, startY: centre.y, startTime: time, lastTime: time });
+        this.verticalAction(landmark, centre, time);
         return true;
     }
 
@@ -88,8 +96,7 @@ export class CameraSwipes {
         const actions = [];
         for (const landmark of [15, 16]) {
             const point = session.coordinate(landmark);
-            if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)
-                || point.x < 0 || point.x > 1 || point.y < 0 || point.y > 1) {
+            if (!validWrist(point)) {
                 this.centres.delete(landmark);
                 if (time - (this.readyHands.get(landmark)?.lastTime ?? -Infinity) > this.gap) {
                     this.readyHands.delete(landmark);
@@ -110,7 +117,9 @@ export class CameraSwipes {
                 if (!sample?.missing) continue;
                 const previousX = sample.lastX ?? sample.x;
                 const previousY = sample.lastY ?? sample.extremeY;
-                if (Math.hypot(point.x - previousX, point.y - previousY) > .12) jumped = true;
+                const elapsed = Math.max(0, time - sample.lastTime) / 1000;
+                const plausibleTravel = Math.min(.5, .08 + elapsed * 1.5);
+                if (Math.hypot(point.x - previousX, point.y - previousY) > plausibleTravel) jumped = true;
                 else sample.missing = false;
             }
             if (jumped) {

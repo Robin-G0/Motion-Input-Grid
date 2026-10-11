@@ -328,3 +328,63 @@ test("tab suspension discards stale observations until a fresh frame arrives", (
     assert.equal(presence.update(true, 20100), "away");
     assert.equal(presence.tick(20400), "present");
 });
+
+test("a stationary central wrist remains armed before left sweeps and lowering", async () => {
+    const { CameraSwipes } = await import("../src/camera-swipes.mjs");
+    for (const action of ["next_slide", "scroll_previous"]) {
+        const swipes = new CameraSwipes();
+        let wrist = { x: .5, y: .5 };
+        const session = { coordinate: index => index === 15 ? wrist : null };
+        for (let time = 0; time <= 10000; time += 100) {
+            assert.deepEqual(swipes.update(session, time), []);
+        }
+        assert.equal(swipes.isArmed(10000), true);
+        wrist = action === "next_slide" ? { x: .72, y: .5 } : { x: .5, y: .8 };
+        assert.deepEqual(swipes.update(session, 10300), [action]);
+    }
+});
+
+test("movement during the central dwell retains its initial position", async () => {
+    const { CameraSwipes } = await import("../src/camera-swipes.mjs");
+    const swipes = new CameraSwipes();
+    let wrist = { x: .5, y: .5 };
+    const session = { coordinate: index => index === 16 ? wrist : null };
+    swipes.update(session, 0);
+    wrist.x = .6;
+    assert.deepEqual(swipes.update(session, 150), []);
+    wrist.x = .7;
+    assert.deepEqual(swipes.update(session, 300), ["next_slide"]);
+});
+
+test("a plausible deliberate motion survives a brief lost detection", async () => {
+    const { CameraSwipes } = await import("../src/camera-swipes.mjs");
+    const swipes = new CameraSwipes();
+    let wrist = { x: .5, y: .5 };
+    const session = { coordinate: index => index === 16 ? wrist : null };
+    swipes.update(session, 0);
+    swipes.update(session, 200);
+    wrist = null;
+    swipes.update(session, 300);
+    wrist = { x: .5, y: .8 };
+    assert.deepEqual(swipes.update(session, 500), ["scroll_previous"]);
+});
+
+test("framing follows the central wrist instead of a second resting hand", async () => {
+    const { cameraFrame } = await import("../src/camera-framing.mjs");
+    const { focusedWrist } = await import("../src/hand-focus.mjs");
+    const session = { coordinate: index => index === 15 ? { x: .5, y: .5 } : { x: .55, y: .95 } };
+    assert.equal(focusedWrist(session).landmark, 15);
+    assert.deepEqual(cameraFrame(session, ["bottom"]), { edges: [], centred: true });
+});
+
+test("slow central tracking drift does not periodically revoke gesture readiness", async () => {
+    const { CameraSwipes } = await import("../src/camera-swipes.mjs");
+    const swipes = new CameraSwipes();
+    let wrist = { x: .5, y: .5 };
+    const session = { coordinate: index => index === 15 ? wrist : null };
+    for (let time = 0; time <= 10000; time += 100) {
+        wrist = { x: .5 + Math.min(.06, time / 100000), y: .5 };
+        assert.deepEqual(swipes.update(session, time), []);
+        if (time >= 200) assert.equal(swipes.isArmed(time), true);
+    }
+});

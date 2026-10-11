@@ -11,7 +11,7 @@ export class AimMarker {
         if (!this.position || time - this.lastSeen >= 300) {
             this.position = { x: point.x, y: point.y };
         } else {
-            const weight = 1 - Math.exp(-Math.max(0, time - this.lastSeen) / 90);
+            const weight = 1 - Math.exp(-Math.max(0, time - this.lastSeen) / 120);
             this.position.x += (point.x - this.position.x) * weight;
             this.position.y += (point.y - this.position.y) * weight;
         }

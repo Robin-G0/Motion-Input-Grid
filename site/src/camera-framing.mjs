@@ -1,10 +1,9 @@
 import { StableCameraFrame } from "./stable-camera-frame.mjs";
+import { focusedWrist } from "./hand-focus.mjs";
 
 // Wrist coordinates use the full video image, including its outer quarters.
-export function cameraFrame(session, previousEdges = []) {
-    const hands = [15, 16].map(index => session.coordinate(index)).filter(point =>
-        point && Number.isFinite(point.x) && Number.isFinite(point.y)
-        && point.x >= 0 && point.x <= 1 && point.y >= 0 && point.y <= 1);
+export function cameraFrame(session, previousEdges = [], focused = focusedWrist(session)) {
+    const hands = focused ? [focused.point] : [];
     // Enter at the outer quarter; clear only after moving comfortably inward.
     const previous = new Set(previousEdges);
     const edges = new Set();
@@ -24,33 +23,27 @@ export class CameraFraming {
         this.stability = new StableCameraFrame();
         this.centred = false;
         this.edges = [];
-        this.timer = null;
+        this.focusedHand = null;
     }
 
     update(session, time = performance.now()) {
-        const raw = cameraFrame(session, this.edges);
-        const visible = [15, 16].some(index => {
-            const point = session.coordinate(index);
-            return point && Number.isFinite(point.x) && Number.isFinite(point.y)
-                && point.x >= 0 && point.x <= 1 && point.y >= 0 && point.y <= 1;
-        });
+        const focused = focusedWrist(session, this.focusedHand);
+        this.focusedHand = focused?.landmark ?? null;
+        const raw = cameraFrame(session, this.edges, focused);
+        const visible = Boolean(focused);
         const frame = this.stability.update(raw, visible, time);
         this.preview.closest(".camera-card").classList.toggle("has-hands", frame.hasHands);
         this.edges = frame.edges;
         for (const edge of this.preview.querySelectorAll("[data-camera-edge]")) {
             edge.hidden = !frame.edges.includes(edge.dataset.cameraEdge);
         }
-        if (frame.centred && !this.centred) {
-            clearTimeout(this.timer);
-            this.preview.classList.add("framing-confirmed");
-            this.timer = setTimeout(() => this.preview.classList.remove("framing-confirmed"), 900);
-        }
+        this.preview.classList.toggle("framing-confirmed", frame.centred);
         this.centred = frame.centred;
     }
 
     reset() {
         this.stability.reset();
-        clearTimeout(this.timer);
+        this.focusedHand = null;
         this.centred = false;
         this.edges = [];
         this.preview.classList.remove("framing-confirmed");

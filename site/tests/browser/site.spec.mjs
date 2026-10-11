@@ -1008,7 +1008,7 @@ test("camera edge guidance mirrors the image, marks all four limits and validate
     }
     await expect(page.locator(".camera-preview")).toHaveClass(/framing-confirmed/);
     await page.clock.runFor(1000);
-    await expect(page.locator(".camera-preview")).not.toHaveClass(/framing-confirmed/);
+    await expect(page.locator(".camera-preview")).toHaveClass(/framing-confirmed/);
     await expect(page.locator("#framing-hint")).toHaveCount(0);
     await page.locator("#stop-camera").click();
     await expect(page.locator("#framing-hint")).toHaveCount(0);
@@ -1167,7 +1167,7 @@ test("assistance teaches one-hand gestures without moving the page, then guides 
     await next.click();
     await expect(assistant).toHaveAttribute("data-step", "aim");
     await page.evaluate(() => window.demoCamera.frame(true));
-    await expect(assistant).toContainText("only one hand");
+    await expect(assistant).toContainText("Place your hand");
     await page.evaluate(() => {
         window.demoCamera.coordinate = index => index === 16 ? null : { x: .5, y: .5 };
     });
@@ -1185,8 +1185,8 @@ test("assistance teaches one-hand gestures without moving the page, then guides 
     expect(blocked).toEqual({ wheel: false, touch: false });
     await page.keyboard.press("PageDown");
     expect(await page.evaluate(() => scrollY)).toBe(origin);
-    await page.clock.runFor(2200);
-    await next.click();
+    await page.clock.runFor(2400);
+    await expect(assistant).toHaveAttribute("data-step", "left");
     for (const [action, step] of [["next_slide", "down"], ["scroll_previous", "up"], ["scroll_presentation", "scroll"]]) {
         await swipeHand(page, action);
         await expect(assistant).toHaveAttribute("data-step", step);
@@ -1262,7 +1262,7 @@ test("an active guide allows manual scrolling, theme changes and gesture navigat
     await holdHandsInFrame(page);
     await page.locator("#assistance-toggle").click();
     const assistant = page.locator("#assistance");
-    await expect(assistant.locator(".assistance-cassette")).toHaveText("📼");
+    await expect(assistant.locator(".assistance-bulb")).toHaveText("💡");
     await page.locator("#theme-toggle").click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
     await page.mouse.move(40, 120);
@@ -1399,8 +1399,8 @@ test("aiming keeps a visual hand through brief gaps and recovery resumes with a 
         window.demoCamera.coordinate = () => ({ x: .5, y: .5 });
         window.demoCamera.frame(true);
     });
-    await expect(page.locator("[data-assistance-message]")).toHaveText("Gardez une seule main visible.");
-    await expect(pointer).toBeHidden();
+    await expect(page.locator("[data-assistance-message]")).toHaveText("Placez votre main dans la cible.");
+    await expect(pointer).toBeVisible();
     await page.evaluate(() => {
         window.demoCamera.coordinate = index => window.demoCamera.detected && index !== 16 ? { x: .5, y: .5 } : null;
         window.demoCamera.frame(true);
@@ -1460,4 +1460,44 @@ test("return during the black fade cancels its pending completion", async ({ pag
     await page.clock.runFor(1200);
     await expect(page.locator("#page-content")).toBeVisible();
     await expect(page.locator("#away-screen")).toBeHidden();
+});
+
+
+test("a larger target accepts a central hand while a second wrist rests at the bottom", async ({ page }) => {
+    await mockCamera(page);
+    await page.clock.install();
+    await page.goto("./");
+    await page.locator("#start-assisted").click();
+    await page.locator("[data-assistance-next]").click();
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "aim");
+    await expect(page.locator(".aim-circle")).toHaveCSS("width", "150px");
+    await expect(page.locator(".aim-hand")).toHaveCSS("width", "76px");
+    await page.evaluate(() => {
+        window.demoCamera.coordinate = index => index === 15 ? { x: .68, y: .5 }
+            : index === 16 ? { x: .5, y: .95 } : { x: .5, y: .5 };
+        window.demoCamera.frame(true);
+    });
+    await page.clock.runFor(650);
+    await page.evaluate(() => window.demoCamera.frame(true));
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "right");
+    await expect(page.locator('[data-camera-edge="bottom"]')).toBeHidden();
+    await page.clock.runFor(2000);
+    await page.evaluate(() => window.demoCamera.frame(true));
+    await expect(page.locator(".camera-preview")).toHaveClass(/framing-confirmed/);
+});
+
+test("closing the guide cancels its automatic cooldown continuation", async ({ page }) => {
+    await mockCamera(page);
+    await page.clock.install();
+    await page.goto("./");
+    await page.locator("#start-assisted").click();
+    const next = page.locator("[data-assistance-next]");
+    await next.click();
+    await next.click();
+    await next.click();
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "cooldown");
+    await page.clock.runFor(2100);
+    await page.locator("[data-assistance-close]").click();
+    await page.clock.runFor(1000);
+    await expect(page.locator("#assistance")).toBeHidden();
 });

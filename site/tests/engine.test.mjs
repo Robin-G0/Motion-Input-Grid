@@ -49,3 +49,48 @@ test("the published WASM engine recognizes both swipe directions with either ana
         }
     }
 });
+
+function sparseProfile(columns) {
+    const constraints = columns.map((column, index) => ({
+        id: `cell_${index}`,
+        landmark: "left_wrist",
+        cell: [column, 3],
+        type: index === 2 ? "trigger" : "required",
+        priority: "high",
+        order: index + 1
+    }));
+    return { schema_version: 2, inputs: [{
+        id: "sparse", name: "Sparse path", space: "body", action: "sparse",
+        cooldown_ms: 800, max_duration_ms: 2500,
+        steps: [{ id: "path", mode: "ordered", constraints }]
+    }] };
+}
+
+test("published MIG sweeps infer skipped cells only within their continuity and travel limits", async () => {
+    const module = await createMIG();
+    for (const gap of [100, 180, 181, 500]) {
+        for (const direction of [1, -1]) {
+            for (const travel of [2, 4]) {
+                const tracker = new module.Tracker();
+                try {
+                    const columns = direction === 1 ? [2, 3, 2 + travel] : [2 + travel, 3, 2];
+                    assert.equal(tracker.load(JSON.stringify(sparseProfile(columns))), "");
+                    let time = 0, sequence = 0;
+                    const frame = (column, elapsed) => {
+                        const points = tracker.bodyBuffer();
+                        points.fill(0);
+                        const put = (index, x, y) => points.set([x, y, 0, 1, 0, 0, 0, 0], index * 8);
+                        put(11, .65, .45);
+                        put(12, .35, .45);
+                        put(15, .5 + (column + .5 - 4.5) * .06, .45);
+                        return tracker.update(time += elapsed, ++sequence, 1, 0, 0);
+                    };
+                    for (let index = 0; index < 65; ++index) frame(columns[0], 20);
+                    assert.equal(frame(columns[2], gap), gap <= 180 && travel <= 2.8 ? 1 : 0);
+                } finally {
+                    tracker.delete();
+                }
+            }
+        }
+    }
+});

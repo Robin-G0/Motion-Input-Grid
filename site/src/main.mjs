@@ -47,6 +47,7 @@ const cooldown = new NavigationCooldown(element("navigation-cooldown"), () => {
     session?.tracker?.restart?.();
     assistance.render();
     assistance.followViewport();
+    assistance.cooldownComplete();
 }, locked => {
     element("previous-slide").disabled = locked || !slides.canMove(-1);
     element("next-slide").disabled = locked || !slides.canMove(1);
