@@ -1,4 +1,4 @@
-// Camera-space wrist motion has no height restriction, even outside the body grid.
+// A gesture starts in the centre, then follows the wrist across the camera frame.
 export class CameraSwipes {
     constructor({ distance = .16, raiseDistance = .4, raiseDuration = 250, raiseDrift = .16, duration = 2500, gap = 450 } = {}) {
         this.distance = distance;
@@ -13,6 +13,41 @@ export class CameraSwipes {
     reset() {
         this.hands = new Map();
         this.verticalHands = new Map();
+        this.centres = new Map();
+        this.readyHands = new Map();
+    }
+
+    isArmed(time, session) {
+        for (const [landmark, hand] of this.readyHands) {
+            if (session && !session.coordinate(landmark)) continue;
+            if (time - hand.lastTime <= this.gap && time - hand.startTime <= this.duration) return true;
+        }
+        return false;
+    }
+
+    accept(landmark, point, time) {
+        const ready = this.readyHands.get(landmark);
+        if (ready && time - ready.lastTime <= this.gap && time - ready.startTime <= this.duration) {
+            ready.lastTime = time;
+            return true;
+        }
+        this.readyHands.delete(landmark);
+        this.hands.delete(landmark);
+        this.verticalHands.delete(landmark);
+        if (Math.abs(point.x - .5) > .15 || Math.abs(point.y - .5) > .15) {
+            this.centres.delete(landmark);
+            return false;
+        }
+        const centre = this.centres.get(landmark);
+        if (!centre || time - centre.lastTime > this.gap) {
+            this.centres.set(landmark, { startTime: time, lastTime: time });
+            return false;
+        }
+        centre.lastTime = time;
+        if (time - centre.startTime < 150) return false;
+        this.centres.delete(landmark);
+        this.readyHands.set(landmark, { startTime: time, lastTime: time });
+        return true;
     }
 
     verticalAction(landmark, point, time) {
@@ -53,7 +88,12 @@ export class CameraSwipes {
         const actions = [];
         for (const landmark of [15, 16]) {
             const point = session.coordinate(landmark);
-            if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) {
+            if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)
+                || point.x < 0 || point.x > 1 || point.y < 0 || point.y > 1) {
+                this.centres.delete(landmark);
+                if (time - (this.readyHands.get(landmark)?.lastTime ?? -Infinity) > this.gap) {
+                    this.readyHands.delete(landmark);
+                }
                 // Brief occlusion must not erase a slow sweep. A long gap still resets it.
                 if (time - (this.hands.get(landmark)?.lastTime ?? -Infinity) > this.gap) this.hands.delete(landmark);
                 if (time - (this.verticalHands.get(landmark)?.lastTime ?? -Infinity) > this.gap) this.verticalHands.delete(landmark);
@@ -63,13 +103,21 @@ export class CameraSwipes {
                 }
                 continue;
             }
+            if (!this.accept(landmark, point, time)) continue;
+            let jumped = false;
             for (const samples of [this.hands, this.verticalHands]) {
                 const sample = samples.get(landmark);
                 if (!sample?.missing) continue;
                 const previousX = sample.lastX ?? sample.x;
                 const previousY = sample.lastY ?? sample.extremeY;
-                if (Math.hypot(point.x - previousX, point.y - previousY) > .12) samples.delete(landmark);
+                if (Math.hypot(point.x - previousX, point.y - previousY) > .12) jumped = true;
                 else sample.missing = false;
+            }
+            if (jumped) {
+                this.readyHands.delete(landmark);
+                this.hands.delete(landmark);
+                this.verticalHands.delete(landmark);
+                continue;
             }
             const vertical = this.verticalAction(landmark, point, time);
             if (vertical) actions.push(vertical);
@@ -93,6 +141,7 @@ export class CameraSwipes {
                 this.hands.delete(landmark);
             }
         }
+        if (actions.length) this.reset();
         return [...new Set(actions)];
     }
 }

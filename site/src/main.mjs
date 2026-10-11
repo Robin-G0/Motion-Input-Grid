@@ -38,6 +38,7 @@ let departureStartedAt = null;
 let greenSince = null;
 let handScrollReady = false;
 let demoStarted = false;
+let presenceTimer = null;
 const phone = matchMedia("(pointer: coarse)").matches && Math.min(innerWidth, innerHeight) <= 800;
 document.body.classList.toggle("phone", phone);
 const cooldown = new NavigationCooldown(element("navigation-cooldown"), () => {
@@ -47,8 +48,8 @@ const cooldown = new NavigationCooldown(element("navigation-cooldown"), () => {
     assistance.render();
     assistance.followViewport();
 }, locked => {
-    element("previous-slide").disabled = locked;
-    element("next-slide").disabled = locked;
+    element("previous-slide").disabled = locked || !slides.canMove(-1);
+    element("next-slide").disabled = locked || !slides.canMove(1);
     if (locked) {
         swipeStart = null;
         wheelDistance = 0;
@@ -67,18 +68,19 @@ const assistance = new Assistance(element("assistance"), {
     pauseHints: () => guide.pauseHints(),
     resumeHints: () => { if (handScrollReady && session?.state.running) guide.start(); },
     cooldown: () => cooldown.start(),
-    showGrid: () => { slides.move(2 - slides.index); renderSlide(); },
+    giftActive: () => slides.index === "gift",
+    showGrid: () => { slides.select(2); renderSlide(); },
     navigate: action => {
         guide.resume();
         if (action === "scroll_presentation") { guide.navigate(1); cooldown.start(true); }
-        else { slides.move(action === "next_slide" ? 1 : -1); renderSlide(); cooldown.start(false, ribbon.animation); }
+        else { slides.gesture(action, performance.now()); renderSlide(); cooldown.start(false, ribbon.animation); }
     }
 });
 
 function renderSlide() {
     const text = translations[language];
-    const returned = slides.index === 0 && slides.returnedToFirst;
-    const original = text.slides[slides.index];
+    const returned = slides.index === "gift";
+    const original = text.slides[returned ? 0 : slides.index];
     const slide = returned ? { ...original, tag: text.returnTag,
         title: text.returnTitle, description: text.returnDescription } : original;
     element("slide").dataset.returned = String(returned);
@@ -86,12 +88,12 @@ function renderSlide() {
     element("slide-tag").textContent = slide.tag;
     element("slide-title").textContent = slide.title;
     element("slide-description").textContent = slide.description;
-    illustration.show(slides.index, text);
-    ribbon.show(slides.index, text, slides.returnedToFirst, slides.direction);
-    element("previous-slide").disabled = cooldown.locked;
-    element("next-slide").disabled = cooldown.locked;
+    illustration.show(returned ? 0 : slides.index, text);
+    ribbon.show(slides, text);
+    element("previous-slide").disabled = cooldown.locked || !slides.canMove(-1);
+    element("next-slide").disabled = cooldown.locked || !slides.canMove(1);
     element("slide-number").textContent = slide.number;
-    element("slide-counter").textContent = `${text.slideLabel} ${slides.index + 1} / ${slides.count}`;
+    element("slide-counter").textContent = `${text.slideLabel} ${returned ? "\u{1f381}" : slides.index + 1} / ${slides.count}`;
 }
 
 function setStatus(nextStatus) {
@@ -214,17 +216,23 @@ function handlePresence(currentSession) {
     assistance.observe(currentSession, time, !departureSectionReached() && !away && !cooldown.locked);
     if (handScrollReady && !cooldown.locked && !away) {
         for (const action of cameraSwipes.update(currentSession, time, { horizontal: assistance.practice || slideFocused() })) {
-            handleAction({ action });
+            handleAction({ action, centred: true });
             if (cooldown.locked) break;
         }
     } else cameraSwipes.reset();
-    const detected = currentSession.coordinate(11) !== null && currentSession.coordinate(12) !== null;
+    presence.update(Boolean(currentSession.coordinate(11) && currentSession.coordinate(12)), time);
+    updatePresence(time);
+}
+
+function updatePresence(time) {
+    if (document.hidden || !session?.state.running) return;
+    const detected = presence.detected;
     // Only the final section can start the departure demo. Scrolling back up
     // clears its timer; an already hidden page still waits for the person to return.
     const departureEnabled = element("finale").hidden && (away || departureSectionReached());
     updateDepartureTip(departureEnabled, detected, time);
     if (!departureEnabled) presence.reset();
-    const nextState = departureEnabled ? presence.update(detected, time) : "waiting";
+    const nextState = departureEnabled ? presence.tick(time) : "waiting";
     if (nextState === "away" && !away) {
         assistance.depart();
         guide.stop();
@@ -255,6 +263,7 @@ function handlePresence(currentSession) {
 
 function handleAction(event) {
     if (away || !session?.state.running || !handScrollReady || cooldown.locked) return;
+    if (!event.centred && !cameraSwipes.isArmed(performance.now(), session)) return;
     if (assistance.action(event.action)) return;
     if (event.action === "scroll_presentation" || event.action === "scroll_previous") {
         if (guide.navigate(event.action === "scroll_presentation" ? 1 : -1)) {
@@ -297,6 +306,8 @@ function failCamera(message) {
 }
 
 function releaseCamera() {
+    clearInterval(presenceTimer);
+    presenceTimer = null;
     ++generation;
     const previousSession = session;
     session = null;
@@ -396,6 +407,7 @@ async function startCamera() {
             failCamera(session.state.status);
             return;
         }
+        presenceTimer = setInterval(() => updatePresence(performance.now()), 100);
         document.querySelector(".camera-card").classList.add("is-running");
         element("start-camera").hidden = true;
         setStatus("searching");
@@ -508,10 +520,9 @@ document.addEventListener("visibilitychange", () => {
     departureStartedAt = null;
     element("cover-camera-tip").hidden = true;
     element("departure-tip").hidden = true;
-    presence.changedAt = null;
-    presence.lastTime = null;
+    presence.pause();
 });
-window.addEventListener("pagehide", () => session?.dispose());
+window.addEventListener("pagehide", () => { clearInterval(presenceTimer); session?.dispose(); });
 renderLanguage();
 
 // One elastic return per wheel gesture, including its momentum tail.

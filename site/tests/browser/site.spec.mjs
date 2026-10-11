@@ -141,7 +141,7 @@ test("gestures advance and reverse the presentation; departure and return reveal
     await expect(page.locator("#slide-counter")).toHaveText("Slide 2 / 3");
     await page.clock.runFor(900);
     await swipeHand(page, "previous_slide");
-    await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
+    await expect(page.locator("#slide-counter")).toHaveText("Slide \u{1f381} / 3");
     // The departure demo is only available in the final section.
     await page.locator("#presence-demo").evaluate(node => node.scrollIntoView({ behavior: "instant", block: "start" }));
     await page.evaluate(() => window.demoCamera.frame(true));
@@ -334,35 +334,32 @@ test("history diagrams move and the grid explains order, cancellation and condit
     await expect(status).toHaveAttribute("data-result", "gridTriggered");
 });
 
-test("either hand can sweep at camera edges and navigate vertically without a central hold", async ({ page }) => {
+test("edge repositioning is ignored and centred gestures still navigate with either hand", async ({ page }) => {
     await mockCamera(page);
     await page.clock.install();
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("./");
-    await page.getByRole("button", { name: "EN", exact: true }).click();
     await page.locator("#start-camera").click();
     await holdHandsInFrame(page);
     for (const landmark of [15, 16]) {
         await page.clock.runFor(3000);
-        await page.evaluate(landmark => {
-            const camera = window.demoCamera;
-            camera.wrist = { x: .2, y: .85 };
-            camera.coordinate = index => index === landmark ? camera.wrist : index === 11 || index === 12 ? { x: .5, y: .5 } : null;
-            camera.frame(true);
-        }, landmark);
-        await page.clock.runFor(150);
-        await page.evaluate(() => { window.demoCamera.wrist.y = .5; window.demoCamera.frame(true); });
-        await page.clock.runFor(150);
-        await page.evaluate(() => { window.demoCamera.wrist.y = .15; window.demoCamera.frame(true); });
-        await expect(page.locator("#slide-gesture-tip")).toBeVisible();
-        await page.clock.runFor(3000);
-        await page.evaluate(() => { window.demoCamera.wrist = { x: .1, y: .01 }; window.demoCamera.frame(true); });
-        await page.clock.runFor(100);
-        await page.evaluate(() => { window.demoCamera.wrist.x = .35; window.demoCamera.frame(true); });
-        await expect(page.locator("#slide-counter")).toHaveText(landmark === 15 ? "Slide 2 / 3" : "Slide 3 / 3");
+        for (const y of [.85, .5, .15]) {
+            await page.evaluate(({ landmark, y }) => {
+                const camera = window.demoCamera;
+                camera.coordinate = index => index === landmark ? { x: .2, y }
+                    : index === 11 || index === 12 ? { x: .5, y: .5 } : null;
+                camera.frame(true);
+                camera.action("scroll_presentation");
+            }, { landmark, y });
+            await page.clock.runFor(150);
+        }
+        expect(await page.evaluate(() => scrollY)).toBe(0);
+        await swipeHand(page, "scroll_presentation", landmark);
+        await expect(page.locator("#presentation h2")).toBeInViewport();
         await swipeHand(page, "scroll_previous", landmark);
-        await expect(page.locator("#scroll-gesture-tip")).toBeVisible();
+        expect(await page.evaluate(() => scrollY)).toBe(0);
     }
+
 });
 
 test("camera onboarding repeats its nudge while a hand is visible and stops after navigation", async ({ page }) => {
@@ -414,7 +411,7 @@ test("reduced motion disables the scroll nudge and camera denial leaves hints hi
     await expect(page.locator("#slide-gesture-tip")).toBeHidden();
 });
 
-test("returning by hand changes the first slide and scrolling right resumes the presentation", async ({ page }) => {
+test("gift contents stay hidden until entering; leaving removes the temporary slide", async ({ page }) => {
     await mockCamera(page);
     await page.clock.install();
     await page.goto("./");
@@ -424,6 +421,9 @@ test("returning by hand changes the first slide and scrolling right resumes the 
     await holdHandsInFrame(page);
     await focusPresentation(page);
     await swipeHand(page, "next_slide");
+    await expect(page.locator('.slide-neighbour[data-position="left"]')).toHaveAttribute("data-wrapped", "true");
+    await expect(page.locator('.slide-neighbour[data-position="left"] .slide-copy')).toHaveText("");
+    await expect(page.locator(".carousel-track")).not.toContainText("Alors, chouette non ?");
     await page.clock.runFor(900);
     await swipeHand(page, "previous_slide");
     await expect(page.locator("#slide-title")).toHaveText("Alors, chouette non ?");
@@ -434,7 +434,7 @@ test("returning by hand changes the first slide and scrolling right resumes the 
     await finishRibbonAnimation(page);
     await page.clock.runFor(3000);
     await page.locator("#slide").dispatchEvent("wheel", { deltaX: 0, deltaY: 150 });
-    await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
+    await expect(page.locator("#slide-counter")).toHaveText("Slide \u{1f381} / 3");
     await page.locator("#slide").dispatchEvent("wheel", { deltaX: 100, deltaY: 0 });
     await expect(page.locator("#slide-counter")).toHaveText("Slide 2 / 3");
     await expect(page.locator("#slide-title")).toHaveText("Angles");
@@ -444,7 +444,7 @@ test("returning by hand changes the first slide and scrolling right resumes the 
     await finishRibbonAnimation(page);
     await page.clock.runFor(3000);
     await page.locator("#slide").dispatchEvent("wheel", { deltaX: -100, deltaY: 0 });
-    await expect(page.locator("#slide-title")).toHaveText("Pretty neat, right?");
+    await expect(page.locator("#slide-title")).toHaveText("Positions");
 });
 
 test("the evolving grid presents detection, cancellation, then a one-second thumb condition", async ({ page }) => {
@@ -760,7 +760,7 @@ test("either hand can advance and reverse slides, with continuous tooltip motion
         await swipeHand(page, "next_slide", landmark);
         await expect(page.locator("#slide-counter")).toHaveText("Slide 2 / 3");
         await swipeHand(page, "previous_slide", landmark);
-        await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
+        await expect(page.locator("#slide-counter")).toHaveText("Slide \u{1f381} / 3");
     }
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await expect(page.locator(".hand-left svg")).toHaveCSS("animation-duration", "6.4s");
@@ -768,35 +768,38 @@ test("either hand can advance and reverse slides, with continuous tooltip motion
 });
 
 
-test("carousel wraps with keyboard, wheel and either hand while keeping three panels visible", async ({ page }) => {
+test("carousel boundaries hide nonexistent previews for keyboard, wheel and hand navigation", async ({ page }) => {
     await mockCamera(page);
     await page.clock.install();
     await page.goto("./");
-    await page.getByRole("button", { name: "EN", exact: true }).click();
     await page.locator("#start-camera").click();
     await holdHandsInFrame(page);
     await focusPresentation(page);
-    await expect(page.locator("#previous-slide")).toBeEnabled();
+    const left = page.locator('.slide-neighbour[data-position="left"]');
+    const right = page.locator('.slide-neighbour[data-position="right"]');
+    await expect(left).toBeHidden();
+    await expect(right).toBeVisible();
+    await expect(page.locator("#previous-slide")).toBeDisabled();
     await page.locator("#slide").focus();
     await page.keyboard.press("ArrowLeft");
-    await expect(page.locator("#slide-counter")).toHaveText("Slide 3 / 3");
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
     await page.locator("#next-slide").click();
-    await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
-    await expect(page.locator("#next-slide")).toBeEnabled();
-    await page.locator("#slide").focus();
-    await page.keyboard.press("ArrowLeft");
-    await expect(page.locator("#slide-counter")).toHaveText("Slide 3 / 3");
+    await expect(left).toBeVisible();
+    await expect(right).toBeVisible();
+    await page.locator("#next-slide").click();
+    await expect(right).toBeHidden();
+    await expect(page.locator("#next-slide")).toBeDisabled();
     await page.locator("#slide").dispatchEvent("wheel", { deltaX: 100, deltaY: 0 });
-    await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
-    await swipeHand(page, "previous_slide");
     await expect(page.locator("#slide-counter")).toHaveText("Slide 3 / 3");
-    await swipeHand(page, "next_slide", 16);
-    await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
-    for (const panel of await page.locator(".carousel-track > .slide").all()) {
-        await expect(panel).toBeInViewport();
-    }
+    await swipeHand(page, "next_slide");
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 3 / 3");
+    await swipeHand(page, "previous_slide", 16);
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 2 / 3");
+    await expect(left).toBeInViewport();
+    await expect(right).toBeInViewport();
     await expect(page.locator(".hand-left use")).toHaveAttribute("transform", "translate(100 0) scale(-1 1)");
     await expect(page.locator(".hand-right use")).not.toHaveAttribute("transform");
+
 });
 
 
@@ -935,12 +938,18 @@ test("native MIG slide events remain connected to the page navigation", async ({
     await page.locator("#start-camera").click();
     await holdHandsInFrame(page);
     await focusPresentation(page);
+    await page.evaluate(() => window.demoCamera.frame(true));
+    await page.clock.runFor(200);
+    await page.evaluate(() => window.demoCamera.frame(true));
     await page.evaluate(() => window.demoCamera.action("next_slide"));
     await expect(page.locator("#slide-counter")).toHaveText("Slide 2 / 3");
     await finishRibbonAnimation(page);
     await page.clock.runFor(2200);
+    await page.evaluate(() => window.demoCamera.frame(true));
+    await page.clock.runFor(200);
+    await page.evaluate(() => window.demoCamera.frame(true));
     await page.evaluate(() => window.demoCamera.action("previous_slide"));
-    await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
+    await expect(page.locator("#slide-counter")).toHaveText("Slide \u{1f381} / 3");
 });
 
 
@@ -954,11 +963,17 @@ test("a slow sweep with a missing frame navigates down and back up", async ({ pa
     await holdHandsInFrame(page);
     for (const direction of [1, -1]) {
         await page.clock.runFor(3000);
+        await page.evaluate(() => {
+            window.demoCamera.coordinate = index => [11, 12, 15].includes(index) ? { x: .5, y: .5 } : null;
+            window.demoCamera.frame(true);
+        });
+        await page.clock.runFor(200);
+        await page.evaluate(() => window.demoCamera.frame(true));
         for (let frame = 0; frame <= 45; frame++) {
             await page.evaluate(({ frame, direction }) => {
                 const camera = window.demoCamera;
                 camera.coordinate = index => index === 15
-                    ? frame === 20 ? null : { x: .5, y: (direction === 1 ? .8 : .2) - direction * frame * .01 }
+                    ? frame === 20 ? null : { x: .5, y: .5 - direction * frame * .01 }
                     : index === 11 || index === 12 ? { x: .5, y: .5 } : null;
                 camera.frame(true);
             }, { frame, direction });
@@ -1010,9 +1025,8 @@ test("system palettes, square cells and all three carousel panels remain usable"
     expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--paper"))).not.toBe(colour);
     await page.locator("#slide").focus();
     await page.keyboard.press("ArrowLeft");
-    await expect(page.locator("#slide-counter")).toHaveText("Slide 3 / 3");
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
     await expect(page.locator("#navigation-edge")).toBeHidden();
-    await page.locator("#next-slide").click();
     await page.locator("#next-slide").click();
     await page.locator("#next-slide").click();
     await expect(page.locator(".slide-neighbour")).toHaveCount(2);
@@ -1023,7 +1037,7 @@ test("system palettes, square cells and all three carousel panels remain usable"
     await page.locator("#slide").focus();
     await page.keyboard.press("ArrowRight");
     await expect(page.locator("#navigation-edge")).toBeHidden();
-    await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 3 / 3");
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
@@ -1070,6 +1084,9 @@ test("the two-second recovery starts after the ribbon animation finishes", async
     await page.locator("#start-camera").click();
     await holdHandsInFrame(page);
     await focusPresentation(page);
+    await page.evaluate(() => window.demoCamera.frame(true));
+    await page.clock.runFor(200);
+    await page.evaluate(() => window.demoCamera.frame(true));
     await page.evaluate(() => window.demoCamera.action("next_slide"));
     const bar = page.locator("#navigation-cooldown");
     await page.clock.runFor(400);
@@ -1183,6 +1200,11 @@ test("assistance teaches one-hand gestures without moving the page, then guides 
     await swipeHand(page, "next_slide");
     await expect(assistant).toHaveAttribute("data-step", "ribbonBack");
     await swipeHand(page, "previous_slide");
+    await expect(assistant).toHaveAttribute("data-step", "gift");
+    await expect(page.locator("#slide-title")).toHaveText("Pretty neat, right?");
+    await finishRibbonAnimation(page);
+    await page.clock.runFor(2200);
+    await next.click();
     await expect(assistant).toHaveAttribute("data-step", "grid");
     await expect(page.locator("#slide-counter")).toHaveText("Slide 3 / 3");
     await page.clock.runFor(2200);
@@ -1398,4 +1420,44 @@ test("aiming keeps a visual hand through brief gaps and recovery resumes with a 
     await page.clock.runFor(600);
     await page.evaluate(() => window.demoCamera.frame(true));
     await expect(page.locator("#assistance")).toHaveAttribute("data-step", "ribbonForward");
+});
+
+
+test("one missing observation hides on departure, not on return, even with sparse frames", async ({ page }) => {
+    await mockCamera(page);
+    await page.clock.install();
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("./");
+    await page.locator("#start-camera").click();
+    await holdHandsInFrame(page);
+    await page.locator("#presence-demo").evaluate(node => node.scrollIntoView({ behavior: "instant" }));
+    await page.evaluate(() => window.demoCamera.frame(true));
+    await page.evaluate(() => window.demoCamera.frame(false));
+    await page.clock.runFor(700);
+    await expect(page.locator("#away-screen")).toBeVisible();
+    await expect(page.locator("#page-content")).toBeHidden();
+    await page.clock.runFor(3000);
+    await page.evaluate(() => window.demoCamera.frame(true));
+    await page.clock.runFor(350);
+    await expect(page.locator("#away-screen")).toBeHidden();
+    await expect(page.locator("#finale")).toBeVisible();
+    await page.clock.runFor(3000);
+    await expect(page.locator("#away-screen")).toBeHidden();
+});
+
+test("return during the black fade cancels its pending completion", async ({ page }) => {
+    await mockCamera(page);
+    await page.clock.install();
+    await page.goto("./");
+    await page.locator("#start-camera").click();
+    await holdHandsInFrame(page);
+    await page.locator("#presence-demo").evaluate(node => node.scrollIntoView({ behavior: "instant" }));
+    await page.evaluate(() => window.demoCamera.frame(true));
+    await page.evaluate(() => window.demoCamera.frame(false));
+    await page.clock.runFor(700);
+    await expect(page.locator("body")).toHaveClass(/is-away/);
+    await page.evaluate(() => window.demoCamera.frame(true));
+    await page.clock.runFor(1200);
+    await expect(page.locator("#page-content")).toBeVisible();
+    await expect(page.locator("#away-screen")).toBeHidden();
 });

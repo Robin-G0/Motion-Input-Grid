@@ -33,22 +33,34 @@ export class SlideRibbon {
             panel.classList.add("slide-neighbour");
             panel.dataset.position = direction < 0 ? "left" : "right";
             for (const node of panel.querySelectorAll("[id]")) node.removeAttribute("id");
+            const copy = panel.querySelector(".slide-copy").cloneNode(true);
             const illustration = new HistoryIllustration(panel.querySelector(".history-illustration"), { animated: false });
-            return { panel, illustration, direction };
+            return { panel, illustration, direction, copy };
         });
         this.track.append(this.neighbours[0].panel, slide, this.neighbours[1].panel);
     }
 
-    show(index, text, returnedToFirst = false, direction = 0) {
+    show(slides, text) {
+        const { index, direction } = slides;
         this.animations.forEach(animation => animation.cancel());
         this.animations = [];
         this.animation = null;
         for (const neighbour of this.neighbours) {
-            const neighbourIndex = (index + neighbour.direction + text.slides.length) % text.slides.length;
+            const neighbourIndex = slides.entries[slides.position + neighbour.direction];
+            neighbour.panel.hidden = neighbourIndex === undefined;
+            if (neighbour.panel.hidden) continue;
+            const gift = neighbourIndex === "gift";
+            neighbour.panel.dataset.wrapped = String(gift);
+            if (gift) {
+                neighbour.panel.querySelector(".slide-copy").textContent = "";
+                neighbour.illustration.show(0, text);
+                continue;
+            }
+            // A gift preview has no content; restore the normal copy on reuse.
+            neighbour.panel.querySelector(".slide-copy").replaceWith(neighbour.copy.cloneNode(true));
             const original = text.slides[neighbourIndex];
-            const returned = neighbourIndex === 0 && returnedToFirst;
-            const content = returned ? { ...original, tag: text.returnTag, title: text.returnTitle, description: text.returnDescription } : original;
-            neighbour.panel.dataset.returned = String(returned);
+            const content = original;
+            neighbour.panel.dataset.returned = "false";
             neighbour.panel.dataset.color = content.color;
             neighbour.panel.querySelector(".slide-tag").textContent = content.tag;
             neighbour.panel.querySelector("h3").textContent = content.title;

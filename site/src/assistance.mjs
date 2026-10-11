@@ -9,7 +9,7 @@ const navigation = {
     ribbonBack: ["previous_slide", "grid"],
     presenceScroll: ["scroll_presentation", "presence"]
 };
-const presentationSteps = new Set(["ribbonForward", "ribbonBack", "grid", "presenceScroll"]);
+const presentationSteps = new Set(["ribbonForward", "ribbonBack", "gift", "grid", "presenceScroll"]);
 
 // An optional tour consumes practice gestures without moving the real page.
 export class Assistance {
@@ -105,11 +105,12 @@ export class Assistance {
         else if (this.step === "right") { this.options.cooldown(); this.go("cooldown"); }
         else if (this.step === "cooldown") this.go("left");
         else if (this.practice) this.go(successors[this.step]);
+        else if (this.step === "gift") this.go("grid");
         else if (this.step === "grid") this.go("presenceScroll");
         else if (Object.hasOwn(navigation, this.step)) {
             const [action, next] = navigation[this.step];
             this.options.navigate(action);
-            this.go(next);
+            this.go(next === "grid" && this.options.giftActive() ? "gift" : next);
         } else this.close();
     }
 
@@ -160,7 +161,11 @@ export class Assistance {
         if (expected) {
             if (action !== expected[0]) return true;
             const step = this.step;
-            queueMicrotask(() => { if (this.step === step) this.go(expected[1]); });
+            queueMicrotask(() => {
+                if (this.step === step) {
+                    this.go(expected[1] === "grid" && this.options.giftActive() ? "gift" : expected[1]);
+                }
+            });
         }
         return false;
     }

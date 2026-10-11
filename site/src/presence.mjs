@@ -9,15 +9,22 @@ export class PresenceMonitor {
     reset() {
         this.state = "waiting";
         this.changedAt = null;
-        this.lastTime = null;
+        this.detected = null;
+    }
+
+    pause() {
+        this.changedAt = null;
+        this.detected = null;
     }
 
     update(detected, time) {
-        // A suspended tab must not turn a time gap into a false departure.
-        if (this.lastTime !== null && time - this.lastTime > 1000) {
-            this.changedAt = null;
-        }
-        this.lastTime = time;
+        this.detected = detected;
+        return this.tick(time);
+    }
+
+    tick(time) {
+        const detected = this.detected;
+        if (detected === null) return this.state;
 
         if (this.state === "waiting") {
             if (detected) this.state = "present";
