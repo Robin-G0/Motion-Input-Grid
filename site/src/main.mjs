@@ -24,7 +24,15 @@ const illustration = new HistoryIllustration(element("history-illustration"));
 const framing = new CameraFraming(document.querySelector(".camera-preview"));
 const boundaries = new BoundaryFeedback(element("navigation-edge"));
 const guide = new GestureGuide(element("scroll-gesture-tip"), element("slide-gesture-tip"),
-    element("slide"), [element("welcome"), element("presentation"), element("presence-demo"), element("finale")]);
+    element("slide"), [element("welcome"), element("presentation"), element("presence-demo"), element("finale")],
+    direction => {
+        const label = element("scroll-gesture-tip").querySelector("[data-text=scrollShort]");
+        const text = translations[language][direction === "down" ? "lowerShort" : "scrollShort"];
+        if (label.textContent !== text) label.textContent = text;
+        const description = element("scroll-gesture-tip").querySelector("[data-text=scrollTip]");
+        const tip = translations[language][direction === "down" ? "lowerTip" : "scrollTip"];
+        if (description.textContent !== tip) description.textContent = tip;
+    });
 const screenTransition = new ScreenTransition(element("away-screen"), element("page-content"));
 let language = navigator.language.toLowerCase().startsWith("fr") ? "fr" : "en";
 let session = null;
@@ -63,7 +71,6 @@ const assistance = new Assistance(element("assistance"), {
     locked: () => cooldown.locked,
     running: () => Boolean(session?.state.running),
     startCamera,
-    stopCamera,
     focusCamera: frameCameraPreview,
     resetGestures: () => { cameraSwipes.reset(); session?.tracker?.restart?.(); },
     pauseHints: () => guide.pauseHints(),
@@ -123,6 +130,7 @@ function renderLanguage() {
     element("phone-note").hidden = !phone;
     element("phone-note").textContent = text.phoneNote;
     renderHandInstructions();
+    guide.updateFocus();
     const title = document.querySelector(".hero h1");
     if (language === "fr") {
         const ending = document.createElement("span");
@@ -144,12 +152,9 @@ function renderHandInstructions() {
 }
 
 function slideFocused() {
+    if (guide.focusedSection() !== 1) return false;
     const bounds = element("slide").getBoundingClientRect();
     return bounds.top < innerHeight / 2 && bounds.bottom > innerHeight / 2;
-}
-
-function finaleFocused() {
-    return !element("finale").hidden && element("finale").getBoundingClientRect().top < innerHeight / 2;
 }
 
 function showPage(animate = false) {
@@ -264,7 +269,9 @@ function updatePresence(time) {
 
 function handleAction(event) {
     if (away || !session?.state.running || !handScrollReady || cooldown.locked) return;
-    if (!event.centred && !cameraSwipes.isArmed(performance.now(), session)) return;
+    const sourceLandmark = event.id?.endsWith("left_wrist") ? 15
+        : event.id?.endsWith("right_wrist") ? 16 : null;
+    if (!event.centred && !cameraSwipes.isArmed(performance.now(), session, sourceLandmark)) return;
     if (assistance.action(event.action)) return;
     if (event.action === "scroll_presentation" || event.action === "scroll_previous") {
         if (guide.navigate(event.action === "scroll_presentation" ? 1 : -1)) {
@@ -273,9 +280,6 @@ function handleAction(event) {
             setStatus(status);
             cooldown.start(true);
             cameraSwipes.reset();
-            const down = !element("finale").hidden && finaleFocused();
-            element("scroll-gesture-tip").dataset.direction = down ? "down" : "up";
-            element("scroll-gesture-tip").querySelector("[data-text=scrollShort]").textContent = translations[language][down ? "lowerShort" : "scrollShort"];
         } else {
             boundaries.show(element("page-content"), event.action === "scroll_previous" ? "top" : "bottom");
             cooldown.start();

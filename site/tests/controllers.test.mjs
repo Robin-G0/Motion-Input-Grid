@@ -388,3 +388,17 @@ test("slow central tracking drift does not periodically revoke gesture readiness
         if (time >= 200) assert.equal(swipes.isArmed(time), true);
     }
 });
+
+test("centering needs 150 ms and authorizes only that wrist", async () => {
+    const { CameraSwipes } = await import("../src/camera-swipes.mjs");
+    for (const landmark of [15, 16]) {
+        const swipes = new CameraSwipes();
+        const session = { coordinate: index => index === landmark ? { x: .5, y: .5 } : { x: .9, y: .9 } };
+        swipes.update(session, 0);
+        swipes.update(session, 149);
+        assert.equal(swipes.isArmed(149, session, landmark), false);
+        swipes.update(session, 150);
+        assert.equal(swipes.isArmed(150, session, landmark), true);
+        assert.equal(swipes.isArmed(150, session, landmark === 15 ? 16 : 15), false);
+    }
+});

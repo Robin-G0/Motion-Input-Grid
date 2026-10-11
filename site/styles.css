@@ -362,9 +362,6 @@ body.is-away { background: #000; }
 }
 
 
-#scroll-gesture-tip [data-text="scrollShort"]::before { content: "\2193  "; font-size: 22px; }
-#scroll-gesture-tip[data-direction="down"] [data-text="scrollShort"]::before { content: "\2191  "; }
-
 @media (prefers-reduced-motion: reduce) {
     .slide-tip .hand-right { display: none; }
 }
@@ -422,8 +419,6 @@ body.is-away { background: #000; }
 #assistance[data-step="recover"] .aim-hand { display: none; }
 #assistance[data-step="recover"] .aim-cross { display: block; }
 .assistance-bubble .assistance-hint { color: var(--muted); font-size: 16px; }
-.assistance-secondary { margin-top: 12px; }
-.assistance-secondary .button { font-size: 13px; min-height: 40px; padding: 8px 14px; }
 @media (max-width: 600px) {
     .header { gap: 8px; }
     .header nav { gap: 8px; flex-wrap: wrap; }

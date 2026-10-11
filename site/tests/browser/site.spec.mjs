@@ -427,7 +427,7 @@ test("gift contents stay hidden until entering; leaving removes the temporary sl
     await page.clock.runFor(900);
     await swipeHand(page, "previous_slide");
     await expect(page.locator("#slide-title")).toHaveText("Alors, chouette non ?");
-    await expect(page.locator("#slide-description")).toContainText("quand vous \u00eates pr\u00eat");
+    await expect(page.locator("#slide-description")).toContainText("easter egg");
     await expect(page.locator("#history-illustration")).toBeHidden();
     await page.getByRole("button", { name: "EN", exact: true }).click();
     await expect(page.locator("#slide-title")).toHaveText("Pretty neat, right?");
@@ -876,6 +876,9 @@ test("the finale keeps navigation and the GitHub link without enabling hand infe
     await page.evaluate(() => window.demoCamera.frame(true));
     await expect(page.locator("#finale")).toBeVisible();
     await page.clock.runFor(3000);
+    await expect(page.locator("#scroll-gesture-tip")).toHaveAttribute("data-direction", "down");
+    await expect(page.locator("#scroll-gesture-tip")).toContainText("Gently lower");
+    await expect(page.locator("#slide-gesture-tip")).toBeHidden();
     await page.evaluate(() => window.demoCamera.frame(true));
     await expect(page.locator("#thumb-tip")).toHaveCount(0);
     expect(await page.evaluate(() => window.demoCamera.profile.tracking.hands)).toBe(false);
@@ -1224,10 +1227,11 @@ test("assistance teaches one-hand gestures without moving the page, then guides 
     await page.evaluate(() => window.demoCamera.frame(true));
     await expect(assistant).toHaveAttribute("data-step", "finale");
     await expect(assistant.locator("[data-assistance-message]")).toHaveText("You are ready. Keep exploring with MIG.");
-    await expect(assistant.locator("[data-assistance-stop]")).toBeVisible();
-    await expect(assistant.locator("[data-assistance-github]")).toHaveText("View on GitHub");
+    await expect(assistant.locator("[data-assistance-stop], [data-assistance-github]")).toHaveCount(0);
+    await expect(assistant.getByRole("button")).toHaveCount(1);
+    await expect(next).toHaveText("Finish the tutorial");
     await expect(page.locator("#finale")).toBeVisible();
-    await assistant.locator("[data-assistance-close]").click();
+    await next.click();
     await expect(assistant).toBeHidden();
     await page.locator("#finale-stop-camera").click();
     expect(await page.evaluate(() => window.demoCamera.stopped)).toBe(true);
@@ -1500,4 +1504,52 @@ test("closing the guide cancels its automatic cooldown continuation", async ({ p
     await page.locator("[data-assistance-close]").click();
     await page.clock.runFor(1000);
     await expect(page.locator("#assistance")).toBeHidden();
+});
+
+test("gesture hints follow manual viewport changes and ignore a partially visible ribbon", async ({ page }) => {
+    await mockCamera(page);
+    await page.clock.install();
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("./");
+    await page.locator("#start-camera").click();
+    await holdHandsInFrame(page);
+    const vertical = page.locator("#scroll-gesture-tip");
+    const horizontal = page.locator("#slide-gesture-tip");
+    await expect(vertical).toBeVisible();
+    await expect(horizontal).toBeHidden();
+    await page.locator("#presentation").evaluate(node => {
+        window.scrollTo({ top: scrollY + node.getBoundingClientRect().top - innerHeight * .8, behavior: "instant" });
+    });
+    await expect(horizontal).toBeHidden();
+    await focusPresentation(page);
+    await expect(horizontal).toBeVisible();
+    await expect(vertical).toBeHidden();
+    await page.locator("#presence-demo").evaluate(node => node.scrollIntoView({ behavior: "instant", block: "start" }));
+    await expect(horizontal).toBeHidden();
+    await expect(vertical).toBeHidden();
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+    await expect(horizontal).toBeHidden();
+    await expect(vertical).toBeVisible();
+    await expect(vertical).toHaveAttribute("data-direction", "up");
+});
+
+test("a native event from the other wrist cannot borrow the centred wrist authorization", async ({ page }) => {
+    await mockCamera(page);
+    await page.clock.install();
+    await page.goto("./");
+    await page.locator("#start-camera").click();
+    await holdHandsInFrame(page);
+    await focusPresentation(page);
+    await page.evaluate(() => {
+        window.demoCamera.coordinate = index => index === 16 ? { x: .9, y: .9 } : { x: .5, y: .5 };
+        window.demoCamera.frame(true);
+    });
+    await page.clock.runFor(200);
+    await page.evaluate(() => {
+        window.demoCamera.frame(true);
+        window.demoCamera.options.onAction({ action: "next_slide", id: "next_slide_right_wrist" });
+    });
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
+    await page.evaluate(() => window.demoCamera.options.onAction({ action: "next_slide", id: "next_slide_left_wrist" }));
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 2 / 3");
 });

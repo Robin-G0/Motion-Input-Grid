@@ -1,10 +1,14 @@
 // Camera onboarding uses small, cancellable hints. It never starts the camera.
 export class GestureGuide {
-    constructor(scrollTip, slideTip, slide, sections) {
+    constructor(scrollTip, slideTip, slide, sections, onDirection = () => {}) {
         this.scrollTip = scrollTip;
         this.slideTip = slideTip;
         this.slide = slide;
         this.sections = sections;
+        this.onDirection = onDirection;
+        this.hintsPaused = false;
+        this.focus = null;
+        this.swipeCompleted = false;
         this.motionPreference = matchMedia("(prefers-reduced-motion: reduce)");
         this.handsVisible = false;
         this.active = false;
@@ -19,21 +23,43 @@ export class GestureGuide {
         for (const event of ["wheel", "touchstart", "pointerdown", "keydown"]) {
             window.addEventListener(event, () => this.cancelNudge(), { passive: true });
         }
-        this.observer = new IntersectionObserver(entries => {
-            if (this.active && entries.some(entry => entry.isIntersecting)) this.showSlides();
-        }, { threshold: .25 });
-        this.observer.observe(slide);
+        window.addEventListener("scroll", () => this.updateFocus(), { passive: true });
+        window.addEventListener("resize", () => this.updateFocus(), { passive: true });
+    }
+
+    focusedSection() {
+        return this.sections.findIndex(section => {
+            if (section.hidden) return false;
+            const bounds = section.getBoundingClientRect();
+            return bounds.top <= innerHeight / 2 && bounds.bottom > innerHeight / 2;
+        });
+    }
+
+    updateFocus() {
+        if (!this.active) return;
+        const focus = this.focusedSection();
+        if (focus !== this.focus) {
+            this.focus = focus;
+            this.swipeCompleted = false;
+            if (focus !== 0) this.cancelNudge();
+            if (focus !== 1) this.animation?.cancel();
+        }
+        if (focus === 1 && !this.hintsPaused) this.showSlides();
+        this.scrollTip.hidden = this.hintsPaused || (focus !== 0 && focus !== 3);
+        this.slideTip.hidden = this.hintsPaused || focus !== 1 || this.swipeCompleted;
+        const direction = focus === 3 ? "down" : "up";
+        this.scrollTip.dataset.direction = direction;
+        this.onDirection(direction);
     }
 
     start() {
         this.stop();
         this.active = true;
         this.entered = false;
-        this.scrollTip.hidden = false;
-        const bounds = this.slide.getBoundingClientRect();
-        if (bounds.top < innerHeight && bounds.bottom > 0) {
-            this.showSlides();
-        } else {
+        this.hintsPaused = false;
+        this.focus = null;
+        this.updateFocus();
+        if (this.focus === 0) {
             this.timer = setTimeout(() => this.nudgeScroll(), 350);
         }
     }
@@ -41,7 +67,8 @@ export class GestureGuide {
     setHandsVisible(visible) {
         this.handsVisible = visible;
         if (!visible) this.cancelNudge(true);
-        else if (this.active && !this.entered && this.timer === null && this.frame === null) {
+        else if (this.active && !this.hintsPaused && this.focus === 0
+            && !this.entered && this.timer === null && this.frame === null) {
             this.timer = setTimeout(() => this.nudgeScroll(), 5000);
         }
     }
@@ -58,7 +85,8 @@ export class GestureGuide {
 
     nudgeScroll() {
         this.timer = null;
-        if (!this.active || this.entered || !this.handsVisible || this.motionPreference.matches || document.hidden) return;
+        if (!this.active || this.hintsPaused || this.focusedSection() !== 0
+            || this.entered || !this.handsVisible || this.motionPreference.matches || document.hidden) return;
         this.timer = setTimeout(() => this.nudgeScroll(), 5000);
         this.origin = window.scrollY;
         const start = performance.now();
@@ -89,21 +117,21 @@ export class GestureGuide {
             Math.abs(position - scrollY) < Math.abs(positions[nearest] - scrollY) ? index : nearest, 0);
         const next = Math.max(0, Math.min(sections.length - 1, current + direction));
         if (next === current) return false;
-        if (next === 1) this.showSlides();
-        this.scrollTip.hidden = next !== 0 && next !== 3;
-        this.slideTip.hidden = next !== 1;
         window.scrollTo({
             top: positions[next],
             behavior: this.motionPreference.matches ? "instant" : "smooth"
         });
+        this.updateFocus();
         return true;
     }
 
     resume() {
         this.active = true;
+        this.updateFocus();
     }
 
     pauseHints() {
+        this.hintsPaused = true;
         this.cancelNudge(true);
         this.animation?.cancel();
         this.entered = true;
@@ -127,6 +155,7 @@ export class GestureGuide {
     }
 
     completeSwipe() {
+        this.swipeCompleted = true;
         this.slideTip.hidden = true;
         this.animation?.cancel();
     }

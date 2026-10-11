@@ -32,7 +32,6 @@ export class Assistance {
         this.next = root.querySelector("[data-assistance-next]");
         this.next.addEventListener("click", () => this.advance());
         root.querySelector("[data-assistance-close]").addEventListener("click", () => this.close());
-        root.querySelector("[data-assistance-stop]").addEventListener("click", () => options.stopCamera());
         window.addEventListener("scroll", () => this.followViewport(), { passive: true });
     }
 
@@ -83,17 +82,17 @@ export class Assistance {
         this.root.querySelector("[data-assistance-title]").textContent = this.text.title;
         this.setMessage(this.text[this.step] ?? "");
         this.renderHint(performance.now());
-        this.root.querySelector("[data-assistance-close]").textContent = this.text.close;
+        const close = this.root.querySelector("[data-assistance-close]");
+        close.textContent = this.text.close;
+        close.hidden = this.step === "finale";
         const gestureStep = this.practice || Object.hasOwn(navigation, this.step) || ["aim", "recover"].includes(this.step);
         this.next.textContent = this.step === "privacy" ? this.text.activate
+            : this.step === "finale" ? this.text.finish
             : this.step === "cameraError" ? this.text.retry
             : gestureStep ? this.text.skip : this.text.next;
         this.next.hidden = this.step === "presence";
-        this.next.disabled = this.options.locked() || this.busy;
+        this.next.disabled = (this.step !== "finale" && this.options.locked()) || this.busy;
         this.root.querySelector("[data-assistance-target]").hidden = !["aim", "recover"].includes(this.step);
-        this.root.querySelector("[data-assistance-secondary]").hidden = this.step !== "finale";
-        this.root.querySelector("[data-assistance-stop]").textContent = this.text.stop;
-        this.root.querySelector("[data-assistance-github]").textContent = this.text.github;
     }
 
     setMessage(text) {
@@ -103,6 +102,7 @@ export class Assistance {
     }
 
     async advance() {
+        if (this.step === "finale") { this.close(); return; }
         if (this.options.locked() || this.busy) return;
         if (["privacy", "cameraError"].includes(this.step)) {
             await this.activateCamera();

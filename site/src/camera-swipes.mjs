@@ -19,9 +19,10 @@ export class CameraSwipes {
         this.readyHands = new Map();
     }
 
-    isArmed(time, session) {
+    isArmed(time, session, sourceLandmark = null) {
         for (const [landmark, hand] of this.readyHands) {
-            if (session && !session.coordinate(landmark)) continue;
+            if (sourceLandmark !== null && landmark !== sourceLandmark) continue;
+            if (session && !validWrist(session.coordinate(landmark))) continue;
             if (time - hand.lastTime <= this.gap && time - hand.startTime <= this.duration) return true;
         }
         return false;
