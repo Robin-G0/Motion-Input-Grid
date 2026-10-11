@@ -4,29 +4,64 @@ import { AwaySky } from "../src/away-sky.mjs";
 
 function recordingSky() {
     const calls = [];
+    const paints = [];
     const context = {};
     for (const name of ["beginPath", "arc", "fill", "fillRect", "moveTo", "lineTo",
         "bezierCurveTo", "closePath", "stroke", "save", "rect", "clip", "restore"]) {
-        context[name] = (...args) => calls.push({ name, args });
+        context[name] = (...args) => {
+            calls.push({ name, args });
+            if (name === "fillRect") paints.push({ color: context.fillStyle, alpha: context.globalAlpha });
+        };
     }
     const sky = new AwaySky({ getContext: () => context });
     sky.width = 1280;
     sky.height = 720;
-    return { sky, calls };
+    return { sky, calls, paints };
 }
 
-test("sun and moon follow a circular arc above the horizon", () => {
+test("sun and moon follow a circular arc and set before switching", () => {
     const { sky, calls } = recordingSky();
     for (const night of [false, true]) {
         for (const progress of [0, .25, .5, .75, 1]) {
             calls.length = 0;
             sky.drawCelestial(night, progress);
             const [x, y] = calls.find(call => call.name === "arc").args;
-            const distance = Math.hypot(x - sky.width * .5, y - sky.height * .87);
+            const distance = Math.hypot(x - sky.width * .5, y - sky.height * .98);
             assert.ok(Math.abs(distance - Math.min(sky.width * .42, sky.height * .68)) < 1e-9);
-            assert.ok(y <= sky.height * .87 + 1e-9);
+            if (progress === 0 || progress === 1) assert.ok(y > sky.height);
+            else assert.ok(y < sky.height * .98);
         }
     }
+});
+
+test("weather changes the sky and storms stay dark even during the day", () => {
+    const { sky, paints } = recordingSky();
+    const scene = { age: 1000, season: "summer", night: false, progress: .5, celebration: null };
+    const background = weather => {
+        paints.length = 0;
+        sky.draw({ ...scene, weather }, false);
+        return paints[0].color;
+    };
+    assert.notEqual(background("clear"), background("rain"));
+    assert.notEqual(background("rain"), background("snow"));
+    assert.equal(background("storm"), "rgb(37, 41, 48)");
+    paints.length = 0;
+    sky.draw({ ...scene, weather: "storm", night: true }, false);
+    assert.equal(paints[0].color, "rgb(37, 41, 48)");
+});
+
+test("storm flashes are brief, spaced apart and disabled with reduced motion", () => {
+    const { sky, paints } = recordingSky();
+    for (const age of [0, 3199, 3380, 7000]) {
+        sky.drawStormFlash({ weather: "storm", age }, false);
+    }
+    assert.equal(paints.length, 0);
+    sky.drawStormFlash({ weather: "storm", age: 3290 }, true);
+    assert.equal(paints.length, 0);
+    sky.drawStormFlash({ weather: "storm", age: 3290 }, false);
+    assert.deepEqual(paints, [{ color: "#fff", alpha: .4 }]);
+    sky.drawStormFlash({ weather: "rain", age: 3290 }, false);
+    assert.equal(paints.length, 1);
 });
 
 test("weather drifts horizontally and stays still with reduced motion", () => {

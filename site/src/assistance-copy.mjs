@@ -1,6 +1,6 @@
 export const assistanceCopy = {
     fr: {
-        title: "Votre guide MIG",
+        title: "Aide",
         next: "Continuer",
         finish: "Finir le tutoriel",
         close: "Fermer le guide",
@@ -27,7 +27,7 @@ export const assistanceCopy = {
         cameraError: "Impossible d'accéder à la caméra."
     },
     en: {
-        title: "Your MIG guide",
+        title: "Help",
         next: "Continue",
         finish: "Finish the tutorial",
         close: "Close the guide",

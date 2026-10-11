@@ -5,6 +5,22 @@ const palettes = {
     winter: ["#cddde9", "#a5b9ca"]
 };
 
+const weatherSkies = {
+    rain: ["#182532", "#7b91a3"],
+    snow: ["#1b2939", "#687f99"],
+    storm: ["#252930", "#252930"]
+};
+
+function skyColor(scene, daylight) {
+    const [night, day] = weatherSkies[scene.weather] ?? ["#101827", palettes[scene.season][0]];
+    const channels = [1, 3, 5].map(offset => {
+        const dark = parseInt(night.slice(offset, offset + 2), 16);
+        const light = parseInt(day.slice(offset, offset + 2), 16);
+        return Math.round(dark + (light - dark) * daylight);
+    });
+    return `rgb(${channels.join(", ")})`;
+}
+
 function fraction(index, seed) {
     const value = Math.sin(index * 127.1 + seed * 311.7) * 43758.5453;
     return value - Math.floor(value);
@@ -57,16 +73,17 @@ export class AwaySky {
         const colors = palettes[scene.season];
         const progress = reducedMotion ? .4 : scene.progress;
         const daylight = scene.night ? 0 : Math.sin(Math.PI * scene.progress);
+        const background = skyColor(scene, daylight);
         context.globalAlpha = 1;
-        context.fillStyle = "#101827";
+        context.fillStyle = background;
         context.fillRect(0, 0, this.width, this.height);
-        context.globalAlpha = daylight;
-        context.fillStyle = colors[0];
-        context.fillRect(0, 0, this.width, this.height);
-        this.drawStars(scene, daylight, reducedMotion);
-        this.drawCelestial(scene.night, progress);
+        if (scene.weather !== "storm") {
+            this.drawStars(scene, daylight, reducedMotion);
+            this.drawCelestial(scene.night, progress, background);
+        }
         this.drawWeather(scene, daylight, reducedMotion);
-        this.drawHorizon(colors[1], daylight);
+        this.drawHorizon(colors[1], scene.weather === "storm" ? 0 : daylight);
+        this.drawStormFlash(scene, reducedMotion);
         if (elapsedScene.fade > 0) {
             context.globalAlpha = elapsedScene.fade;
             context.fillStyle = "#000";
@@ -86,16 +103,16 @@ export class AwaySky {
         }
     }
 
-    drawCelestial(night, progress) {
+    drawCelestial(night, progress, background = "#101827") {
         const context = this.context;
         const orbit = Math.min(this.width * .42, this.height * .68);
-        const angle = Math.PI * (1 + progress);
+        const angle = Math.PI * (1 + progress) + .22 * (2 * progress - 1);
         const x = this.width * .5 + Math.cos(angle) * orbit;
-        const y = this.height * .87 + Math.sin(angle) * orbit;
+        const y = this.height * .98 + Math.sin(angle) * orbit;
         const radius = Math.max(28, Math.min(52, this.width * .045));
         context.globalAlpha = 1;
         this.circle(x, y, radius, night ? "#f2eddb" : "#f5c967");
-        if (night) this.circle(x + radius * .4, y - radius * .3, radius * .87, "#101827");
+        if (night) this.circle(x + radius * .4, y - radius * .3, radius * .87, background);
     }
 
     drawHorizon(color, daylight) {
@@ -119,7 +136,7 @@ export class AwaySky {
         const size = Math.max(20, Math.min(38, this.width * .04));
         const margin = Math.max(size * 2, Math.min(this.width * .25, this.height * .3));
         const drift = Math.max(0, this.width / 2 - margin) * .8;
-        const wind = reducedMotion ? 0 : Math.sin(scene.age / 12000) * drift;
+        const wind = reducedMotion ? 0 : Math.sin(scene.age / 6000) * drift;
         const x = this.width * .5 + wind;
         return { x, y: this.height * .27, size };
     }
@@ -133,34 +150,24 @@ export class AwaySky {
     drawWeather(scene, daylight, reducedMotion) {
         const context = this.context;
         const cloud = this.weatherPosition(scene, reducedMotion);
-        context.globalAlpha = .45 + daylight * .4;
+        context.globalAlpha = 1;
         if (["rain", "storm", "snow"].includes(scene.weather)) this.drawCloud(cloud);
         if (scene.weather === "rainbow") {
-            context.globalAlpha = daylight * .65;
+            context.globalAlpha = .9;
             context.lineWidth = 7;
             const x = cloud.x;
             const y = this.height * .98;
             const radius = Math.max(48, Math.min(this.width * .25, this.height * .3));
-            for (const [index, color] of ["#ed9ea6", "#f3c779", "#e8df97", "#a9d0b6", "#9dbfd6", "#c0abd1"].entries()) {
+            for (const [index, color] of ["#ee657f", "#f5a653", "#f6da65", "#62c795", "#65acec", "#b28be0"].entries()) {
                 context.strokeStyle = color;
                 context.beginPath();
                 context.arc(x, y, radius - index * 8, Math.PI, 2 * Math.PI);
                 context.stroke();
             }
         }
-        if (scene.weather === "storm") {
-            const x = cloud.x;
-            const y = cloud.y + cloud.size;
-            context.fillStyle = "#f5d287";
-            context.beginPath();
-            for (const [index, point] of [[0, 0], [-12, 28], [2, 25], [-5, 48], [21, 15], [7, 18]].entries()) {
-                context[index ? "lineTo" : "moveTo"](x + point[0], y + point[1]);
-            }
-            context.fill();
-        }
         if (!["rain", "storm", "snow"].includes(scene.weather)) return;
-        context.strokeStyle = "#c2d7e4";
-        context.lineWidth = 1.5;
+        context.strokeStyle = scene.weather === "storm" || daylight < .4 ? "#c9e7ff" : "#284c68";
+        context.lineWidth = 2.5;
         const top = cloud.y + cloud.size;
         const height = Math.max(0, this.height - top);
         context.save();
@@ -169,10 +176,10 @@ export class AwaySky {
         context.clip();
         for (const drop of this.drops) {
             const x = cloud.x + (drop.x - .5) * cloud.size * 3;
-            const speed = scene.weather === "snow" ? 16000 : 2600;
+            const speed = scene.weather === "snow" ? 5500 : 1400;
             const fall = reducedMotion ? 0 : scene.age / speed;
             const y = top + ((drop.y + fall) % 1) * height;
-            if (scene.weather === "snow") this.circle(x, y, 2.5, "#f5f6fa");
+            if (scene.weather === "snow") this.circle(x, y, 3, "#fff");
             else {
                 context.beginPath();
                 context.moveTo(x, y);
@@ -181,6 +188,16 @@ export class AwaySky {
             }
         }
         context.restore();
+    }
+
+    drawStormFlash(scene, reducedMotion) {
+        if (scene.weather !== "storm" || reducedMotion) return;
+        const pulse = scene.age % 4800;
+        if (pulse < 3200 || pulse >= 3380) return;
+        const context = this.context;
+        context.globalAlpha = .4 * Math.sin((pulse - 3200) / 180 * Math.PI);
+        context.fillStyle = "#fff";
+        context.fillRect(0, 0, this.width, this.height);
     }
 
     drawConfetti(elapsed, reducedMotion) {

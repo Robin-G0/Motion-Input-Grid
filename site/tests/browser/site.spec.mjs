@@ -1163,6 +1163,10 @@ test("assistance teaches one-hand gestures without moving the page, then guides 
     await page.locator("#start-assisted").click();
     const assistant = page.locator("#assistance");
     const next = assistant.locator("[data-assistance-next]");
+    await expect(assistant.locator("[data-assistance-title]")).toHaveText("Help");
+    await page.getByRole("button", { name: "FR", exact: true }).click();
+    await expect(assistant.locator("[data-assistance-title]")).toHaveText("Aide");
+    await page.getByRole("button", { name: "EN", exact: true }).click();
     await expect(assistant).toHaveAttribute("data-step", "privacy");
     await expect(assistant).toContainText("Nothing is recorded");
     await expect(next).toHaveText("Activate the camera");
