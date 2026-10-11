@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { AwaySky } from "../src/away-sky.mjs";
+import { AwaySky } from "../../../src/easter-egg/away-sky.mjs";
 
 function recordingSky() {
     const calls = [];

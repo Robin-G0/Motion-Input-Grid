@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { Assistance } from "../src/assistance.mjs";
+import { Assistance } from "../../../src/assistance/assistance.mjs";
 
 function guide(step) {
     const instance = Object.create(Assistance.prototype);

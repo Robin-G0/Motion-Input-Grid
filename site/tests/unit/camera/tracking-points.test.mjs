@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { handPosition, focusedWrist, bothHandsVisible, bothHandsCentred, handsAtTargets } from "../src/hand-focus.mjs";
-import { bodyPresent } from "../src/body-presence.mjs";
-import { CameraSwipes } from "../src/camera-swipes.mjs";
-import { cameraFrame } from "../src/camera-framing.mjs";
+import { handPosition, focusedWrist, bothHandsVisible, bothHandsCentred, handsAtTargets } from "../../../src/camera/hand-focus.mjs";
+import { bodyPresent } from "../../../src/camera/body-presence.mjs";
+import { CameraSwipes } from "../../../src/camera/camera-swipes.mjs";
+import { cameraFrame } from "../../../src/camera/camera-framing.mjs";
 
 function session(points) {
     return { coordinate: index => points[index] ?? null };

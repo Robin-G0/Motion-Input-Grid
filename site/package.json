@@ -9,7 +9,7 @@
     "scripts": {
         "build": "node scripts/build.mjs",
         "preview": "node scripts/serve.mjs",
-        "test": "node --test tests/*.test.mjs",
+        "test": "node scripts/test.mjs",
         "test:browser": "playwright test"
     },
     "dependencies": {

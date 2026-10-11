@@ -1,22 +1,23 @@
-import { Assistance } from "./assistance.mjs";
-import { AwayEasterEgg } from "./away-easter-egg.mjs";
-import { ThemeToggle } from "./theme.mjs";
-import { NavigationInputGuard } from "./navigation-inputs.mjs";
-import { CameraFraming } from "./camera-framing.mjs";
-import { BoundaryFeedback } from "./boundary-feedback.mjs";
-import { SlideRibbon } from "./slide-ribbon.mjs";
-import { NavigationCooldown } from "./navigation-cooldown.mjs";
-import { ScreenTransition } from "./screen-transition.mjs";
-import { GestureGuide } from "./gesture-guide.mjs";
-import { HistoryIllustration } from "./history.mjs";
-import { CameraSwipes } from "./camera-swipes.mjs";
+import { Assistance } from "./assistance/assistance.mjs";
+import { AwayEasterEgg } from "./easter-egg/away-easter-egg.mjs";
+import { ThemeToggle } from "./ui/theme.mjs";
+import { NavigationInputGuard } from "./navigation/navigation-inputs.mjs";
+import { SlideInputs } from "./navigation/slide-inputs.mjs";
+import { CameraFraming } from "./camera/camera-framing.mjs";
+import { BoundaryFeedback } from "./navigation/boundary-feedback.mjs";
+import { SlideRibbon } from "./presentation/slide-ribbon.mjs";
+import { NavigationCooldown } from "./navigation/navigation-cooldown.mjs";
+import { ScreenTransition } from "./ui/screen-transition.mjs";
+import { GestureGuide } from "./navigation/gesture-guide.mjs";
+import { HistoryIllustration } from "./presentation/history.mjs";
+import { CameraSwipes } from "./camera/camera-swipes.mjs";
 import { settings } from "./settings.mjs";
-import { translations, phoneTranslations } from "./translations.mjs";
-import { SlideController } from "./slides.mjs";
-import { PresenceMonitor } from "./presence.mjs";
-import { bodyPresent } from "./body-presence.mjs";
-import { centralFrameRadius } from "./hand-focus.mjs";
-import { cameraError, createCameraSession } from "./camera.mjs";
+import { translations, phoneTranslations } from "./ui/translations.mjs";
+import { SlideController } from "./presentation/slides.mjs";
+import { PresenceMonitor } from "./camera/presence.mjs";
+import { bodyPresent } from "./camera/body-presence.mjs";
+import { centralFrameRadius } from "./camera/hand-focus.mjs";
+import { cameraError, createCameraSession } from "./camera/camera.mjs";
 
 const element = id => document.getElementById(id);
 const phone = matchMedia("(pointer: coarse)").matches && Math.min(innerWidth, innerHeight) <= 800;
@@ -57,11 +58,12 @@ let presenceTimer = null;
 let debugPanel = null;
 let debugWanted = false;
 let debugLoading = null;
+let slideInputs = null;
 
 async function toggleDebug() {
     debugWanted = !debugWanted;
     if (!debugPanel && debugWanted) {
-        debugLoading ??= import("./debug-panel.mjs").then(({ DebugPanel }) => {
+        debugLoading ??= import("./diagnostics/debug-panel.mjs").then(({ DebugPanel }) => {
             debugPanel = new DebugPanel(element("camera-video"), toggleDebug);
         });
         await debugLoading;
@@ -98,8 +100,7 @@ const cooldown = new NavigationCooldown(element("navigation-cooldown"), () => {
     if (locked) {
         cameraSwipes.reset();
         session?.tracker?.restart?.();
-        swipeStart = null;
-        wheelDistance = 0;
+        slideInputs?.reset();
     }
 }, () => {
     assistance.followViewport();
@@ -518,56 +519,16 @@ function moveSlide(direction) {
     renderSlide();
 }
 
-element("previous-slide").addEventListener("click", () => moveSlide(-1));
-element("next-slide").addEventListener("click", () => moveSlide(1));
-element("slide").addEventListener("keydown", event => {
-    if (event.target !== element("slide")) return;
-    if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
-        event.preventDefault();
-        moveSlide(event.key === "ArrowRight" ? 1 : -1);
-    }
-});
-// A horizontal trackpad scroll to the right advances the presentation.
-let wheelDistance = 0;
-let lastWheelAt = -Infinity;
-let lastWheelMoveAt = -Infinity;
-element("slide").addEventListener("wheel", event => {
-    if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
-    event.preventDefault();
-    const time = performance.now();
-    if (time - lastWheelAt > 250 || Math.sign(wheelDistance) !== Math.sign(event.deltaX)) {
-        wheelDistance = 0;
-    }
-    lastWheelAt = time;
-    const scale = event.deltaMode === 1 ? 20 : event.deltaMode === 2 ? innerWidth : 1;
-    wheelDistance += event.deltaX * scale;
-    if (Math.abs(wheelDistance) < 60) return;
-    if (!cooldown.locked && time - lastWheelMoveAt >= settings.slideDelay) {
-        lastWheelMoveAt = time;
-        moveSlide(wheelDistance > 0 ? 1 : -1);
+slideInputs = new SlideInputs(element("slide"), element("previous-slide"), element("next-slide"), {
+    locked: () => cooldown.locked,
+    move: moveSlide,
+    delay: settings.slideDelay,
+    wheelComplete: () => {
         cooldown.start(false, ribbon.animation);
         guide.completeSwipe();
     }
-    wheelDistance = 0;
-}, { passive: false });
+});
 
-// Pointer events support touch without interfering with vertical page scrolling.
-let swipeStart = null;
-element("slide").addEventListener("pointerdown", event => {
-    if (!cooldown.locked && event.pointerType === "touch" && !event.target.closest(".history-illustration")) {
-        swipeStart = { id: event.pointerId, x: event.clientX };
-    }
-});
-element("slide").addEventListener("pointerup", event => {
-    if (!swipeStart || event.pointerId !== swipeStart.id) return;
-    if (cooldown.locked) { swipeStart = null; return; }
-    const distance = event.clientX - swipeStart.x;
-    if (Math.abs(distance) > 60) {
-        moveSlide(distance < 0 ? 1 : -1);
-    }
-    swipeStart = null;
-});
-element("slide").addEventListener("pointercancel", () => { swipeStart = null; });
 document.addEventListener("keydown", event => {
     if (event.key.toLowerCase() === "c" && !event.repeat && !event.ctrlKey && !event.altKey && !event.metaKey
         && !event.target.closest("input, textarea, select, [contenteditable]")) {
@@ -614,8 +575,4 @@ window.addEventListener("wheel", event => {
 
 
 // The guard drops partial wheel and touch gestures as well as held keys.
-new NavigationInputGuard(() => cooldown.locked, () => {
-    wheelDistance = 0;
-    lastWheelAt = -Infinity;
-    swipeStart = null;
-});
+new NavigationInputGuard(() => cooldown.locked, () => slideInputs.reset());

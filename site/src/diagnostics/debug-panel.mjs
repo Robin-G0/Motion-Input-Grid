@@ -1,4 +1,4 @@
-import { validWrist } from "./hand-focus.mjs";
+import { validWrist } from "../camera/hand-focus.mjs";
 import { drawDebugOverlay } from "./debug-overlay.mjs";
 
 const copy = {

@@ -85,7 +85,6 @@ h2 { font-size: clamp(32px, 4.1vw, 68px); line-height: 1.1; letter-spacing: -.04
 video, canvas { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); position: absolute; inset: 0; }
 video:not([src]) { background: transparent; }
 .preview-decoration { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; }
-.preview-decoration .hand-pair { position: static; transform: none; width: 160px; height: 90px; fill: none; stroke: #ffd878; stroke-width: 3; }
 .camera-card.is-running .preview-decoration { display: none; }
 #camera-status { position: absolute; top: 8px; left: 8px; right: 8px; z-index: 3; font-size: 12px; line-height: 1.5; margin: 0; padding: 8px; text-align: center; color: white; background: #142333cc; border-radius: 8px; }
 .slideshow-section { border-top: 1px solid var(--border); min-height: 100svh; }

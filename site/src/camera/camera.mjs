@@ -1,5 +1,5 @@
 import { gestureProfile } from "./gestures.mjs";
-import { settings } from "./settings.mjs";
+import { settings } from "../settings.mjs";
 
 export async function configurePose(models) {
     try {
@@ -31,8 +31,8 @@ async function cameraDependencies(assetBase) {
 
 // Only this file knows about MIG. The rest of the page handles ordinary UI state.
 export async function createCameraSession(onAction, onFrame) {
-    const { MIGSession } = await import("../mig/session.mjs");
-    const assetBase = new URL("../mig/", import.meta.url).href;
+    const { MIGSession } = await import("../../mig/session.mjs");
+    const assetBase = new URL("../../mig/", import.meta.url).href;
     const session = new MIGSession({
         assetBase,
         dependencies: await cameraDependencies(assetBase),

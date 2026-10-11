@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { AimMarker } from "../src/aim-marker.mjs";
-import { assistanceCopy } from "../src/assistance-copy.mjs";
+import { AimMarker } from "../../../src/assistance/aim-marker.mjs";
+import { assistanceCopy } from "../../../src/assistance/assistance-copy.mjs";
 
 test("the visual marker smooths movement without changing raw observations", () => {
     const marker = new AimMarker();

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import createMIG from "../dist/mig/mig.mjs";
-import { gestureProfile } from "../src/gestures.mjs";
+import createMIG from "../../dist/mig/mig.mjs";
+import { gestureProfile } from "../../src/camera/gestures.mjs";
 
 test("the published WASM engine recognizes both swipe directions with either anatomical hand", async () => {
     const module = await createMIG();

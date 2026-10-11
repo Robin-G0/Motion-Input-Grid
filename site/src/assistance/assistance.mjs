@@ -1,6 +1,6 @@
 import { assistanceCopy, phoneAssistanceCopy } from "./assistance-copy.mjs";
 import { AimMarker } from "./aim-marker.mjs";
-import { handsVisible, handsAtTargets, reliableWrist, primaryWrist } from "./hand-focus.mjs";
+import { handsVisible, handsAtTargets, reliableWrist, primaryWrist } from "../camera/hand-focus.mjs";
 
 const exercises = { right: "previous_slide", left: "next_slide", down: "scroll_previous", up: "scroll_presentation" };
 const successors = { left: "down", down: "up", up: "scroll" };

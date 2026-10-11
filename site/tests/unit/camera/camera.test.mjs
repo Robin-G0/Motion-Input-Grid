@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { configurePose } from "../src/camera.mjs";
+import { configurePose } from "../../../src/camera/camera.mjs";
 
 test("presence confidence configures the model itself before video processing", async () => {
     let configured;

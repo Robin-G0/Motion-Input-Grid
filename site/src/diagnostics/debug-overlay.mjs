@@ -1,4 +1,4 @@
-import { centralFrameRadius } from "./hand-focus.mjs";
+import { centralFrameRadius } from "../camera/hand-focus.mjs";
 
 const handColors = ["#65f2b0", "#77c7ff"];
 

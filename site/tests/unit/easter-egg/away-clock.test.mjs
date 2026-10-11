@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { awayScene } from "../src/away-clock.mjs";
+import { awayScene } from "../../../src/easter-egg/away-clock.mjs";
 
 test("the sky waits thirty seconds and rewards after ninety seconds", () => {
     assert.equal(awayScene(29999), null);
