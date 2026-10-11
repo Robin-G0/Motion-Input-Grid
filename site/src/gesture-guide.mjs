@@ -103,6 +103,14 @@ export class GestureGuide {
         this.active = true;
     }
 
+    pauseHints() {
+        this.cancelNudge(true);
+        this.animation?.cancel();
+        this.entered = true;
+        this.scrollTip.hidden = true;
+        this.slideTip.hidden = true;
+    }
+
     showSlides() {
         if (!this.active || this.entered) return;
         this.entered = true;

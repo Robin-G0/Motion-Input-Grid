@@ -38,15 +38,12 @@ test("tab suspension does not count as a departure", () => {
     assert.equal(presence.update(false, 10000), "present");
 });
 
-test("carousel stops at its edges and limits gestures without blocking manual navigation", () => {
+test("carousel wraps in both directions and limits gestures without blocking manual navigation", () => {
     const slides = new SlideController(3);
-    assert.equal(slides.move(-1), 0);
-    assert.equal(slides.move(1), 1);
-    assert.equal(slides.move(1), 2);
-    assert.equal(slides.move(1), 2);
-    assert.equal(slides.gesture("next_slide", -1000), false);
-    slides.move(-1);
-    slides.move(-1);
+    assert.equal(slides.move(-1), 2);
+    assert.equal(slides.direction, -1);
+    assert.equal(slides.move(1), 0);
+    assert.equal(slides.direction, 1);
     assert.equal(slides.gesture("next_slide", 0), true);
     assert.equal(slides.gesture("next_slide", 100), false);
     assert.equal(slides.index, 1);
@@ -120,12 +117,13 @@ test("raising either hand scrolls forward; quick reversals and tracking gaps do 
     }
 });
 
-test("returning from the second slide changes the first slide, without linking the last slide to the first", () => {
+test("returning from the second slide changes the first slide; wrapping alone does not", () => {
     const slides = new SlideController(3);
     assert.equal(slides.returnedToFirst, false);
     slides.move(-1);
-    assert.equal(slides.index, 0);
+    assert.equal(slides.index, 2);
     assert.equal(slides.returnedToFirst, false);
+    slides.move(1);
     slides.gesture("next_slide", 0);
     slides.gesture("previous_slide", 900);
     assert.equal(slides.index, 0);

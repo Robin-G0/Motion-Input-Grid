@@ -16,6 +16,8 @@
     --border: #303848;
     --diagram-first: #85e5e3;
     --diagram-second: #e6c29e;
+    --prism: linear-gradient(110deg, #70faff, #c698ff, #ff91d8, #ffe09c, #70faff);
+    --button-hover: #273345;
     font-family: Inter, "Segoe UI", Arial, sans-serif;
     color: var(--ink);
     background: var(--paper);
@@ -75,7 +77,7 @@ video:not([src]) { background: transparent; }
 .slide-number { position: absolute; top: -12px; right: 0; font-size: clamp(26px, 3vw, 44px); font-weight: 850; }
 .slide-controls { display: flex; justify-content: center; align-items: center; gap: 24px; margin-top: 22px; }
 .arrow-button { border: 1px solid var(--border); color: var(--ink); background: transparent; border-radius: 50%; width: 48px; height: 48px; font-size: 22px; }
-.arrow-button:hover { background: #273345; }
+.arrow-button:hover { background: var(--button-hover); }
 #slide-counter { font-size: 13px; min-width: 78px; text-align: center; }
 .gesture-instructions { display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; font-size: 14px; margin-top: 24px; }
 .manual-hint { color: var(--muted); font-size: 12px; line-height: 1.6; }
@@ -132,7 +134,7 @@ body.is-away { background: #000; }
 @keyframes prism-shine { 0%, 20% { transform: translateX(-50%); } 80%, 100% { transform: translateX(50%); } }
 @keyframes hand-cover-demo { from { transform: scale(.75); } to { transform: scale(1.1); } }
 @keyframes camera-arrive { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
-.prismatic-text { color: #cdbdff; background: linear-gradient(110deg, #70faff, #c698ff, #ff91d8, #ffe09c, #70faff); background-size: 250% 100%; background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 8px #bd8fff66); }
+.prismatic-text { color: #cdbdff; background: var(--prism); background-size: 250% 100%; background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 8px #bd8fff66); }
 .grid-outcome { height: 60px; margin: 0; display: flex; align-items: center; justify-content: center; font-size: clamp(24px, 3vw, 36px); font-weight: 800; text-align: center; line-height: 1.25; }
 .grid-outcome[data-result="gridTriggered"] { color: var(--detected-ink); text-shadow: 0 0 22px #38df7870; }
 .grid-outcome[data-result="gridCancelled"] { color: var(--cancelled-ink); text-shadow: 0 0 22px #ff595970; }
@@ -277,9 +279,9 @@ body.is-away { background: #000; }
         --diagram-second: #985a19;
         --detected-ink: #146234;
         --cancelled-ink: #a32726;
+        --prism: linear-gradient(110deg, #056574, #693b95, #962756, #806006, #056574);
+        --button-hover: #e2e8f2;
     }
-    .prismatic-text { background-image: linear-gradient(110deg, #056574, #693b95, #962756, #806006, #056574); }
-    .arrow-button:hover { background: #e2e8f2; }
 }
 
 /* The full video stays visible, so guidance agrees with tracked coordinates. */
@@ -293,14 +295,25 @@ body.is-away { background: #000; }
 @keyframes framing-valid { from { box-shadow: inset 0 0 0 5px #38f581, 0 0 24px #38f581aa; } to { box-shadow: inset 0 0 0 0 transparent, 0 0 0 transparent; } }
 .framing-confirmed { animation: framing-valid .9s ease-out; }
 
-/* A horizontal strip with a glimpse of the adjacent panels. */
-.carousel-window { overflow: hidden; width: calc(100% + 48px); margin-left: -24px; padding-inline: 52px; }
-.carousel-track { display: grid; grid-template-columns: repeat(3, 100%); gap: 20px; transform: translateX(calc(-100% - 20px)); }
-.carousel-track .slide { border-radius: 0; grid-template-columns: .9fr 1.1fr; padding: 24px; }
-.slide-neighbour { pointer-events: none; }
+/* Three panels orbit around the active slide without duplicating live controls. */
+.carousel-window { overflow: hidden; width: 100%; perspective: 1100px; padding-block: 24px; }
+.carousel-track {
+    --carousel-left: translateX(-68%) translateZ(-150px) rotateY(35deg) scale(.5);
+    --carousel-centre: translateX(0) translateZ(0) rotateY(0) scale(1);
+    --carousel-right: translateX(68%) translateZ(-150px) rotateY(-35deg) scale(.5);
+    --carousel-back: translateX(0) translateZ(-320px) rotateY(0) scale(.35);
+    position: relative;
+    height: clamp(420px, 56svh, 740px);
+    transform-style: preserve-3d;
+}
+.carousel-track .slide { position: absolute; top: 0; left: 21%; width: 58%; border-radius: 24px; grid-template-columns: .9fr 1.1fr; padding: 24px; }
+.carousel-track [data-position="centre"] { transform: var(--carousel-centre); }
+.carousel-track [data-position="left"] { transform: var(--carousel-left); }
+.carousel-track [data-position="right"] { transform: var(--carousel-right); }
+.slide-neighbour { pointer-events: none; opacity: .7; }
 .history-grid[data-stage="condition"] [data-cell="condition"] { grid-column: 5; }
-.history-grid [data-cell="condition"] { display: grid; place-items: center; padding: 0; font-size: clamp(14px, 2vw, 30px); }
-.history-grid [data-condition-content].is-thumb { display: grid; place-items: center; width: 100%; height: 100%; font-family: system-ui, sans-serif; font-size: 10cqw; line-height: 1; }
+.history-grid [data-cell="condition"] { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); place-items: center; padding: 0; font-size: clamp(14px, 2vw, 30px); }
+.history-grid [data-condition-content].is-thumb { display: grid; place-items: center; width: 100%; height: 100%; min-width: 0; min-height: 0; font-family: system-ui, sans-serif; font-size: 8cqw; line-height: 1; }
 .presence-section { align-items: center; text-align: center; }
 .presence-section .eyebrow { justify-content: center; }
 .presence-section .lead, .presence-section h2 { margin-inline: auto; }
@@ -326,9 +339,15 @@ body.is-away { background: #000; }
 #navigation-edge[data-direction="top"] { background: linear-gradient(#ff5148aa, transparent 25%); }
 #navigation-edge[data-direction="bottom"] { background: linear-gradient(to top, #ff5148aa, transparent 25%); }
 @media (max-width: 800px) {
-    .carousel-track .slide { grid-template-columns: 1fr; padding: 20px; }
-    .carousel-window { width: calc(100% + 24px); margin-left: -12px; padding-inline: 40px; }
+    .carousel-track .slide { grid-template-columns: 1fr; padding: 20px; left: 11%; width: 78%; }
+    .carousel-track { height: 540px; }
     .gesture-instructions { justify-content: center; font-size: 12px; gap: 8px; }
+}
+@media (max-width: 800px) and (max-height: 740px) {
+    .carousel-track { height: 500px; }
+}
+@media (min-width: 801px) and (max-height: 600px) {
+    .carousel-track { height: 280px; }
 }
 @media (prefers-reduced-motion: reduce) {
     .framing-confirmed { animation: none; outline-color: #38f581; }
@@ -367,6 +386,8 @@ body.is-away { background: #000; }
         --diagram-second: #985a19;
         --detected-ink: #146234;
         --cancelled-ink: #a32726;
+        --prism: linear-gradient(110deg, #056574, #693b95, #962756, #806006, #056574);
+        --button-hover: #e2e8f2;
 }
 
 /* Optional assistance keeps the real controls and camera session available. */
@@ -386,11 +407,12 @@ body.is-away { background: #000; }
 #assistance { pointer-events: none; }
 .assistance-shade { position: fixed; inset: 0; z-index: 35; background: #020713b3; }
 .assistance-highlight { position: relative; z-index: 36; box-shadow: 0 0 0 4px #ffd878, 0 0 32px #ffd87866 !important; }
+#presentation.assistance-highlight { box-shadow: none !important; }
 #navigation-cooldown.assistance-highlight { position: fixed; z-index: 40; }
 .assistance-bubble { position: fixed; z-index: 38; bottom: 16px; left: 50%; transform: translateX(-50%); width: min(760px, calc(100% - 32px)); max-height: calc(100svh - 32px); overflow: auto; padding: 20px 28px; border: 2px solid #ffd878; border-radius: 24px; color: var(--ink); background: var(--paper); pointer-events: auto; box-shadow: 0 12px 40px #0005; }
 .assistance-bubble h2 { font-size: 28px; margin: 0 0 10px; }
 .assistance-bubble p { font-size: clamp(18px, 2vw, 24px); line-height: 1.5; margin: 0 0 16px; }
-.assistance-robot { float: right; font-size: 42px; margin-left: 12px; }
+.assistance-cassette { float: right; font-size: 42px; margin-left: 12px; }
 .assistance-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .assistance-target { position: fixed; inset: 0; z-index: 39; }
 .aim-circle { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; border: 5px solid #ffd878; border-radius: 50%; box-shadow: 0 0 0 20px #ffd87825; }

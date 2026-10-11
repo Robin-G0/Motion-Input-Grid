@@ -2,7 +2,7 @@
 
 [English](../../readme.md) | [Français](readme.fr.md)
 
-## 🚀 [Essayez le projet dans votre navigateur avant d'en apprendre plus !](https://robin-g0.github.io/Motion-Input-Grid/?lang=fr) ✨
+## 🚀 [Essayez le projet dans votre navigateur avant d'en apprendre plus !](https://robin-g0.github.io/Motion-Input-Grid/) ✨
 
 > [!NOTE]
 > MIG est en cours de développement et vient de commencer à publier ses premières versions.

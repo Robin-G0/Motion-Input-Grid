@@ -26,11 +26,7 @@ const boundaries = new BoundaryFeedback(element("navigation-edge"));
 const guide = new GestureGuide(element("scroll-gesture-tip"), element("slide-gesture-tip"),
     element("slide"), [element("welcome"), element("presentation"), element("presence-demo"), element("finale")]);
 const screenTransition = new ScreenTransition(element("away-screen"), element("page-content"));
-// README links select a language explicitly; other visits use the browser language.
-const requestedLanguage = new URL(location.href).searchParams.get("lang");
-let language = requestedLanguage === "fr" || requestedLanguage === "en"
-    ? requestedLanguage
-    : navigator.language.startsWith("fr") ? "fr" : "en";
+let language = navigator.language.toLowerCase().startsWith("fr") ? "fr" : "en";
 let session = null;
 let status = "ready";
 let starting = false;
@@ -50,8 +46,8 @@ const cooldown = new NavigationCooldown(element("navigation-cooldown"), () => {
     session?.tracker?.restart?.();
     assistance.render();
 }, locked => {
-    element("previous-slide").disabled = locked || slides.index === 0;
-    element("next-slide").disabled = locked || slides.index === slides.count - 1;
+    element("previous-slide").disabled = locked;
+    element("next-slide").disabled = locked;
     if (locked) {
         swipeStart = null;
         wheelDistance = 0;
@@ -66,7 +62,7 @@ const assistance = new Assistance(element("assistance"), {
     startCamera,
     focusCamera: frameCameraPreview,
     resetGestures: () => { cameraSwipes.reset(); session?.tracker?.restart?.(); },
-    pauseHints: () => guide.stop(),
+    pauseHints: () => guide.pauseHints(),
     resumeHints: () => { if (handScrollReady && session?.state.running) guide.start(); },
     cooldown: () => cooldown.start(),
     showGrid: () => { slides.move(2 - slides.index); renderSlide(); },
@@ -89,9 +85,9 @@ function renderSlide() {
     element("slide-title").textContent = slide.title;
     element("slide-description").textContent = slide.description;
     illustration.show(slides.index, text);
-    ribbon.show(slides.index, text, slides.returnedToFirst);
-    element("previous-slide").disabled = cooldown.locked || slides.index === 0;
-    element("next-slide").disabled = cooldown.locked || slides.index === slides.count - 1;
+    ribbon.show(slides.index, text, slides.returnedToFirst, slides.direction);
+    element("previous-slide").disabled = cooldown.locked;
+    element("next-slide").disabled = cooldown.locked;
     element("slide-number").textContent = slide.number;
     element("slide-counter").textContent = `${text.slideLabel} ${slides.index + 1} / ${slides.count}`;
 }
@@ -275,12 +271,6 @@ function handleAction(event) {
         }
         return;
     }
-    const horizontal = event.action === "next_slide" || event.action === "previous_slide";
-    if (slideFocused() && horizontal && slideBoundary(event.action === "next_slide" ? 1 : -1)) {
-        cooldown.start();
-        cameraSwipes.reset();
-        return;
-    }
     if (slideFocused() && slides.gesture(event.action, performance.now())) {
         demoStarted = true;
         renderHandInstructions();
@@ -427,9 +417,6 @@ document.querySelectorAll("[data-link]").forEach(link => {
 document.querySelectorAll("[data-language]").forEach(button => {
     button.addEventListener("click", () => {
         language = button.dataset.language;
-        const url = new URL(location.href);
-        url.searchParams.set("lang", language);
-        history.replaceState(null, "", url);
         renderLanguage();
     });
 });
@@ -443,15 +430,8 @@ const previewObserver = new IntersectionObserver(entries => {
 previewObserver.observe(document.querySelector(".camera-preview"));
 element("stop-camera").addEventListener("click", stopCamera);
 element("finale-stop-camera").addEventListener("click", stopCamera);
-function slideBoundary(direction) {
-    const atEdge = direction < 0 ? slides.index === 0 : slides.index === slides.count - 1;
-    if (atEdge) boundaries.show(ribbon.window, direction < 0 ? "left" : "right");
-    return atEdge;
-}
-
 function moveSlide(direction) {
-    if (cooldown.locked || assistance.blocking) return;
-    if (slideBoundary(direction)) return;
+    if (cooldown.locked) return;
     slides.move(direction);
     renderSlide();
 }
@@ -543,7 +523,7 @@ window.addEventListener("wheel", event => {
 
 
 // The guard drops partial wheel and touch gestures as well as held keys.
-new NavigationInputGuard(() => cooldown.locked || assistance.blocking, () => {
+new NavigationInputGuard(() => cooldown.locked, () => {
     wheelDistance = 0;
     lastWheelAt = -Infinity;
     swipeStart = null;

@@ -113,6 +113,7 @@ export class Assistance {
     }
 
     observe(session, time, recoveryAllowed) {
+        if (!this.step) return;
         const hands = [15, 16].map(index => session.coordinate(index)).filter(point =>
             point && Number.isFinite(point.x) && Number.isFinite(point.y)
             && point.x >= 0 && point.x <= 1 && point.y >= 0 && point.y <= 1);

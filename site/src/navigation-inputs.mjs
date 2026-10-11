@@ -16,8 +16,11 @@ export class NavigationInputGuard {
         }, { capture: true });
         window.addEventListener("blur", () => this.keys.clear());
         window.addEventListener("wheel", event => this.wheel(event), { capture: true, passive: false });
-        window.addEventListener("touchstart", () => { this.touchBlocked = isLocked(); }, { capture: true, passive: true });
+        window.addEventListener("touchstart", event => {
+            this.touchBlocked = !this.inGuide(event) && isLocked();
+        }, { capture: true, passive: true });
         window.addEventListener("touchmove", event => {
+            if (this.inGuide(event)) return;
             if (!isLocked() && !this.touchBlocked) return;
             this.touchBlocked = true;
             discard();
@@ -28,6 +31,10 @@ export class NavigationInputGuard {
         }
     }
 
+    inGuide(event) {
+        return event.target instanceof HTMLElement && Boolean(event.target.closest("#assistance"));
+    }
+
     keyDown(event) {
         const target = event.target instanceof HTMLElement ? event.target : null;
         if (target?.closest("#assistance")) return;
@@ -35,7 +42,7 @@ export class NavigationInputGuard {
         if (!this.navigationKeys.has(event.key) && !navigationEnter) return;
         // Editing a diagram or stopping the camera remains possible.
         if (target?.closest("input, textarea, select, [contenteditable]")) return;
-        if (event.key === " " && target?.closest("#stop-camera, #finale-stop-camera")) return;
+        if (event.key === " " && target?.closest("button, a")) return;
         if (!this.isLocked() && !this.keys.has(event.key)) return;
         this.keys.add(event.key);
         this.discard();
@@ -44,6 +51,7 @@ export class NavigationInputGuard {
     }
 
     wheel(event) {
+        if (this.inGuide(event)) return;
         if (!this.isLocked() && !this.wheelBlocked) return;
         this.wheelBlocked = true;
         clearTimeout(this.wheelTimer);
