@@ -35,7 +35,7 @@ export function focusedWrist(session, previous = null) {
     for (const landmark of [15, 16]) {
         const point = handPosition(session, landmark);
         if (!validWrist(point)) continue;
-        if (landmark === previous && centredWrist(point, .24)) return { landmark, point };
+        if (landmark === previous && point.y < .8) return { landmark, point };
         const squaredDistance = (point.x - .5) ** 2 + (point.y - .5) ** 2;
         if (squaredDistance < distance) {
             closest = { landmark, point };

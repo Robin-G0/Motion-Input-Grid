@@ -29,6 +29,21 @@ export function drawDebugOverlay(canvas, video, camera, swipes, enabled) {
         rectangle(.32, .32, .36, .36, "#ff8585", true);
     }
     context.setLineDash([]);
+    if (enabled.has("arms")) {
+        for (const [side, shoulder] of [11, 12].entries()) {
+            const joints = [shoulder, shoulder + 2, shoulder + 4].map(index => camera.coordinate(index));
+            context.strokeStyle = handColors[side];
+            context.beginPath();
+            for (let index = 1; index < joints.length; index++) {
+                const a = joints[index - 1];
+                const b = joints[index];
+                if (!a || !b) continue;
+                context.moveTo((1 - a.x) * width, a.y * height);
+                context.lineTo((1 - b.x) * width, b.y * height);
+            }
+            context.stroke();
+        }
+    }
     const dot = (point, radius, color) => {
         context.fillStyle = color;
         context.beginPath();

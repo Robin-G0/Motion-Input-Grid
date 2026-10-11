@@ -64,6 +64,9 @@ async function toggleDebug() {
         await debugLoading;
     }
     if (debugPanel && debugPanel.active !== debugWanted) debugPanel.toggle(language);
+    cameraSwipes.onReject = debugPanel?.active
+        ? (landmark, reason) => debugPanel.event(landmark === 15 ? "left_wrist" : "right_wrist", reason)
+        : null;
     if (!debugPanel?.active) return;
     if (session?.state.running) updateDebug(session, performance.now());
     else debugPanel.stopped();

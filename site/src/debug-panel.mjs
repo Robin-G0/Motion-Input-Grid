@@ -6,12 +6,14 @@ const copy = {
         title: "Diagnostic caméra · C pour fermer", close: "Fermer", waiting: "Caméra arrêtée",
         overlays: ["Points pose ≥ 0,6 (vert : gauche, bleu : droite)", "Moyenne des mains (grands points)",
             "Centre jaune : maintien 150 ms (600 ms dans la cible du guide)",
-            "Limites rouges : bords 25 %, retour 32 %", "Seuils pointillés : déplacement depuis le départ"],
+            "Limites rouges : bords 25 %, retour 32 %", "Seuils pointillés : déplacement depuis le départ",
+            "Bras pose : épaule → coude → poignet (indices fixes)"],
         reasons: { missing: "Points absents ou peu fiables", centre: "Revenir au centre",
             dwell: "Maintenir au centre", ready: "Main armée ; atteindre un seuil",
             stopped: "Caméra arrêtée", away: "Page masquée par la présence", onboarding: "Centrage initial requis",
             cooldown: "Repos de navigation", unarmed: "Départ central non validé", guide: "Geste absorbé par le guide",
             outside: "Balayage horizontal hors du slideshow ou à sa limite",
+            jump: "Saut de suivi rejeté ; recentrer la main (identité pose incertaine)",
             accepted: "Action acceptée", boundary: "Limite de navigation atteinte" },
         units: "Coordonnées 0–1 ; x augmente vers la gauche (miroir).", layers: "Repères",
         left: "Gauche", right: "Droite", shoulders: "Confiance épaules", horizontal: "Horizontal",
@@ -21,19 +23,21 @@ const copy = {
         title: "Camera diagnostics · C to close", close: "Close", waiting: "Camera stopped",
         overlays: ["Pose points ≥ 0.6 (green: left, blue: right)", "Hand averages (large dots)",
             "Yellow centre: hold 150 ms (600 ms in the guide target)",
-            "Red limits: edges 25%, clear at 32%", "Dashed thresholds: travel from the starting point"],
+            "Red limits: edges 25%, clear at 32%", "Dashed thresholds: travel from the starting point",
+            "Pose arms: shoulder → elbow → wrist (fixed indices)"],
         reasons: { missing: "Missing or low-confidence points", centre: "Return to the centre",
             dwell: "Hold in the centre", ready: "Hand armed; reach a threshold",
             stopped: "Camera stopped", away: "Page hidden by presence", onboarding: "Initial centering required",
             cooldown: "Navigation recovery", unarmed: "Central start not validated", guide: "Gesture consumed by guide",
             outside: "Horizontal sweep outside the slideshow or at its boundary",
+            jump: "Tracking jump rejected; recenter the hand (uncertain pose identity)",
             accepted: "Action accepted", boundary: "Navigation boundary reached" },
         units: "Coordinates 0–1; x increases towards the left (mirrored).", layers: "Overlays",
         left: "Left", right: "Right", shoulders: "Shoulder confidence", horizontal: "Horizontal",
         vertical: "Vertical", duration: "Duration", drift: "Lateral drift", guide: "Guide"
     }
 };
-const layers = ["points", "hands", "centre", "edges", "thresholds"];
+const layers = ["points", "hands", "centre", "edges", "thresholds", "arms"];
 
 export class DebugPanel {
     constructor(video, onClose) {
@@ -52,7 +56,7 @@ export class DebugPanel {
             const label = document.createElement("label");
             const checkbox = document.createElement("input");
             checkbox.type = "checkbox";
-            checkbox.checked = true;
+            checkbox.checked = layer !== "arms";
             checkbox.value = layer;
             label.append(checkbox, document.createElement("span"));
             this.root.querySelector("fieldset").append(label);

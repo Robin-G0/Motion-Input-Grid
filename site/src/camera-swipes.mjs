@@ -1,5 +1,11 @@
 import { centredWrist, validWrist, handPosition } from "./hand-focus.mjs";
 
+function plausibleTravel(previous, point, time) {
+    const elapsed = Math.max(0, time - previous.lastTime) / 1000;
+    const maximum = Math.min(.5, .08 + elapsed * 1.5);
+    return Math.hypot(point.x - previous.lastX, point.y - previous.lastY) <= maximum;
+}
+
 // A gesture starts in the centre, then follows the wrist across the camera frame.
 export class CameraSwipes {
     constructor({ distance = .16, raiseDistance = .28, raiseDuration = 250, raiseDrift = .2, duration = 2500, gap = 450 } = {}) {
@@ -22,7 +28,10 @@ export class CameraSwipes {
     isArmed(time, session, sourceLandmark = null) {
         for (const [landmark, hand] of this.readyHands) {
             if (sourceLandmark !== null && landmark !== sourceLandmark) continue;
-            if (session && !handPosition(session, landmark)) continue;
+            if (session) {
+                const point = handPosition(session, landmark);
+                if (!point || !plausibleTravel(hand, point, time)) continue;
+            }
             if (time - hand.lastTime <= this.gap && time - hand.startTime <= this.duration) return true;
         }
         return false;
@@ -105,30 +114,18 @@ export class CameraSwipes {
                 // Brief occlusion must not erase a slow sweep. A long gap still resets it.
                 if (time - (this.hands.get(landmark)?.lastTime ?? -Infinity) > this.gap) this.hands.delete(landmark);
                 if (time - (this.verticalHands.get(landmark)?.lastTime ?? -Infinity) > this.gap) this.verticalHands.delete(landmark);
-                for (const samples of [this.hands, this.verticalHands]) {
-                    const sample = samples.get(landmark);
-                    if (sample) sample.missing = true;
-                }
                 continue;
             }
-            if (!this.accept(landmark, point, time)) continue;
-            let jumped = false;
-            for (const samples of [this.hands, this.verticalHands]) {
-                const sample = samples.get(landmark);
-                if (!sample?.missing) continue;
-                const previousX = sample.lastX ?? sample.x;
-                const previousY = sample.lastY ?? sample.extremeY;
-                const elapsed = Math.max(0, time - sample.lastTime) / 1000;
-                const plausibleTravel = Math.min(.5, .08 + elapsed * 1.5);
-                if (Math.hypot(point.x - previousX, point.y - previousY) > plausibleTravel) jumped = true;
-                else sample.missing = false;
-            }
-            if (jumped) {
+            const previous = this.readyHands.get(landmark);
+            if (previous && time - previous.lastTime <= this.gap && !plausibleTravel(previous, point, time)) {
                 this.readyHands.delete(landmark);
                 this.hands.delete(landmark);
                 this.verticalHands.delete(landmark);
+                this.centres.delete(landmark);
+                this.onReject?.(landmark, "jump");
                 continue;
             }
+            if (!this.accept(landmark, point, time)) continue;
             const vertical = this.verticalAction(landmark, point, time);
             if (vertical) actions.push(vertical);
             if (!horizontal) { this.hands.delete(landmark); continue; }

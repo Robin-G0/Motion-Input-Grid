@@ -1270,6 +1270,35 @@ test("assistance teaches one-hand gestures without moving the page, then guides 
 });
 
 
+test("tour messages do not restrict slide direction or departure and return", async ({ page }) => {
+    await mockCamera(page);
+    await page.clock.install();
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("./");
+    await page.locator("#start-assisted").click();
+    await page.locator("[data-assistance-next]").click();
+    await holdHandsInFrame(page);
+    await focusPresentation(page);
+    await page.clock.runFor(100);
+    await swipeHand(page, "next_slide");
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "ribbonBack");
+    await swipeHand(page, "next_slide");
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 3 / 3");
+    await swipeHand(page, "previous_slide");
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 2 / 3");
+    await swipeHand(page, "scroll_presentation");
+    await page.clock.runFor(2200);
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "presence");
+    await page.evaluate(() => window.demoCamera.frame(false));
+    await page.clock.runFor(700);
+    await expect(page.locator("#away-screen")).toBeVisible();
+    await page.evaluate(() => window.demoCamera.frame(true));
+    await page.clock.runFor(350);
+    await page.evaluate(() => window.demoCamera.frame(true));
+    await expect(page.locator("#finale")).toBeVisible();
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "finale");
+});
+
 test("camera sampling starts before recovery ends without unlocking navigation early", async ({ page }) => {
     await mockCamera(page);
     await page.clock.install();
@@ -1524,6 +1553,38 @@ test("aiming keeps a visual hand through brief gaps and recovery resumes with a 
     await expect(page.locator("#assistance")).toHaveAttribute("data-step", "ribbonForward");
 });
 
+
+test("tracking teleports cannot navigate through either camera sweeps or native events", async ({ page }) => {
+    await mockCamera(page);
+    await page.clock.install();
+    await page.goto("./");
+    await page.locator("#start-camera").click();
+    await holdHandsInFrame(page);
+    await focusPresentation(page);
+    await page.clock.runFor(3000);
+    await page.keyboard.press("c");
+    await expect(page.locator("#camera-debug")).toBeVisible();
+    await page.evaluate(() => {
+        const camera = window.demoCamera;
+        camera.wrist = { x: .5, y: .5 };
+        camera.coordinate = index => index === 15 ? camera.wrist
+            : [11, 12].includes(index) ? { x: .5, y: .5 } : null;
+        camera.frame(true);
+    });
+    await page.clock.runFor(200);
+    await page.evaluate(() => window.demoCamera.frame(true));
+    await page.clock.runFor(20);
+    await page.evaluate(() => {
+        window.demoCamera.wrist = { x: .95, y: .5 };
+        window.demoCamera.action("next_slide");
+        window.demoCamera.frame(true);
+    });
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
+    await expect(page.locator("#camera-debug ol")).toContainText("Saut de suivi rejeté");
+    await page.keyboard.press("c");
+    await swipeHand(page, "next_slide");
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 2 / 3");
+});
 
 test("C loads diagnostics on demand, switches overlays and stops sampling when closed", async ({ page }) => {
     await mockCamera(page);

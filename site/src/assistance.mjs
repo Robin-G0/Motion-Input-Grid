@@ -62,7 +62,7 @@ export class Assistance {
         this.focusedHand = null;
         this.pointer.hidden = true;
         this.stepStarted = performance.now();
-        this.options.resetGestures();
+        if (this.blocking) this.options.resetGestures();
         this.render();
     }
 
@@ -185,9 +185,7 @@ export class Assistance {
         if (this.blocking) return true;
         const expected = navigation[this.step];
         if (expected) {
-            if (action !== expected[0]) {
-                return !["scroll_presentation", "scroll_previous"].includes(action);
-            }
+            if (action !== expected[0]) return false;
             const step = this.step;
             queueMicrotask(() => {
                 if (this.step === step) {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { handPosition } from "../src/hand-focus.mjs";
+import { handPosition, focusedWrist } from "../src/hand-focus.mjs";
 import { bodyPresent } from "../src/body-presence.mjs";
 import { CameraSwipes } from "../src/camera-swipes.mjs";
 
@@ -48,4 +48,29 @@ test("low-confidence shoulders cannot keep presence active", () => {
     assert.equal(bodyPresent(camera(.9), .8), true);
     assert.equal(bodyPresent(camera(NaN), .8), false);
     assert.equal(bodyPresent(session({ 11: { x: .5, y: .5, confidence: 1 } }), .8), false);
+});
+
+test("a continuous-frame tracking teleport cannot trigger a camera or native action", () => {
+    for (const landmark of [15, 16]) {
+        for (const x of [.1, .9]) {
+            const swipes = new CameraSwipes();
+            let point = { x: .5, y: .5 };
+            const camera = { coordinate: index => index === landmark ? point : null };
+            swipes.update(camera, 0);
+            swipes.update(camera, 200);
+            point = { x, y: .5 };
+            assert.equal(swipes.isArmed(220, camera, landmark), false);
+            assert.deepEqual(swipes.update(camera, 220), []);
+            assert.equal(swipes.isArmed(220), false);
+        }
+    }
+});
+
+test("the selected hand stays selected during a cross-body sweep", () => {
+    const camera = session({
+        15: { x: .85, y: .5 },
+        16: { x: .5, y: .5 }
+    });
+    assert.equal(focusedWrist(camera, 15).landmark, 15);
+    assert.equal(focusedWrist(session({ 15: { x: .5, y: .95 }, 16: { x: .5, y: .5 } }), 15).landmark, 16);
 });
