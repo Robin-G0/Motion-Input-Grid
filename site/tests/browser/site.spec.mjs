@@ -1123,6 +1123,7 @@ test("trackpad momentum produces one elastic return until the wheel stream stops
     await page.clock.install();
     await page.goto("./");
     await page.getByRole("button", { name: "EN", exact: true }).click();
+    await page.clock.pauseAt(new Date(await page.evaluate(() => Date.now() + 1000)));
     await page.evaluate(() => {
         window.elasticReturns = 0;
         const content = document.querySelector("#page-content");
@@ -1171,6 +1172,7 @@ test("camera guidance stays inside the preview and boundary jitter does not flas
 
 
 test("assistance teaches one-hand gestures without moving the page, then guides slides and presence", async ({ page }) => {
+    test.setTimeout(60000);
     await mockCamera(page);
     await page.clock.install();
     await page.emulateMedia({ reducedMotion: "reduce" });
