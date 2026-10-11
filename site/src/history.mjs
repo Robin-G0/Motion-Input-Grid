@@ -23,7 +23,7 @@ export class HistoryIllustration {
         this.drawing = root.querySelector("svg");
         this.slider = root.querySelector("input[type=range]");
         this.playButton = root.querySelector("[data-history-play]");
-        this.thumb = root.querySelector("[data-history-thumb]");
+        this.thumbRaised = false;
         this.grid = root.querySelector("[data-history-grid]");
         this.status = root.querySelector("[data-history-status]");
         this.outcome = root.querySelector("[data-history-outcome]");
@@ -51,7 +51,6 @@ export class HistoryIllustration {
             this.lastFrame = null;
             this.refreshControls();
         });
-        this.thumb.addEventListener("change", () => this.pause());
         this.motionPreference.addEventListener("change", () => {
             this.pause();
         });
@@ -80,13 +79,12 @@ export class HistoryIllustration {
         this.drawing.toggleAttribute("hidden", index === 2);
         this.slider.closest("label").hidden = index === 2;
         this.grid.hidden = index !== 2;
-        this.thumb.closest("label").hidden = true;
         this.outcome.hidden = index !== 2;
         this.position = 0;
         this.progress = 0;
         this.result = "gridReady";
         this.step = -1;
-        this.thumb.checked = false;
+        this.thumbRaised = false;
         this.lastFrame = null;
         this.refreshControls();
         if (index === 2) {
@@ -108,7 +106,6 @@ export class HistoryIllustration {
         this.playButton.textContent = this.text[this.playing ? "pauseAnimation" : "playAnimation"];
         this.playButton.setAttribute("aria-pressed", String(this.playing));
         this.root.querySelector("[data-history-motion-label]").textContent = this.text.movePoints;
-        this.root.querySelector("[data-history-thumb-label]").textContent = this.text.thumbCondition;
         for (const button of this.grid.querySelectorAll("button")) {
             button.setAttribute("aria-label", this.text[button.dataset.labelKey]);
         }
@@ -202,7 +199,7 @@ export class HistoryIllustration {
             this.progress = this.progress === 1 ? 2 : 0;
         } else if (this.progress !== 2) {
             this.result = "gridOrder";
-        } else if (cell === "condition" && !this.thumb.checked) {
+        } else if (cell === "condition" && !this.thumbRaised) {
             this.result = "gridCondition";
         } else {
             this.progress = 0;
@@ -240,7 +237,6 @@ export class HistoryIllustration {
         cell("cancel").hidden = stage !== "cancel" && stage !== "interactive";
         cell("condition").hidden = stage !== "condition" && stage !== "interactive";
         cell("trigger").hidden = stage === "condition";
-        this.thumb.closest("label").hidden = stage !== "interactive";
         this.conditionContent.textContent = stage === "interactive" ? "\u{1f44d}" : "3";
     }
 
@@ -248,7 +244,7 @@ export class HistoryIllustration {
         this.progress = 0;
         this.result = stage === "condition" ? "gridCondition" : "gridReady";
         this.lastActivated = null;
-        this.thumb.checked = false;
+        this.thumbRaised = false;
         this.setGridStage(stage);
     }
 
@@ -267,7 +263,7 @@ export class HistoryIllustration {
         if (step === 16) this.conditionContent.textContent = "\u{1f44d}";
         if (step === 17) {
             this.conditionContent.textContent = "3";
-            this.thumb.checked = true;
+            this.thumbRaised = true;
             this.activateCell("condition");
         }
         this.updateGrid();

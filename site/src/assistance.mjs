@@ -7,10 +7,10 @@ const successors = { left: "down", down: "up", up: "scroll" };
 const navigation = {
     scroll: ["scroll_presentation", "ribbonForward"],
     ribbonForward: ["next_slide", "ribbonBack"],
-    ribbonBack: ["previous_slide", "grid"],
+    ribbonBack: ["previous_slide", "presenceScroll"],
     presenceScroll: ["scroll_presentation", "presence"]
 };
-const presentationSteps = new Set(["ribbonForward", "ribbonBack", "gift", "grid", "presenceScroll"]);
+const presentationSteps = new Set(["ribbonForward", "ribbonBack", "gift", "presenceScroll"]);
 
 // An optional tour consumes practice gestures without moving the real page.
 export class Assistance {
@@ -32,7 +32,9 @@ export class Assistance {
         this.next = root.querySelector("[data-assistance-next]");
         this.next.addEventListener("click", () => this.advance());
         root.querySelector("[data-assistance-close]").addEventListener("click", () => this.close());
-        window.addEventListener("scroll", () => this.followViewport(), { passive: true });
+        window.addEventListener("scroll", () => {
+            if (!this.options.locked()) this.followViewport();
+        }, { passive: true });
     }
 
     get blocking() { return ["privacy", "aim", "recover", "cooldown", "cameraError", ...Object.keys(exercises)].includes(this.step); }
@@ -52,7 +54,6 @@ export class Assistance {
     go(step) {
         clearTimeout(this.cooldownTimer);
         this.step = step;
-        if (step === "grid") this.options.showGrid();
         this.centredSince = null;
         this.marker.reset();
         this.focusedHand = null;
@@ -110,12 +111,11 @@ export class Assistance {
         else if (this.step === "right") { this.options.cooldown(); this.go("cooldown"); }
         else if (this.step === "cooldown") this.go("left");
         else if (this.practice) this.go(successors[this.step]);
-        else if (this.step === "gift") this.go("grid");
-        else if (this.step === "grid") this.go("presenceScroll");
+        else if (this.step === "gift") this.go("presenceScroll");
         else if (Object.hasOwn(navigation, this.step)) {
             const [action, next] = navigation[this.step];
             this.options.navigate(action);
-            this.go(next === "grid" && this.options.giftActive() ? "gift" : next);
+            this.go(next === "presenceScroll" && this.options.giftActive() ? "gift" : next);
         } else this.close();
     }
 
@@ -134,7 +134,7 @@ export class Assistance {
 
     followViewport() {
         if (!this.step || ["privacy", "cameraError", "away"].includes(this.step)
-            || !this.options.running() || this.options.locked()) return;
+            || !this.options.running()) return;
         const section = ["finale", "presence-demo", "presentation", "welcome"].find(id => {
             const node = document.getElementById(id);
             if (node.hidden) return false;
@@ -143,7 +143,9 @@ export class Assistance {
         });
         if (section === "presence-demo" && this.step !== "presence") this.go("presence");
         else if (section === "finale" && this.step !== "finale") this.go("finale");
-        else if (section === "presentation" && !presentationSteps.has(this.step)) this.go("ribbonForward");
+        else if (section === "presentation" && !presentationSteps.has(this.step)) {
+            this.go(["presence", "finale"].includes(this.step) ? "presenceScroll" : "ribbonForward");
+        }
         else if (section === "welcome" && (presentationSteps.has(this.step)
             || ["presence", "finale"].includes(this.step))) this.go("scroll");
     }
@@ -172,11 +174,13 @@ export class Assistance {
         if (this.blocking) return true;
         const expected = navigation[this.step];
         if (expected) {
-            if (action !== expected[0]) return true;
+            if (action !== expected[0]) {
+                return !["scroll_presentation", "scroll_previous"].includes(action);
+            }
             const step = this.step;
             queueMicrotask(() => {
                 if (this.step === step) {
-                    this.go(expected[1] === "grid" && this.options.giftActive() ? "gift" : expected[1]);
+                    this.go(expected[1] === "presenceScroll" && this.options.giftActive() ? "gift" : expected[1]);
                 }
             });
         }

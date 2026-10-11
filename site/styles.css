@@ -79,7 +79,6 @@ video:not([src]) { background: transparent; }
 .arrow-button { border: 1px solid var(--border); color: var(--ink); background: transparent; border-radius: 50%; width: 48px; height: 48px; font-size: 22px; }
 .arrow-button:hover { background: var(--button-hover); }
 #slide-counter { font-size: 13px; min-width: 78px; text-align: center; }
-.gesture-instructions { display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; font-size: 14px; margin-top: 24px; }
 .manual-hint { color: var(--muted); font-size: 12px; line-height: 1.6; }
 .slideshow-section > .manual-hint { text-align: center; }
 .presence-section { min-height: 100svh; display: flex; flex-direction: column; justify-content: center; border-top: 1px solid var(--border); position: relative; overflow: hidden; }
@@ -102,13 +101,10 @@ body.is-away { background: #000; }
 .angle-label { font: bold 25px "Segoe UI", sans-serif; fill: var(--ink); }
 .motion-control { display: flex; flex-direction: column; gap: 10px; font-size: 12px; }
 .motion-control input { width: 100%; accent-color: #85e5e3; }
-.thumb-control { display: flex; gap: 8px; align-items: center; margin-top: 14px; font-size: 12px; }
-.thumb-control input { width: 18px; height: 18px; accent-color: #65349a; }
 .animation-button { border: 1px solid var(--border); border-radius: 18px; padding: 9px 14px; background: #ffffff08; color: var(--ink); font-size: 12px; margin-top: 14px; }
 .illustration-status { font-size: 12px; line-height: 1.5; min-height: 54px; margin: 12px 0 0; }
 /* Keyboard controls appear on focus without changing the frame dimensions. */
 .history-illustration .visually-hidden:focus-within { width: 100%; height: auto; bottom: 0; left: 0; clip-path: none; white-space: normal; background: var(--paper); z-index: 2; margin: 0; }
-.thumb-control { position: absolute; bottom: 0; left: 0; background: var(--paper); padding: 8px; border-radius: 8px; z-index: 1; }
 .history-grid { position: relative; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(6, minmax(0, 1fr)); width: min(100cqw, 100cqh); height: min(100cqw, 100cqh); container-type: inline-size; aspect-ratio: 1; margin-inline: auto; border: 1px solid var(--grid-lines); border-radius: 12px; overflow: hidden; background-image: linear-gradient(var(--grid-lines) 1px, transparent 1px), linear-gradient(90deg, var(--grid-lines) 1px, transparent 1px); background-size: calc(100% / 6) calc(100% / 6); }
 .grid-body { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: var(--grid-lines); stroke-width: 7; pointer-events: none; }
 .history-grid button { z-index: 1; margin: 4px; padding: 2px; border: 2px solid #236a44; border-radius: 8px; background: #b0e9b9; color: #12311b; font-weight: 800; font-size: 8cqw; line-height: 1; min-width: 0; min-height: 0; aspect-ratio: 1; }
@@ -167,7 +163,6 @@ body.is-away { background: #000; }
     .slideshow-section h2 { margin: 12px 0 20px; font-size: 30px; }
     .slide-art { min-height: 150px; }
 
-    .gesture-instructions { justify-content: flex-start; gap: 12px; }
     .footer { flex-direction: column; align-items: flex-start; }
     .finale { padding: 30px; }
 }
@@ -318,7 +313,6 @@ body.is-away { background: #000; }
 .presence-section .eyebrow { justify-content: center; }
 .presence-section .lead, .presence-section h2 { margin-inline: auto; }
 .departure-art { justify-content: center; }
-.gesture-instructions { align-items: center; text-align: center; }
 
 /* Alternate the two directions instead of showing simultaneous sweeps. */
 @keyframes hand-sweep-left {
@@ -341,7 +335,6 @@ body.is-away { background: #000; }
 @media (max-width: 800px) {
     .carousel-track .slide { grid-template-columns: 1fr; padding: 20px; left: 11%; width: 78%; }
     .carousel-track { height: 540px; }
-    .gesture-instructions { justify-content: center; font-size: 12px; gap: 8px; }
 }
 @media (max-width: 800px) and (max-height: 740px) {
     .carousel-track { height: 500px; }
@@ -398,6 +391,8 @@ body.is-away { background: #000; }
 #scroll-gesture-tip[data-direction="down"] .gesture-arrow { transform: rotate(180deg); }
 .directional-hand::before { content: "\2192"; font-size: 32px; }
 .directional-hand.hand-right::before { content: "\2190"; }
+#slide-gesture-tip .gesture-pictogram svg { width: 72px; height: 87px; }
+#slide-gesture-tip .directional-hand::before { font-size: 44px; }
 .hands-tip { border: 3px solid #d9a52c; border-radius: 18px; width: 90px; height: 80px; position: fixed; }
 .hand-target-icon { position: absolute; inset: 0; display: grid; place-items: center; font-size: 60px; opacity: .5; }
 .hands-tip .gesture-pictogram { z-index: 1; }

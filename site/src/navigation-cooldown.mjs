@@ -1,10 +1,13 @@
 // Fill one continuous golden bar while the two-second gesture cooldown runs.
 export class NavigationCooldown {
-    constructor(border, onReady, onChange = () => {}) {
+    constructor(border, onReady, onChange = () => {}, onSampling = () => {}) {
         this.border = border;
         this.progress = border.querySelector("[data-cooldown-progress]");
         this.onReady = onReady;
         this.onChange = onChange;
+        this.onSampling = onSampling;
+        this.sampling = false;
+        this.samplingTimer = null;
         this.locked = false;
         this.animation = null;
         this.settling = false;
@@ -56,6 +59,10 @@ export class NavigationCooldown {
             if (progress < 1) this.frame = requestAnimationFrame(draw);
         };
         this.frame = requestAnimationFrame(draw);
+        this.samplingTimer = setTimeout(() => {
+            this.sampling = true;
+            this.onSampling();
+        }, 1600);
         this.timer = setTimeout(() => {
             this.reset();
             this.onReady();
@@ -64,7 +71,10 @@ export class NavigationCooldown {
 
     reset() {
         clearTimeout(this.timer);
+        clearTimeout(this.samplingTimer);
         cancelAnimationFrame(this.frame);
+        this.samplingTimer = null;
+        this.sampling = false;
         this.frame = null;
         this.locked = false;
         this.animation = null;

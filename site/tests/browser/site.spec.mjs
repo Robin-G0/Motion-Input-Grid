@@ -315,9 +315,9 @@ test("history diagrams move and the grid explains order, cancellation and condit
     await cell("second").click();
     await cell("condition").click();
     await expect(status).toHaveAttribute("data-result", "gridCondition");
-    await illustration.locator("[data-history-thumb]").check();
+    await expect(illustration.locator('input[type="checkbox"], .thumb-control')).toHaveCount(0);
     await cell("condition").click();
-    await expect(status).toHaveAttribute("data-result", "gridTriggered");
+    await expect(status).toHaveAttribute("data-result", "gridCondition");
     await page.setViewportSize({ width: 390, height: 844 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await cell("first").click();
@@ -559,7 +559,7 @@ for (const viewport of [{ width: 844, height: 390 }, { width: 1440, height: 1080
         const cancel = await page.locator('#slide [data-cell="cancel"]').boundingBox();
         expect(cancel.x).toBeCloseTo(second.x, 0);
         expect(cancel.y).toBeGreaterThan(second.y);
-        await expect(page.locator('[data-text="slideInstructions"]')).toContainText("gently");
+        await expect(page.locator('[data-text="slideInstructions"]')).toHaveCount(0);
     });
 }
 
@@ -1208,10 +1208,14 @@ test("assistance teaches one-hand gestures without moving the page, then guides 
     await finishRibbonAnimation(page);
     await page.clock.runFor(2200);
     await next.click();
-    await expect(assistant).toHaveAttribute("data-step", "grid");
-    await expect(page.locator("#slide-counter")).toHaveText("Slide 3 / 3");
+    await expect(assistant).toHaveAttribute("data-step", "presenceScroll");
+    await expect(assistant.locator("[data-assistance-message]")).toHaveText("Raise your hand to continue.");
+    await swipeHand(page, "scroll_presentation");
+    await expect(assistant).toHaveAttribute("data-step", "presence");
+    await swipeHand(page, "scroll_previous");
     await page.clock.runFor(2200);
-    await next.click();
+    await expect(assistant).toHaveAttribute("data-step", "presenceScroll");
+    await expect(page.locator("#presentation h2")).toBeInViewport();
     await swipeHand(page, "scroll_presentation");
     await expect(assistant).toHaveAttribute("data-step", "presence");
     await expect(assistant.locator("[data-assistance-hint]")).toBeHidden();
@@ -1237,6 +1241,72 @@ test("assistance teaches one-hand gestures without moving the page, then guides 
     expect(await page.evaluate(() => window.demoCamera.stopped)).toBe(true);
 });
 
+
+test("camera sampling starts before recovery ends without unlocking navigation early", async ({ page }) => {
+    await mockCamera(page);
+    await page.clock.install();
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("./");
+    await page.locator("#start-camera").click();
+    await holdHandsInFrame(page);
+    await swipeHand(page, "scroll_presentation");
+    const position = await page.evaluate(() => scrollY);
+    const bar = page.locator("#navigation-cooldown");
+    await page.clock.runFor(1600);
+    await page.evaluate(() => {
+        window.restarts = 0;
+        window.demoCamera.tracker = { restart() { window.restarts++; } };
+        window.demoCamera.wrist = { x: .5, y: .5 };
+        window.demoCamera.frame(true);
+    });
+    await page.clock.runFor(160);
+    await page.evaluate(() => window.demoCamera.frame(true));
+    await page.clock.runFor(70);
+    await page.evaluate(() => {
+        window.demoCamera.wrist = { x: .5, y: .64 };
+        window.demoCamera.frame(true);
+        window.demoCamera.action("scroll_previous");
+    });
+    await expect(bar).toBeVisible();
+    expect(await page.evaluate(() => scrollY)).toBe(position);
+    await page.clock.runFor(170);
+    await expect(bar).toBeHidden();
+    expect(await page.evaluate(() => window.restarts)).toBe(0);
+    await page.clock.runFor(80);
+    await page.evaluate(() => {
+        window.demoCamera.wrist = { x: .5, y: .82 };
+        window.demoCamera.frame(true);
+    });
+    expect(await page.evaluate(() => scrollY)).toBe(0);
+    await expect(bar).toBeVisible();
+});
+
+test("theme touch interactions stay available during recovery and larger hands replace slide instructions", async ({ page }) => {
+    await mockCamera(page);
+    await page.clock.install();
+    await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "dark" });
+    await page.goto("./");
+    await page.locator("#start-camera").click();
+    await holdHandsInFrame(page);
+    await swipeHand(page, "scroll_presentation");
+    await expect(page.locator("#presentation .gesture-instructions, #presentation [data-text=manualHint]")).toHaveCount(0);
+    await expect(page.locator("#slide-gesture-tip .hand-left svg")).toHaveCSS("width", "72px");
+    const allowed = await page.locator("#theme-toggle").evaluate(button => {
+        button.dispatchEvent(new Event("touchstart", { bubbles: true, cancelable: true }));
+        const allowed = button.dispatchEvent(new Event("touchmove", { bubbles: true, cancelable: true }));
+        button.dispatchEvent(new Event("touchend", { bubbles: true }));
+        button.click();
+        return allowed;
+    });
+    expect(allowed).toBe(true);
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await expect(page.locator("#navigation-cooldown")).toBeVisible();
+    await page.locator("#theme-toggle").evaluate(button => button.click());
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    const blocked = await page.locator("#slide").evaluate(slide =>
+        !slide.dispatchEvent(new Event("touchmove", { bubbles: true, cancelable: true })));
+    expect(blocked).toBe(true);
+});
 
 test("theme choice is remembered, works against the system palette and follows language", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "light" });
@@ -1372,7 +1442,7 @@ test("the guide follows manual scrolling past the ribbon and back to previous se
     await expect(page.locator("[data-assistance-message]")).toHaveText("Sortez du cadre.");
     await focusPresentation(page);
     await page.clock.runFor(100);
-    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "ribbonForward");
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "presenceScroll");
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
     await page.clock.runFor(100);
     await expect(page.locator("#assistance")).toHaveAttribute("data-step", "scroll");

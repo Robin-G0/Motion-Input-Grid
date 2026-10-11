@@ -50,9 +50,6 @@ let presenceTimer = null;
 const phone = matchMedia("(pointer: coarse)").matches && Math.min(innerWidth, innerHeight) <= 800;
 document.body.classList.toggle("phone", phone);
 const cooldown = new NavigationCooldown(element("navigation-cooldown"), () => {
-    cameraSwipes.reset();
-    // Clear native ordered gestures as well as camera-space samples.
-    session?.tracker?.restart?.();
     assistance.render();
     assistance.followViewport();
     assistance.cooldownComplete();
@@ -60,9 +57,15 @@ const cooldown = new NavigationCooldown(element("navigation-cooldown"), () => {
     element("previous-slide").disabled = locked || !slides.canMove(-1);
     element("next-slide").disabled = locked || !slides.canMove(1);
     if (locked) {
+        cameraSwipes.reset();
+        session?.tracker?.restart?.();
         swipeStart = null;
         wheelDistance = 0;
     }
+}, () => {
+    assistance.followViewport();
+    cameraSwipes.reset();
+    session?.tracker?.restart?.();
 });
 
 const theme = new ThemeToggle(element("theme-toggle"), () => translations[language]);
@@ -77,7 +80,6 @@ const assistance = new Assistance(element("assistance"), {
     resumeHints: () => { if (handScrollReady && session?.state.running) guide.start(); },
     cooldown: () => cooldown.start(),
     giftActive: () => slides.index === "gift",
-    showGrid: () => { slides.select(2); renderSlide(); },
     navigate: action => {
         guide.resume();
         if (action === "scroll_presentation") { guide.navigate(1); cooldown.start(true); }
@@ -220,7 +222,7 @@ function handlePresence(currentSession) {
     updateHandHint(currentSession, time);
     framing.update(currentSession, time);
     assistance.observe(currentSession, time, !departureSectionReached() && !away && !cooldown.locked);
-    if (handScrollReady && !cooldown.locked && !away) {
+    if (handScrollReady && (!cooldown.locked || cooldown.sampling) && !away) {
         for (const action of cameraSwipes.update(currentSession, time, { horizontal: assistance.practice || slideFocused() })) {
             handleAction({ action, centred: true });
             if (cooldown.locked) break;

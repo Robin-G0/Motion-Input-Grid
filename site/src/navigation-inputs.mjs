@@ -17,10 +17,10 @@ export class NavigationInputGuard {
         window.addEventListener("blur", () => this.keys.clear());
         window.addEventListener("wheel", event => this.wheel(event), { capture: true, passive: false });
         window.addEventListener("touchstart", event => {
-            this.touchBlocked = !this.inGuide(event) && isLocked();
+            this.touchBlocked = !this.allowsTouch(event) && isLocked();
         }, { capture: true, passive: true });
         window.addEventListener("touchmove", event => {
-            if (this.inGuide(event)) return;
+            if (this.allowsTouch(event)) return;
             if (!isLocked() && !this.touchBlocked) return;
             this.touchBlocked = true;
             discard();
@@ -33,6 +33,13 @@ export class NavigationInputGuard {
 
     inGuide(event) {
         return event.target instanceof HTMLElement && Boolean(event.target.closest("#assistance"));
+    }
+
+    allowsTouch(event) {
+        if (this.inGuide(event)) return true;
+        const target = event.target instanceof HTMLElement ? event.target : null;
+        if (target?.closest("#previous-slide, #next-slide, .history-illustration")) return false;
+        return Boolean(target?.closest("button, a, input, textarea, select, [contenteditable]"));
     }
 
     keyDown(event) {
