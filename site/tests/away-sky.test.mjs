@@ -6,6 +6,11 @@ function recordingSky() {
     const calls = [];
     const paints = [];
     const context = {};
+    context.createLinearGradient = (...args) => {
+        const gradient = { stops: [], addColorStop(offset, color) { this.stops.push({ offset, color }); } };
+        calls.push({ name: "createLinearGradient", args });
+        return gradient;
+    };
     for (const name of ["beginPath", "arc", "fill", "fillRect", "moveTo", "lineTo",
         "bezierCurveTo", "closePath", "stroke", "save", "rect", "clip", "restore"]) {
         context[name] = (...args) => {
@@ -38,16 +43,36 @@ test("weather changes the sky and storms stay dark even during the day", () => {
     const { sky, paints } = recordingSky();
     const scene = { age: 1000, season: "summer", night: false, progress: .5, celebration: null };
     const background = weather => {
+        sky.skyChannels = null;
         paints.length = 0;
         sky.draw({ ...scene, weather }, false);
         return paints[0].color;
     };
-    assert.notEqual(background("clear"), background("rain"));
-    assert.notEqual(background("rain"), background("snow"));
-    assert.equal(background("storm"), "rgb(37, 41, 48)");
+    assert.notDeepEqual(background("clear").stops, background("rain").stops);
+    assert.notDeepEqual(background("rain").stops, background("snow").stops);
+    assert.equal(background("storm").stops[1].color, "rgb(37, 41, 48)");
     paints.length = 0;
     sky.draw({ ...scene, weather: "storm", night: true }, false);
-    assert.equal(paints[0].color, "rgb(37, 41, 48)");
+    assert.equal(paints[0].color.stops[1].color, "rgb(37, 41, 48)");
+});
+
+test("sky gradients blend weather changes over time and reset for a new animation", () => {
+    const { sky, paints } = recordingSky();
+    const scene = { age: 1000, weather: "clear", season: "summer",
+        night: false, progress: .5, celebration: null };
+    sky.draw(scene, false);
+    const first = [...sky.skyChannels];
+    assert.notEqual(paints[0].color.stops[0].color, paints[0].color.stops[1].color);
+    sky.draw({ ...scene, age: 1016, weather: "storm" }, false);
+    const next = [...sky.skyChannels];
+    for (let index = 0; index < 3; index++) {
+        assert.ok(next[index] < first[index]);
+        assert.ok(first[index] - next[index] < 8);
+    }
+    sky.draw({ ...scene, age: 6000, weather: "storm" }, false);
+    assert.equal(Math.round(sky.skyChannels[0]), 37);
+    sky.draw({ ...scene, age: 0 }, false);
+    assert.deepEqual(sky.skyChannels, first);
 });
 
 test("storm flashes are brief, spaced apart and disabled with reduced motion", () => {
@@ -69,6 +94,9 @@ test("weather drifts horizontally and stays still with reduced motion", () => {
     const first = sky.weatherPosition({ age: 1000 }, false);
     const second = sky.weatherPosition({ age: 2000 }, false);
     assert.ok(second.x > first.x);
+    const drift = Math.max(0, sky.width / 2 - Math.max(first.size * 2,
+        Math.min(sky.width * .25, sky.height * .3))) * .8;
+    assert.equal(first.x, sky.width * .5 + Math.sin(1000 / 3000) * drift);
     assert.equal(second.y, first.y);
     assert.deepEqual(sky.weatherPosition({ age: 1000 }, true),
         sky.weatherPosition({ age: 2000 }, true));
@@ -99,6 +127,12 @@ test("rainbow ends extend under grass, which is painted over them", () => {
     for (const { args } of bands) assert.ok(args[1] > sky.height * .96);
     assert.ok(calls.findLastIndex(call => call.name === "stroke")
         < calls.findIndex(call => call.name === "bezierCurveTo"));
+});
+
+test("a rainbow is never painted at night", () => {
+    const { sky, calls } = recordingSky();
+    sky.drawWeather({ age: 14000, weather: "rainbow", night: true }, 0, false);
+    assert.equal(calls.filter(call => call.name === "arc").length, 0);
 });
 
 test("after the finale only the black background remains", () => {

@@ -9,7 +9,7 @@ export const translations = {
         title: "Motion Input Grid : à vous de jouer",
         navigation: "Navigation principale",
         tagline: "Le mouvement devient une interface.",
-        invitation: "Alors, on teste tout ça ?",
+        invitation: "Alors, on teste ça ?",
         introduction: "Un mouvement, une action. Découvrez ce que votre navigateur peut faire avec un simple geste.",
         start: "Oui, on essaie !",
         scrollTip: "Montez une main doucement avec un grand mouvement de bas en haut pour descendre jusqu’à la présentation. Baissez-la avec le même geste ample pour remonter. Le scroll habituel fonctionne aussi.",

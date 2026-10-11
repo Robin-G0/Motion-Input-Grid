@@ -11,14 +11,17 @@ const weatherSkies = {
     storm: ["#252930", "#252930"]
 };
 
-function skyColor(scene, daylight) {
+function skyChannels(scene, daylight) {
     const [night, day] = weatherSkies[scene.weather] ?? ["#101827", palettes[scene.season][0]];
-    const channels = [1, 3, 5].map(offset => {
+    return [1, 3, 5].map(offset => {
         const dark = parseInt(night.slice(offset, offset + 2), 16);
         const light = parseInt(day.slice(offset, offset + 2), 16);
-        return Math.round(dark + (light - dark) * daylight);
+        return dark + (light - dark) * daylight;
     });
-    return `rgb(${channels.join(", ")})`;
+}
+
+function rgb(channels) {
+    return `rgb(${channels.map(Math.round).join(", ")})`;
 }
 
 function fraction(index, seed) {
@@ -58,6 +61,20 @@ export class AwaySky {
         context.fill();
     }
 
+    skyGradient(scene, daylight) {
+        const target = skyChannels(scene, daylight);
+        const elapsed = scene.age - (this.colorAge ?? scene.age);
+        if (!this.skyChannels || elapsed < 0) this.skyChannels = target;
+        const blend = 1 - Math.exp(-Math.max(0, elapsed) / 450);
+        this.skyChannels = this.skyChannels.map((value, index) =>
+            value + (target[index] - value) * blend);
+        this.colorAge = scene.age;
+        const gradient = this.context.createLinearGradient(0, 0, 0, this.height);
+        gradient.addColorStop(0, rgb(this.skyChannels.map(value => value * .72)));
+        gradient.addColorStop(1, rgb(this.skyChannels));
+        return gradient;
+    }
+
     draw(scene, reducedMotion) {
         const context = this.context;
         if (scene.complete) {
@@ -73,7 +90,7 @@ export class AwaySky {
         const colors = palettes[scene.season];
         const progress = reducedMotion ? .4 : scene.progress;
         const daylight = scene.night ? 0 : Math.sin(Math.PI * scene.progress);
-        const background = skyColor(scene, daylight);
+        const background = this.skyGradient(scene, daylight);
         context.globalAlpha = 1;
         context.fillStyle = background;
         context.fillRect(0, 0, this.width, this.height);
@@ -136,7 +153,7 @@ export class AwaySky {
         const size = Math.max(20, Math.min(38, this.width * .04));
         const margin = Math.max(size * 2, Math.min(this.width * .25, this.height * .3));
         const drift = Math.max(0, this.width / 2 - margin) * .8;
-        const wind = reducedMotion ? 0 : Math.sin(scene.age / 6000) * drift;
+        const wind = reducedMotion ? 0 : Math.sin(scene.age / 3000) * drift;
         const x = this.width * .5 + wind;
         return { x, y: this.height * .27, size };
     }
@@ -152,7 +169,7 @@ export class AwaySky {
         const cloud = this.weatherPosition(scene, reducedMotion);
         context.globalAlpha = 1;
         if (["rain", "storm", "snow"].includes(scene.weather)) this.drawCloud(cloud);
-        if (scene.weather === "rainbow") {
+        if (scene.weather === "rainbow" && !scene.night) {
             context.globalAlpha = .9;
             context.lineWidth = 7;
             const x = cloud.x;

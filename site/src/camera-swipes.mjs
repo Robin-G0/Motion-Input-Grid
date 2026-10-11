@@ -6,13 +6,14 @@ function plausibleTravel(previous, point, time) {
     return Math.hypot(point.x - previous.lastX, point.y - previous.lastY) <= maximum;
 }
 
-// A gesture starts in the centre, then follows the wrist across the camera frame.
+// A gesture starts inside the frame, then follows the wrist across it.
 export class CameraSwipes {
-    constructor({ distance = .08, horizontalDuration = 100, centreDuration = 150,
+    constructor({ distance = .08, horizontalDuration = 100, centreDuration = 150, startRadius = .35,
         raiseDistance = .196, raiseDuration = 175, raiseDrift = .2, duration = 2500, gap = 450 } = {}) {
         this.distance = distance;
         this.horizontalDuration = horizontalDuration;
         this.centreDuration = centreDuration;
+        this.startRadius = startRadius;
         this.raiseDistance = raiseDistance;
         this.raiseDuration = raiseDuration;
         this.raiseDrift = raiseDrift;
@@ -42,7 +43,7 @@ export class CameraSwipes {
 
     accept(landmark, point, time) {
         const ready = this.readyHands.get(landmark);
-        if (ready && centredWrist(point)
+        if (ready && centredWrist(point, this.startRadius)
             && Math.hypot(point.x - ready.lastX, point.y - ready.lastY) < .025) ready.startTime = time;
         if (ready && time - ready.lastTime <= this.gap && time - ready.startTime <= this.duration) {
             ready.lastTime = time;
@@ -53,7 +54,7 @@ export class CameraSwipes {
         this.readyHands.delete(landmark);
         this.hands.delete(landmark);
         this.verticalHands.delete(landmark);
-        if (!centredWrist(point)) {
+        if (!centredWrist(point, this.startRadius)) {
             this.centres.delete(landmark);
             return false;
         }

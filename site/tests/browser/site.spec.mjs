@@ -89,7 +89,7 @@ test("bilingual page, footer and controls work under the repository subpath", as
         navigator.mediaDevices.getUserMedia = (...args) => { ++window.cameraRequests; return original(...args); };
     });
     await page.goto("./");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Alors, on teste tout ça ?");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Alors, on teste ça ?");
     await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
     await expect(page.locator("#finale")).toBeHidden();
     await expect(page.locator("#away-screen")).toBeHidden();
@@ -117,7 +117,7 @@ test("system language takes priority over links and visitors can change it with 
             const otherLanguage = language === "fr" ? "en" : "fr";
             await page.goto(`./?lang=${otherLanguage}`);
             await expect(page.locator("html")).toHaveAttribute("lang", language);
-            const title = language === "fr" ? "Alors, on teste tout \u00e7a ?" : "Ready to give it a go?";
+            const title = language === "fr" ? "Alors, on teste \u00e7a ?" : "Ready to give it a go?";
             await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
             await page.getByRole("button", { name: otherLanguage.toUpperCase(), exact: true }).click();
             await expect(page.locator("html")).toHaveAttribute("lang", otherLanguage);
@@ -166,13 +166,13 @@ test("gestures advance and reverse the presentation; departure and return reveal
     const finale = await page.locator("#finale").boundingBox();
     expect(finale.y).toBeGreaterThanOrEqual(0);
     expect(finale.y + finale.height).toBeLessThanOrEqual(await page.evaluate(() => innerHeight));
-    await expect(page.locator('[data-text="finaleStar"]')).toHaveText("Vous êtes prêt. Continuez librement avec MIG.");
+    await expect(page.locator('[data-text="finaleStar"]')).toHaveText("Si le projet vous a plu, n’hésitez pas à lui laisser une ⭐ sur GitHub !");
     await page.getByRole("button", { name: "EN", exact: true }).click();
     await expect(page).toHaveTitle("Motion Input Grid : your move");
-    await expect(page.locator('[data-text="finaleStar"]')).toHaveText("You are ready. Keep exploring with MIG.");
+    await expect(page.locator('[data-text="finaleStar"]')).toHaveText("If you enjoyed the project, feel free to leave a ⭐ on GitHub!");
     await page.getByRole("button", { name: "FR", exact: true }).click();
     await expect(page).toHaveTitle("Motion Input Grid : \u00e0 vous de jouer");
-    await expect(page.locator('[data-text="finaleStar"]')).toHaveText("Vous êtes prêt. Continuez librement avec MIG.");
+    await expect(page.locator('[data-text="finaleStar"]')).toHaveText("Si le projet vous a plu, n’hésitez pas à lui laisser une ⭐ sur GitHub !");
     expect(await page.evaluate(() => window.demoCamera.state.running)).toBe(true);
     await expect(page.locator("#hands-tip")).toBeHidden();
     await expect(page.locator("#departure-tip")).toBeHidden();
@@ -347,7 +347,7 @@ test("edge repositioning is ignored and centred gestures still navigate with eit
         for (const y of [.85, .5, .15]) {
             await page.evaluate(({ landmark, y }) => {
                 const camera = window.demoCamera;
-                camera.coordinate = index => index === landmark ? { x: .2, y }
+                camera.coordinate = index => index === landmark ? { x: .1, y }
                     : index === 11 || index === 12 ? { x: .5, y: .5 } : null;
                 camera.frame(true);
                 camera.action("scroll_presentation");
@@ -361,6 +361,31 @@ test("edge repositioning is ignored and centred gestures still navigate with eit
         expect(await page.evaluate(() => scrollY)).toBe(0);
     }
 
+});
+
+test("a stable wrist outside the old central area can navigate the presentation", async ({ page }) => {
+    await mockCamera(page);
+    await page.clock.install();
+    await page.goto("./");
+    await page.locator("#start-camera").click();
+    await holdHandsInFrame(page);
+    await focusPresentation(page);
+    await page.evaluate(() => {
+        window.demoCamera.wrist = { x: .2, y: .5 };
+        window.demoCamera.coordinate = index => index === 15 ? window.demoCamera.wrist
+            : index === 11 || index === 12 ? { x: .5, y: .5 } : null;
+        window.demoCamera.frame(true);
+    });
+    await page.clock.runFor(200);
+    await page.evaluate(() => window.demoCamera.frame(true));
+    for (const x of [.25, .3]) {
+        await page.clock.runFor(150);
+        await page.evaluate(x => {
+            window.demoCamera.wrist = { x, y: .5 };
+            window.demoCamera.frame(true);
+        }, x);
+    }
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 2 / 3");
 });
 
 test("camera onboarding repeats its nudge while a hand is visible and stops after navigation", async ({ page }) => {
@@ -1139,6 +1164,7 @@ test("camera guidance stays inside the preview and boundary jitter does not flas
     await page.locator("#start-camera").click();
     await expect(page.locator(".camera-preview > p")).toHaveCount(1);
     await expect(page.locator(".camera-preview #camera-status")).toHaveCount(1);
+    await expect.poll(() => page.evaluate(() => Boolean(window.demoCamera?.state.running))).toBe(true);
     const edge = page.locator('[data-camera-edge="top"]');
     for (const y of [.24, .26, .24, .29, .31]) {
         await page.evaluate(y => {

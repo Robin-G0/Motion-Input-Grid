@@ -48,3 +48,20 @@ test("the finale slows continuously, fades to black and stays stopped", () => {
     assert.equal(later.progress, final.progress);
     assert.equal(later.season, "winter");
 });
+
+test("rainbows appear only in daylight immediately following rain", () => {
+    let previous = awayScene(60000);
+    let rainbows = 0;
+    for (let time = 60010; time < 120000; time += 10) {
+        const scene = awayScene(time);
+        if (scene.weather === "rainbow") {
+            assert.equal(scene.night, false);
+            if (previous.weather !== "rainbow") {
+                assert.equal(previous.weather, "rain");
+                rainbows++;
+            }
+        }
+        previous = scene;
+    }
+    assert.ok(rainbows > 0);
+});

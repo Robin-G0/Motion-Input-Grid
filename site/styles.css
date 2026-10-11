@@ -53,6 +53,27 @@ h2 { font-size: clamp(32px, 4.1vw, 68px); line-height: 1.1; letter-spacing: -.04
 .primary::after { content: ""; position: absolute; inset: -100% -50%; background: linear-gradient(110deg, transparent 40%, #52f8ff80 46%, #ef9aff73 51%, #ffdc6580 56%, transparent 62%); transform: translateX(-50%); pointer-events: none; }
 .primary:hover { box-shadow: 0 0 24px #4de9f880, 0 0 48px #cf76ff66, inset 0 1px 0 #ffffff80; }
 .primary:focus-visible { outline-color: #cfbefa; }
+.gold {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    color: #30200b;
+    border: 2px solid #e9c975;
+    background: linear-gradient(115deg, #c79536 0%, #f3d990 24%, #fff0bd 38%, #dbb353 52%, #f9e4a4 72%, #c79536 100%);
+    box-shadow: inset 0 1px 0 #fff7d9, inset 0 -2px 0 #8f651c66, 0 4px 14px #b9852533;
+    text-shadow: 0 1px 0 #fff4cd99;
+}
+.gold::after {
+    content: "";
+    position: absolute;
+    inset: -100% -50%;
+    background: linear-gradient(110deg, transparent 42%, #fffdf580 50%, transparent 58%);
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+.gold:hover { border-color: #fff0bd; box-shadow: inset 0 1px 0 #fffbea, inset 0 -2px 0 #8f651c66, 0 4px 22px #d4a64366; }
+.gold:active { box-shadow: inset 0 2px 5px #80541155, 0 2px 8px #b9852533; }
+.gold:focus-visible { outline-color: #d9ad47; }
 .secondary { background: transparent; color: var(--ink); }
 .privacy { font-size: 12px; line-height: 1.6; max-width: 470px; color: var(--muted); margin-top: 20px; }
 .camera-card { background: var(--camera-surface); padding: 20px; border: 1px solid var(--border); border-radius: 24px; box-shadow: 12px 18px 0 var(--camera-shadow); transform: rotate(2deg); }
@@ -208,6 +229,7 @@ body.is-away { background: #000; }
     .prismatic-text { animation: prism-colours 4s linear infinite alternate; }
     #slide[data-returned="true"] { animation: prism-colours 4s linear infinite alternate; }
     .primary::after { animation: prism-shine 3.5s ease-in-out infinite; }
+    .gold::after { animation: prism-shine 4.5s ease-in-out infinite; }
     .gesture-tip, .hands-tip { animation: prism-colours 4s linear infinite alternate; }
     .hand-left svg { animation: hand-sweep-left 6.4s ease-in-out infinite; }
     .hand-right svg { animation: hand-sweep-right 6.4s ease-in-out infinite; }

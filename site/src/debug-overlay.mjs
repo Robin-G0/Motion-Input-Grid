@@ -23,7 +23,10 @@ export function drawDebugOverlay(canvas, video, camera, swipes, enabled) {
         context.setLineDash(dashed ? [6, 5] : []);
         context.strokeRect((1 - x - w) * width, y * height, w * width, h * height);
     };
-    if (enabled.has("centre")) rectangle(.3, .3, .4, .4, "#ffd65f");
+    if (enabled.has("centre")) {
+        const radius = swipes.startRadius;
+        rectangle(.5 - radius, .5 - radius, radius * 2, radius * 2, "#ffd65f");
+    }
     if (enabled.has("edges")) {
         rectangle(.25, .25, .5, .5, "#ff8585");
         rectangle(.32, .32, .36, .36, "#ff8585", true);
