@@ -110,8 +110,8 @@ export const translations = {
         away: "Démo masquée pendant votre absence. Revenez devant la caméra ou appuyez sur Échap pour arrêter.",
         finaleEyebrow: "03 / Et ensuite ?",
         finaleTitle: "On peut faire toutes sortes de choses.",
-        finaleStar: "Si vous trouvez le projet intéressant, pourriez-vous lui accorder une 🌟 sur GitHub, s’il vous plaît ? Merci pour votre soutien !",
-        finaleLink: "Découvrez Motion Input Grid",
+        finaleStar: "Vous êtes prêt. Continuez librement avec MIG.",
+        finaleLink: "Voir sur GitHub",
         footerDescription: "Motion Input Grid, un projet de Robin.",
         repository: "Repository",
         downloads: "Téléchargements"
@@ -226,8 +226,8 @@ export const translations = {
         away: "Demo hidden while you’re away. Return to the camera or press Escape to stop.",
         finaleEyebrow: "03 / What’s next?",
         finaleTitle: "There are all kinds of things you can do.",
-        finaleStar: "If you find the project interesting, would you please consider giving it a 🌟 on GitHub? Thank you for your support!",
-        finaleLink: "Explore Motion Input Grid",
+        finaleStar: "You are ready. Keep exploring with MIG.",
+        finaleLink: "View on GitHub",
         footerDescription: "Motion Input Grid, a project by Robin.",
         repository: "Repository",
         downloads: "Downloads"

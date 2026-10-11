@@ -164,13 +164,13 @@ test("gestures advance and reverse the presentation; departure and return reveal
     const finale = await page.locator("#finale").boundingBox();
     expect(finale.y).toBeGreaterThanOrEqual(0);
     expect(finale.y + finale.height).toBeLessThanOrEqual(await page.evaluate(() => innerHeight));
-    await expect(page.locator('[data-text="finaleStar"]')).toContainText("GitHub");
+    await expect(page.locator('[data-text="finaleStar"]')).toHaveText("Vous êtes prêt. Continuez librement avec MIG.");
     await page.getByRole("button", { name: "EN", exact: true }).click();
     await expect(page).toHaveTitle("Motion Input Grid : your move");
-    await expect(page.locator('[data-text="finaleStar"]')).toHaveText("If you find the project interesting, would you please consider giving it a 🌟 on GitHub? Thank you for your support!");
+    await expect(page.locator('[data-text="finaleStar"]')).toHaveText("You are ready. Keep exploring with MIG.");
     await page.getByRole("button", { name: "FR", exact: true }).click();
     await expect(page).toHaveTitle("Motion Input Grid : \u00e0 vous de jouer");
-    await expect(page.locator('[data-text="finaleStar"]')).toContainText("🌟 sur GitHub");
+    await expect(page.locator('[data-text="finaleStar"]')).toHaveText("Vous êtes prêt. Continuez librement avec MIG.");
     expect(await page.evaluate(() => window.demoCamera.state.running)).toBe(true);
     await expect(page.locator("#hands-tip")).toBeHidden();
     await expect(page.locator("#departure-tip")).toBeHidden();
@@ -1144,7 +1144,8 @@ test("assistance teaches one-hand gestures without moving the page, then guides 
     const assistant = page.locator("#assistance");
     const next = assistant.locator("[data-assistance-next]");
     await expect(assistant).toHaveAttribute("data-step", "privacy");
-    await expect(assistant).toContainText("nothing is recorded");
+    await expect(assistant).toContainText("Nothing is recorded");
+    await expect(next).toHaveText("Activate the camera");
     expect(await page.evaluate(() => Boolean(window.demoCamera))).toBe(false);
     await next.click();
     await expect(assistant).toHaveAttribute("data-step", "aim");
@@ -1176,10 +1177,9 @@ test("assistance teaches one-hand gestures without moving the page, then guides 
         await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
     }
     await swipeHand(page, "scroll_presentation");
-    await expect(assistant).toHaveAttribute("data-step", "slides");
+    await expect(assistant).toHaveAttribute("data-step", "ribbonForward");
     await expect(page.locator("#presentation h2")).toBeInViewport();
     await page.clock.runFor(2200);
-    await next.click();
     await swipeHand(page, "next_slide");
     await expect(assistant).toHaveAttribute("data-step", "ribbonBack");
     await swipeHand(page, "previous_slide");
@@ -1189,6 +1189,7 @@ test("assistance teaches one-hand gestures without moving the page, then guides 
     await next.click();
     await swipeHand(page, "scroll_presentation");
     await expect(assistant).toHaveAttribute("data-step", "presence");
+    await expect(assistant.locator("[data-assistance-hint]")).toBeHidden();
     await page.clock.runFor(7500);
     await page.evaluate(() => window.demoCamera.frame(true));
     await expect(assistant).toContainText("cover the camera");
@@ -1200,6 +1201,9 @@ test("assistance teaches one-hand gestures without moving the page, then guides 
     await page.clock.runFor(350);
     await page.evaluate(() => window.demoCamera.frame(true));
     await expect(assistant).toHaveAttribute("data-step", "finale");
+    await expect(assistant.locator("[data-assistance-message]")).toHaveText("You are ready. Keep exploring with MIG.");
+    await expect(assistant.locator("[data-assistance-stop]")).toBeVisible();
+    await expect(assistant.locator("[data-assistance-github]")).toHaveText("View on GitHub");
     await expect(page.locator("#finale")).toBeVisible();
     await assistant.locator("[data-assistance-close]").click();
     await expect(assistant).toBeHidden();
@@ -1251,7 +1255,7 @@ test("an active guide allows manual scrolling, theme changes and gesture navigat
     await expect(assistant).toHaveAttribute("data-step", "scroll");
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
     await swipeHand(page, "scroll_presentation");
-    await expect(assistant).toHaveAttribute("data-step", "slides");
+    await expect(assistant).toHaveAttribute("data-step", "ribbonForward");
     await expect(page.locator("#presentation h2")).toBeInViewport();
     await assistant.locator("[data-assistance-close]").click();
     await page.clock.runFor(2200);
@@ -1296,7 +1300,7 @@ test("brief missing camera observations keep the outline steady; a closed guide 
 });
 
 
-test("assistance fits a phone, supports keyboard controls and closes after camera denial", async ({ page }) => {
+test("assistance fits a phone and retries camera denial directly from the guide", async ({ page }) => {
     await mockCamera(page, "Permission denied");
     await page.setViewportSize({ width: 390, height: 700 });
     await page.goto("./");
@@ -1308,7 +1312,90 @@ test("assistance fits a phone, supports keyboard controls and closes after camer
     expect(bubble.y + bubble.height).toBeLessThanOrEqual(700);
     await page.locator("[data-assistance-next]").focus();
     await page.keyboard.press("Enter");
-    await expect(page.locator("#assistance")).toBeHidden();
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "cameraError");
+    await expect(page.locator("[data-assistance-next]")).toHaveText("Réessayer");
     await expect(page.locator("#camera-status")).toContainText("refus");
-    await expect(page.locator("#start-assisted")).toBeVisible();
+    await page.evaluate(() => { window.nextCameraFailure = ""; });
+    await page.locator("[data-assistance-next]").click();
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "aim");
+    expect(await page.evaluate(() => window.demoCamera.state.running)).toBe(true);
+});
+
+test("the guide follows manual scrolling past the ribbon and back to previous sections", async ({ page }) => {
+    await mockCamera(page);
+    await page.clock.install();
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("./");
+    await page.locator("#start-assisted").click();
+    await page.locator("[data-assistance-next]").click();
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "aim");
+    await page.evaluate(() => {
+        window.demoCamera.coordinate = index => index === 16 ? null : { x: .5, y: .5 };
+    });
+    await holdHandsInFrame(page);
+    await focusPresentation(page);
+    await page.clock.runFor(100);
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "ribbonForward");
+    await swipeHand(page, "next_slide");
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "ribbonBack");
+    await finishRibbonAnimation(page);
+    await page.clock.runFor(2200);
+    await page.locator("#presence-demo").evaluate(node => node.scrollIntoView({ behavior: "instant" }));
+    await page.clock.runFor(100);
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "presence");
+    await expect(page.locator("[data-assistance-message]")).toHaveText("Sortez du cadre.");
+    await focusPresentation(page);
+    await page.clock.runFor(100);
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "ribbonForward");
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+    await page.clock.runFor(100);
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "scroll");
+});
+
+test("aiming keeps a visual hand through brief gaps and recovery resumes with a cross", async ({ page }) => {
+    await mockCamera(page);
+    await page.clock.install();
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("./");
+    await page.locator("#start-assisted").click();
+    await page.locator("[data-assistance-next]").click();
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "aim");
+    await page.evaluate(() => {
+        window.demoCamera.coordinate = index => window.demoCamera.detected && index !== 16 ? { x: .2, y: .4 } : null;
+        window.demoCamera.frame(true);
+    });
+    const pointer = page.locator("[data-assistance-pointer]");
+    await expect(pointer.locator(".aim-hand")).toBeVisible();
+    await expect(pointer.locator(".aim-cross")).toBeHidden();
+    await page.clock.runFor(100);
+    await page.evaluate(() => window.demoCamera.frame(false));
+    await expect(pointer).toBeVisible();
+    await page.clock.runFor(250);
+    await page.evaluate(() => window.demoCamera.frame(false));
+    await expect(pointer).toBeHidden();
+    await page.evaluate(() => {
+        window.demoCamera.coordinate = () => ({ x: .5, y: .5 });
+        window.demoCamera.frame(true);
+    });
+    await expect(page.locator("[data-assistance-message]")).toHaveText("Gardez une seule main visible.");
+    await expect(pointer).toBeHidden();
+    await page.evaluate(() => {
+        window.demoCamera.coordinate = index => window.demoCamera.detected && index !== 16 ? { x: .5, y: .5 } : null;
+        window.demoCamera.frame(true);
+    });
+    await page.clock.runFor(600);
+    await page.evaluate(() => window.demoCamera.frame(true));
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "right");
+    await focusPresentation(page);
+    await page.clock.runFor(100);
+    await page.evaluate(() => window.demoCamera.frame(false));
+    await page.clock.runFor(4100);
+    await page.evaluate(() => window.demoCamera.frame(false));
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "recover");
+    await page.evaluate(() => window.demoCamera.frame(true));
+    await expect(pointer.locator(".aim-cross")).toBeVisible();
+    await expect(pointer.locator(".aim-hand")).toBeHidden();
+    await page.clock.runFor(600);
+    await page.evaluate(() => window.demoCamera.frame(true));
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "ribbonForward");
 });

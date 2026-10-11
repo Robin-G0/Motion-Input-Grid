@@ -106,7 +106,7 @@
                 <p class="eyebrow" data-text="finaleEyebrow"></p>
                 <h2 id="finale-title" data-text="finaleTitle"></h2>
                 <p data-text="finaleStar"></p>
-                <a class="button primary" data-link="repository" data-text="finaleLink"></a>
+                <a class="button secondary" data-link="repository" data-text="finaleLink"></a>
                 <button class="button danger" id="finale-stop-camera" type="button" data-text="stop" hidden></button>
             </section>
             <div class="gesture-tip" id="scroll-gesture-tip" role="status" hidden><span class="gesture-arrow" aria-hidden="true">↑</span><span class="gesture-pictogram hand-up hand-up-left" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#gesture-hand" transform="translate(100 0) scale(-1 1)"/></svg></span><span class="visually-hidden" data-text="scrollShort"></span><span class="gesture-pictogram hand-up hand-up-right" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#gesture-hand"/></svg></span><p class="visually-hidden" data-text="scrollTip"></p></div>
@@ -127,14 +127,25 @@
     </div>
     <section id="assistance" role="dialog" aria-modal="false" aria-labelledby="assistance-title" hidden>
         <div class="assistance-shade" aria-hidden="true"></div>
-        <div class="assistance-target" data-assistance-target aria-hidden="true" hidden><span class="aim-circle"></span><span class="aim-pointer" data-assistance-pointer hidden>➜</span></div>
+        <div class="assistance-target" data-assistance-target aria-hidden="true" hidden>
+            <span class="aim-circle"></span>
+            <span class="aim-pointer" data-assistance-pointer hidden>
+                <svg class="aim-hand" viewBox="0 0 100 100"><use href="#gesture-hand"/></svg>
+                <span class="aim-cross">+</span>
+            </span>
+        </div>
         <div class="assistance-gesture" data-assistance-gesture aria-hidden="true" hidden><svg viewBox="0 0 100 100"><use href="#gesture-hand"/></svg><span>→</span></div>
         <div class="assistance-bubble">
             <span class="assistance-cassette" aria-hidden="true">📼</span>
             <h2 id="assistance-title" data-assistance-title></h2>
             <p data-assistance-message aria-live="polite"></p>
+            <p class="assistance-hint" data-assistance-hint hidden></p>
             <a data-assistance-source data-link="source" data-text="source"></a>
             <div class="assistance-actions"><button class="button primary" type="button" data-assistance-next></button><button class="button secondary" type="button" data-assistance-close></button></div>
+            <div class="assistance-actions assistance-secondary" data-assistance-secondary hidden>
+                <button class="button secondary" type="button" data-assistance-stop></button>
+                <a class="button secondary" data-assistance-github data-link="repository"></a>
+            </div>
         </div>
     </section>
     <div id="navigation-cooldown" role="progressbar" data-label="cooldownLabel" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><div data-cooldown-progress></div></div>

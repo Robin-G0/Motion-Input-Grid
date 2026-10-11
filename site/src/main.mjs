@@ -45,6 +45,7 @@ const cooldown = new NavigationCooldown(element("navigation-cooldown"), () => {
     // Clear native ordered gestures as well as camera-space samples.
     session?.tracker?.restart?.();
     assistance.render();
+    assistance.followViewport();
 }, locked => {
     element("previous-slide").disabled = locked;
     element("next-slide").disabled = locked;
@@ -60,6 +61,7 @@ const assistance = new Assistance(element("assistance"), {
     locked: () => cooldown.locked,
     running: () => Boolean(session?.state.running),
     startCamera,
+    stopCamera,
     focusCamera: frameCameraPreview,
     resetGestures: () => { cameraSwipes.reset(); session?.tracker?.restart?.(); },
     pauseHints: () => guide.pauseHints(),
@@ -284,6 +286,17 @@ function handleAction(event) {
 
 function stopCamera() {
     assistance.close();
+    releaseCamera();
+}
+
+function failCamera(message) {
+    const guided = Boolean(assistance.step);
+    releaseCamera();
+    setStatus(cameraError(message));
+    if (guided) assistance.go("cameraError");
+}
+
+function releaseCamera() {
     ++generation;
     const previousSession = session;
     session = null;
@@ -380,9 +393,7 @@ async function startCamera() {
         // MIGSession reports startup failures through state rather than throwing.
         if (!session.state.running) {
             console.error("MIG camera could not start:", session.state.status);
-            const failure = cameraError(session.state.status);
-            stopCamera();
-            setStatus(failure);
+            failCamera(session.state.status);
             return;
         }
         document.querySelector(".camera-card").classList.add("is-running");
@@ -392,16 +403,13 @@ async function startCamera() {
         frameCameraPreview();
         session.subscribe(state => {
             if (!state.running && !state.busy && session === candidate) {
-                const failure = cameraError(state.status);
-                stopCamera();
-                setStatus(failure);
+                failCamera(state.status);
             }
         });
     } catch (error) {
         if (run === generation) {
             console.error("MIG camera could not start:", error);
-            stopCamera();
-            setStatus(cameraError(error.name + " " + error.message));
+            failCamera(error.name + " " + error.message);
         }
     } finally {
         if (run === generation) {
