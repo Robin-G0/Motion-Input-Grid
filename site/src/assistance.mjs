@@ -35,8 +35,10 @@ export class Assistance {
         this.next.addEventListener("click", () => this.advance());
         root.querySelector("[data-assistance-close]").addEventListener("click", () => this.close());
         window.addEventListener("scroll", () => {
+            this.positionTarget();
             if (!this.options.locked()) this.followViewport();
         }, { passive: true });
+        window.addEventListener("resize", () => this.positionTarget(), { passive: true });
     }
 
     get blocking() { return ["privacy", "aim", "recover", "cooldown", "cameraError", ...Object.keys(exercises)].includes(this.step); }
@@ -102,6 +104,18 @@ export class Assistance {
         this.next.hidden = this.step === "presence";
         this.next.disabled = (this.step !== "finale" && this.options.locked()) || this.busy;
         this.root.querySelector("[data-assistance-target]").hidden = !["aim", "recover"].includes(this.step);
+        this.positionTarget();
+    }
+
+    positionTarget() {
+        const target = this.root.querySelector("[data-assistance-target]");
+        if (target.hidden) return;
+        const bounds = document.querySelector(".camera-preview").getBoundingClientRect();
+        Object.assign(target.style, {
+            left: `${bounds.left}px`, top: `${bounds.top}px`,
+            width: `${bounds.width}px`, height: `${bounds.height}px`,
+            right: "auto", bottom: "auto"
+        });
     }
 
     setMessage(text) {

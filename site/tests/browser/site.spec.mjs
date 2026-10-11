@@ -1180,7 +1180,14 @@ test("assistance teaches one-hand gestures without moving the page, then guides 
     await next.click();
     await expect(assistant).toHaveAttribute("data-step", "aim");
     await page.evaluate(() => window.demoCamera.frame(true));
-    await expect(assistant).toContainText("Place your hand");
+    await expect(assistant).toContainText("Step back");
+    const outline = assistant.locator(".aim-outline");
+    await expect(outline).toBeVisible();
+    const previewBounds = await page.locator(".camera-preview").boundingBox();
+    const outlineBounds = await outline.boundingBox();
+    expect(outlineBounds.height / previewBounds.height).toBeCloseTo(.3, 1);
+    expect(outlineBounds.x).toBeGreaterThan(previewBounds.x);
+    expect(outlineBounds.x + outlineBounds.width).toBeLessThan(previewBounds.x + previewBounds.width);
     await page.evaluate(() => {
         window.demoCamera.coordinate = index => index === 16 ? null : { x: .5, y: .5 };
     });
@@ -1525,7 +1532,7 @@ test("aiming keeps a visual hand through brief gaps and recovery resumes with a 
         window.demoCamera.coordinate = () => ({ x: .5, y: .5 });
         window.demoCamera.frame(true);
     });
-    await expect(page.locator("[data-assistance-message]")).toHaveText("Placez votre main dans la cible.");
+    await expect(page.locator("[data-assistance-message]")).toContainText("Reculez");
     await expect(pointer).toBeVisible();
     await page.evaluate(() => {
         window.demoCamera.coordinate = index => window.demoCamera.detected && index !== 16 ? { x: .5, y: .5 } : null;

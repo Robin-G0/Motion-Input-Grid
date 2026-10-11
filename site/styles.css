@@ -420,6 +420,9 @@ body.is-away { background: #000; }
 .assistance-bulb { float: right; font-size: 42px; margin-left: 12px; }
 .assistance-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .assistance-target { position: fixed; inset: 0; z-index: 39; }
+.aim-outline { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); height: 30%; width: auto; aspect-ratio: 1; fill: none; stroke: #ffd878; stroke-width: 2; stroke-linejoin: round; filter: drop-shadow(0 1px 3px #000); }
+#assistance[data-step="aim"] .aim-circle { display: none; }
+#assistance[data-step="recover"] .aim-outline { display: none; }
 .aim-circle { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 150px; height: 150px; border: 5px solid #ffd878; border-radius: 50%; box-shadow: 0 0 0 20px #ffd87825; }
 .aim-pointer { position: absolute; transform: translate(-50%, -50%); font-size: 76px; color: #65ffae; text-shadow: 0 2px 8px #000; }
 .aim-hand { display: block; width: 76px; height: 76px; fill: currentColor; }
