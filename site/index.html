@@ -143,7 +143,24 @@
     </section>
     <div id="navigation-cooldown" role="progressbar" data-label="cooldownLabel" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><div data-cooldown-progress></div></div>
     <div id="navigation-edge" aria-hidden="true" hidden></div>
-    <div id="away-screen" hidden><p class="visually-hidden" data-text="away" role="status"></p></div>
+    <div id="away-screen" hidden>
+        <p class="visually-hidden" data-text="away" role="status"></p>
+        <div id="away-easter-egg" hidden>
+            <canvas aria-hidden="true"></canvas>
+            <div class="away-reward" data-away-reward role="status" hidden>
+                <svg class="away-egg" viewBox="0 0 64 80" aria-hidden="true">
+                    <defs><clipPath id="away-egg-shape"><path d="M32 4C20 4 6 31 6 49C6 66 17 76 32 76S58 66 58 49C58 31 44 4 32 4Z"/></clipPath></defs>
+                    <g clip-path="url(#away-egg-shape)">
+                        <rect width="64" height="80" fill="#eee3f6"/>
+                        <path d="M0 20Q16 10 32 20T64 20V34Q48 44 32 34T0 34Z" fill="#ed9ea6"/>
+                        <path d="M0 48Q16 38 32 48T64 48V62Q48 72 32 62T0 62Z" fill="#a9d0b6"/>
+                        <circle cx="20" cy="42" r="3" fill="#f3c779"/><circle cx="44" cy="44" r="3" fill="#9dbfd6"/>
+                    </g>
+                </svg>
+                <p data-text="wellPlayed"></p>
+            </div>
+        </div>
+    </div>
     <noscript><p>Activez JavaScript pour essayer les gestes. / Enable JavaScript to try the gestures. <a href="https://github.com/Robin-G0/Motion-Input-Grid">GitHub</a></p></noscript>
 </body>
 </html>

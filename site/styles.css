@@ -91,6 +91,17 @@ video:not([src]) { background: transparent; }
 body.is-away { background: #000; }
 #away-screen { position: fixed; inset: 0; background: #000; z-index: 100; opacity: 0; }
 #away-screen.is-dark { opacity: 1; }
+#away-easter-egg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+#away-easter-egg canvas { display: block; width: 100%; height: 100%; animation: away-sky-reveal 2s ease-out; }
+.away-reward { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 16px; max-width: calc(100% - 40px); padding: 20px 28px; border: 2px solid transparent; border-radius: 24px; color: #f8f5fc; background: linear-gradient(#172131, #172131) padding-box, linear-gradient(110deg, #a9d0b6, #9dbfd6, #c0abd1, #ed9ea6, #f3c779) border-box; box-shadow: 0 0 32px #c0abd13d; overflow: hidden; }
+.away-reward p { margin: 0; font-size: clamp(20px, 4vw, 28px); font-weight: 650; white-space: nowrap; }
+.away-egg { width: 40px; height: 50px; flex-shrink: 0; }
+.away-reward::after { content: ""; position: absolute; inset: -50% -100%; pointer-events: none; background: linear-gradient(110deg, transparent 45%, #ffffff30 50%, transparent 55%); animation: away-reward-shine 2.5s ease-out both; }
+@keyframes away-sky-reveal { from { opacity: 0; } to { opacity: 1; } }
+@keyframes away-reward-shine { from { transform: translateX(-50%); } to { transform: translateX(50%); } }
+@media (prefers-reduced-motion: reduce) {
+    #away-easter-egg canvas, .away-reward::after { animation: none; }
+}
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 /* The history drawings are editable SVG; the grid uses ordinary buttons. */
 .history-illustration { position: relative; width: 100%; min-width: 0; height: clamp(340px, 44svh, 600px); }

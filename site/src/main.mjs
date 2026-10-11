@@ -1,4 +1,5 @@
 import { Assistance } from "./assistance.mjs";
+import { AwayEasterEgg } from "./away-easter-egg.mjs";
 import { ThemeToggle } from "./theme.mjs";
 import { NavigationInputGuard } from "./navigation-inputs.mjs";
 import { CameraFraming } from "./camera-framing.mjs";
@@ -18,6 +19,7 @@ import { cameraError, createCameraSession } from "./camera.mjs";
 const element = id => document.getElementById(id);
 const slides = new SlideController(translations.fr.slides.length, settings.slideDelay);
 const presence = new PresenceMonitor(settings);
+const awayEasterEgg = new AwayEasterEgg(element("away-easter-egg"));
 const cameraSwipes = new CameraSwipes();
 const ribbon = new SlideRibbon(element("slide"));
 const illustration = new HistoryIllustration(element("history-illustration"));
@@ -267,6 +269,7 @@ function updatePresence(time) {
     } else if (detected && status === "searching") {
         setStatus("tracking");
     }
+    awayEasterEgg.update(time, away && detected === false);
 }
 
 function handleAction(event) {
@@ -313,6 +316,7 @@ function failCamera(message) {
 }
 
 function releaseCamera() {
+    awayEasterEgg.reset();
     clearInterval(presenceTimer);
     presenceTimer = null;
     ++generation;
@@ -517,6 +521,7 @@ document.addEventListener("keydown", event => {
     if (event.key === "Escape") stopCamera();
 });
 document.addEventListener("visibilitychange", () => {
+    awayEasterEgg.reset();
     // Start new tracking intervals after tab suspension.
     cooldown.reset();
     greenSince = null;
@@ -529,7 +534,11 @@ document.addEventListener("visibilitychange", () => {
     element("departure-tip").hidden = true;
     presence.pause();
 });
-window.addEventListener("pagehide", () => { clearInterval(presenceTimer); session?.dispose(); });
+window.addEventListener("pagehide", () => {
+    awayEasterEgg.reset();
+    clearInterval(presenceTimer);
+    session?.dispose();
+});
 renderLanguage();
 
 // One elastic return per wheel gesture, including its momentum tail.

@@ -1,6 +1,7 @@
 // All visitor-facing text lives here. Keep the same keys in both languages.
 export const translations = {
     fr: {
+        wellPlayed: "Bien joué !",
         startAssisted: "Essayer avec le guide",
         assistance: "Assistance",
         lightTheme: "Passer au thème clair",
@@ -115,6 +116,7 @@ export const translations = {
         downloads: "Téléchargements"
     },
     en: {
+        wellPlayed: "Well played!",
         startAssisted: "Try with the guide",
         assistance: "Assistance",
         lightTheme: "Switch to light theme",
