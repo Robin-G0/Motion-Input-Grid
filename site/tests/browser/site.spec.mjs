@@ -1628,7 +1628,7 @@ test("C loads diagnostics on demand, switches overlays and stops sampling when c
     await expect(debug).toBeHidden();
 });
 
-test("low-confidence pose remnants no longer count as presence", async ({ page }) => {
+test("oscillating ghost pose confidence cannot keep presence active", async ({ page }) => {
     await mockCamera(page);
     await page.clock.install();
     await page.goto("./");
@@ -1644,7 +1644,14 @@ test("low-confidence pose remnants no longer count as presence", async ({ page }
         window.demoCamera.coordinate = () => ({ x: .5, y: .5, confidence: .7 });
         window.demoCamera.frame(true);
     });
-    await page.clock.runFor(700);
+    for (const confidence of [.95, .7, .95, .7, .95, .7]) {
+        await page.clock.runFor(100);
+        await page.evaluate(confidence => {
+            window.demoCamera.coordinate = () => ({ x: .5, y: .5, confidence });
+            window.demoCamera.frame(true);
+        }, confidence);
+    }
+    await page.clock.runFor(100);
     await expect(page.locator("#away-screen")).toHaveClass(/is-dark/);
     await page.evaluate(() => {
         window.demoCamera.coordinate = () => ({ x: .5, y: .5, confidence: .95 });

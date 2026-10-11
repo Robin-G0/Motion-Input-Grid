@@ -9,11 +9,13 @@ export class PresenceMonitor {
     reset() {
         this.state = "waiting";
         this.changedAt = null;
+        this.recoveredAt = null;
         this.detected = null;
     }
 
     pause() {
         this.changedAt = null;
+        this.recoveredAt = null;
         this.detected = null;
     }
 
@@ -30,8 +32,15 @@ export class PresenceMonitor {
             if (detected) this.state = "present";
         } else if (this.state === "present") {
             if (detected) {
-                this.changedAt = null;
+                if (this.changedAt !== null) {
+                    this.recoveredAt ??= time;
+                    if (time - this.recoveredAt >= this.returnDelay) {
+                        this.changedAt = null;
+                        this.recoveredAt = null;
+                    }
+                }
             } else {
+                this.recoveredAt = null;
                 this.changedAt ??= time;
                 if (time - this.changedAt >= this.absenceDelay) {
                     this.state = "away";

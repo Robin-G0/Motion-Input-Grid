@@ -45,6 +45,32 @@ test("absence completes without another camera frame and return cancels pending 
     assert.equal(presence.tick(10000), "waiting");
 });
 
+test("isolated confident false positives cannot continually cancel departure", () => {
+    const presence = new PresenceMonitor(settings);
+    presence.update(true, 0);
+    presence.update(false, 100);
+    for (const time of [200, 400, 600]) {
+        assert.equal(presence.update(true, time), "present");
+        presence.update(false, time + 50);
+    }
+    assert.equal(presence.update(false, 700), "away");
+    presence.update(true, 800);
+    assert.equal(presence.update(false, 850), "away");
+    presence.update(true, 900);
+    assert.equal(presence.update(true, 1200), "present");
+});
+
+test("sustained confident recovery cancels departure before hiding the page", () => {
+    const presence = new PresenceMonitor(settings);
+    presence.update(true, 0);
+    presence.update(false, 100);
+    presence.update(true, 200);
+    assert.equal(presence.update(true, 500), "present");
+    assert.equal(presence.update(false, 600), "present");
+    assert.equal(presence.tick(1199), "present");
+    assert.equal(presence.tick(1200), "away");
+});
+
 test("carousel stays bounded and manual navigation does not insert a gift", () => {
     const slides = new SlideController(3);
     assert.equal(slides.move(-1), 0);
