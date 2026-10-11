@@ -19,6 +19,7 @@ export class Assistance {
         this.root = root;
         this.options = options;
         this.step = null;
+        this.presentationStep = null;
         this.centredSince = null;
         this.missingSince = null;
         this.returnStep = null;
@@ -43,6 +44,7 @@ export class Assistance {
     get text() { return assistanceCopy[this.options.language()]; }
 
     open() {
+        this.presentationStep = null;
         this.focusBefore = document.activeElement;
         window.scrollTo({ top: 0, behavior: "instant" });
         this.options.focusCamera();
@@ -53,10 +55,13 @@ export class Assistance {
     }
 
     go(step) {
+        if (step === "ribbonForward" && this.presentationStep) step = this.presentationStep;
+        if (step === "gift" && !this.options.giftActive()) step = "presenceScroll";
         if (step === "presenceScroll" && !this.options.presentationComplete()) step = "ribbonBrowse";
         else if (step === "ribbonBrowse" && this.options.presentationComplete()) step = "presenceScroll";
         clearTimeout(this.cooldownTimer);
         this.step = step;
+        if (presentationSteps.has(step)) this.presentationStep = step;
         this.centredSince = null;
         this.marker.reset();
         this.focusedHand = null;
@@ -147,7 +152,7 @@ export class Assistance {
         if (section === "presence-demo" && this.step !== "presence") this.go("presence");
         else if (section === "finale" && this.step !== "finale") this.go("finale");
         else if (section === "presentation" && !presentationSteps.has(this.step)) {
-            this.go(["presence", "finale"].includes(this.step) ? "presenceScroll" : "ribbonForward");
+            this.go("ribbonForward");
         }
         else if (section === "welcome" && (presentationSteps.has(this.step)
             || ["presence", "finale"].includes(this.step))) this.go("scroll");

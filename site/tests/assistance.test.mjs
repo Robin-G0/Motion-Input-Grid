@@ -42,3 +42,15 @@ test("instruction changes preserve tracking, while camera practice resets its sa
     assert.equal(instance.action("next_slide"), true);
     assert.equal(instance.step, "right");
 });
+
+test("returning to the presentation restores its instruction instead of restarting it", () => {
+    const instance = guide("scroll");
+    instance.go("ribbonBack");
+    instance.go("scroll");
+    assert.equal(instance.presentationStep, "ribbonBack");
+    instance.go("ribbonForward");
+    assert.equal(instance.step, "ribbonBack");
+    instance.go("presenceScroll");
+    instance.go("presence");
+    assert.equal(instance.presentationStep, "ribbonBrowse");
+});

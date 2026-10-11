@@ -8,8 +8,11 @@ function plausibleTravel(previous, point, time) {
 
 // A gesture starts in the centre, then follows the wrist across the camera frame.
 export class CameraSwipes {
-    constructor({ distance = .16, raiseDistance = .28, raiseDuration = 250, raiseDrift = .2, duration = 2500, gap = 450 } = {}) {
+    constructor({ distance = .08, horizontalDuration = 100, centreDuration = 150,
+        raiseDistance = .28, raiseDuration = 250, raiseDrift = .2, duration = 2500, gap = 450 } = {}) {
         this.distance = distance;
+        this.horizontalDuration = horizontalDuration;
+        this.centreDuration = centreDuration;
         this.raiseDistance = raiseDistance;
         this.raiseDuration = raiseDuration;
         this.raiseDrift = raiseDrift;
@@ -55,12 +58,13 @@ export class CameraSwipes {
             return false;
         }
         const centre = this.centres.get(landmark);
-        if (!centre || time - centre.lastTime > this.gap) {
+        if (!centre || time - centre.lastTime > this.gap
+            || Math.hypot(point.x - centre.x, point.y - centre.y) > .015) {
             this.centres.set(landmark, { x: point.x, y: point.y, startTime: time, lastTime: time });
             return false;
         }
         centre.lastTime = time;
-        if (time - centre.startTime < 150) return false;
+        if (time - centre.startTime < this.centreDuration) return false;
         this.centres.delete(landmark);
         this.readyHands.set(landmark, { lastX: point.x, lastY: point.y, startTime: time, lastTime: time });
         this.hands.set(landmark, { start: centre.x, startY: centre.y, startTime: time, lastTime: time });
@@ -142,7 +146,8 @@ export class CameraSwipes {
             const distance = position - sample.start;
             if (Math.abs(distance) < .025 && Math.abs(point.y - sample.startY) < .025) sample.startTime = time;
             // A vertical sweep with some lateral drift must not change a slide first.
-            if (Math.abs(distance) >= this.distance && Math.abs(distance) > Math.abs(point.y - sample.startY) * 1.5) {
+            if (Math.abs(distance) >= this.distance && time - sample.startTime >= this.horizontalDuration
+                && Math.abs(distance) > Math.abs(point.y - sample.startY) * 1.5) {
                 // The camera preview is mirrored: increasing image x sweeps left on screen.
                 actions.push(distance > 0 ? "next_slide" : "previous_slide");
                 this.hands.delete(landmark);

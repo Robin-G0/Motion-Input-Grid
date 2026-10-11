@@ -98,7 +98,7 @@ test("a first forward hand gesture inserts a gift; leaving it restores the origi
 test("either wrist must dwell in the centre before a sweep and return there before another", async () => {
     const { CameraSwipes } = await import("../src/camera-swipes.mjs");
     for (const landmark of [15, 16]) {
-        for (const [dx, dy, action] of [[.24, 0, "next_slide"], [-.24, 0, "previous_slide"],
+        for (const [dx, dy, action] of [[.1, 0, "next_slide"], [-.1, 0, "previous_slide"],
             [0, -.44, "scroll_presentation"], [0, .44, "scroll_previous"]]) {
             const swipes = new CameraSwipes();
             let wrist = { x: .1, y: .1 };
@@ -116,6 +116,28 @@ test("either wrist must dwell in the centre before a sweep and return there befo
             wrist = { x: .5 - dx, y: .5 - dy };
             assert.deepEqual(swipes.update(session, 1200), []);
         }
+    }
+});
+
+test("short horizontal gestures need 100 ms and a fresh stable centre for the next gesture", async () => {
+    const { CameraSwipes } = await import("../src/camera-swipes.mjs");
+    for (const direction of [-1, 1]) {
+        const swipes = new CameraSwipes();
+        let wrist = { x: .5, y: .5 };
+        const session = { coordinate: index => index === 15 ? wrist : null };
+        swipes.update(session, 0);
+        swipes.update(session, 150);
+        wrist.x = .5 + direction * .081;
+        assert.deepEqual(swipes.update(session, 249), []);
+        assert.deepEqual(swipes.update(session, 250), [direction > 0 ? "next_slide" : "previous_slide"]);
+        wrist = { x: .5, y: .5 };
+        swipes.update(session, 300);
+        swipes.update(session, 449);
+        assert.equal(swipes.isArmed(449), false);
+        swipes.update(session, 450);
+        assert.equal(swipes.isArmed(450), true);
+        wrist.x = .5 - direction * .081;
+        assert.deepEqual(swipes.update(session, 550), [direction > 0 ? "previous_slide" : "next_slide"]);
     }
 });
 
@@ -191,6 +213,9 @@ test("slow horizontal sweeps survive brief occlusion without turning vertical dr
         let wrist;
         const actions = [];
         const session = { coordinate: index => index === 16 ? wrist : null };
+        wrist = { x: .5, y: .5 };
+        swipes.update(session, -200);
+        swipes.update(session, 0);
         for (let frame = 0; frame <= 20; frame++) {
             wrist = frame === 10 ? null : { x: .5 + direction * frame * .009, y: .5 };
             actions.push(...swipes.update(session, frame * 80));
@@ -344,7 +369,7 @@ test("a stationary central wrist remains armed before left sweeps and lowering",
     }
 });
 
-test("movement during the central dwell retains its initial position", async () => {
+test("a moving hand must settle before the central dwell arms a new gesture", async () => {
     const { CameraSwipes } = await import("../src/camera-swipes.mjs");
     const swipes = new CameraSwipes();
     let wrist = { x: .5, y: .5 };
@@ -353,7 +378,11 @@ test("movement during the central dwell retains its initial position", async () 
     wrist.x = .6;
     assert.deepEqual(swipes.update(session, 150), []);
     wrist.x = .7;
-    assert.deepEqual(swipes.update(session, 300), ["next_slide"]);
+    assert.deepEqual(swipes.update(session, 300), []);
+    assert.equal(swipes.isArmed(300), false);
+    swipes.update(session, 450);
+    wrist.x = .6;
+    assert.deepEqual(swipes.update(session, 550), ["previous_slide"]);
 });
 
 test("a plausible deliberate motion survives a brief lost detection", async () => {

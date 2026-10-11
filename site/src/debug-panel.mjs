@@ -124,6 +124,7 @@ export class DebugPanel {
             `${this.text.shoulders}: ${[11, 12].map(index =>
                 camera.coordinate(index)?.confidence?.toFixed(2) ?? "—").join(" / ")} ≥ ${minimumConfidence}`,
             `${this.text.horizontal}: ${swipes.distance}; ${this.text.vertical}: ${swipes.raiseDistance}`,
+            `${this.text.horizontal}: ≥ ${swipes.horizontalDuration} ms; centre: ${swipes.centreDuration} ms`,
             `${this.text.vertical}: ≥ ${swipes.raiseDuration} ms; max ${swipes.duration} ms; gap ≤ ${swipes.gap} ms`,
             `${this.text.drift}: ${swipes.raiseDrift}`,
             `${this.text.guide}: ${state.guide ?? "—"}; horizontal: ${state.horizontal}`
