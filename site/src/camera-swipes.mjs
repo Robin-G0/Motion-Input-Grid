@@ -1,4 +1,4 @@
-import { centredWrist, validWrist, handPosition } from "./hand-focus.mjs";
+import { centredWrist, validWrist, reliableWrist, handsVisible } from "./hand-focus.mjs";
 
 function plausibleTravel(previous, point, time) {
     const elapsed = Math.max(0, time - previous.lastTime) / 1000;
@@ -8,8 +8,10 @@ function plausibleTravel(previous, point, time) {
 
 // A gesture starts inside the frame, then follows the wrist across it.
 export class CameraSwipes {
-    constructor({ distance = .08, horizontalDuration = 100, centreDuration = 150, startRadius = .35,
-        raiseDistance = .196, raiseDuration = 175, raiseDrift = .2, duration = 2500, gap = 450 } = {}) {
+    constructor({ distance = .08, horizontalDuration = 100, centreDuration = 150, startRadius = .48,
+        raiseDistance = .19, raiseDuration = 175, raiseDrift = .2, duration = 2500, gap = 450,
+        requiredHands = null } = {}) {
+        this.requiredHands = requiredHands;
         this.distance = distance;
         this.horizontalDuration = horizontalDuration;
         this.centreDuration = centreDuration;
@@ -30,18 +32,36 @@ export class CameraSwipes {
     }
 
     isArmed(time, session, sourceLandmark = null) {
+        if (session && !this.canTrack(session)) return false;
+        if (session && sourceLandmark === null) {
+            const check = landmark => this.isArmed(time, session, landmark);
+            return this.requiredHands === 1 ? [15, 16].some(check) : [15, 16].every(check);
+        }
         for (const [landmark, hand] of this.readyHands) {
             if (sourceLandmark !== null && landmark !== sourceLandmark) continue;
             if (session) {
-                const point = handPosition(session, landmark);
-                if (!point || !plausibleTravel(hand, point, time)) continue;
+                const point = session.coordinate(landmark);
+                if (!this.validPoint(point) || !plausibleTravel(hand, point, time)) continue;
             }
             if (time - hand.lastTime <= this.gap && time - hand.startTime <= this.duration) return true;
         }
         return false;
     }
 
-    accept(landmark, point, time) {
+    validPoint(point) { return this.requiredHands === null ? validWrist(point) : reliableWrist(point); }
+
+    canTrack(session) {
+        return this.requiredHands === null || handsVisible(session, this.requiredHands);
+    }
+
+    canStart(session) {
+        return [15, 16].filter(index => {
+            const point = session.coordinate(index);
+            return this.validPoint(point) && centredWrist(point, this.startRadius);
+        }).length >= (this.requiredHands ?? 1);
+    }
+
+    accept(landmark, point, time, allowStart = true) {
         const ready = this.readyHands.get(landmark);
         if (ready && centredWrist(point, this.startRadius)
             && Math.hypot(point.x - ready.lastX, point.y - ready.lastY) < .025) ready.startTime = time;
@@ -54,22 +74,23 @@ export class CameraSwipes {
         this.readyHands.delete(landmark);
         this.hands.delete(landmark);
         this.verticalHands.delete(landmark);
-        if (!centredWrist(point, this.startRadius)) {
+        if (!allowStart || !centredWrist(point, this.startRadius)) {
             this.centres.delete(landmark);
             return false;
         }
         const centre = this.centres.get(landmark);
-        if (!centre || time - centre.lastTime > this.gap
-            || Math.hypot(point.x - centre.x, point.y - centre.y) > .015) {
-            this.centres.set(landmark, { x: point.x, y: point.y, startTime: time, lastTime: time });
+        if (!centre || time - centre.lastTime > this.gap || !plausibleTravel(centre, point, time)) {
+            this.centres.set(landmark, { lastX: point.x, lastY: point.y, startTime: time, lastTime: time });
             return false;
         }
         centre.lastTime = time;
+        centre.lastX = point.x;
+        centre.lastY = point.y;
         if (time - centre.startTime < this.centreDuration) return false;
         this.centres.delete(landmark);
         this.readyHands.set(landmark, { lastX: point.x, lastY: point.y, startTime: time, lastTime: time });
-        this.hands.set(landmark, { start: centre.x, startY: centre.y, startTime: time, lastTime: time });
-        this.verticalAction(landmark, centre, time);
+        this.hands.set(landmark, { start: point.x, startY: point.y, startTime: time, lastTime: time });
+        this.verticalAction(landmark, point, time);
         return true;
     }
 
@@ -108,10 +129,12 @@ export class CameraSwipes {
     }
 
     update(session, time, { horizontal = true } = {}) {
+        if (!this.canTrack(session)) { this.reset(); return []; }
+        const allowStart = this.canStart(session);
         const actions = [];
         for (const landmark of [15, 16]) {
-            const point = handPosition(session, landmark);
-            if (!validWrist(point)) {
+            const point = session.coordinate(landmark);
+            if (!this.validPoint(point)) {
                 this.centres.delete(landmark);
                 if (time - (this.readyHands.get(landmark)?.lastTime ?? -Infinity) > this.gap) {
                     this.readyHands.delete(landmark);
@@ -130,7 +153,7 @@ export class CameraSwipes {
                 this.onReject?.(landmark, "jump");
                 continue;
             }
-            if (!this.accept(landmark, point, time)) continue;
+            if (!this.accept(landmark, point, time, allowStart)) continue;
             const vertical = this.verticalAction(landmark, point, time);
             if (vertical) actions.push(vertical);
             if (!horizontal) { this.hands.delete(landmark); continue; }

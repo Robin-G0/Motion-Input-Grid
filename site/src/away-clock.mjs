@@ -1,4 +1,5 @@
 const minute = 60000;
+const startDelay = 30000;
 const cycleDuration = 12000;
 const slowdownStart = 48000;
 const slowdownDuration = minute - slowdownStart;
@@ -11,8 +12,8 @@ const weather = [
 ];
 
 export function awayScene(elapsed) {
-    if (elapsed < minute) return null;
-    const age = elapsed - minute;
+    if (elapsed < startDelay) return null;
+    const age = elapsed - startDelay;
     const complete = age >= minute;
     const slowing = Math.max(0, Math.min(1, (age - slowdownStart) / slowdownDuration));
     const easedTime = slowdownDuration * (1 - (1 - slowing) ** 3) / 3;

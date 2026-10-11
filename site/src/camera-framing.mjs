@@ -1,9 +1,10 @@
 import { StableCameraFrame } from "./stable-camera-frame.mjs";
-import { focusedWrist } from "./hand-focus.mjs";
+import { validWrist, handsVisible, handsCentred, primaryWrist } from "./hand-focus.mjs";
 
 // Wrist coordinates use the full video image, including its outer quarters.
-export function cameraFrame(session, previousEdges = [], focused = focusedWrist(session)) {
-    const hands = focused ? [focused.point] : [];
+export function cameraFrame(session, previousEdges = [], requiredHands = 2) {
+    const wrists = requiredHands === 1 ? [primaryWrist(session)] : [15, 16];
+    const hands = wrists.filter(index => index !== null).map(index => session.coordinate(index)).filter(validWrist);
     // Enter at the outer quarter; clear only after moving comfortably inward.
     const previous = new Set(previousEdges);
     const edges = new Set();
@@ -14,23 +15,21 @@ export function cameraFrame(session, previousEdges = [], focused = focusedWrist(
         if (hand.x < (previous.has("right") ? .32 : .25)) edges.add("right");
         if (hand.x > (previous.has("left") ? .68 : .75)) edges.add("left");
     }
-    return { edges: [...edges], centred: hands.length > 0 && edges.size === 0 };
+    return { edges: [...edges], centred: handsCentred(session, requiredHands) && edges.size === 0 };
 }
 
 export class CameraFraming {
-    constructor(preview) {
+    constructor(preview, requiredHands = 2) {
+        this.requiredHands = requiredHands;
         this.preview = preview;
         this.stability = new StableCameraFrame();
         this.centred = false;
         this.edges = [];
-        this.focusedHand = null;
     }
 
     update(session, time = performance.now()) {
-        const focused = focusedWrist(session, this.focusedHand);
-        this.focusedHand = focused?.landmark ?? null;
-        const raw = cameraFrame(session, this.edges, focused);
-        const visible = Boolean(focused);
+        const raw = cameraFrame(session, this.edges, this.requiredHands);
+        const visible = handsVisible(session, this.requiredHands);
         const frame = this.stability.update(raw, visible, time);
         this.preview.closest(".camera-card").classList.toggle("has-hands", frame.hasHands);
         this.edges = frame.edges;
@@ -43,7 +42,6 @@ export class CameraFraming {
 
     reset() {
         this.stability.reset();
-        this.focusedHand = null;
         this.centred = false;
         this.edges = [];
         this.preview.classList.remove("framing-confirmed");

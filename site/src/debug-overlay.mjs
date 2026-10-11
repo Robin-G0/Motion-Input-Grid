@@ -1,3 +1,5 @@
+import { centralFrameRadius } from "./hand-focus.mjs";
+
 const handColors = ["#65f2b0", "#77c7ff"];
 
 export function drawDebugOverlay(canvas, video, camera, swipes, enabled) {
@@ -24,7 +26,7 @@ export function drawDebugOverlay(canvas, video, camera, swipes, enabled) {
         context.strokeRect((1 - x - w) * width, y * height, w * width, h * height);
     };
     if (enabled.has("centre")) {
-        const radius = swipes.startRadius;
+        const radius = centralFrameRadius;
         rectangle(.5 - radius, .5 - radius, radius * 2, radius * 2, "#ffd65f");
     }
     if (enabled.has("edges")) {

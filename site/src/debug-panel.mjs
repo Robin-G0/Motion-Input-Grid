@@ -1,17 +1,18 @@
-import { handPosition } from "./hand-focus.mjs";
+import { validWrist } from "./hand-focus.mjs";
 import { drawDebugOverlay } from "./debug-overlay.mjs";
 
 const copy = {
     fr: {
         title: "Diagnostic caméra · C pour fermer", close: "Fermer", waiting: "Caméra arrêtée",
-        overlays: ["Points pose ≥ 0,6 (vert : gauche, bleu : droite)", "Moyenne des mains (grands points)",
-            "Zone de départ jaune : maintien 150 ms (cible du guide : 600 ms)",
+        overlays: ["Points pose ≥ 0,6 (vert : gauche, bleu : droite)", "Poignets de navigation (grands points)",
+            "Cadre jaune : départ central ≥ 0,8 ; suivi 150 ms, sans immobilité",
             "Limites rouges : bords 25 %, retour 32 %", "Seuils pointillés : déplacement depuis le départ",
             "Bras pose : épaule → coude → poignet (indices fixes)"],
         reasons: { missing: "Points absents ou peu fiables", centre: "Revenir dans la zone de départ",
-            dwell: "Maintenir dans la zone de départ", ready: "Main armée ; atteindre un seuil",
+            dwell: "Confirmer le suivi de la main", ready: "Main armée ; atteindre un seuil",
             stopped: "Caméra arrêtée", away: "Page masquée par la présence", onboarding: "Centrage initial requis",
-            cooldown: "Repos de navigation", unarmed: "Maintien de départ non validé", guide: "Geste absorbé par le guide",
+            framing: "Suivi des poignets absent ou peu fiable",
+            cooldown: "Repos de navigation", unarmed: "Suivi de départ non validé", guide: "Geste absorbé par le guide",
             outside: "Balayage horizontal hors du slideshow ou à sa limite",
             jump: "Saut de suivi rejeté ; recentrer la main (identité pose incertaine)",
             accepted: "Action acceptée", boundary: "Limite de navigation atteinte" },
@@ -21,14 +22,15 @@ const copy = {
     },
     en: {
         title: "Camera diagnostics · C to close", close: "Close", waiting: "Camera stopped",
-        overlays: ["Pose points ≥ 0.6 (green: left, blue: right)", "Hand averages (large dots)",
-            "Yellow start area: hold 150 ms (guide target: 600 ms)",
+        overlays: ["Pose points ≥ 0.6 (green: left, blue: right)", "Navigation wrists (large dots)",
+            "Yellow frame: central start ≥ 0.8; track 150 ms, no stillness required",
             "Red limits: edges 25%, clear at 32%", "Dashed thresholds: travel from the starting point",
             "Pose arms: shoulder → elbow → wrist (fixed indices)"],
         reasons: { missing: "Missing or low-confidence points", centre: "Return to the start area",
-            dwell: "Hold in the start area", ready: "Hand armed; reach a threshold",
+            dwell: "Confirm hand tracking", ready: "Hand armed; reach a threshold",
             stopped: "Camera stopped", away: "Page hidden by presence", onboarding: "Initial centering required",
-            cooldown: "Navigation recovery", unarmed: "Starting hold not validated", guide: "Gesture consumed by guide",
+            framing: "Missing or unreliable wrist tracking",
+            cooldown: "Navigation recovery", unarmed: "Starting tracking not validated", guide: "Gesture consumed by guide",
             outside: "Horizontal sweep outside the slideshow or at its boundary",
             jump: "Tracking jump rejected; recenter the hand (uncertain pose identity)",
             accepted: "Action accepted", boundary: "Navigation boundary reached" },
@@ -116,7 +118,10 @@ export class DebugPanel {
             if (!points.has(index)) points.set(index, session.coordinate(index));
             return points.get(index);
         } };
-        camera.hands = [15, 16].map(landmark => ({ landmark, point: handPosition(camera, landmark) }));
+        camera.hands = [15, 16].map(landmark => {
+            const point = camera.coordinate(landmark);
+            return { landmark, point: validWrist(point) ? point : null };
+        });
         const enabled = new Set([...this.root.querySelectorAll("input:checked")].map(input => input.value));
         drawDebugOverlay(this.canvas, this.video, camera, swipes, enabled);
         const lines = [

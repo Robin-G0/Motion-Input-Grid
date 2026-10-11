@@ -1,4 +1,5 @@
 export const centreRadius = .2;
+export const centralFrameRadius = .25;
 
 export function validWrist(point) {
     return point && Number.isFinite(point.x) && Number.isFinite(point.y)
@@ -6,8 +7,61 @@ export function validWrist(point) {
         && Number.isFinite(point.confidence ?? 1) && (point.confidence ?? 1) >= .6;
 }
 
+export function bothHandsVisible(session) {
+    return [15, 16].every(index => validWrist(session.coordinate(index)));
+}
+
+export function bothHandsCentred(session) {
+    return handsCentred(session);
+}
+
+export function reliableWrist(point) {
+    return validWrist(point) && (point.confidence ?? 1) >= .8;
+}
+
+export function handsVisible(session, requiredHands = 2) {
+    return [15, 16].filter(index => reliableWrist(session.coordinate(index))).length >= requiredHands;
+}
+
+export function handsCentred(session, requiredHands = 2) {
+    return [15, 16].filter(index => {
+        const point = session.coordinate(index);
+        return reliableWrist(point) && centredWrist(point, centralFrameRadius);
+    }).length >= requiredHands;
+}
+
+export function primaryWrist(session) {
+    let closest = null;
+    let distance = Infinity;
+    for (const index of [15, 16]) {
+        const point = session.coordinate(index);
+        if (!reliableWrist(point)) continue;
+        const squaredDistance = (point.x - .5) ** 2 + (point.y - .5) ** 2;
+        if (squaredDistance < distance) {
+            closest = index;
+            distance = squaredDistance;
+        }
+    }
+    return closest;
+}
+
+export function handsAtTargets(session, tolerance = .16, requiredHands = 2) {
+    if (requiredHands === 1) {
+        return [15, 16].some(index => {
+            const point = session.coordinate(index);
+            return reliableWrist(point) && centredWrist(point, tolerance);
+        });
+    }
+    if (!bothHandsCentred(session)) return false;
+    const hands = [15, 16].map(index => session.coordinate(index));
+    hands.sort((a, b) => a.x - b.x);
+    return hands[1].x - hands[0].x >= .15 && hands.every((point, index) =>
+        Math.abs(point.x - [.35, .65][index]) <= tolerance && Math.abs(point.y - .5) <= .2);
+}
+
 export function handPosition(session, wrist) {
     const anchor = session.coordinate(wrist);
+    if (anchor != null && !validWrist(anchor)) return null;
     let x = 0;
     let y = 0;
     let count = 0;

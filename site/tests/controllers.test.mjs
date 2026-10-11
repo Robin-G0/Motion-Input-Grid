@@ -121,7 +121,7 @@ test("a first forward hand gesture inserts a gift; leaving it restores the origi
     }
 });
 
-test("either wrist must dwell in the centre before a sweep and return there before another", async () => {
+test("either wrist needs a fresh continuous track before each sweep", async () => {
     const { CameraSwipes } = await import("../src/camera-swipes.mjs");
     for (const landmark of [15, 16]) {
         for (const [dx, dy, action] of [[.1, 0, "next_slide"], [-.1, 0, "previous_slide"],
@@ -145,10 +145,10 @@ test("either wrist must dwell in the centre before a sweep and return there befo
     }
 });
 
-test("both wrists can start gestures throughout the wider area after a stable hold", async () => {
+test("both wrists can start gestures across almost the entire camera", async () => {
     const { CameraSwipes } = await import("../src/camera-swipes.mjs");
     for (const landmark of [15, 16]) {
-        for (const [x, y] of [[.2, .5], [.8, .5], [.5, .2], [.5, .8]]) {
+        for (const [x, y] of [[.03, .5], [.97, .5], [.5, .03], [.5, .97]]) {
             const swipes = new CameraSwipes();
             const wrist = { x, y };
             const session = { coordinate: index => index === landmark ? wrist : null };
@@ -166,7 +166,7 @@ test("both wrists can start gestures throughout the wider area after a stable ho
     }
 });
 
-test("short horizontal gestures need 100 ms and a fresh stable centre for the next gesture", async () => {
+test("short horizontal gestures need 100 ms and fresh tracking for the next gesture", async () => {
     const { CameraSwipes } = await import("../src/camera-swipes.mjs");
     for (const direction of [-1, 1]) {
         const swipes = new CameraSwipes();
@@ -207,7 +207,7 @@ test("small, diagonal and instantaneous hand lifts do not scroll", async () => {
     }
 });
 
-test("either hand scrolls in both directions with 19.6 percent travel and 175 ms", async () => {
+test("either hand scrolls in both directions with 19 percent travel and 175 ms", async () => {
     const { CameraSwipes } = await import("../src/camera-swipes.mjs");
     for (const landmark of [15, 16]) {
         for (const direction of [-1, 1]) {
@@ -217,9 +217,9 @@ test("either hand scrolls in both directions with 19.6 percent travel and 175 ms
                 const session = { coordinate: index => index === landmark ? wrist : null };
                 swipes.update(session, 0);
                 swipes.update(session, 150);
-                wrist.y = .5 + direction * (limitedBy === "distance" ? .195 : .197);
+                wrist.y = .5 + direction * (limitedBy === "distance" ? .189 : .191);
                 assert.deepEqual(swipes.update(session, limitedBy === "duration" ? 324 : 325), []);
-                wrist.y = .5 + direction * .197;
+                wrist.y = .5 + direction * .191;
                 assert.deepEqual(swipes.update(session, 325), [direction > 0 ? "scroll_previous" : "scroll_presentation"]);
                 assert.deepEqual(swipes.update(session, 400), []);
             }
@@ -232,7 +232,7 @@ test("sweeps originating at the camera edges are ignored", async () => {
     for (const landmark of [15, 16]) {
         for (const direction of [1, -1]) {
             const swipes = new CameraSwipes();
-            let wrist = { x: .1, y: direction === 1 ? .9 : .1 };
+            let wrist = { x: .01, y: direction === 1 ? .99 : .01 };
             const session = { coordinate: index => index === landmark ? wrist : null };
             swipes.update(session, 0);
             wrist.y = .5;
@@ -253,9 +253,9 @@ test("slow vertical sweeps tolerate jitter and a brief occlusion in both directi
             swipes.update(session, -200);
             swipes.update(session, 0);
             const actions = [];
-            for (let frame = 0; frame <= 45; frame++) {
+            for (let frame = 0; frame <= 36; frame++) {
                 const y = .5 - direction * frame * .01;
-                wrist = frame === 20 ? null : { x: .5 + Math.sin(frame) * .005, y };
+                wrist = frame === 12 ? null : { x: .5 + Math.sin(frame) * .005, y };
                 actions.push(...swipes.update(session, frame * 40));
             }
             assert.deepEqual(actions, [direction === 1 ? "scroll_presentation" : "scroll_previous"]);
@@ -303,14 +303,17 @@ test("a reversal after stale tracking starts a new gesture instead of scrolling 
 });
 
 
-test("framing reserves a quarter at each edge and works with just one visible wrist", async () => {
+test("framing reserves a quarter at each edge and requires both visible wrists", async () => {
     const { cameraFrame } = await import("../src/camera-framing.mjs");
     for (const index of [15, 16]) {
         let hand = { x: .1, y: .9 };
         const session = { coordinate: landmark => landmark === index ? hand : null };
         assert.deepEqual(cameraFrame(session), { edges: ["bottom", "right"], centred: false });
         hand = { x: .5, y: .5 };
-        assert.deepEqual(cameraFrame(session), { edges: [], centred: true });
+        assert.deepEqual(cameraFrame(session), { edges: [], centred: false });
+        const both = { coordinate: landmark => landmark === index ? hand
+            : [15, 16].includes(landmark) ? { x: .5, y: .5 } : null };
+        assert.deepEqual(cameraFrame(both), { edges: [], centred: true });
         hand = null;
         assert.deepEqual(cameraFrame(session), { edges: [], centred: false });
     }
@@ -426,20 +429,42 @@ test("a stationary central wrist remains armed before left sweeps and lowering",
     }
 });
 
-test("a moving hand must settle before the central dwell arms a new gesture", async () => {
+test("continuous motion and tracking jitter do not require a stationary hand to arm", async () => {
     const { CameraSwipes } = await import("../src/camera-swipes.mjs");
     const swipes = new CameraSwipes();
     let wrist = { x: .5, y: .5 };
     const session = { coordinate: index => index === 16 ? wrist : null };
     swipes.update(session, 0);
-    wrist.x = .6;
-    assert.deepEqual(swipes.update(session, 150), []);
+    for (const [time, x, y] of [[50, .53, .48], [100, .56, .52], [150, .6, .5]]) {
+        wrist = { x, y };
+        assert.deepEqual(swipes.update(session, time), []);
+    }
+    assert.equal(swipes.isArmed(150), true);
     wrist.x = .7;
-    assert.deepEqual(swipes.update(session, 300), []);
-    assert.equal(swipes.isArmed(300), false);
-    swipes.update(session, 450);
-    wrist.x = .6;
-    assert.deepEqual(swipes.update(session, 550), ["previous_slide"]);
+    assert.deepEqual(swipes.update(session, 300), ["next_slide"]);
+});
+
+test("vertical gestures start near either side despite initial tracking jitter", async () => {
+    const { CameraSwipes } = await import("../src/camera-swipes.mjs");
+    for (const landmark of [15, 16]) {
+        for (const direction of [-1, 1]) {
+            const swipes = new CameraSwipes();
+            const x = landmark === 15 ? .05 : .95;
+            let wrist = { x, y: .5 };
+            const session = { coordinate: index => index === landmark ? wrist : null };
+            swipes.update(session, 0);
+            for (const [time, offset] of [[50, .02], [100, -.02], [150, 0]]) {
+                wrist = { x, y: .5 + offset };
+                assert.deepEqual(swipes.update(session, time), []);
+            }
+            assert.equal(swipes.isArmed(150), true);
+            wrist.y += direction * .12;
+            assert.deepEqual(swipes.update(session, 300), []);
+            wrist.y += direction * .12;
+            assert.deepEqual(swipes.update(session, 450),
+                [direction < 0 ? "scroll_presentation" : "scroll_previous"]);
+        }
+    }
 });
 
 test("a plausible deliberate motion survives a brief lost detection", async () => {
@@ -455,12 +480,12 @@ test("a plausible deliberate motion survives a brief lost detection", async () =
     assert.deepEqual(swipes.update(session, 500), ["scroll_previous"]);
 });
 
-test("framing follows the central wrist instead of a second resting hand", async () => {
+test("framing reports an outlying second wrist even when the first is central", async () => {
     const { cameraFrame } = await import("../src/camera-framing.mjs");
     const { focusedWrist } = await import("../src/hand-focus.mjs");
     const session = { coordinate: index => index === 15 ? { x: .5, y: .5 } : { x: .55, y: .95 } };
     assert.equal(focusedWrist(session).landmark, 15);
-    assert.deepEqual(cameraFrame(session, ["bottom"]), { edges: [], centred: true });
+    assert.deepEqual(cameraFrame(session, ["bottom"]), { edges: ["bottom"], centred: false });
 });
 
 test("slow central tracking drift does not periodically revoke gesture readiness", async () => {
@@ -475,11 +500,11 @@ test("slow central tracking drift does not periodically revoke gesture readiness
     }
 });
 
-test("centering needs 150 ms and authorizes only that wrist", async () => {
+test("initial tracking needs 150 ms and authorizes only that wrist", async () => {
     const { CameraSwipes } = await import("../src/camera-swipes.mjs");
     for (const landmark of [15, 16]) {
         const swipes = new CameraSwipes();
-        const session = { coordinate: index => index === landmark ? { x: .5, y: .5 } : { x: .9, y: .9 } };
+        const session = { coordinate: index => index === landmark ? { x: .5, y: .5 } : { x: .99, y: .99 } };
         swipes.update(session, 0);
         swipes.update(session, 149);
         assert.equal(swipes.isArmed(149, session, landmark), false);

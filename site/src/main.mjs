@@ -11,21 +11,24 @@ import { GestureGuide } from "./gesture-guide.mjs";
 import { HistoryIllustration } from "./history.mjs";
 import { CameraSwipes } from "./camera-swipes.mjs";
 import { settings } from "./settings.mjs";
-import { translations } from "./translations.mjs";
+import { translations, phoneTranslations } from "./translations.mjs";
 import { SlideController } from "./slides.mjs";
 import { PresenceMonitor } from "./presence.mjs";
 import { bodyPresent } from "./body-presence.mjs";
-import { handPosition } from "./hand-focus.mjs";
+import { centralFrameRadius } from "./hand-focus.mjs";
 import { cameraError, createCameraSession } from "./camera.mjs";
 
 const element = id => document.getElementById(id);
+const phone = matchMedia("(pointer: coarse)").matches && Math.min(innerWidth, innerHeight) <= 800;
+const requiredHands = phone ? 1 : 2;
+const pageText = () => phone ? { ...translations[language], ...phoneTranslations[language] } : translations[language];
 const slides = new SlideController(translations.fr.slides.length, settings.slideDelay);
 const presence = new PresenceMonitor(settings);
 const awayEasterEgg = new AwayEasterEgg(element("away-easter-egg"));
-const cameraSwipes = new CameraSwipes();
+const cameraSwipes = new CameraSwipes({ startRadius: centralFrameRadius, requiredHands });
 const ribbon = new SlideRibbon(element("slide"));
 const illustration = new HistoryIllustration(element("history-illustration"));
-const framing = new CameraFraming(document.querySelector(".camera-preview"));
+const framing = new CameraFraming(document.querySelector(".camera-preview"), requiredHands);
 const boundaries = new BoundaryFeedback(element("navigation-edge"));
 const guide = new GestureGuide(element("scroll-gesture-tip"), element("slide-gesture-tip"),
     element("slide"), [element("welcome"), element("presentation"), element("presence-demo"), element("finale")],
@@ -75,13 +78,16 @@ async function toggleDebug() {
 function updateDebug(currentSession, time) {
     if (!debugPanel?.active) return;
     debugPanel.update(currentSession, time, {
-        gate: away ? "away" : !handScrollReady ? "onboarding" : cooldown.locked ? "cooldown" : null,
+        gate: away ? "away" : !handScrollReady ? "onboarding" : !cameraSwipes.canTrack(currentSession) ? "framing"
+            : cooldown.locked ? "cooldown" : null,
         guide: assistance.step,
         horizontal: assistance.practice || slideFocused()
     }, cameraSwipes, settings.presenceConfidence);
 }
-const phone = matchMedia("(pointer: coarse)").matches && Math.min(innerWidth, innerHeight) <= 800;
 document.body.classList.toggle("phone", phone);
+if (phone) {
+    document.querySelectorAll(".hand-pair").forEach(icon => icon.setAttribute("viewBox", "0 0 100 100"));
+}
 const cooldown = new NavigationCooldown(element("navigation-cooldown"), () => {
     assistance.render();
     assistance.followViewport();
@@ -103,6 +109,7 @@ const cooldown = new NavigationCooldown(element("navigation-cooldown"), () => {
 
 const theme = new ThemeToggle(element("theme-toggle"), () => translations[language]);
 const assistance = new Assistance(element("assistance"), {
+    requiredHands,
     language: () => language,
     locked: () => cooldown.locked,
     running: () => Boolean(session?.state.running),
@@ -122,7 +129,7 @@ const assistance = new Assistance(element("assistance"), {
 });
 
 function renderSlide() {
-    const text = translations[language];
+    const text = pageText();
     const returned = slides.index === "gift";
     const original = text.slides[returned ? 0 : slides.index];
     const slide = returned ? { ...original, tag: text.returnTag,
@@ -143,14 +150,14 @@ function renderSlide() {
 
 function setStatus(nextStatus) {
     status = nextStatus;
-    const text = translations[language];
+    const text = pageText();
     element("camera-status").textContent = ["searching", "tracking"].includes(status)
-        ? (demoStarted ? text.frameHands : text.oneHandBeginHint) : text[status];
+        ? (demoStarted ? text.frameHands : text.cameraHint) : text[status];
     element("camera-status").hidden = !element("camera-status").textContent;
 }
 
 function renderLanguage() {
-    const text = translations[language];
+    const text = pageText();
     theme.render();
     assistance.render();
     if (debugPanel?.active) debugPanel.setLanguage(language);
@@ -182,11 +189,10 @@ function renderLanguage() {
 }
 
 function renderHandInstructions() {
-    const text = translations[language];
-    element("camera-placement").textContent = text.oneHandPlacement;
-    element("hands-tip").querySelector("[data-text=handsOutside]").textContent = text.oneHandOutside;
-    element("hands-tip").querySelector("[data-text=handsShort]").textContent = text.oneHandShort;
-    element("scroll-gesture-tip").classList.add("one-hand");
+    const text = pageText();
+    element("camera-placement").textContent = text.cameraPlacement;
+    element("hands-tip").querySelector("[data-text=handsOutside]").textContent = text.handsOutside;
+    element("hands-tip").querySelector("[data-text=handsShort]").textContent = text.handsShort;
 }
 
 function slideFocused() {
@@ -199,11 +205,6 @@ function showPage(animate = false) {
     away = false;
     if (animate) screenTransition.reveal();
     else screenTransition.reset();
-}
-
-function handInFrame(point) {
-    return point && Number.isFinite(point.x) && Number.isFinite(point.y)
-        && point.x >= 0 && point.x <= 1 && point.y >= 0 && point.y <= 1;
 }
 
 function prepareHandScrolling(handsVisible, time) {
@@ -221,8 +222,7 @@ function prepareHandScrolling(handsVisible, time) {
 }
 
 function updateHandHint(currentSession, time) {
-    const visibleHands = [15, 16].filter(index => handInFrame(handPosition(currentSession, index))).length;
-    const handsVisible = visibleHands > 0;
+    const handsVisible = cameraSwipes.canStart(currentSession);
     guide.setHandsVisible(handsVisible);
     prepareHandScrolling(handsVisible, time);
     if (handsVisible || away || !element("finale").hidden) {
@@ -258,7 +258,7 @@ function handlePresence(currentSession) {
     updateHandHint(currentSession, time);
     framing.update(currentSession, time);
     assistance.observe(currentSession, time, !departureSectionReached() && !away && !cooldown.locked);
-    if (handScrollReady && (!cooldown.locked || cooldown.sampling) && !away) {
+    if (handScrollReady && cameraSwipes.canTrack(currentSession) && (!cooldown.locked || cooldown.sampling) && !away) {
         for (const action of cameraSwipes.update(currentSession, time, { horizontal: assistance.practice || slideFocused() })) {
             handleAction({ action, centred: true });
             if (cooldown.locked) break;
@@ -309,8 +309,13 @@ function updatePresence(time) {
 
 function handleAction(event) {
     const gate = away ? "away" : !session?.state.running ? "stopped"
-        : !handScrollReady ? "onboarding" : cooldown.locked ? "cooldown" : null;
-    if (gate) { debugPanel?.event(event.action, gate); return; }
+        : !handScrollReady ? "onboarding" : !cameraSwipes.canTrack(session) ? "framing"
+            : cooldown.locked ? "cooldown" : null;
+    if (gate) {
+        if (gate === "framing") cameraSwipes.reset();
+        debugPanel?.event(event.action, gate);
+        return;
+    }
     const sourceLandmark = event.id?.endsWith("left_wrist") ? 15
         : event.id?.endsWith("right_wrist") ? 16 : null;
     if (!event.centred && !cameraSwipes.isArmed(performance.now(), session, sourceLandmark)) {

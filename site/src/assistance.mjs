@@ -1,6 +1,6 @@
-import { assistanceCopy } from "./assistance-copy.mjs";
+import { assistanceCopy, phoneAssistanceCopy } from "./assistance-copy.mjs";
 import { AimMarker } from "./aim-marker.mjs";
-import { focusedWrist, centredWrist } from "./hand-focus.mjs";
+import { handsVisible, handsAtTargets, reliableWrist, primaryWrist } from "./hand-focus.mjs";
 
 const exercises = { right: "previous_slide", left: "next_slide", down: "scroll_previous", up: "scroll_presentation" };
 const successors = { left: "down", down: "up", up: "scroll" };
@@ -27,9 +27,10 @@ export class Assistance {
         this.focusBefore = null;
         this.busy = false;
         this.cooldownTimer = null;
-        this.focusedHand = null;
         this.marker = new AimMarker();
         this.pointer = root.querySelector("[data-assistance-pointer]");
+        this.secondMarker = new AimMarker();
+        this.secondPointer = root.querySelector("[data-assistance-pointer-right]");
         this.hint = root.querySelector("[data-assistance-hint]");
         this.next = root.querySelector("[data-assistance-next]");
         this.next.addEventListener("click", () => this.advance());
@@ -43,7 +44,12 @@ export class Assistance {
 
     get blocking() { return ["privacy", "aim", "recover", "cooldown", "cameraError", ...Object.keys(exercises)].includes(this.step); }
     get practice() { return Object.hasOwn(exercises, this.step); }
-    get text() { return assistanceCopy[this.options.language()]; }
+    get requiredHands() { return this.options.requiredHands ?? 2; }
+    get text() {
+        const language = this.options.language();
+        const text = assistanceCopy[language];
+        return this.requiredHands === 1 ? { ...text, ...phoneAssistanceCopy[language] } : text;
+    }
 
     open() {
         this.presentationStep = null;
@@ -66,8 +72,9 @@ export class Assistance {
         if (presentationSteps.has(step)) this.presentationStep = step;
         this.centredSince = null;
         this.marker.reset();
-        this.focusedHand = null;
+        this.secondMarker?.reset();
         this.pointer.hidden = true;
+        if (this.secondPointer) this.secondPointer.hidden = true;
         this.stepStarted = performance.now();
         if (this.blocking) this.options.resetGestures();
         this.render();
@@ -217,32 +224,37 @@ export class Assistance {
 
     observe(session, time, recoveryAllowed) {
         if (!this.step) return;
-        const focused = focusedWrist(session, this.focusedHand);
-        if (focused && focused.landmark !== this.focusedHand) this.marker.reset();
-        this.focusedHand = focused?.landmark ?? this.focusedHand;
+        const visible = handsVisible(session, this.requiredHands);
         this.renderHint(time);
-        if (focused) this.missingSince = null;
+        if (visible) this.missingSince = null;
         else this.missingSince ??= time;
-        if (recoveryAllowed && !this.blocking && this.step !== "away" && time - this.missingSince >= 4000 && !focused) {
+        if (recoveryAllowed && !this.blocking && this.step !== "away" && time - this.missingSince >= 4000 && !visible) {
             this.returnStep = this.step;
             this.options.pauseHints();
             this.go("recover");
         }
         if (!["aim", "recover"].includes(this.step)) return;
-        const position = this.marker.update(focused?.point ?? null, time);
-        this.pointer.hidden = !position;
-        if (position) {
-            this.pointer.style.left = `${(1 - position.x) * 100}%`;
-            this.pointer.style.top = `${position.y * 100}%`;
+        const pointers = this.requiredHands === 1 ? [
+            [primaryWrist(session) ?? 15, this.marker, this.pointer]
+        ] : [
+            [15, this.marker, this.pointer], [16, this.secondMarker, this.secondPointer]
+        ];
+        for (const [landmark, marker, pointer] of pointers) {
+            const point = session.coordinate(landmark);
+            const position = marker.update(reliableWrist(point) ? point : null, time);
+            pointer.hidden = !position;
+            if (position) {
+                pointer.style.left = `${(1 - position.x) * 100}%`;
+                pointer.style.top = `${position.y * 100}%`;
+            }
         }
-        if (!focused) {
+        if (!visible) {
             this.centredSince = null;
             this.setMessage(this.text[this.step]);
             return;
         }
-        const hand = focused.point;
         this.setMessage(this.text[this.step]);
-        const centred = centredWrist(hand, this.centredSince === null ? .2 : .24);
+        const centred = handsAtTargets(session, this.centredSince === null ? .16 : .19, this.requiredHands);
         this.centredSince = centred ? this.centredSince ?? time : null;
         if (this.centredSince !== null && time - this.centredSince >= 600) this.finishAim();
     }

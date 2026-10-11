@@ -20,7 +20,9 @@ async function mockCamera(page, failure = "") {
                     this.state.status = failure;
                 }
                 subscribe(listener) { listener(this.state); return () => {}; }
-                coordinate() { return this.detected ? { x: .5, y: .5, z: 0 } : null; }
+                coordinate(index) {
+                    return this.detected ? { x: index === 15 ? .65 : index === 16 ? .35 : .5, y: .5, z: 0 } : null;
+                }
                 dispose() { this.state.running = false; this.stopped = true; }
                 frame(detected) { this.detected = detected; this.options.onFrame(this); }
                 action(action) { this.options.onAction({ action, id: action }); }
@@ -59,7 +61,7 @@ async function swipeHand(page, action, landmark = 15, wait = true) {
     await page.evaluate(landmark => {
         const camera = window.demoCamera;
         camera.wrist = { x: .5, y: .5 };
-        camera.coordinate = index => camera.detected && (index === landmark || index === 11 || index === 12)
+        camera.coordinate = index => camera.detected && (index === landmark || index === 11 || index === 12 || index === 15 || index === 16)
             ? (index === landmark ? camera.wrist : { x: .5, y: .5 }) : null;
         camera.frame(true);
     }, landmark);
@@ -257,7 +259,7 @@ test("real MIG session starts with local models, processes video and releases th
     });
     expect(webglAvailable, "The real MIG models require WebGL 2 in the test browser").toBe(true);
     await page.locator("#start-camera").click();
-    await expect(page.locator("#camera-status")).toContainText("Mettez une main", { timeout: 30000 });
+    await expect(page.locator("#camera-status")).toContainText("Mettez les deux mains", { timeout: 30000 });
     await expect(page.locator("#stop-camera")).toBeVisible();
     // No person has been detected in the blank video: the page must stay visible.
     await expect(page.locator("#page-content")).toBeVisible();
@@ -347,7 +349,7 @@ test("edge repositioning is ignored and centred gestures still navigate with eit
         for (const y of [.85, .5, .15]) {
             await page.evaluate(({ landmark, y }) => {
                 const camera = window.demoCamera;
-                camera.coordinate = index => index === landmark ? { x: .1, y }
+                camera.coordinate = index => index === landmark ? { x: .01, y }
                     : index === 11 || index === 12 ? { x: .5, y: .5 } : null;
                 camera.frame(true);
                 camera.action("scroll_presentation");
@@ -363,7 +365,33 @@ test("edge repositioning is ignored and centred gestures still navigate with eit
 
 });
 
-test("a stable wrist outside the old central area can navigate the presentation", async ({ page }) => {
+test("oscillating finger estimates cannot navigate when their wrist is absent or unreliable", async ({ page }) => {
+    await mockCamera(page);
+    await page.clock.install();
+    await page.goto("./");
+    await page.locator("#start-camera").click();
+    await holdHandsInFrame(page);
+    await focusPresentation(page);
+    for (const anchor of [null, { x: -.1, y: .5, confidence: .9 },
+        { x: .5, y: .5, confidence: .2 }]) {
+        for (let frame = 0; frame < 20; frame++) {
+            await page.clock.runFor(100);
+            await page.evaluate(({ anchor, frame }) => {
+                const point = { x: .5 + Math.sin(frame) * .25,
+                    y: .5 + Math.cos(frame) * .25, confidence: .95 };
+                window.demoCamera.coordinate = index => index === 15 ? anchor
+                    : [17, 19, 21].includes(index) ? point
+                        : index === 11 || index === 12 ? { x: .5, y: .5, confidence: .9 } : null;
+                window.demoCamera.frame(true);
+                window.demoCamera.options.onAction({ action: "next_slide", id: "next_slide_left_wrist" });
+            }, { anchor, frame });
+        }
+        await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
+        await expect(page.locator("#presentation h2")).toBeInViewport();
+    }
+});
+
+test("a moving wrist outside the central frame cannot start navigation", async ({ page }) => {
     await mockCamera(page);
     await page.clock.install();
     await page.goto("./");
@@ -371,20 +399,95 @@ test("a stable wrist outside the old central area can navigate the presentation"
     await holdHandsInFrame(page);
     await focusPresentation(page);
     await page.evaluate(() => {
-        window.demoCamera.wrist = { x: .2, y: .5 };
+        window.demoCamera.wrist = { x: .04, y: .5 };
         window.demoCamera.coordinate = index => index === 15 ? window.demoCamera.wrist
-            : index === 11 || index === 12 ? { x: .5, y: .5 } : null;
+            : [11, 12, 16].includes(index) ? { x: .5, y: .5 } : null;
         window.demoCamera.frame(true);
     });
-    await page.clock.runFor(200);
-    await page.evaluate(() => window.demoCamera.frame(true));
-    for (const x of [.25, .3]) {
+    for (const [x, y] of [[.06, .48], [.08, .52], [.1, .5]]) {
+        await page.clock.runFor(50);
+        await page.evaluate(({ x, y }) => {
+            window.demoCamera.wrist = { x, y };
+            window.demoCamera.frame(true);
+        }, { x, y });
+    }
+    for (const x of [.15, .2]) {
         await page.clock.runFor(150);
         await page.evaluate(x => {
             window.demoCamera.wrist = { x, y: .5 };
             window.demoCamera.frame(true);
         }, x);
     }
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
+    await swipeHand(page, "next_slide");
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 2 / 3");
+});
+
+test("central starts can finish outside the central frame through sweeps and native events", async ({ page }) => {
+    await mockCamera(page);
+    await page.clock.install();
+    await page.goto("./");
+    await expect(page.locator("#start-assisted-hint")).toHaveText("Recommandé pour une première visite");
+    await page.locator("#start-camera").click();
+    await holdHandsInFrame(page);
+    await focusPresentation(page);
+    for (const native of [false, true]) {
+        await finishRibbonAnimation(page);
+        await page.clock.runFor(3000);
+        await page.evaluate(() => {
+            const camera = window.demoCamera;
+            camera.wrist = { x: .7, y: .5, confidence: .9 };
+            camera.coordinate = index => index === 15 ? camera.wrist : { x: .5, y: .5, confidence: .9 };
+            camera.frame(true);
+        });
+        await page.clock.runFor(200);
+        await page.evaluate(() => window.demoCamera.frame(true));
+        await page.clock.runFor(150);
+        await page.evaluate(native => {
+            window.demoCamera.wrist.x = .81;
+            if (native) window.demoCamera.options.onAction({ action: "next_slide", id: "next_slide_left_wrist" });
+            else window.demoCamera.frame(true);
+        }, native);
+        await expect(page.locator("#slide-counter")).toHaveText(native ? "Slide 3 / 3" : "Slide 2 / 3");
+    }
+});
+
+test("an unreliable second wrist blocks sweeps and native events and clears progress", async ({ page }) => {
+    await mockCamera(page);
+    await page.clock.install();
+    await page.goto("./");
+    await page.locator("#start-camera").click();
+    await holdHandsInFrame(page);
+    await focusPresentation(page);
+    await page.clock.runFor(3000);
+    for (const point of [null, { x: .5, y: .5, confidence: .79 }]) {
+        await page.evaluate(() => {
+            const camera = window.demoCamera;
+            camera.left = { x: .5, y: .5, confidence: .9 };
+            camera.right = { x: .5, y: .5, confidence: .9 };
+            camera.coordinate = index => index === 15 ? camera.left : camera.right;
+            camera.frame(true);
+        });
+        await page.clock.runFor(200);
+        await page.evaluate(() => window.demoCamera.frame(true));
+        await page.clock.runFor(150);
+        await page.evaluate(point => {
+            const camera = window.demoCamera;
+            camera.right = point;
+            camera.left.x = .62;
+            camera.frame(true);
+            camera.options.onAction({ action: "next_slide", id: "next_slide_left_wrist" });
+        }, point);
+        await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
+        await page.evaluate(() => {
+            const camera = window.demoCamera;
+            camera.right = { x: .5, y: .5, confidence: .9 };
+            camera.frame(true);
+            camera.options.onAction({ action: "next_slide", id: "next_slide_left_wrist" });
+        });
+        await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
+    }
+    await swipeHand(page, "next_slide");
     await expect(page.locator("#slide-counter")).toHaveText("Slide 2 / 3");
 });
 
@@ -601,7 +704,7 @@ for (const viewport of [{ width: 844, height: 390 }, { width: 1440, height: 1080
     });
 }
 
-test("one-hand navigation stays ready when the other hand appears or disappears", async ({ page }) => {
+test("navigation pauses when either hand disappears and resumes with both hands", async ({ page }) => {
     await mockCamera(page);
     await page.clock.install();
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -611,8 +714,7 @@ test("one-hand navigation stays ready when the other hand appears or disappears"
     await expect(page.locator(".hero h1")).toBeHidden();
     await expect(page.locator(".hero .lead")).toBeHidden();
     await expect(page.locator(".hero .privacy")).toBeHidden();
-    await expect(page.locator("#camera-placement")).toContainText("follow the tooltips");
-    await page.evaluate(() => { window.demoCamera.coordinate = index => index === 16 ? null : { x: .5, y: .5 }; });
+    await expect(page.locator("#camera-placement")).toContainText("place both hands");
     await holdHandsInFrame(page);
     await expect(page.locator(".camera-preview")).toHaveCSS("outline-color", "rgb(56, 245, 129)");
     await swipeHand(page, "scroll_presentation");
@@ -620,12 +722,15 @@ test("one-hand navigation stays ready when the other hand appears or disappears"
     await page.evaluate(() => { window.demoCamera.coordinate = () => ({ x: .5, y: .5 }); window.demoCamera.frame(true); });
     await page.evaluate(() => { window.demoCamera.coordinate = index => window.demoCamera.detected && index !== 16 ? { x: .5, y: .5 } : null; window.demoCamera.frame(true); });
     await expect(page.locator("#hands-tip")).toBeHidden();
-    await expect(page.locator("#camera-status")).toContainText("centre");
+    await page.clock.runFor(3000);
+    await page.evaluate(() => window.demoCamera.frame(true));
+    await page.evaluate(() => window.demoCamera.action("next_slide"));
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
     await page.evaluate(() => window.demoCamera.frame(false));
     await page.clock.runFor(700);
     await page.evaluate(() => window.demoCamera.frame(false));
     await expect(page.locator("#hands-tip")).toBeVisible();
-    await expect(page.locator("#hands-tip")).toContainText("either hand");
+    await expect(page.locator("#hands-tip")).toContainText("both hands");
     await expect(page.locator("#away-screen")).toBeHidden();
 });
 
@@ -677,7 +782,7 @@ test("the final section suggests covering the camera after ten seconds and detec
     await expect(tip).toBeHidden();
 });
 
-test("one visible hand must stay green for one second and readiness resets on restart", async ({ page }) => {
+test("both hands must remain visible for one second and readiness resets on restart", async ({ page }) => {
     await mockCamera(page);
     await page.clock.install();
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -685,7 +790,7 @@ test("one visible hand must stay green for one second and readiness resets on re
     await page.getByRole("button", { name: "EN", exact: true }).click();
     await page.locator("#start-camera").click();
     await expect(page.locator("#start-camera")).toBeHidden();
-    await page.evaluate(() => { window.demoCamera.coordinate = index => window.demoCamera.detected && index !== 16 ? { x: .5, y: .5 } : null; window.demoCamera.frame(true); });
+    await page.evaluate(() => window.demoCamera.frame(true));
     await page.clock.runFor(800);
     await page.evaluate(() => window.demoCamera.frame(true));
     await expect(page.locator("#scroll-gesture-tip")).toBeHidden();
@@ -862,6 +967,53 @@ test("horizontal gestures stay disabled at the welcome and cooldown applies acro
     expect(await page.evaluate(() => scrollY)).toBe(top);
 });
 
+test("phone guide uses a single centred target and accepts either hand alone", async ({ browser }) => {
+    const page = await browser.newPage({ baseURL: test.info().project.use.baseURL,
+        viewport: { width: 390, height: 844 }, hasTouch: true, locale: "en-US" });
+    try {
+        await mockCamera(page);
+        await page.clock.install();
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await page.goto("./");
+        await page.locator("#start-assisted").click();
+        await page.locator("[data-assistance-next]").click();
+        await expect(page.locator("#assistance")).toHaveAttribute("data-step", "aim");
+        await expect(page.locator(".aim-left")).toBeVisible();
+        await expect(page.locator(".aim-right")).toBeHidden();
+        const target = await page.locator(".aim-left").boundingBox();
+        const preview = await page.locator(".camera-preview").boundingBox();
+        expect(target.x + target.width / 2).toBeCloseTo(preview.x + preview.width / 2, 0);
+        await page.evaluate(() => {
+            window.demoCamera.coordinate = index => index === 16 ? { x: .5, y: .5, confidence: .9 } : null;
+            window.demoCamera.frame(true);
+        });
+        await page.clock.runFor(650);
+        await page.evaluate(() => window.demoCamera.frame(true));
+        await expect(page.locator("#assistance")).toHaveAttribute("data-step", "right");
+        await page.locator("[data-assistance-close]").click();
+        await holdHandsInFrame(page);
+        await focusPresentation(page);
+        for (const wrist of [15, 16]) {
+            await finishRibbonAnimation(page);
+            await page.clock.runFor(3000);
+            await page.evaluate(wrist => {
+                const camera = window.demoCamera;
+                camera.wrist = { x: .5, y: .5, confidence: .9 };
+                camera.coordinate = index => index === wrist ? camera.wrist : null;
+                camera.frame(true);
+            }, wrist);
+            await page.clock.runFor(200);
+            await page.evaluate(() => window.demoCamera.frame(true));
+            await page.clock.runFor(150);
+            await page.evaluate(() => {
+                window.demoCamera.wrist.x = .61;
+                window.demoCamera.action("next_slide");
+            });
+            await expect(page.locator("#slide-counter")).toHaveText(wrist === 15 ? "Slide 2 / 3" : "Slide 3 / 3");
+        }
+    } finally { await page.close(); }
+});
+
 test("phone visitors get one-hand guidance and can finish and stop the demo", async ({ browser }) => {
     const page = await browser.newPage({ baseURL: test.info().project.use.baseURL, viewport: { width: 390, height: 844 }, hasTouch: true, locale: "en-US" });
     try {
@@ -872,8 +1024,14 @@ test("phone visitors get one-hand guidance and can finish and stop the demo", as
         await page.getByRole("button", { name: "EN", exact: true }).click();
         await expect(page.locator("#phone-note")).toContainText("more enjoyable on a computer");
         await page.locator("#start-camera").click();
+        await expect(page.locator("#start-camera")).toBeHidden();
+        await page.evaluate(() => {
+            window.demoCamera.coordinate = index => window.demoCamera.detected && (index === 15 || [11, 12].includes(index))
+                ? { x: .5, y: .5, confidence: .9 } : null;
+        });
         await holdHandsInFrame(page);
-        await expect(page.locator("#camera-placement")).toContainText("show one hand");
+        await expect(page.locator("#camera-placement")).toContainText("Place one hand");
+        await expect(page.locator(".preview-decoration .hand-pair use").last()).toBeHidden();
         await expect(page.locator(".hand-up-right")).toBeHidden();
         await page.locator("#presence-demo").evaluate(node => node.scrollIntoView({ behavior: "instant" }));
         await page.evaluate(() => window.demoCamera.frame(true));
@@ -937,7 +1095,7 @@ test("golden loading bar fills continuously and unlocks hand navigation after tw
     await page.clock.pauseAt(new Date(await page.evaluate(() => Date.now() + 1000)));
     await page.locator("#start-camera").click();
     await holdHandsInFrame(page);
-    await expect(page.locator("#camera-status")).toHaveText("Put one hand in the frame to begin the quick demo!");
+    await expect(page.locator("#camera-status")).toHaveText("Put both hands in the central frame to begin the quick demo!");
     await swipeHand(page, "scroll_presentation");
     const bar = page.locator("#navigation-cooldown");
     const fill = bar.locator("[data-cooldown-progress]");
@@ -989,7 +1147,7 @@ test("native MIG slide events remain connected to the page navigation", async ({
 });
 
 
-test("a slow sweep with a missing frame navigates down and back up", async ({ page }) => {
+test("a slow central sweep restarts after a missing frame and navigates down and back up", async ({ page }) => {
     await mockCamera(page);
     await page.clock.install();
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -999,18 +1157,19 @@ test("a slow sweep with a missing frame navigates down and back up", async ({ pa
     await holdHandsInFrame(page);
     for (const direction of [1, -1]) {
         await page.clock.runFor(3000);
-        await page.evaluate(() => {
-            window.demoCamera.coordinate = index => [11, 12, 15].includes(index) ? { x: .5, y: .5 } : null;
+        await page.evaluate(direction => {
+            window.demoCamera.coordinate = index => index === 15 ? { x: .5, y: direction === 1 ? .65 : .35 }
+                : [11, 12, 16].includes(index) ? { x: .5, y: .5 } : null;
             window.demoCamera.frame(true);
-        });
+        }, direction);
         await page.clock.runFor(200);
         await page.evaluate(() => window.demoCamera.frame(true));
-        for (let frame = 0; frame <= 45; frame++) {
+        for (let frame = 0; frame <= 36; frame++) {
             await page.evaluate(({ frame, direction }) => {
                 const camera = window.demoCamera;
                 camera.coordinate = index => index === 15
-                    ? frame === 20 ? null : { x: .5, y: .5 - direction * frame * .01 }
-                    : index === 11 || index === 12 ? { x: .5, y: .5 } : null;
+                    ? frame === 5 ? null : { x: .5, y: (direction === 1 ? .65 : .35) - direction * frame * .01 }
+                    : [11, 12, 16].includes(index) ? { x: .5, y: .5 } : null;
                 camera.frame(true);
             }, { frame, direction });
             await page.clock.runFor(40);
@@ -1021,7 +1180,7 @@ test("a slow sweep with a missing frame navigates down and back up", async ({ pa
 });
 
 
-test("camera edge guidance mirrors the image, marks all four limits and validates one centred hand", async ({ page }) => {
+test("camera edge guidance mirrors the image, marks all four limits and validates both hands", async ({ page }) => {
     await mockCamera(page);
     await page.clock.install();
     await page.goto("./");
@@ -1031,7 +1190,7 @@ test("camera edge guidance mirrors the image, marks all four limits and validate
     for (const [x, y, edges] of [[.1, .1, ["top", "right"]], [.9, .9, ["bottom", "left"]], [.5, .5, []]]) {
         await page.evaluate(({ x, y }) => {
             const camera = window.demoCamera;
-            camera.coordinate = index => index === 15 ? { x, y } : index === 11 || index === 12 ? { x: .5, y: .5 } : null;
+            camera.coordinate = index => index === 15 ? { x, y } : [11, 12, 16].includes(index) ? { x: .5, y: .5 } : null;
             camera.frame(true);
         }, { x, y });
         await page.clock.runFor(550);
@@ -1168,7 +1327,8 @@ test("camera guidance stays inside the preview and boundary jitter does not flas
     const edge = page.locator('[data-camera-edge="top"]');
     for (const y of [.24, .26, .24, .29, .31]) {
         await page.evaluate(y => {
-            window.demoCamera.coordinate = index => index === 15 ? { x: .5, y } : null;
+            window.demoCamera.coordinate = index => index === 15 ? { x: .5, y }
+                : index === 16 ? { x: .5, y: .5 } : null;
             window.demoCamera.frame(true);
         }, y);
         await page.clock.runFor(200);
@@ -1176,7 +1336,8 @@ test("camera guidance stays inside the preview and boundary jitter does not flas
         await expect(edge).toBeVisible();
     }
     await page.evaluate(() => {
-        window.demoCamera.coordinate = index => index === 15 ? { x: .5, y: .33 } : null;
+        window.demoCamera.coordinate = index => index === 15 ? { x: .5, y: .33 }
+            : index === 16 ? { x: .5, y: .5 } : null;
         window.demoCamera.frame(true);
     });
     await page.clock.runFor(550);
@@ -1185,7 +1346,7 @@ test("camera guidance stays inside the preview and boundary jitter does not flas
 });
 
 
-test("assistance teaches one-hand gestures without moving the page, then guides slides and presence", async ({ page }) => {
+test("assistance positions both hands, teaches gestures, then guides slides and presence", async ({ page }) => {
     test.setTimeout(60000);
     await mockCamera(page);
     await page.clock.install();
@@ -1207,16 +1368,14 @@ test("assistance teaches one-hand gestures without moving the page, then guides 
     await expect(assistant).toHaveAttribute("data-step", "aim");
     await page.evaluate(() => window.demoCamera.frame(true));
     await expect(assistant).toContainText("Step back");
-    const outline = assistant.locator(".aim-outline");
+    await expect(assistant.locator(".aim-outline")).toHaveCount(2);
+    const outline = assistant.locator(".aim-outline").first();
     await expect(outline).toBeVisible();
     const previewBounds = await page.locator(".camera-preview").boundingBox();
     const outlineBounds = await outline.boundingBox();
     expect(outlineBounds.height / previewBounds.height).toBeCloseTo(.3, 1);
     expect(outlineBounds.x).toBeGreaterThan(previewBounds.x);
     expect(outlineBounds.x + outlineBounds.width).toBeLessThan(previewBounds.x + previewBounds.width);
-    await page.evaluate(() => {
-        window.demoCamera.coordinate = index => index === 16 ? null : { x: .5, y: .5 };
-    });
     await holdHandsInFrame(page);
     await expect(assistant).toHaveAttribute("data-step", "right");
     const origin = await page.evaluate(() => scrollY);
@@ -1353,7 +1512,7 @@ test("camera sampling starts before recovery ends without unlocking navigation e
     expect(await page.evaluate(() => window.restarts)).toBe(0);
     await page.clock.runFor(80);
     await page.evaluate(() => {
-        window.demoCamera.wrist = { x: .5, y: .82 };
+        window.demoCamera.wrist = { x: .5, y: .72 };
         window.demoCamera.frame(true);
     });
     expect(await page.evaluate(() => scrollY)).toBe(0);
@@ -1464,7 +1623,7 @@ test("brief missing camera observations keep the outline steady; a closed guide 
     await page.clock.runFor(4100);
     await page.evaluate(() => window.demoCamera.frame(false));
     await expect(page.locator("#assistance")).toBeHidden();
-    await page.evaluate(() => { window.demoCamera.coordinate = index => index === 16 ? null : { x: .5, y: .5 }; window.demoCamera.frame(true); });
+    await page.evaluate(() => { window.demoCamera.coordinate = index => ({ x: index === 15 ? .65 : index === 16 ? .35 : .5, y: .5 }); window.demoCamera.frame(true); });
     await page.clock.runFor(700);
     await page.evaluate(() => window.demoCamera.frame(true));
     await expect(page.locator("#assistance")).toBeHidden();
@@ -1504,7 +1663,7 @@ test("the guide follows manual scrolling past the ribbon and back to previous se
     await page.locator("[data-assistance-next]").click();
     await expect(page.locator("#assistance")).toHaveAttribute("data-step", "aim");
     await page.evaluate(() => {
-        window.demoCamera.coordinate = index => index === 16 ? null : { x: .5, y: .5 };
+        window.demoCamera.coordinate = index => ({ x: index === 15 ? .65 : index === 16 ? .35 : .5, y: .5 });
     });
     await holdHandsInFrame(page);
     await focusPresentation(page);
@@ -1561,7 +1720,7 @@ test("aiming keeps a visual hand through brief gaps and recovery resumes with a 
     await expect(page.locator("[data-assistance-message]")).toContainText("Reculez");
     await expect(pointer).toBeVisible();
     await page.evaluate(() => {
-        window.demoCamera.coordinate = index => window.demoCamera.detected && index !== 16 ? { x: .5, y: .5 } : null;
+        window.demoCamera.coordinate = index => window.demoCamera.detected ? { x: index === 15 ? .65 : index === 16 ? .35 : .5, y: .5 } : null;
         window.demoCamera.frame(true);
     });
     await page.clock.runFor(600);
@@ -1596,7 +1755,7 @@ test("tracking teleports cannot navigate through either camera sweeps or native 
         const camera = window.demoCamera;
         camera.wrist = { x: .5, y: .5 };
         camera.coordinate = index => index === 15 ? camera.wrist
-            : [11, 12].includes(index) ? { x: .5, y: .5 } : null;
+            : [11, 12, 16].includes(index) ? { x: .5, y: .5 } : null;
         camera.frame(true);
     });
     await page.clock.runFor(200);
@@ -1714,7 +1873,7 @@ for (const reducedMotion of ["reduce", "no-preference"]) {
         const sky = page.locator("#away-easter-egg");
         const reward = sky.locator("[data-away-reward]");
         await expect(sky).toBeHidden();
-        await page.clock.fastForward(59000);
+        await page.clock.fastForward(29000);
         await expect(sky).toBeHidden();
         await page.clock.runFor(1100);
         await expect(sky).toBeVisible();
@@ -1756,11 +1915,11 @@ test("a brief return restarts the absence timer and Escape cancels the easter eg
     await page.evaluate(() => window.demoCamera.frame(true));
     await page.evaluate(() => window.demoCamera.frame(false));
     await page.clock.runFor(700);
-    await page.clock.fastForward(59000);
+    await page.clock.fastForward(29000);
     await page.evaluate(() => window.demoCamera.frame(true));
     await page.clock.runFor(100);
     await page.evaluate(() => window.demoCamera.frame(false));
-    await page.clock.fastForward(59000);
+    await page.clock.fastForward(29000);
     await expect(page.locator("#away-easter-egg")).toBeHidden();
     await page.clock.runFor(1200);
     await expect(page.locator("#away-easter-egg")).toBeVisible();
@@ -1776,7 +1935,7 @@ test("a brief return restarts the absence timer and Escape cancels the easter eg
     await page.clock.fastForward(65000);
     await expect(page.locator("#away-easter-egg")).toBeHidden();
     await page.evaluate(() => window.demoCamera.frame(false));
-    await page.clock.fastForward(60100);
+    await page.clock.fastForward(30100);
     await expect(page.locator("#away-easter-egg")).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(page.locator("#away-screen")).toBeHidden();
@@ -1825,7 +1984,7 @@ test("return during the black fade cancels its pending completion", async ({ pag
 });
 
 
-test("a larger target accepts a central hand while a second wrist rests at the bottom", async ({ page }) => {
+test("both target hands are required and a low second wrist cannot complete positioning", async ({ page }) => {
     await mockCamera(page);
     await page.clock.install();
     await page.goto("./");
@@ -1833,10 +1992,17 @@ test("a larger target accepts a central hand while a second wrist rests at the b
     await page.locator("[data-assistance-next]").click();
     await expect(page.locator("#assistance")).toHaveAttribute("data-step", "aim");
     await expect(page.locator(".aim-circle")).toHaveCSS("width", "150px");
-    await expect(page.locator(".aim-hand")).toHaveCSS("width", "76px");
+    await expect(page.locator(".aim-hand").first()).toHaveCSS("width", "76px");
     await page.evaluate(() => {
         window.demoCamera.coordinate = index => index === 15 ? { x: .68, y: .5 }
             : index === 16 ? { x: .5, y: .95 } : { x: .5, y: .5 };
+        window.demoCamera.frame(true);
+    });
+    await page.clock.runFor(650);
+    await page.evaluate(() => window.demoCamera.frame(true));
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "aim");
+    await page.evaluate(() => {
+        window.demoCamera.coordinate = index => ({ x: index === 15 ? .65 : index === 16 ? .35 : .5, y: .5 });
         window.demoCamera.frame(true);
     });
     await page.clock.runFor(650);
@@ -1899,7 +2065,7 @@ test("a native event from the other wrist cannot borrow the centred wrist author
     await holdHandsInFrame(page);
     await focusPresentation(page);
     await page.evaluate(() => {
-        window.demoCamera.coordinate = index => index === 16 ? { x: .9, y: .9 } : { x: .5, y: .5 };
+        window.demoCamera.coordinate = index => index === 16 ? { x: .99, y: .99 } : { x: .5, y: .5 };
         window.demoCamera.frame(true);
     });
     await page.clock.runFor(200);
@@ -1909,5 +2075,15 @@ test("a native event from the other wrist cannot borrow the centred wrist author
     });
     await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
     await page.evaluate(() => window.demoCamera.options.onAction({ action: "next_slide", id: "next_slide_left_wrist" }));
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
+    await page.evaluate(() => {
+        window.demoCamera.coordinate = () => ({ x: .5, y: .5, confidence: .9 });
+        window.demoCamera.frame(true);
+    });
+    await page.clock.runFor(200);
+    await page.evaluate(() => {
+        window.demoCamera.frame(true);
+        window.demoCamera.options.onAction({ action: "next_slide", id: "next_slide_left_wrist" });
+    });
     await expect(page.locator("#slide-counter")).toHaveText("Slide 2 / 3");
 });
