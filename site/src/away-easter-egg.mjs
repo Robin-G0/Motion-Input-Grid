@@ -1,6 +1,8 @@
 import { awayScene } from "./away-clock.mjs";
 import { AwaySky } from "./away-sky.mjs";
 
+// Well, you found it! Please try the regular way, too.
+// This animation took a while to implement. Two minutes away is all it asks :)
 export class AwayEasterEgg {
     constructor(root) {
         this.root = root;
