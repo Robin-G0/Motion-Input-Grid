@@ -51,13 +51,14 @@ export class AwayEasterEgg {
         if (!scene || document.hidden) return;
         const reduced = this.motionPreference.matches;
         const confetti = scene.celebration !== null && scene.celebration <= 4500;
+        const animated = !reduced && (!scene.complete || confetti);
         const key = `${scene.season}/${scene.weather}/${scene.night}/${scene.complete}/${confetti}`;
-        if ((!reduced && time - this.lastFrame >= 1000 / 30) || (reduced && key !== this.lastScene)) {
+        if ((animated && time - this.lastFrame >= 1000 / 30) || key !== this.lastScene) {
             this.sky.draw(scene, reduced);
             this.lastFrame = time;
             this.lastScene = key;
         }
-        if (!reduced && this.frame === null) {
+        if (animated && this.frame === null) {
             this.frame = requestAnimationFrame(next => {
                 this.frame = null;
                 this.paint(next);

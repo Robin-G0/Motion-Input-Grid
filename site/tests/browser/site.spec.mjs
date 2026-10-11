@@ -1205,9 +1205,11 @@ test("assistance teaches one-hand gestures without moving the page, then guides 
     await swipeHand(page, "previous_slide");
     await expect(assistant).toHaveAttribute("data-step", "gift");
     await expect(page.locator("#slide-title")).toHaveText("Pretty neat, right?");
+    expect(await page.locator("#slide").evaluate(node => getComputedStyle(node).backgroundImage))
+        .toContain("linear-gradient");
     await finishRibbonAnimation(page);
     await page.clock.runFor(2200);
-    await next.click();
+    await page.locator("#previous-slide").click();
     await expect(assistant).toHaveAttribute("data-step", "presenceScroll");
     await expect(assistant.locator("[data-assistance-message]")).toHaveText("Raise your hand to continue.");
     await swipeHand(page, "scroll_presentation");
@@ -1534,6 +1536,9 @@ for (const reducedMotion of ["reduce", "no-preference"]) {
         await expect(reward).toBeVisible();
         await expect(reward.locator("p")).toHaveText(reducedMotion === "reduce" ? "Bien joué !" : "Well played!");
         await expect(reward.locator("svg.away-egg")).toBeVisible();
+        expect(await sky.locator("canvas").evaluate(canvas =>
+            [...canvas.getContext("2d").getImageData(0, 0, 1, 1).data]))
+            .toEqual([0, 0, 0, 255]);
         expect(await sky.locator("canvas").evaluate(canvas => canvas.width > 0 && canvas.height > 0)).toBe(true);
         await test.info().attach("easter-egg", { body: await page.screenshot(), contentType: "image/png" });
         await page.evaluate(() => window.demoCamera.frame(true));

@@ -66,7 +66,7 @@ video:not([src]) { background: transparent; }
 .slide { display: grid; grid-template-columns: 1.3fr 1fr; padding: 32px; gap: 32px; border-radius: 26px; background: var(--mint); height: clamp(420px, 56svh, 740px); touch-action: pan-y; }
 .slide[data-color="peach"] { background: var(--peach); }
 .slide[data-color="lilac"] { background: var(--lilac); }
-.slide[data-returned="true"] { grid-template-columns: 1fr; text-align: center; place-items: center; }
+.slide[data-returned="true"] { grid-template-columns: 1fr; text-align: center; place-items: center; color: #243040; background: linear-gradient(120deg, #f0bbca, #f6d5af 22%, #f2e6b4 38%, #bce3cd 55%, #b8d8ee 72%, #d5bde9); }
 .slide[data-returned="true"] .slide-art { display: none; }
 .slide[data-returned="true"] .slide-copy > p, .slide[data-returned="true"] h3 { max-width: 740px; margin-inline: auto; }
 .slide-tag { font-size: 13px; font-weight: 650; }

@@ -65,3 +65,11 @@ test("rainbow ends extend under grass, which is painted over them", () => {
     assert.ok(calls.findLastIndex(call => call.name === "stroke")
         < calls.findIndex(call => call.name === "bezierCurveTo"));
 });
+
+test("after the finale only the black background remains", () => {
+    const { sky, calls } = recordingSky();
+    sky.draw({ complete: true, celebration: 5000 }, false);
+    assert.deepEqual(calls, [{ name: "fillRect", args: [0, 0, 1280, 720] }]);
+    assert.equal(sky.context.fillStyle, "#000");
+    assert.equal(sky.context.globalAlpha, 1);
+});

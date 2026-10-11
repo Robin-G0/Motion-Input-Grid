@@ -106,6 +106,7 @@ function renderSlide() {
     element("next-slide").disabled = cooldown.locked || !slides.canMove(1);
     element("slide-number").textContent = slide.number;
     element("slide-counter").textContent = `${text.slideLabel} ${returned ? "\u{1f381}" : slides.index + 1} / ${slides.count}`;
+    assistance.slideChanged();
 }
 
 function setStatus(nextStatus) {

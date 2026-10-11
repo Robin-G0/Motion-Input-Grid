@@ -30,6 +30,21 @@ test("four seasons include every weather, with alternating accelerating days and
     assert.equal(light.size, 2);
     const travel = time => awayScene(time + 100).progress - awayScene(time).progress;
     assert.ok(travel(110000) > travel(61000) * 3);
-    assert.ok(Math.abs(travel(121000) - 100 / 6000) < 1e-9);
-    assert.ok(travel(121000) < travel(110000));
+    assert.equal(travel(121000), 0);
+    assert.ok(travel(118000) < travel(110000));
+});
+
+test("the finale slows continuously, fades to black and stays stopped", () => {
+    const before = awayScene(107999);
+    const start = awayScene(108000);
+    assert.ok(Math.abs(start.progress - before.progress) < .003);
+    assert.equal(awayScene(117000).fade, 0);
+    assert.equal(awayScene(118500).fade, .5);
+    const final = awayScene(120000);
+    assert.equal(final.fade, 1);
+    assert.equal(final.complete, true);
+    const later = awayScene(180000);
+    assert.equal(later.motionAge, final.motionAge);
+    assert.equal(later.progress, final.progress);
+    assert.equal(later.season, "winter");
 });

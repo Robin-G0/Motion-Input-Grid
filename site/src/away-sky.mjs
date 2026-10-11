@@ -44,6 +44,16 @@ export class AwaySky {
 
     draw(scene, reducedMotion) {
         const context = this.context;
+        if (scene.complete) {
+            context.globalAlpha = 1;
+            context.fillStyle = "#000";
+            context.fillRect(0, 0, this.width, this.height);
+            this.drawConfetti(scene.celebration, reducedMotion);
+            context.globalAlpha = 1;
+            return;
+        }
+        const elapsedScene = scene;
+        scene = { ...scene, age: scene.motionAge ?? scene.age };
         const colors = palettes[scene.season];
         const progress = reducedMotion ? .4 : scene.progress;
         const daylight = scene.night ? 0 : Math.sin(Math.PI * scene.progress);
@@ -57,6 +67,11 @@ export class AwaySky {
         this.drawCelestial(scene.night, progress);
         this.drawWeather(scene, daylight, reducedMotion);
         this.drawHorizon(colors[1], daylight);
+        if (elapsedScene.fade > 0) {
+            context.globalAlpha = elapsedScene.fade;
+            context.fillStyle = "#000";
+            context.fillRect(0, 0, this.width, this.height);
+        }
         this.drawConfetti(scene.celebration, reducedMotion);
         context.globalAlpha = 1;
     }

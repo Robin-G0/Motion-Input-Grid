@@ -150,6 +150,10 @@ export class Assistance {
             || ["presence", "finale"].includes(this.step))) this.go("scroll");
     }
 
+    slideChanged() {
+        if (this.step === "gift" && !this.options.giftActive()) this.go("presenceScroll");
+    }
+
     renderHint(time) {
         this.hint.hidden = this.step !== "presence" || time - this.stepStarted < 7000;
         if (!this.hint.hidden) this.hint.textContent = this.text.cover;
