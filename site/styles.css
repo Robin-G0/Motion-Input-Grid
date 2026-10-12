@@ -155,13 +155,12 @@ body.is-away { background: #000; }
 .history-grid button:focus-visible { outline-offset: -5px; outline-color: #172620; }
 
 /* Short, centred gesture cards keep the detailed instructions for screen readers. */
-.gesture-tip, .hands-tip { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 20; display: flex; justify-content: center; align-items: center; gap: 12px; width: max-content; max-width: calc(100% - 40px); padding: 12px 20px; border: 2px solid #ffe5a0; border-radius: 20px; color: #332108; background: linear-gradient(110deg, #b78028, #ffebaf, #dcae49, #fff1c5, #b78028); background-size: 250% 100%; box-shadow: 0 0 28px #efc86655; font-size: 14px; font-weight: 750; pointer-events: none; }
+.gesture-tip { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 20; display: flex; justify-content: center; align-items: center; gap: 12px; width: max-content; max-width: calc(100% - 40px); padding: 12px 20px; border: 2px solid #ffe5a0; border-radius: 20px; color: #332108; background: linear-gradient(110deg, #b78028, #ffebaf, #dcae49, #fff1c5, #b78028); background-size: 250% 100%; box-shadow: 0 0 28px #efc86655; font-size: 14px; font-weight: 750; pointer-events: none; }
 .gesture-pictogram { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .gesture-pictogram svg { width: 48px; height: 58px; fill: #fff9; stroke: #513716; stroke-width: 4; stroke-linejoin: round; }
 .gesture-pictogram > span { font-size: 28px; }
-#page-content:has(#hands-tip:not([hidden])) #scroll-gesture-tip,
-#page-content:has(#hands-tip:not([hidden])) #slide-gesture-tip { visibility: hidden; }
-#page-content:has(#cover-camera-tip:not([hidden]), #departure-tip:not([hidden])) #hands-tip { visibility: hidden; }
+#page-content:has(.recovering-hands) #scroll-gesture-tip,
+#page-content:has(.recovering-hands) #slide-gesture-tip { visibility: hidden; }
 .arrow-button:disabled { opacity: .35; cursor: default; }
 #presentation { scroll-margin-top: 24px; }
 @keyframes prism-shine { 0%, 20% { transform: translateX(-50%); } 80%, 100% { transform: translateX(50%); } }
@@ -234,7 +233,7 @@ body.is-away { background: #000; }
     #slide[data-returned="true"] { animation: prism-colours 4s linear infinite alternate; }
     .primary::after { animation: prism-shine 3.5s ease-in-out infinite; }
     .gold::after { animation: prism-shine 4.5s ease-in-out infinite; }
-    .gesture-tip, .hands-tip { animation: prism-colours 4s linear infinite alternate; }
+    .gesture-tip { animation: prism-colours 4s linear infinite alternate; }
     .hand-left svg { animation: hand-sweep-left 6.4s ease-in-out infinite; }
     .hand-right svg { animation: hand-sweep-right 6.4s ease-in-out infinite; }
     .hand-cover svg { animation: hand-cover-demo 1.6s steps(1, end) infinite alternate; }
@@ -321,10 +320,10 @@ body.is-away { background: #000; }
 /* The full video stays visible, so guidance agrees with tracked coordinates. */
 .camera-preview video { object-fit: contain; }
 .camera-edge { position: absolute; pointer-events: none; z-index: 2; }
-[data-camera-edge="top"] { inset: 0 0 auto; height: 25%; background: linear-gradient(#ff8b8b99, transparent); }
-[data-camera-edge="bottom"] { inset: auto 0 0; height: 25%; background: linear-gradient(to top, #ff8b8b99, transparent); }
-[data-camera-edge="left"] { inset: 0 auto 0 0; width: 25%; background: linear-gradient(to right, #ff8b8b99, transparent); }
-[data-camera-edge="right"] { inset: 0 0 0 auto; width: 25%; background: linear-gradient(to left, #ff8b8b99, transparent); }
+[data-camera-edge="top"] { inset: 0 0 auto; height: 15%; background: linear-gradient(#ff8b8b99, transparent); }
+[data-camera-edge="bottom"] { inset: auto 0 0; height: 15%; background: linear-gradient(to top, #ff8b8b99, transparent); }
+[data-camera-edge="left"] { inset: 0 auto 0 0; width: 15%; background: linear-gradient(to right, #ff8b8b99, transparent); }
+[data-camera-edge="right"] { inset: 0 0 0 auto; width: 15%; background: linear-gradient(to left, #ff8b8b99, transparent); }
 .camera-card.is-running.has-hands .camera-preview { box-shadow: none; }
 @keyframes framing-valid { from { box-shadow: inset 0 0 0 5px #38f581, 0 0 24px #38f581aa; } to { box-shadow: inset 0 0 0 0 transparent, 0 0 0 transparent; } }
 .framing-confirmed { animation: framing-valid .9s ease-out; }
@@ -424,7 +423,7 @@ body.is-away { background: #000; }
 .camera-preview video { transition: visibility .2s; }
 .camera-preview.preview-offscreen video { visibility: hidden; }
 .camera-card.is-running .camera-preview { transition: outline-color .5s ease; box-shadow: none; }
-.gesture-tip, .hands-tip { background: transparent; border: 0; box-shadow: none; color: #d9a52c; padding: 8px; gap: 6px; }
+.gesture-tip { background: transparent; border: 0; box-shadow: none; color: #d9a52c; padding: 8px; gap: 6px; }
 #scroll-gesture-tip .hand-up-right { display: none; }
 .gesture-arrow { font-size: 38px; font-weight: 800; }
 #scroll-gesture-tip[data-direction="down"] .gesture-arrow { transform: rotate(180deg); }
@@ -432,17 +431,14 @@ body.is-away { background: #000; }
 .directional-hand.hand-right::before { content: "\2190"; }
 #slide-gesture-tip .gesture-pictogram svg { width: 72px; height: 87px; }
 #slide-gesture-tip .directional-hand::before { font-size: 44px; }
-.hands-tip { border: 3px solid #d9a52c; border-radius: 18px; width: 160px; height: 80px; position: fixed; }
-.hands-tip .hand-pair { width: 130px; height: 60px; }
-.hands-tip .gesture-pictogram { z-index: 1; }
 #assistance { pointer-events: none; }
 .assistance-shade { position: fixed; inset: 0; z-index: 35; background: #020713b3; }
 .assistance-highlight { position: relative; z-index: 36; box-shadow: 0 0 0 4px #ffd878, 0 0 32px #ffd87866 !important; }
 #presentation.assistance-highlight { box-shadow: none !important; }
 #navigation-cooldown.assistance-highlight { position: fixed; z-index: 40; }
-.assistance-bubble { position: fixed; z-index: 38; bottom: 16px; left: 50%; transform: translateX(-50%); width: min(760px, calc(100% - 32px)); max-height: calc(100svh - 32px); overflow: auto; padding: 20px 28px; border: 2px solid #ffd878; border-radius: 24px; color: var(--ink); background: var(--paper); pointer-events: auto; box-shadow: 0 12px 40px #0005; }
-.assistance-bubble h2 { font-size: 28px; margin: 0 0 10px; }
-.assistance-bubble p { font-size: clamp(18px, 2vw, 24px); line-height: 1.5; margin: 0 0 16px; }
+.assistance-bubble { position: fixed; z-index: 38; bottom: 16px; left: 50%; transform: translateX(-50%); width: min(520px, calc(100% - 32px)); max-height: min(45svh, 360px); overflow: auto; padding: 14px 18px; border: 2px solid #ffd878; border-radius: 24px; color: var(--ink); background: var(--paper); pointer-events: auto; box-shadow: 0 12px 40px #0005; }
+.assistance-bubble h2 { font-size: 20px; margin: 0 0 8px; }
+.assistance-bubble p { font-size: clamp(14px, 1.5vw, 17px); line-height: 1.4; margin: 0 0 10px; }
 .assistance-bulb { float: right; font-size: 42px; margin-left: 12px; }
 .assistance-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .assistance-target { position: fixed; inset: 0; z-index: 39; container-type: size; }
@@ -493,9 +489,9 @@ body.is-away { background: #000; }
     @keyframes practice-down { 0%, 100% { transform: translateY(-25px); } 65% { transform: translateY(25px); } }
 }
 
-/* A side panel leaves the central target visible in short landscape windows. */
+/* Compact controls leave more camera space in short landscape windows. */
 @media (min-width: 600px) and (max-height: 500px) {
-    .assistance-bubble { left: auto; right: 16px; transform: none; width: 40vw; padding: 14px; }
+    .assistance-bubble { padding: 10px 14px; }
     .assistance-bubble h2 { font-size: 20px; }
     .assistance-bubble p { font-size: 16px; }
     .assistance-actions .button { min-height: 40px; padding: 8px 12px; font-size: 12px; }
@@ -527,3 +523,29 @@ body.is-away { background: #000; }
     .slide[data-wrapped="true"] { animation: gift-wiggle 3.2s ease-in-out .8s 3; }
     @keyframes gift-wiggle { 0%, 55%, 100% { rotate: 0deg; } 62%, 78% { rotate: -2deg; } 70%, 86% { rotate: 2deg; } }
 }
+
+/* Keep the live camera above the compact guide, including short viewports. */
+.hero.camera-open .camera-card.tutorial-camera {
+    position: fixed; z-index: 36; top: 16px; left: 50%; margin: 0;
+    width: min(520px, calc(100vw - 32px), calc(var(--tutorial-camera-height, 240px) * var(--camera-ratio, 1.333)));
+    padding: 10px; transform: translateX(-50%); animation: none;
+}
+.hero.camera-open .camera-card.recovering-hands {
+    position: fixed; z-index: 40; top: auto; bottom: 16px; left: 50%; margin: 0;
+    width: min(320px, calc(100vw - 32px), calc(36svh * var(--camera-ratio, 1.333)));
+    padding: 8px; transform: translateX(-50%); animation: none;
+    box-shadow: 0 8px 32px #0006;
+}
+.camera-card.recovering-hands .camera-preview { aspect-ratio: var(--camera-ratio, 1.333); }
+.camera-card.recovering-hands video { visibility: visible; object-fit: contain; }
+.hero.camera-open .camera-card.recovering-hands.tutorial-camera {
+    top: 16px; bottom: auto; transform: translateX(-50%);
+    width: min(520px, calc(100vw - 32px), calc(var(--tutorial-camera-height, 240px) * var(--camera-ratio, 1.333)));
+}
+.recovering-hands #camera-status { display: none; }
+#camera-recovery { position: absolute; inset: 0; pointer-events: none; }
+#camera-recovery .recovery-left { left: 35%; }
+#camera-recovery .recovery-right { left: 65%; }
+.phone #camera-recovery .recovery-left { left: 50%; }
+.phone #camera-recovery .recovery-right { display: none; }
+#camera-recovery p { position: absolute; bottom: 8px; left: 8px; right: 8px; margin: 0; padding: 8px; border-radius: 8px; color: white; background: #142333e6; text-align: center; font-size: clamp(12px, 2vw, 16px); }

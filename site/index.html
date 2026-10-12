@@ -53,6 +53,11 @@
                         <div class="camera-edge" data-camera-edge="right" hidden></div>
                         <p id="camera-status" role="status" aria-live="polite"></p>
                         <canvas id="camera-overlay" aria-hidden="true" hidden></canvas>
+                        <div id="camera-recovery" hidden>
+                            <svg class="aim-outline recovery-left" viewBox="0 0 100 100" aria-hidden="true"><use href="#gesture-hand" transform="translate(100 0) scale(-1 1)"/></svg>
+                            <svg class="aim-outline recovery-right" viewBox="0 0 100 100" aria-hidden="true"><use href="#gesture-hand"/></svg>
+                            <p role="status" data-text="handsRecovery"></p>
+                        </div>
                     </div>
                 </aside>
             </section>
@@ -113,7 +118,6 @@
             <div class="gesture-tip slide-tip" id="slide-gesture-tip" role="status" hidden><span class="gesture-pictogram hand-left directional-hand" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#gesture-hand" transform="translate(100 0) scale(-1 1)"/></svg></span><span class="visually-hidden" data-text="slideShort"></span><span class="gesture-pictogram hand-right directional-hand" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#gesture-hand"/></svg></span><p class="visually-hidden" data-text="slideTip"></p></div>
             <div class="gesture-tip" id="departure-tip" role="status" hidden><span class="gesture-pictogram person-leaving" aria-hidden="true"><svg viewBox="0 0 100 100"><circle cx="42" cy="16" r="9"/><path d="M42 30 L36 55 L20 80 M36 55 L58 80 M40 35 L62 48 L77 40 M40 35 L20 48" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/><path d="M70 70 H94 M84 60 L94 70 L84 80" fill="none" stroke="currentColor" stroke-width="5"/></svg></span><span class="visually-hidden" data-text="departureShort"></span><p class="visually-hidden" data-text="departureTip"></p></div>
             <div class="gesture-tip" id="cover-camera-tip" role="status" hidden><span class="gesture-pictogram hand-cover" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#gesture-hand"/></svg></span><span class="visually-hidden" data-text="coverShort"></span><p class="visually-hidden" data-text="coverCamera"></p></div>
-            <div class="hands-tip" id="hands-tip" role="status" hidden><span class="gesture-pictogram" aria-hidden="true"><svg class="hand-pair" viewBox="0 0 220 100"><use href="#gesture-hand" transform="translate(100 0) scale(-1 1)"/><use href="#gesture-hand" x="120"/></svg></span><span class="visually-hidden" data-text="handsShort"></span><p class="visually-hidden" data-text="handsOutside"></p></div>
         </main>
         <footer class="footer">
             <p data-text="footerDescription"></p>

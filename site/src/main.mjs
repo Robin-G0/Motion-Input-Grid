@@ -49,7 +49,14 @@ let starting = false;
 let generation = 0;
 let away = false;
 let returnFocus = null;
-let handsMissingSince = null;
+let recoveryMissingSince = null;
+let recoveryCentredSince = null;
+let recoveringHands = false;
+const cameraCard = document.querySelector(".camera-card");
+const cameraHome = document.createElement("div");
+cameraHome.hidden = true;
+cameraHome.setAttribute("aria-hidden", "true");
+cameraCard.before(cameraHome);
 let departureStartedAt = null;
 let greenSince = null;
 let handScrollReady = false;
@@ -192,8 +199,6 @@ function renderLanguage() {
 function renderHandInstructions() {
     const text = pageText();
     element("camera-placement").textContent = text.cameraPlacement;
-    element("hands-tip").querySelector("[data-text=handsOutside]").textContent = text.handsOutside;
-    element("hands-tip").querySelector("[data-text=handsShort]").textContent = text.handsShort;
 }
 
 function slideFocused() {
@@ -226,14 +231,47 @@ function updateHandHint(currentSession, time) {
     const handsVisible = cameraSwipes.canStart(currentSession);
     guide.setHandsVisible(handsVisible);
     prepareHandScrolling(handsVisible, time);
-    if (handsVisible || away || !element("finale").hidden) {
-        handsMissingSince = null;
-        element("hands-tip").hidden = true;
-        return;
+}
+
+function resetHandRecovery() {
+    const resumeHints = recoveringHands && !assistance.step && session?.state.running;
+    recoveringHands = false;
+    recoveryMissingSince = null;
+    recoveryCentredSince = null;
+    cameraCard.classList.remove("recovering-hands");
+    cameraHome.hidden = true;
+    element("camera-recovery").hidden = true;
+    if (resumeHints) { guide.hintsPaused = false; guide.resume(); }
+}
+
+function updateHandRecovery(currentSession, time) {
+    if (away || departureSectionReached() || !element("finale").hidden) {
+        if (recoveringHands) resetHandRecovery();
+        recoveryMissingSince = null;
+        return false;
     }
-    // Ignore a brief tracking dropout so the hint does not flicker.
-    handsMissingSince ??= time;
-    element("hands-tip").hidden = time - handsMissingSince < 600;
+    if (cameraSwipes.canStart(currentSession)) recoveryMissingSince = null;
+    else recoveryMissingSince ??= time;
+    if (!recoveringHands && recoveryMissingSince !== null && time - recoveryMissingSince >= 4000) {
+        recoveringHands = true;
+        const preview = document.querySelector(".camera-preview");
+        cameraCard.style.setProperty("--camera-ratio", String(preview.clientWidth / preview.clientHeight));
+        if (cameraHome.hidden) cameraHome.style.height = `${cameraCard.offsetHeight}px`;
+        cameraHome.hidden = false;
+        cameraCard.classList.add("recovering-hands");
+        element("camera-recovery").hidden = false;
+        guide.pauseHints();
+    }
+    if (!recoveringHands) return false;
+    cameraSwipes.reset();
+    currentSession.tracker?.restart?.();
+    const centred = cameraSwipes.canStart(currentSession);
+    recoveryCentredSince = centred ? recoveryCentredSince ?? time : null;
+    if (recoveryCentredSince !== null && time - recoveryCentredSince >= 1000) {
+        resetHandRecovery();
+    }
+    // Also ignore the frame that ends recovery: returning hands cannot navigate.
+    return true;
 }
 
 function departureSectionReached() {
@@ -257,9 +295,11 @@ function handlePresence(currentSession) {
     if (document.hidden || currentSession !== session || !currentSession.state.running) return;
     const time = performance.now();
     updateHandHint(currentSession, time);
+    const recoveryFrame = updateHandRecovery(currentSession, time);
     framing.update(currentSession, time);
+    assistance.positionTarget();
     assistance.observe(currentSession, time, !departureSectionReached() && !away && !cooldown.locked);
-    if (handScrollReady && cameraSwipes.canTrack(currentSession) && (!cooldown.locked || cooldown.sampling) && !away) {
+    if (!recoveryFrame && handScrollReady && cameraSwipes.canTrack(currentSession) && (!cooldown.locked || cooldown.sampling) && !away) {
         for (const action of cameraSwipes.update(currentSession, time, { horizontal: assistance.practice || slideFocused() })) {
             handleAction({ action, centred: true });
             if (cooldown.locked) break;
@@ -280,11 +320,10 @@ function updatePresence(time) {
     if (!departureEnabled) presence.reset();
     const nextState = departureEnabled ? presence.tick(time) : "waiting";
     if (nextState === "away" && !away) {
+        resetHandRecovery();
         assistance.depart();
         guide.stop();
         cooldown.reset();
-        element("hands-tip").hidden = true;
-        handsMissingSince = null;
         away = true;
         returnFocus = document.activeElement;
         if (returnFocus instanceof HTMLElement) returnFocus.blur();
@@ -294,7 +333,6 @@ function updatePresence(time) {
         guide.resume();
         element("finale").hidden = false;
         element("finale-stop-camera").hidden = false;
-        element("hands-tip").hidden = true;
         cameraSwipes.reset();
         cooldown.start(true);
         setStatus("returned");
@@ -310,6 +348,7 @@ function updatePresence(time) {
 
 function handleAction(event) {
     const gate = away ? "away" : !session?.state.running ? "stopped"
+        : recoveringHands ? "onboarding"
         : !handScrollReady ? "onboarding" : !cameraSwipes.canTrack(session) ? "framing"
             : cooldown.locked ? "cooldown" : null;
     if (gate) {
@@ -323,7 +362,11 @@ function handleAction(event) {
         debugPanel?.event(event.action, "unarmed");
         return;
     }
-    if (assistance.action(event.action)) { debugPanel?.event(event.action, "guide"); return; }
+    const learnedSwipe = { right: "previous_slide", left: "next_slide" }[assistance.step] === event.action;
+    if (assistance.action(event.action)) {
+        if (learnedSwipe) guide.completeSwipe();
+        debugPanel?.event(event.action, "guide"); return;
+    }
     if (event.action === "scroll_presentation" || event.action === "scroll_previous") {
         if (guide.navigate(event.action === "scroll_presentation" ? 1 : -1)) {
             debugPanel?.event(event.action, "accepted");
@@ -378,16 +421,16 @@ function releaseCamera() {
     presence.reset();
     framing.reset();
     cameraSwipes.reset();
-    handsMissingSince = null;
+    resetHandRecovery();
     greenSince = null;
     handScrollReady = false;
     debugPanel?.stopped();
-    element("hands-tip").hidden = true;
     element("camera-placement").hidden = true;
     departureStartedAt = null;
     element("cover-camera-tip").hidden = true;
     element("departure-tip").hidden = true;
     guide.stop();
+    guide.swipeCompleted = false;
     cooldown.reset();
     element("finale-stop-camera").hidden = true;
     showPage();
@@ -544,8 +587,7 @@ document.addEventListener("visibilitychange", () => {
     greenSince = null;
     cameraSwipes.reset();
     if (document.hidden) guide.cancelNudge(true);
-    handsMissingSince = null;
-    element("hands-tip").hidden = true;
+    resetHandRecovery();
     departureStartedAt = null;
     element("cover-camera-tip").hidden = true;
     element("departure-tip").hidden = true;

@@ -178,10 +178,10 @@ test("navigation pauses when either hand disappears and resumes with both hands"
     await page.evaluate(() => window.demoCamera.action("next_slide"));
     await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
     await page.evaluate(() => window.demoCamera.frame(false));
-    await page.clock.runFor(700);
+    await page.clock.runFor(1000);
     await page.evaluate(() => window.demoCamera.frame(false));
-    await expect(page.locator("#hands-tip")).toBeVisible();
-    await expect(page.locator("#hands-tip")).toContainText("both hands");
+    await expect(page.locator("#camera-recovery")).toBeVisible();
+    await expect(page.locator("#camera-recovery")).toContainText("Please center your hands");
     await expect(page.locator("#away-screen")).toBeHidden();
 });
 

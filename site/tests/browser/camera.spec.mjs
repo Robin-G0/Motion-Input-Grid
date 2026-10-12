@@ -263,7 +263,7 @@ test("camera guidance stays inside the preview and boundary jitter does not flas
     await expect(page.locator(".camera-preview #camera-status")).toHaveCount(1);
     await expect.poll(() => page.evaluate(() => Boolean(window.demoCamera?.state.running))).toBe(true);
     const edge = page.locator('[data-camera-edge="top"]');
-    for (const y of [.24, .26, .24, .29, .31]) {
+    for (const y of [.14, .16, .14, .18, .19]) {
         await page.evaluate(y => {
             window.demoCamera.coordinate = index => index === 15 ? { x: .5, y }
                 : index === 16 ? { x: .5, y: .5 } : null;
@@ -274,7 +274,7 @@ test("camera guidance stays inside the preview and boundary jitter does not flas
         await expect(edge).toBeVisible();
     }
     await page.evaluate(() => {
-        window.demoCamera.coordinate = index => index === 15 ? { x: .5, y: .33 }
+        window.demoCamera.coordinate = index => index === 15 ? { x: .5, y: .21 }
             : index === 16 ? { x: .5, y: .5 } : null;
         window.demoCamera.frame(true);
     });

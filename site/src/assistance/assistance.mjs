@@ -1,6 +1,6 @@
 import { assistanceCopy, phoneAssistanceCopy } from "./assistance-copy.mjs";
 import { AimMarker } from "./aim-marker.mjs";
-import { handsVisible, handsAtTargets, reliableWrist, primaryWrist } from "../camera/hand-focus.mjs";
+import { handsVisible, handsCentred, handsAtTargets, reliableWrist, primaryWrist } from "../camera/hand-focus.mjs";
 
 const exercises = { right: "previous_slide", left: "next_slide", down: "scroll_previous", up: "scroll_presentation" };
 const successors = { left: "down", down: "up", up: "scroll" };
@@ -52,6 +52,7 @@ export class Assistance {
     }
 
     open() {
+        this.cameraOnboarding = true;
         this.presentationStep = null;
         this.focusBefore = document.activeElement;
         window.scrollTo({ top: 0, behavior: "instant" });
@@ -69,6 +70,8 @@ export class Assistance {
         else if (step === "ribbonBrowse" && this.options.presentationComplete()) step = "presenceScroll";
         clearTimeout(this.cooldownTimer);
         this.step = step;
+        if (presentationSteps.has(step) || ["presence", "finale", "away"].includes(step)) this.cameraOnboarding = false;
+        else if (["privacy", "aim", "cameraError", "scroll", ...Object.keys(exercises)].includes(step)) this.cameraOnboarding = true;
         if (presentationSteps.has(step)) this.presentationStep = step;
         this.centredSince = null;
         this.marker.reset();
@@ -84,7 +87,10 @@ export class Assistance {
         this.root.hidden = !this.step || this.step === "away";
         this.highlight?.classList.remove("assistance-highlight");
         this.highlight = null;
-        if (this.root.hidden) return;
+        if (this.root.hidden) {
+            document.querySelector(".camera-card").classList.remove("tutorial-camera");
+            return;
+        }
         const target = ["privacy", "aim", "recover", "cameraError", ...Object.keys(exercises)].includes(this.step) ? ".camera-card"
             : this.step === "cooldown" ? "#navigation-cooldown"
             : presentationSteps.has(this.step) ? "#presentation"
@@ -115,6 +121,13 @@ export class Assistance {
     }
 
     positionTarget() {
+        const card = document.querySelector(".camera-card");
+        const cameraStep = !this.root.hidden && this.cameraOnboarding;
+        card.classList.toggle("tutorial-camera", cameraStep);
+        if (cameraStep) {
+            const bubble = this.root.querySelector(".assistance-bubble").getBoundingClientRect();
+            card.style.setProperty("--tutorial-camera-height", `${Math.max(80, bubble.top - 64)}px`);
+        }
         const target = this.root.querySelector("[data-assistance-target]");
         if (target.hidden) return;
         const bounds = document.querySelector(".camera-preview").getBoundingClientRect();
@@ -226,9 +239,11 @@ export class Assistance {
         if (!this.step) return;
         const visible = handsVisible(session, this.requiredHands);
         this.renderHint(time);
-        if (visible) this.missingSince = null;
+        const centredHands = handsCentred(session, this.requiredHands);
+        if (centredHands || !recoveryAllowed) this.missingSince = null;
         else this.missingSince ??= time;
-        if (recoveryAllowed && !this.blocking && this.step !== "away" && time - this.missingSince >= 4000 && !visible) {
+        if (recoveryAllowed && !this.blocking && this.step !== "away" && this.missingSince !== null
+            && time - this.missingSince >= 4000 && !centredHands) {
             this.returnStep = this.step;
             this.options.pauseHints();
             this.go("recover");

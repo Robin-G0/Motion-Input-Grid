@@ -4,7 +4,7 @@ import { cameraFrame } from "../../../src/camera/camera-framing.mjs";
 import { StableCameraFrame } from "../../../src/camera/stable-camera-frame.mjs";
 import { focusedWrist } from "../../../src/camera/hand-focus.mjs";
 
-test("framing reserves a quarter at each edge and requires both visible wrists", async () => {
+test("framing warns near the edges and requires both visible wrists", async () => {
     for (const index of [15, 16]) {
         let hand = { x: .1, y: .9 };
         const session = { coordinate: landmark => landmark === index ? hand : null };
@@ -21,10 +21,10 @@ test("framing reserves a quarter at each edge and requires both visible wrists",
 
 test("camera edge hysteresis separates the warning and clearing thresholds on all sides", async () => {
     for (const [edge, axis, enter, jitter, clear] of [
-        ["top", "y", .24, .27, .33],
-        ["bottom", "y", .76, .73, .67],
-        ["right", "x", .24, .27, .33],
-        ["left", "x", .76, .73, .67]
+        ["top", "y", .14, .17, .21],
+        ["bottom", "y", .86, .83, .79],
+        ["right", "x", .14, .17, .21],
+        ["left", "x", .86, .83, .79]
     ]) {
         const hand = { x: .5, y: .5 };
         const session = { coordinate: index => index === 15 ? hand : null };
@@ -38,6 +38,9 @@ test("camera edge hysteresis separates the warning and clearing thresholds on al
         assert.deepEqual(cameraFrame(session, frame.edges).edges, []);
         hand[axis] = jitter;
         assert.deepEqual(cameraFrame(session).edges, []);
+        // The former warning zone must now stay clear, even after a warning.
+        hand[axis] = enter < .5 ? .24 : .76;
+        assert.deepEqual(cameraFrame(session, [edge]).edges, []);
     }
 });
 

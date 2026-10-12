@@ -40,7 +40,6 @@ export class GestureGuide {
         const focus = this.focusedSection();
         if (focus !== this.focus) {
             this.focus = focus;
-            this.swipeCompleted = false;
             if (focus !== 0) this.cancelNudge();
             if (focus !== 1) this.animation?.cancel();
         }
