@@ -233,6 +233,11 @@ function updateHandHint(currentSession, time) {
     prepareHandScrolling(handsVisible, time);
 }
 
+function renderCameraTargets() {
+    element("camera-hand-targets").hidden = !session?.state.running || recoveringHands || away
+        || !element("finale").hidden || guide.focusedSection() !== 0;
+}
+
 function resetHandRecovery() {
     const resumeHints = recoveringHands && !assistance.step && session?.state.running;
     recoveringHands = false;
@@ -296,6 +301,7 @@ function handlePresence(currentSession) {
     const time = performance.now();
     updateHandHint(currentSession, time);
     const recoveryFrame = updateHandRecovery(currentSession, time);
+    renderCameraTargets();
     framing.update(currentSession, time);
     assistance.positionTarget();
     assistance.observe(currentSession, time, !departureSectionReached() && !away && !cooldown.locked);
@@ -424,6 +430,7 @@ function releaseCamera() {
     resetHandRecovery();
     greenSince = null;
     handScrollReady = false;
+    renderCameraTargets();
     debugPanel?.stopped();
     element("camera-placement").hidden = true;
     departureStartedAt = null;
@@ -519,6 +526,7 @@ async function startCamera() {
         setStatus("searching");
         element("camera-placement").hidden = false;
         frameCameraPreview();
+        renderCameraTargets();
         session.subscribe(state => {
             if (!state.running && !state.busy && session === candidate) {
                 failCamera(state.status);
@@ -549,6 +557,8 @@ document.querySelectorAll("[data-language]").forEach(button => {
 element("start-camera").addEventListener("click", startCamera);
 element("start-assisted").addEventListener("click", () => { revealCamera(); assistance.open(); });
 element("assistance-toggle").addEventListener("click", () => assistance.open());
+window.addEventListener("scroll", renderCameraTargets, { passive: true });
+window.addEventListener("resize", renderCameraTargets, { passive: true });
 // Avoid painting an off-screen camera preview while inference keeps running.
 const previewObserver = new IntersectionObserver(entries => {
     document.querySelector(".camera-preview").classList.toggle("preview-offscreen", !entries[0].isIntersecting);

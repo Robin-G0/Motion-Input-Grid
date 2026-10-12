@@ -157,7 +157,8 @@ body.is-away { background: #000; }
 /* Short, centred gesture cards keep the detailed instructions for screen readers. */
 .gesture-tip { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 20; display: flex; justify-content: center; align-items: center; gap: 12px; width: max-content; max-width: calc(100% - 40px); padding: 12px 20px; border: 2px solid #ffe5a0; border-radius: 20px; color: #332108; background: linear-gradient(110deg, #b78028, #ffebaf, #dcae49, #fff1c5, #b78028); background-size: 250% 100%; box-shadow: 0 0 28px #efc86655; font-size: 14px; font-weight: 750; pointer-events: none; }
 .gesture-pictogram { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-.gesture-pictogram svg { width: 48px; height: 58px; fill: #fff9; stroke: #513716; stroke-width: 4; stroke-linejoin: round; }
+.gesture-pictogram svg { width: 48px; height: 58px; color: #fff9; fill: currentColor; stroke: #513716; stroke-width: 4; stroke-linejoin: round; }
+.person-leaving .person-outline { stroke: #513716; }
 .gesture-pictogram > span { font-size: 28px; }
 #page-content:has(.recovering-hands) #scroll-gesture-tip,
 #page-content:has(.recovering-hands) #slide-gesture-tip { visibility: hidden; }
@@ -543,9 +544,10 @@ body.is-away { background: #000; }
     width: min(520px, calc(100vw - 32px), calc(var(--tutorial-camera-height, 240px) * var(--camera-ratio, 1.333)));
 }
 .recovering-hands #camera-status { display: none; }
-#camera-recovery { position: absolute; inset: 0; pointer-events: none; }
-#camera-recovery .recovery-left { left: 35%; }
-#camera-recovery .recovery-right { left: 65%; }
-.phone #camera-recovery .recovery-left { left: 50%; }
-.phone #camera-recovery .recovery-right { display: none; }
+#camera-recovery, #camera-hand-targets { position: absolute; inset: 0; pointer-events: none; }
+:is(#camera-recovery, #camera-hand-targets) .recovery-left { left: 35%; }
+:is(#camera-recovery, #camera-hand-targets) .recovery-right { left: 65%; }
+.phone :is(#camera-recovery, #camera-hand-targets) .recovery-left { left: 50%; }
+.phone :is(#camera-recovery, #camera-hand-targets) .recovery-right { display: none; }
+body:has(#assistance:not([hidden])) #camera-hand-targets { display: none; }
 #camera-recovery p { position: absolute; bottom: 8px; left: 8px; right: 8px; margin: 0; padding: 8px; border-radius: 8px; color: white; background: #142333e6; text-align: center; font-size: clamp(12px, 2vw, 16px); }

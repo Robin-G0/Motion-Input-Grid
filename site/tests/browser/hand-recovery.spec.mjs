@@ -8,8 +8,11 @@ test("lost hands reveal the camera after four seconds and returning hands cannot
     await page.goto("./");
     await page.getByRole("button", { name: "EN", exact: true }).click();
     await page.locator("#start-camera").click();
+    await expect(page.locator("#camera-hand-targets .recovery-left")).toBeVisible();
+    await expect(page.locator("#camera-hand-targets .recovery-right")).toBeVisible();
     await holdHandsInFrame(page);
     await focusPresentation(page);
+    await expect(page.locator("#camera-hand-targets")).toBeHidden();
     const counter = await page.locator("#slide-counter").textContent();
     await page.evaluate(() => window.demoCamera.frame(false));
     await page.clock.runFor(600);
