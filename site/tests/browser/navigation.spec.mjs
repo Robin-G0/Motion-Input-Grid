@@ -127,10 +127,23 @@ test("the evolving grid presents detection, cancellation, then a one-second thum
     const grid = page.locator("#slide [data-history-grid]");
     const cell = name => grid.locator(`[data-cell=${name}]`);
     const outcome = page.locator("#slide [data-history-outcome]");
+    const checkNumberScale = async name => {
+        const originalViewport = page.viewportSize();
+        for (const viewport of [{ width: 800, height: 600 }, { width: 1280, height: 720 }, { width: 2560, height: 1440 }]) {
+            await page.setViewportSize(viewport);
+            const gridWidth = await grid.evaluate(node => node.clientWidth);
+            const fontSize = await cell(name).evaluate(node => parseFloat(getComputedStyle(node).fontSize));
+            const firstFont = await cell("first").evaluate(node => parseFloat(getComputedStyle(node).fontSize));
+            expect(fontSize).toBeCloseTo(firstFont, 1);
+            expect(fontSize / gridWidth).toBeCloseTo(.08, 3);
+        }
+        await page.setViewportSize(originalViewport);
+    };
     await expect(cell("cancel")).toBeHidden();
     await expect(cell("condition")).toBeHidden();
     await expect(grid.locator("button:visible")).toHaveCount(3);
     await expect(cell("trigger")).toHaveText("3");
+    await checkNumberScale("trigger");
     await page.clock.runFor(1200);
     await expect(cell("first")).toHaveClass(/is-active/);
     await page.clock.runFor(1000);
@@ -152,6 +165,7 @@ test("the evolving grid presents detection, cancellation, then a one-second thum
     await expect(cell("cancel")).toBeHidden();
     await expect(cell("trigger")).toBeHidden();
     await expect(cell("condition")).toHaveText("3");
+    await checkNumberScale("condition");
     await expect(cell("first")).not.toHaveClass(/is-complete/);
     await page.clock.runFor(1000);
     await expect(cell("condition")).toHaveText("3");

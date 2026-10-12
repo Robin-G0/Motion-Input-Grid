@@ -44,9 +44,9 @@ export class GestureGuide {
             if (focus !== 1) this.animation?.cancel();
         }
         if (focus === 1 && !this.hintsPaused) this.showSlides();
-        this.scrollTip.hidden = this.hintsPaused || (focus !== 0 && focus !== 3);
+        this.scrollTip.hidden = this.hintsPaused || focus !== 0;
         this.slideTip.hidden = this.hintsPaused || focus !== 1 || this.swipeCompleted;
-        const direction = focus === 3 ? "down" : "up";
+        const direction = "up";
         this.scrollTip.dataset.direction = direction;
         this.onDirection(direction);
     }

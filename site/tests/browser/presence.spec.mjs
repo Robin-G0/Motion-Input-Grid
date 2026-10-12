@@ -161,8 +161,7 @@ test("the finale keeps navigation and the GitHub link without enabling hand infe
     await page.evaluate(() => window.demoCamera.frame(true));
     await expect(page.locator("#finale")).toBeVisible();
     await page.clock.runFor(3000);
-    await expect(page.locator("#scroll-gesture-tip")).toHaveAttribute("data-direction", "down");
-    await expect(page.locator("#scroll-gesture-tip")).toContainText("Gently lower");
+    await expect(page.locator("#scroll-gesture-tip")).toBeHidden();
     await expect(page.locator("#slide-gesture-tip")).toBeHidden();
     await page.evaluate(() => window.demoCamera.frame(true));
     expect(await page.evaluate(() => window.demoCamera.profile.tracking.hands)).toBe(false);

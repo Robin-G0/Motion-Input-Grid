@@ -146,8 +146,11 @@ test("assistance positions both hands, teaches gestures, then guides slides and 
     await expect(assistant.getByRole("button")).toHaveCount(1);
     await expect(next).toHaveText("Finish the tutorial");
     await expect(page.locator("#finale")).toBeVisible();
+    await expect(page.locator("#scroll-gesture-tip")).toBeHidden();
+    await expect(page.locator("[data-assistance-gesture]")).toBeHidden();
     await next.click();
     await expect(assistant).toBeHidden();
+    await expect(page.locator("#scroll-gesture-tip")).toBeHidden();
     await page.locator("#finale-stop-camera").click();
     expect(await page.evaluate(() => window.demoCamera.stopped)).toBe(true);
 });
