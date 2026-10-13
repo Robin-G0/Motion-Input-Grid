@@ -6,6 +6,26 @@ le moteur C++ du repository. Les ressources de reconnaissance sont copiées
 localement par le build. Aucun framework, service de police ou CDN supplémentaire
 n'est nécessaire à la page.
 
+## Identité visuelle
+
+La démonstration adopte une direction de carnet technique : fond ivoire en
+thème clair, accent vert profond, titres serif et légendes monospace. Le signe
+de marque conserve les cases et le parcours de l'icône du projet, avec des couleurs
+adaptées à cette palette ; le même dessin sert de favicon. L'accueil
+associe une composition asymétrique à une étude de mouvement dessinée en SVG ;
+les diagrammes, le guide et la conclusion reprennent les mêmes lignes et accents.
+Ces dessins sont locaux, sans image générée ni police téléchargée. L'étude
+d'accueil est statique et disparaît lorsque la caméra s'ouvre. Sur téléphone,
+elle suit les commandes pour laisser la priorité à l'essai et à la navigation.
+Les animations du diaporama utilisent des traces de positions, des arcs d'angles
+et un repère mobile dans la grille, sans silhouette en arrière-plan. Les éléments
+SVG sont réutilisés pendant la lecture. Les transitions de slides font apparaître
+le texte puis le diagramme, en conservant le cadre immobile. Le mouvement réduit
+désactive ces transitions et la lecture automatique ; la lecture explicite reste
+disponible avec la commande de pause.
+L'icône de l'en-tête et le favicon utilisent un fond sombre ou ivoire selon le
+thème effectif du site, y compris le choix mémorisé qui remplace le thème système.
+
 ## Développement local
 
 Depuis `site/`, avec Node 22.12 ou supérieur :
@@ -24,6 +44,9 @@ modification : le serveur sert `dist/`, pas les fichiers sources.
 ## Parcours et accessibilité
 
 - Le guide accompagne une première visite ; l'activation directe reste disponible.
+  Sa réouverture avec la caméra active commence au positionnement des mains,
+  sans demander une nouvelle activation. Caméra arrêtée, il reprend l'étape
+  d'information et d'activation.
 - La présentation, ses diagrammes et les liens finaux sont accessibles sans caméra.
   « Passer à la suite » permet de quitter la démonstration de présence.
 - Flèches, clavier et balayage tactile permettent de changer de slide.

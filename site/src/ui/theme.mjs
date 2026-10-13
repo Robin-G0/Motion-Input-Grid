@@ -28,8 +28,13 @@ export class ThemeToggle {
         this.button.setAttribute("aria-label", this.text()[this.dark ? "lightTheme" : "darkTheme"]);
         this.button.title = this.button.getAttribute("aria-label");
         this.button.setAttribute("aria-pressed", String(this.dark));
+        const icon = this.dark ? "./favicon-dark.svg" : "./favicon.svg";
+        for (const node of document.querySelectorAll('link[rel="icon"], img.brand-mark')) {
+            const attribute = node.tagName === "LINK" ? "href" : "src";
+            if (node.getAttribute(attribute) !== icon) node.setAttribute(attribute, icon);
+        }
         for (const meta of document.querySelectorAll('meta[name="theme-color"]')) {
-            meta.content = this.dark ? "#0b101a" : "#f7f8fc";
+            meta.content = this.dark ? "#0b101a" : "#f7f4ed";
         }
     }
 }

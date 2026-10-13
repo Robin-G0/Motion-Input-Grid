@@ -59,7 +59,7 @@ export class Assistance {
         this.options.focusCamera();
         this.options.resetGestures();
         this.options.pauseHints();
-        this.go("privacy");
+        this.go(this.options.running() ? "aim" : "privacy");
         this.next.focus();
     }
 

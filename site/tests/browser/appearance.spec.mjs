@@ -10,7 +10,7 @@ test("bilingual page, footer and controls work under the repository subpath", as
         navigator.mediaDevices.getUserMedia = (...args) => { ++window.cameraRequests; return original(...args); };
     });
     await page.goto("./");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Une interface qui suit votre mouvement.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pilotez cette page d’un geste.");
     await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
     await expect(page.locator("#finale")).toBeHidden();
     await expect(page.locator("#away-screen")).toBeHidden();
@@ -21,7 +21,7 @@ test("bilingual page, footer and controls work under the repository subpath", as
     await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
     await page.getByRole("button", { name: "EN", exact: true }).click();
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("An interface that follows your movement.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Control this page with a gesture.");
     await expect(page.locator("footer a[data-link=linkedin]")).toHaveAttribute("href", "https://www.linkedin.com/in/robin-g0/");
     await expect(page.locator("footer a[data-link=downloads]")).toHaveAttribute("href", /Motion-Input-Grid\/releases\/latest$/);
     expect(await page.evaluate(() => window.cameraRequests)).toBe(0);
@@ -38,7 +38,7 @@ test("system language takes priority over links and visitors can change it with 
             const otherLanguage = language === "fr" ? "en" : "fr";
             await page.goto(`./?lang=${otherLanguage}`);
             await expect(page.locator("html")).toHaveAttribute("lang", language);
-            const title = language === "fr" ? "Une interface qui suit votre mouvement." : "An interface that follows your movement.";
+            const title = language === "fr" ? "Pilotez cette page d’un geste." : "Control this page with a gesture.";
             await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
             await page.getByRole("button", { name: otherLanguage.toUpperCase(), exact: true }).click();
             await expect(page.locator("html")).toHaveAttribute("lang", otherLanguage);
@@ -121,13 +121,16 @@ test("the welcome fills a large screen and introduces the camera only after the 
     await page.getByRole("button", { name: "EN", exact: true }).click();
     await expect(page.locator(".camera-card")).toBeHidden();
     const title = await page.locator("h1").boundingBox();
-    expect(title.x + title.width / 2).toBeCloseTo(1280, 0);
+    const study = await page.locator(".motion-study").boundingBox();
+    expect(title.x + title.width).toBeLessThan(study.x);
+    expect(study.x + study.width).toBeLessThanOrEqual(1880);
     const presentation = await page.locator("#presentation").boundingBox();
     expect(presentation.y).toBeGreaterThanOrEqual(1440);
     await page.locator("#start-camera").click();
     await expect(page.locator("#start-camera")).toBeHidden();
     await expect(page.locator(".camera-card")).toBeVisible();
     await expect(page.locator("#welcome")).toHaveClass(/camera-open/);
+    await expect(page.locator(".motion-study")).toBeHidden();
     await expect(page.locator(".camera-preview")).toHaveCSS("outline-width", "3px");
     await holdHandsInFrame(page);
     const tip = page.locator("#scroll-gesture-tip");
@@ -144,7 +147,7 @@ test("the welcome remains readable without horizontal overflow at phone and desk
     await page.goto("./");
     for (const width of [320, 390, 800, 1280]) {
         await page.setViewportSize({ width, height: 844 });
-        await expect(page.locator(".hero h1")).toHaveText("Une interface qui suit votre mouvement.");
+        await expect(page.locator(".hero h1")).toHaveText("Pilotez cette page d’un geste.");
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     }
 });
@@ -206,17 +209,32 @@ test("theme touch interactions stay available during recovery and written gestur
 test("theme choice is remembered, works against the system palette and follows language", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "light" });
     await page.goto("./");
+    await expect(page.locator(".brand-mark")).toHaveAttribute("src", "./favicon.svg");
+    await expect(page.locator('link[rel="icon"]')).toHaveAttribute("href", "./favicon.svg");
+    await page.emulateMedia({ colorScheme: "dark" });
+    await expect(page.locator(".brand-mark")).toHaveAttribute("src", "./favicon-dark.svg");
+    await expect(page.locator('link[rel="icon"]')).toHaveAttribute("href", "./favicon-dark.svg");
+    await page.emulateMedia({ colorScheme: "light" });
     await page.getByRole("button", { name: "EN", exact: true }).click();
     await page.getByRole("button", { name: "Switch to dark theme" }).click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await expect(page.locator(".brand-mark")).toHaveAttribute("src", "./favicon-dark.svg");
+    await expect(page.locator('link[rel="icon"]')).toHaveAttribute("href", "./favicon-dark.svg");
     expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--paper").trim())).toBe("#0b101a");
     await page.reload();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await expect(page.locator(".brand-mark")).toHaveAttribute("src", "./favicon-dark.svg");
     await page.getByRole("button", { name: "FR", exact: true }).click();
     await page.locator("#theme-toggle").click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-    expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--paper").trim())).toBe("#f7f8fc");
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--paper").trim())).toBe("#f7f4ed");
     await expect(page.locator("#theme-toggle")).toHaveAttribute("aria-label", /sombre/);
     await page.emulateMedia({ colorScheme: "dark" });
-    expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--paper").trim())).toBe("#f7f8fc");
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--paper").trim())).toBe("#f7f4ed");
+    await expect(page.locator(".brand-mark")).toHaveAttribute("src", "./favicon.svg");
+    await expect(page.locator('link[rel="icon"]')).toHaveAttribute("href", "./favicon.svg");
+    for (const name of ["favicon.svg", "favicon-dark.svg"]) {
+        const response = await page.request.get(`./${name}`);
+        expect(response.ok()).toBe(true);
+    }
 });

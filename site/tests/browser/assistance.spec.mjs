@@ -151,8 +151,17 @@ test("assistance positions both hands, teaches gestures, then guides slides and 
     await next.click();
     await expect(assistant).toBeHidden();
     await expect(page.locator("#scroll-gesture-tip")).toBeHidden();
+    await page.evaluate(() => { window.finishedGuideCamera = window.demoCamera; });
+    await page.locator("#assistance-toggle").click();
+    await expect(assistant).toHaveAttribute("data-step", "aim");
+    await expect(next).toHaveText("Skip this exercise");
+    expect(await page.evaluate(() => window.demoCamera === window.finishedGuideCamera && window.demoCamera.state.running)).toBe(true);
+    await assistant.locator("[data-assistance-close]").click();
     await page.locator("#finale-stop-camera").click();
     expect(await page.evaluate(() => window.demoCamera.stopped)).toBe(true);
+    await page.locator("#start-assisted").click();
+    await expect(assistant).toHaveAttribute("data-step", "privacy");
+    await expect(next).toHaveText("Activate the camera");
 });
 
 test("tour messages do not restrict slide direction or departure and return", async ({ page }) => {
@@ -194,6 +203,7 @@ test("an active guide allows manual scrolling, theme changes and gesture navigat
     await holdHandsInFrame(page);
     await page.locator("#assistance-toggle").click();
     const assistant = page.locator("#assistance");
+    await expect(assistant).toHaveAttribute("data-step", "aim");
     await expect(assistant.locator(".assistance-bulb")).toHaveText("i");
     await page.locator("#theme-toggle").click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
@@ -201,7 +211,6 @@ test("an active guide allows manual scrolling, theme changes and gesture navigat
     await page.mouse.wheel(0, 350);
     await page.clock.runFor(100);
     await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(0);
-    await assistant.locator("[data-assistance-next]").click();
     await assistant.locator("[data-assistance-next]").click();
     await assistant.locator("[data-assistance-next]").click();
     await page.clock.runFor(2200);

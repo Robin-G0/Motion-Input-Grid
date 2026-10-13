@@ -21,10 +21,13 @@ export class HistoryIllustration {
         this.root = root;
         this.animated = animated;
         this.drawing = root.querySelector("svg");
+        this.nodes = new Map();
         this.slider = root.querySelector("input[type=range]");
         this.playButton = root.querySelector("[data-history-play]");
         this.thumbRaised = false;
         this.grid = root.querySelector("[data-history-grid]");
+        this.route = root.querySelector("[data-history-route]");
+        this.marker = root.querySelector("[data-history-marker]");
         this.status = root.querySelector("[data-history-status]");
         this.outcome = root.querySelector("[data-history-outcome]");
         this.conditionContent = root.querySelector("[data-condition-content]");
@@ -84,6 +87,8 @@ export class HistoryIllustration {
     }
 
     show(index, text) {
+        this.drawing.replaceChildren();
+        this.nodes.clear();
         this.index = index;
         this.text = text;
         this.root.dataset.illustration = ["coordinates", "angles", "grid"][index];
@@ -161,10 +166,30 @@ export class HistoryIllustration {
             if (this.playing) this.animateGrid();
             return;
         }
-        this.drawing.replaceChildren();
         this.drawing.setAttribute("aria-label", this.text[this.index === 0 ? "coordinatesDiagram" : "anglesDiagram"]);
+        this.drawFrame();
         if (this.index === 0) this.drawCoordinates();
         else this.drawAngles();
+    }
+
+    node(key, name, attributes, text) {
+        // Keep the SVG tree stable during playback; update only drawing attributes.
+        let node = this.nodes.get(key);
+        if (!node) {
+            node = svgElement(name);
+            this.nodes.set(key, node);
+            this.drawing.append(node);
+        }
+        for (const [attribute, value] of Object.entries(attributes)) {
+            if (node.getAttribute(attribute) !== String(value)) node.setAttribute(attribute, value);
+        }
+        if (text !== undefined && node.textContent !== text) node.textContent = text;
+        return node;
+    }
+
+    drawFrame() {
+        this.node("frame", "path", { class: "diagram-rule", d: "M24 46V28H42M318 28H336V46M336 220V238H318M42 238H24V220" });
+        this.node("rules", "path", { class: "diagram-guide", d: "M24 80H336M24 132H336M24 184H336M76 28V238M128 28V238M180 28V238M232 28V238M284 28V238", opacity: .5 });
     }
 
     drawCoordinates() {
@@ -172,15 +197,28 @@ export class HistoryIllustration {
         for (const [index, color] of ["var(--diagram-first)", "var(--diagram-second)"].entries()) {
             const offset = index * 90;
             const curve = `M 30 ${110 + offset} C 110 ${20 + offset} 240 ${200 + offset} 330 ${90 + offset}`;
-            this.drawing.append(svgElement("path", { d: curve, fill: "none", stroke: color, "stroke-width": 2, "stroke-dasharray": "5 5" }));
+            this.node(`curve-${index}`, "path", { d: curve, fill: "none", stroke: color, "stroke-width": 1, opacity: .35 });
             const t = (Math.sin(phase + index) + 1) / 2;
-            const u = 1 - t;
-            const x = u ** 3 * 30 + 3 * u ** 2 * t * 110 + 3 * u * t ** 2 * 240 + t ** 3 * 330;
-            const y = u ** 3 * (110 + offset) + 3 * u ** 2 * t * (20 + offset)
-                + 3 * u * t ** 2 * (200 + offset) + t ** 3 * (90 + offset);
-            this.drawing.append(svgElement("circle", { cx: x, cy: y, r: 9, fill: color }));
-            this.drawing.append(svgElement("text", { x: 22, y: 264 + index * 24, class: "coordinate-label" },
-                `P${index + 1}  x: ${(x / 360).toFixed(3)}  y: ${(y / 320).toFixed(3)}`));
+            const pointAt = value => {
+                const u = 1 - value;
+                return {
+                    x: u ** 3 * 30 + 3 * u ** 2 * value * 110 + 3 * u * value ** 2 * 240 + value ** 3 * 330,
+                    y: u ** 3 * (110 + offset) + 3 * u ** 2 * value * (20 + offset)
+                        + 3 * u * value ** 2 * (200 + offset) + value ** 3 * (90 + offset)
+                };
+            };
+            const { x, y } = pointAt(t);
+            const direction = Math.cos(phase + index) >= 0 ? 1 : -1;
+            const trail = Array.from({ length: 13 }, (_, sample) => {
+                const point = pointAt(Math.max(0, Math.min(1, t - direction * .16 * (1 - sample / 12))));
+                return `${sample ? "L" : "M"}${point.x.toFixed(2)} ${point.y.toFixed(2)}`;
+            }).join(" ");
+            this.node(`projection-${index}`, "path", { class: "diagram-guide", d: `M24 ${y}H${x}V238` });
+            this.node(`trail-${index}`, "path", { class: "diagram-trail", d: trail, stroke: color, opacity: Math.abs(Math.cos(phase + index)).toFixed(3) });
+            this.node(`point-${index}`, "circle", { cx: x, cy: y, r: 5, fill: color, stroke: "var(--paper)", "stroke-width": 2 });
+            this.node(`swatch-${index}`, "path", { d: `M24 ${268 + index * 24}H36`, stroke: color, "stroke-width": 2 });
+            this.node(`coordinates-${index}`, "text", { x: 46, y: 272 + index * 24, class: "coordinate-label" },
+                `P${index + 1}  x: ${(x / 360).toFixed(3)}  y: ${(y / 320).toFixed(3)}`);
         }
         this.setStatus(this.text.coordinateHistory);
     }
@@ -192,20 +230,27 @@ export class HistoryIllustration {
             { x: 72 + Math.sin(phase + 1) * 12, y: 214 + Math.cos(phase) * 14 },
             { x: 285 + Math.cos(phase + 1) * 15, y: 212 + Math.sin(phase) * 25 }
         ];
-        this.drawing.append(svgElement("polygon", {
+        this.node("triangle", "polygon", {
             points: points.map(point => `${point.x},${point.y}`).join(" "),
-            fill: "#ffffff08", stroke: "var(--diagram-second)", "stroke-width": 3
-        }));
+            fill: "var(--accent)", "fill-opacity": .07, stroke: "var(--accent)", "stroke-width": 1.5
+        });
         for (const [index, point] of points.entries()) {
             const angle = angleAt(point, points[(index + 1) % 3], points[(index + 2) % 3]);
-            this.drawing.append(svgElement("circle", { cx: point.x, cy: point.y, r: 8, fill: "var(--diagram-second)" }));
+            const arcPoints = [points[(index + 1) % 3], points[(index + 2) % 3]].map(other => {
+                const length = Math.hypot(other.x - point.x, other.y - point.y);
+                return { x: point.x + (other.x - point.x) / length * 26, y: point.y + (other.y - point.y) / length * 26 };
+            });
+            const [a, b] = arcPoints;
+            const sweep = (a.x - point.x) * (b.y - point.y) - (a.y - point.y) * (b.x - point.x) > 0 ? 1 : 0;
+            this.node(`arc-${index}`, "path", { d: `M${a.x} ${a.y}A26 26 0 0 ${sweep} ${b.x} ${b.y}`, fill: "none", stroke: "var(--diagram-second)", "stroke-width": 2 });
+            this.node(`point-${index}`, "circle", { cx: point.x, cy: point.y, r: 4, fill: "var(--accent)", stroke: "var(--paper)", "stroke-width": 2 });
             const label = [this.text.head, this.text.leftShoulder, this.text.rightShoulder][index];
-            this.drawing.append(svgElement("text", { x: point.x, y: point.y + (index === 0 ? -22 : 30), "text-anchor": "middle", class: "point-label" }, label));
-            this.drawing.append(svgElement("text", {
-                x: point.x + (180 - point.x) * .32,
-                y: point.y + (160 - point.y) * .32,
+            this.node(`label-${index}`, "text", { x: point.x, y: point.y + (index === 0 ? -22 : 30), "text-anchor": "middle", class: "point-label" }, label);
+            this.node(`angle-${index}`, "text", {
+                x: point.x + (180 - point.x) * .42,
+                y: point.y + (160 - point.y) * (index === 0 ? .65 : .42),
                 "text-anchor": "middle", class: "angle-label"
-            }, `${angle.toFixed(1)}\u00b0`));
+            }, `${angle.toFixed(1)}\u00b0`);
         }
         this.setStatus(this.text.angleHistory);
     }
@@ -238,6 +283,16 @@ export class HistoryIllustration {
     }
 
     updateGrid() {
+        const column = { first: 2.5, second: 3.5, cancel: 3.5, trigger: 4.5,
+            condition: this.stage === "interactive" ? 5.5 : 4.5 }[this.lastActivated];
+        this.marker.hidden = column === undefined;
+        this.route.toggleAttribute("hidden", column === undefined);
+        if (column !== undefined) {
+            const row = this.lastActivated === "cancel" ? 3.5 : 2.5;
+            this.marker.style.left = `${column / 6 * 100}%`;
+            this.marker.style.top = `${(row - .5) / 6 * 100}%`;
+            this.route.setAttribute("d", `M30 120H${column * 60}V${(row - .5) * 60}`);
+        }
         this.conditionContent.classList.toggle("is-thumb", this.conditionContent.textContent === "\u{1f44d}");
         for (const button of this.grid.querySelectorAll("button")) {
             const fired = this.result === "gridTriggered";

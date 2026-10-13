@@ -29,10 +29,14 @@ export class SlideRibbon {
     }
 
     rotate(direction) {
-        this.animation = this.slide.animate([
-            { opacity: .55, transform: `translateX(${Math.sign(direction) * 10}px)` },
-            { opacity: 1, transform: "translateX(0)" }
-        ], { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)" });
-        this.animations.push(this.animation);
+        // The frame stays still; copy and diagram arrive with a restrained stagger.
+        for (const [index, panel] of [...this.slide.children].entries()) {
+            const animation = panel.animate([
+                { opacity: 0, transform: `translateX(${Math.sign(direction) * 14}px)` },
+                { opacity: 1, transform: "translateX(0)" }
+            ], { duration: 280, delay: index * 40, fill: "backwards", easing: "cubic-bezier(.22,1,.36,1)" });
+            this.animations.push(animation);
+            this.animation = animation;
+        }
     }
 }

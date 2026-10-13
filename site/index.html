@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Essayez Motion Input Grid : pilotez une présentation avec vos gestes, directement dans votre navigateur.">
     <meta name="theme-color" content="#0b101a" media="(prefers-color-scheme: dark)">
-    <meta name="theme-color" content="#f7f8fc" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#f7f4ed" media="(prefers-color-scheme: light)">
     <title>Motion Input Grid — une interface par le mouvement</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="./styles.css">
@@ -16,7 +16,7 @@
     <svg class="visually-hidden" aria-hidden="true"><defs><symbol id="gesture-hand" viewBox="0 0 100 100"><path d="M30 82 L18 57 Q14 49 20 45 Q25 42 31 51 L34 55 V25 Q34 17 40 17 Q46 17 46 25 V45 V12 Q46 5 52 5 Q58 5 58 12 V44 V18 Q58 11 64 11 Q70 11 70 18 V47 V29 Q70 22 76 22 Q82 22 82 29 V64 Q82 83 68 91 H43 Q35 91 30 82Z"/></symbol></defs></svg>
     <div id="page-content">
         <header class="header">
-            <a class="brand" href="#welcome" aria-label="Motion Input Grid"><span class="brand-mark" aria-hidden="true">M</span><span>Motion Input Grid<span class="brand-caption" data-text="brandCaption">Librairie de reconnaissance de mouvements</span></span></a>
+            <a class="brand" href="#welcome" aria-label="Motion Input Grid"><img class="brand-mark" src="./favicon.svg" width="36" height="36" alt=""><span>Motion Input Grid<span class="brand-caption" data-text="brandCaption">Librairie de reconnaissance de mouvements</span></span></a>
             <nav data-label="navigation">
                 <a href="#presentation" data-text="explore">Découvrir</a>
                 <a data-link="repository" data-text="repository">Repository</a>
@@ -31,7 +31,7 @@
             <section class="hero section" id="welcome">
                 <div class="hero-copy">
                     <p class="eyebrow"><span data-text="tagline">Le mouvement devient une interface.</span></p>
-                    <h1 data-text="invitation">Une interface qui suit votre mouvement.</h1>
+                    <h1 data-text="invitation">Pilotez cette page d’un geste.</h1>
                     <p class="lead" data-text="introduction"></p>
                     <ul class="hero-facts" aria-label="Motion Input Grid"><li data-text="factBrowser"></li><li data-text="factSource"></li><li data-text="factEngine"></li></ul>
                     <p id="phone-note" class="manual-hint" hidden></p>
@@ -52,6 +52,20 @@
                     <p class="camera-placement" id="camera-placement" data-text="cameraPlacement" hidden></p>
                     <p class="privacy"><span data-text="privacy"></span> <a data-link="source" data-text="source"></a></p>
                 </div>
+                <figure class="motion-study">
+                    <div class="study-heading"><span data-text="studyHeading"></span><span aria-hidden="true">FIG. 01</span></div>
+                    <svg viewBox="0 0 420 420" role="img" data-label="studyDescription">
+                        <defs><pattern id="study-grid" x="30" y="30" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M60 0H0V60" fill="none" stroke="currentColor" stroke-width="1"/></pattern></defs>
+                        <g class="study-grid"><rect x="30" y="30" width="360" height="360" fill="url(#study-grid)"/><path d="M30 30H390V390H30Z" fill="none"/></g>
+                        <g class="study-axis"><path d="M12 366V408H54"/><text x="16" y="372">y</text><text x="48" y="402">x</text><text x="86" y="408">01</text><text x="206" y="408">03</text><text x="326" y="408">05</text></g>
+                        <path class="study-trace" d="M30 330Q75 315 120 300C145 255 195 210 240 180S320 90 360 60L390 30"/>
+                        <g class="study-cells"><rect x="90" y="270" width="60" height="60"/><rect x="210" y="150" width="60" height="60"/><rect class="study-end" x="330" y="30" width="60" height="60"/></g>
+                        <path class="study-route" d="M120 300V180H240V60H360"/>
+                        <g class="study-nodes"><circle cx="120" cy="300" r="5"/><circle cx="240" cy="180" r="5"/><circle cx="360" cy="60" r="5"/></g>
+                        <g class="study-labels"><text x="111" y="319">1</text><text x="231" y="199">2</text><text x="351" y="79">3</text></g>
+                    </svg>
+                    <figcaption><span data-text="studyCaption"></span><span class="study-key"><i aria-hidden="true"></i><span data-text="studyKey"></span></span></figcaption>
+                </figure>
                 <aside class="camera-card" hidden>
                     <div class="camera-preview">
                         <div class="preview-decoration"><p data-text="cameraHint"></p></div>
@@ -90,7 +104,8 @@
                             <div class="history-visual">
                                 <svg viewBox="0 0 360 320" role="img"></svg>
                                 <div class="history-grid" data-history-grid hidden>
-                                    <svg class="grid-body" viewBox="0 0 360 300" aria-hidden="true"><circle cx="180" cy="50" r="23"/><path d="M180 73 V200 M90 125 L180 100 L270 125 M180 200 L135 275 M180 200 L225 275"/></svg>
+                                    <svg class="grid-route" viewBox="0 0 360 360" aria-hidden="true"><path d="M30 120H330"/><path class="grid-route-progress" data-history-route d="M30 120H150"/></svg>
+                                    <span class="grid-marker" data-history-marker aria-hidden="true" hidden></span>
                                     <button type="button" data-cell="first" data-label-key="firstCell">1<small>[2, 2]</small></button>
                                     <button type="button" data-cell="second" data-label-key="secondCell">2<small>[3, 2]</small></button>
                                     <button type="button" data-cell="cancel" data-label-key="cancelCell">×</button>
@@ -119,7 +134,7 @@
                 <p class="lead" data-text="presenceDescription"></p>
                 <p class="manual-hint" data-text="presenceNote"></p>
                 <a class="button secondary" href="#finale" id="skip-presence" data-text="skipPresence"></a>
-                <div class="departure-art" aria-hidden="true"><span>○</span><span>→</span><span>◎</span></div>
+                <div class="departure-art" aria-hidden="true"><svg viewBox="0 0 360 160"><path class="presence-frame" d="M24 48V24H48M132 24H156V48M156 112V136H132M48 136H24V112M204 48V24H228M312 24H336V48M336 112V136H312M228 136H204V112"/><g class="presence-person"><circle cx="90" cy="60" r="14"/><path d="M60 108C60 80 120 80 120 108"/></g><path class="presence-trace" d="M130 80H265M255 70L265 80L255 90"/><path class="presence-empty" d="M252 80H288M270 62V98"/></svg></div>
             </section>
 
             <section class="section finale" id="finale" hidden aria-labelledby="finale-title">
