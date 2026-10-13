@@ -42,7 +42,7 @@ Ces chemins partent du dossier principal de l'archive extraite. Sous Windows,
 ouvrez l'exécutable. Sous Linux, ouvrez un terminal dans ce dossier et lancez
 `./motion-input-grid-controller` ; ce lanceur configure les bibliothèques fournies avant d'ouvrir
 le binaire dans `bin/`. Conservez les DLL, modèles, configurations et autres
-ressources de l'archive ensemble. Windows nécessite le [runtime Visual C++ 2022
+ressources de l'archive ensemble. Windows nécessite le [dernier runtime Visual C++
 x64](https://aka.ms/vc14/vc_redist.x64.exe) ; les archives Linux nécessitent glibc 2.35+.
 
 ## Premier lancement

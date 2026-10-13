@@ -38,7 +38,7 @@ Paths start at the extracted archive's main folder. On Windows, open the executa
 On Linux, open a terminal in that folder and run `./motion-input-grid-studio`; this launcher
 sets up the bundled libraries before starting the binary in `bin/`. Keep the
 archive's DLLs, models, configurations and other resources together. Windows
-requires the [Visual C++ 2022 x64 runtime](https://aka.ms/vc14/vc_redist.x64.exe); Linux archives require glibc 2.35+.
+requires the [latest Visual C++ x64 runtime](https://aka.ms/vc14/vc_redist.x64.exe); Linux archives require glibc 2.35+.
 
 ## Example: raise a hand to advance a presentation
 

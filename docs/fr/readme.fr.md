@@ -51,7 +51,7 @@ moteurs de jeu nécessitent encore davantage de tests ; consultez les
 Ces noms de conditions sont communs au web, au Studio de bureau et aux guides.
 Le navigateur affiche les actions reconnues ; le Controller peut envoyer les
 raccourcis. Conservez ensemble les fichiers des archives de bureau, qui incluent
-les modèles et le runtime caméra. Windows nécessite le [runtime Visual C++ 2022
+les modèles et le runtime caméra. Windows nécessite le [dernier runtime Visual C++
 x64](https://aka.ms/vc14/vc_redist.x64.exe) ; Linux nécessite glibc 2.35+. La sortie clavier Linux utilise X11/XTest ;
 elle n'est pas disponible sous Wayland natif.
 

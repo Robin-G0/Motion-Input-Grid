@@ -32,8 +32,8 @@ Motion Input Grid Studio.
 ## Compiler et lancer
 
 Windows 10/11 x64, BuildTools VisualStudio 2022/SDK Windows et CMake 3.25+ pour compiler.
-Bootstrap utilise le réseau une fois, -SkipBootstrap réutilise. Microsoft Visual
-C++ 2022 Redistributable correspondant est requis sur la machine de destination.
+Bootstrap utilise le réseau une fois, -SkipBootstrap réutilise. Le dernier Microsoft
+Visual C++ Redistributable x64 est requis sur la machine de destination.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/build/build-windows.ps1

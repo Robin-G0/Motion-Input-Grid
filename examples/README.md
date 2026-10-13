@@ -55,7 +55,7 @@ feedback is anatomical.
 
 ### Native prerequisites
 
-Windows native viewers still require the [Microsoft Visual C++ 2022 Redistributable](https://aka.ms/vc14/vc_redist.x64.exe).
+Windows native viewers still require the [latest Microsoft Visual C++ Redistributable](https://aka.ms/vc14/vc_redist.x64.exe).
 That prerequisite prevents a claim that every desktop archive runs on a completely
 unprepared Windows machine. Linux x64 targets Ubuntu 22.04+, Debian 12+, recent
 Fedora/Arch with a graphical X11/XWayland session; glibc, drivers and the display

@@ -48,7 +48,7 @@ integrations still need wider testing; check the [support matrix](docs/reference
 These condition names are shared by the web editor, desktop Studio and guides.
 The browser shows recognized actions; the Controller can deliver keyboard output.
 Desktop archives include camera models and runtime files: keep them together.
-Windows requires the [Visual C++ 2022 x64 runtime](https://aka.ms/vc14/vc_redist.x64.exe); Linux requires glibc 2.35+.
+Windows requires the [latest Visual C++ x64 runtime](https://aka.ms/vc14/vc_redist.x64.exe); Linux requires glibc 2.35+.
 Linux keyboard output needs X11/XTest; native Wayland output is unavailable.
 
 ## Use movements in everyday applications

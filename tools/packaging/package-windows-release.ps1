@@ -57,7 +57,7 @@ try {
 [English](README.md) | [Français](README.fr.md)
 
 Run windows/motion-input-grid-controller.exe or windows/motion-input-grid-studio.exe.
-Install the matching Microsoft Visual C++ 2022 Redistributable first.
+Install the latest Microsoft Visual C++ x64 Redistributable first.
 Set CMAKE_PREFIX_PATH to windows/sdk for C++ consumers.
 
 See [package installation](docs/getting-started/packages.md) and the
@@ -69,7 +69,7 @@ See [package installation](docs/getting-started/packages.md) and the
 [English](README.md) | [Français](README.fr.md)
 
 Lancez windows/motion-input-grid-controller.exe ou windows/motion-input-grid-studio.exe.
-Installez le Microsoft Visual C++ 2022 Redistributable correspondant.
+Installez le dernier Microsoft Visual C++ Redistributable x64.
 Utilisez windows/sdk comme CMAKE_PREFIX_PATH pour compiler un consommateur.
 
 [Installation](docs/getting-started/packages.fr.md) et [support](docs/reference/support.fr.md).

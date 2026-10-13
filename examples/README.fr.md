@@ -57,7 +57,7 @@ les actions restent anatomiques.
 
 ### Prérequis natifs
 
-Les exécutables natifs Windows nécessitent encore Microsoft Visual C++ 2022
+Les exécutables natifs Windows nécessitent encore le dernier runtime Microsoft Visual C++
 Redistributable : l'archive ne fonctionne donc pas forcément sur un Windows sans
 aucun prérequis. Linux x64 cible Ubuntu 22.04+, Debian 12+, Fedora/Arch récents,
 avec session X11/XWayland. glibc, pilotes et serveur graphique restent fournis par

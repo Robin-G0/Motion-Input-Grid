@@ -26,8 +26,8 @@ To use the libraries without compiling them, install
 Desktop applications and the Python camera runtime remain separate native
 archives; prebuilt examples include their dependencies.
 
-Choose an individual `*-standalone` tutorial for one technology, or a combined
-`*-examples` archive for several. Extract the whole archive. Individual tutorials
+Download the individual `*-standalone` tutorial for your technology from the
+[release downloads](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-downloads). Extract the whole archive. Individual tutorials
 keep runtime assets beside their own source; combined archives share runtime,
 binding and license folders. Source files sit beside executables or compiled pages. [Standalone instructions](../../examples/README.md)
 list runtime and operating-system requirements.
@@ -51,23 +51,24 @@ examples do not type keys into another application.
 
 | Technology | Start from an extracted archive | Connect feedback to your app |
 | --- | --- | --- |
-| Python/Tk | `examples/python-tkinter/main.exe` on Windows; `./examples/python-tkinter/main` on Linux | Use `handle_detected_actions()` in local `example_usage.py` |
-| Pygame | Same launch names in `examples/pygame` | Use `handle_detected_actions()` in local `example_usage.py` |
-| SDL2 | `examples/sdl2/mig-sdl2.exe` or `./examples/sdl2/mig-sdl2` | Use `tutorial::handle_detected_actions()` in local `example_usage.hpp` |
-| SFML | Corresponding `mig-sfml` executable | Same named function in its own `example_usage.hpp` |
-| Plain browser | `run.cmd` or `sh run.sh` in `examples/web` | Set `MIGSession`'s `onAction` |
-| React | Launcher in `examples/react`; `/` or `/profile.html` | `useMIG({onAction})` |
-| Vue | Launcher in `examples/vue`; `/` or `/profile.html` | Composable `useMIG({onAction})` |
-| Next.js | Launcher in `examples/next`; `/` or `/profile` | Client component's React `onAction` |
+| Python/Tk | `main.exe` on Windows; `./main` on Linux | Use `handle_detected_actions()` in local `example_usage.py` |
+| Pygame | `main.exe` on Windows; `./main` on Linux | Use `handle_detected_actions()` in local `example_usage.py` |
+| SDL2 | `mig-sdl2.exe` or `./mig-sdl2` | Use `tutorial::handle_detected_actions()` in local `example_usage.hpp` |
+| SFML | `mig-sfml.exe` or `./mig-sfml` | Same named function in its own `example_usage.hpp` |
+| Plain browser | `run.cmd` or `sh run.sh` | Set `MIGSession`'s `onAction` |
+| React | `run.cmd` or `sh run.sh`; `/` or `/profile.html` | `useMIG({onAction})` |
+| Vue | `run.cmd` or `sh run.sh`; `/` or `/profile.html` | Composable `useMIG({onAction})` |
+| Next.js | `run.cmd` or `sh run.sh`; `/` or `/profile` | Client component's React `onAction` |
 | C++ supplied positions | Run `run.cmd` / `sh run.sh` in the SDK tutorial | Read the span returned by `engine.update(frame)` as demonstrated by the consumer |
-| Native C++ estimator | Build `examples/native-consumer`; see its README for arguments | Supply RGB, update the same engine, consume events |
+| Native C++ estimator | `run.cmd` / `sh run.sh`; see its README for arguments | Supply RGB, update the same engine, consume events |
 | Unity | Add the standalone tutorial’s `package.json` through Package Manager | `OnAction` UnityEvent or `SubmitFrame(packet)` |
 | Godot C# | Open the standalone .NET project and `raised_hands.tscn` | Connect `MotionAction`; call `SubmitFrame` from your provider |
 | Godot GDScript | Open the standalone `project.godot` and `raised_hands.tscn` | Connect `motion_action`; call `submit_frame` from your provider |
 | Unreal | Copy the standalone folder to your project’s `Plugins/MigExample` | Subscribe to `OnMotion`; call `SubmitFrame` |
 
-The table uses combined-archive paths; individual archives start at the technology
-folder itself. Read each tutorial README for exact platform prerequisites.
+Run these commands from the extracted standalone tutorial folder. Older or locally
+built combined archives use `examples/<technology>` subfolders. Read each tutorial
+README for exact platform prerequisites.
 
 GUI profile variants use `profile.exe`/`profile` for Python and `mig-*-profile`
 for C++. Editor components have both a raised-hands and a generic variant.

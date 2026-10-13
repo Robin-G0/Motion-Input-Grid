@@ -31,7 +31,7 @@ and verification. The drawing tools described below belong to the Motion Input G
 
 Windows 10/11 x64, Visual Studio 2022 C++ Build Tools/Windows SDK and CMake 3.25+
 are required to build. Bootstrap needs network once; -SkipBootstrap reuses assets.
-The matching Visual C++ 2022 Redistributable is needed on deployment machines.
+The latest Visual C++ Redistributable is needed on deployment machines.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/build/build-windows.ps1
