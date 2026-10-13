@@ -60,8 +60,8 @@ void App::open_keys() {
     GetClientRect(window, &client);
     key_window =
         CreateWindowExW(WS_EX_CONTROLPARENT, klass.lpszClassName, L"MIG - Keyboard sequence",
-                        WS_CHILD | WS_CLIPCHILDREN, 0, 96, client.right, client.bottom - 128,
-                        window, nullptr, klass.hInstance, nullptr);
+                        WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0, 96, client.right,
+                        client.bottom - 128, window, nullptr, klass.hInstance, nullptr);
     if (!key_window) {
         throw std::runtime_error("Cannot open keyboard editor");
     }
@@ -211,8 +211,8 @@ void App::open_binding_details() {
     GetClientRect(window, &client);
     details_window =
         CreateWindowExW(WS_EX_CONTROLPARENT, klass.lpszClassName, L"MIG - Input bindings",
-                        WS_CHILD | WS_CLIPCHILDREN, 0, 96, client.right, client.bottom - 128,
-                        window, nullptr, klass.hInstance, nullptr);
+                        WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0, 96, client.right,
+                        client.bottom - 128, window, nullptr, klass.hInstance, nullptr);
     update_theme();
     if (!diagnostic_mode) {
         ShowWindow(details_window, SW_SHOW);

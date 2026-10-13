@@ -23,8 +23,13 @@ bool Window::ui_test() {
         return false;
     }
     sections->setCurrentIndex(1);
+    if (drawing_panel_->findChildren<QPushButton*>("zone-tool").size() != 6 ||
+        findChild<QComboBox*>("layer-source") || step_help_->text().isEmpty() ||
+        findChild<QPushButton*>("delete-step")->isEnabled()) {
+        return false;
+    }
     for (auto* button : drawing_panel_->findChildren<QPushButton*>()) {
-        if (button->text() == "Interaction") {
+        if (button->text() == "Hand sign") {
             button->click();
         }
     }
@@ -32,7 +37,7 @@ bool Window::ui_test() {
         return false;
     }
     for (auto* button : drawing_panel_->findChildren<QPushButton*>()) {
-        if (button->text() == "Required") {
+        if (button->text() == "Passage") {
             button->click();
         }
     }
@@ -89,6 +94,11 @@ bool Window::ui_test() {
     if (config_.motions[0].steps[0].hold_ms != 800) {
         return false;
     }
+    step_mode_field_->setCurrentIndex(int(StepMode::Ordered));
+    if (config_.motions[0].steps[0].constraints[0].order != 1 ||
+        config_.motions[0].steps[0].constraints[1].order != 2) {
+        return false;
+    }
     config_ = definition;
     refresh_inputs();
     step_mode_field_->setCurrentIndex(int(StepMode::Ordered));
@@ -121,6 +131,10 @@ bool Window::ui_test() {
     }
     apply_theme(true);
     log_dock_->show();
+    if (!log_dock_->isFloating() || !(log_dock_->features() & QDockWidget::DockWidgetMovable) ||
+        !(log_dock_->features() & QDockWidget::DockWidgetFloatable)) {
+        return false;
+    }
     log_dock_->hide();
     const auto json = serialize_configuration(config_);
     return parse_configuration(json) == config_ && canvas_->motion && inputs_->count() == 1;

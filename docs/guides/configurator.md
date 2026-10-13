@@ -103,7 +103,7 @@ that input into the open document, and **File → Save** writes the JSON file.
 The main window separates **Movements**, **Edit** and **Test**, like the web
 Studio. Contextual settings keep identity/action apart from drawing tools and
 zone conditions. Switching views preserves the movement and the camera frame.
-On Windows, the inspector provides Movement, Zones, Fingers, Hand sign, Layers
+On Windows, the inspector provides Movement, Zones, Fingers, Hand sign, Body parts
 and Recording. Linux provides Zones and Movement, with **File ? Complete JSON
 profile** opening an in-app page for all schema fields.
 The [Windows controls](../getting-started/windows.md#workspace-and-drawing) and
@@ -114,8 +114,11 @@ The [Windows controls](../getting-started/windows.md#workspace-and-drawing) and
 Use **Select** and drag with the left button held to select a rectangle on the
 current layer. Hold **Ctrl** to retain the previous selection. Press **Delete**
 to remove the selected regions and their linked tolerances. On Linux, use the
-full-grid view for selection. On Windows, **Tolerance** targets the region you
-click, including its existing tolerance; no prior selection is needed.
+full-grid view for selection. Both native frontends use the web's six tools:
+Select, Passage, Action, Cancel, Hand sign and Erase. Place cells directly;
+tolerance authoring and priority controls have been removed. Imported margin
+rules remain supported. Steps are successive phases, whereas route mode controls
+the cells inside a phase (in order, any order or simultaneous).
 
 Changing inspector sections preserves the input's conditions. Removing a purple region
 removes its own sign and finger rules, but independent whole-input and step

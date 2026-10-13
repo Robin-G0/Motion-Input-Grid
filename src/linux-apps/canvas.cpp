@@ -245,6 +245,18 @@ void Canvas::edit_cell(QPointF point) {
         if (type == ConstraintType::Forbidden) {
             brush.order = 0;
         }
+        if (is_trigger(type) && !order) {
+            // One terminal zone, just like the web and Windows direct drawing tools.
+            for (auto& step : motion->steps) {
+                std::vector<std::string> terminal_ids;
+                for (const auto& zone : step.constraints) {
+                    if (is_trigger(zone.type) && zone.priority == Priority::High) {
+                        terminal_ids.push_back(zone.id);
+                    }
+                }
+                ui::erase_regions(step.constraints, terminal_ids);
+            }
+        }
         ui::pencil(cells, brush, x, y, true);
     }
     update();

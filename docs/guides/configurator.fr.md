@@ -107,7 +107,7 @@ layer ; **Apply** enregistre cet input dans le document ouvert et **File → Sav
 écrit le fichier JSON. Les vues **Movements**, **Edit** et **Test** restent dans la fenêtre principale,
 comme sur le web. Les réglages contextuels séparent identité/action, outils de
 dessin et conditions de zone. Changer de vue conserve le mouvement et la frame
-caméra. Windows propose Movement, Zones, Fingers, Hand sign, Layers et Recording ;
+caméra. Windows propose Movement, Zones, Fingers, Hand sign, Body parts et Recording ;
 Linux propose Zones et Movement. **File → Complete JSON profile** ouvre une page
 intégrée pour éditer tous les champs du schéma. Les guides [Windows](../getting-started/windows.fr.md#dessiner)
 et [Linux](../getting-started/linux.fr.md) détaillent les outils disponibles.
@@ -118,8 +118,12 @@ Choisissez **Select**, puis maintenez le clic gauche en déplaçant la souris po
 sélectionner un rectangle du layer courant. Maintenez **Ctrl** pour conserver
 la sélection précédente. **Suppr** retire les régions sélectionnées et leurs
 tolérances liées. Sous Linux, utilisez la vue grille complète pour sélectionner.
-Sous Windows, **Tolerance** cible directement la région cliquée, y compris sa
-tolérance existante ; aucune sélection préalable n'est nécessaire.
+Les deux interfaces natives reprennent les six outils du web : Select, Passage,
+Action, Cancel, Hand sign et Erase. Placez directement les cases ; l'outil de
+tolérance et le sélecteur de priorité sont supprimés. Les marges des profils
+importés restent reconnues. Les étapes sont des phases successives ; le parcours
+détermine comment atteindre les cases d'une phase : dans l'ordre, en ordre libre
+ou simultanément. Une seule étape suffit pour un mouvement simple.
 
 Changer de section conserve les conditions du mouvement. Supprimer une région
 violette retire son signe et ses règles de doigts propres, mais les règles

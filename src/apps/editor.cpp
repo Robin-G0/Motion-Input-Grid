@@ -150,9 +150,9 @@ void App::open_editor(bool creating, bool test) {
     RECT client{};
     GetClientRect(window, &client);
     edit_window = CreateWindowExW(WS_EX_CONTROLPARENT, klass.lpszClassName,
-                                  L"Motion Input Grid Studio workspace", WS_CHILD | WS_CLIPCHILDREN,
-                                  0, 96, client.right, client.bottom - 128, window, nullptr,
-                                  klass.hInstance, nullptr);
+                                  L"Motion Input Grid Studio workspace",
+                                  WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0, 96, client.right,
+                                  client.bottom - 128, window, nullptr, klass.hInstance, nullptr);
     if (!edit_window) {
         throw std::runtime_error("Cannot open input editor");
     }
@@ -231,8 +231,8 @@ void App::refresh_editor() {
     SendDlgItemMessageW(edit_window, StepList, CB_ADDSTRING, 0,
                         reinterpret_cast<LPARAM>(L"Global conditions"));
     for (std::size_t i = 0; i < draft.steps.size(); ++i) {
-        const auto text = L"Step " + std::to_wstring(i + 1) + L" of " +
-                          std::to_wstring(draft.steps.size());
+        const auto text =
+            L"Step " + std::to_wstring(i + 1) + L" of " + std::to_wstring(draft.steps.size());
         SendDlgItemMessageW(edit_window, StepList, CB_ADDSTRING, 0,
                             reinterpret_cast<LPARAM>(text.c_str()));
     }
@@ -327,10 +327,8 @@ void App::refresh_editor() {
     updating_controls = false;
     refresh_layers();
     layout_editor();
-    EnableWindow(GetDlgItem(edit_window, DrawBucket),
-                 selection(edit_window, ConstraintTypeId) != int(ConstraintType::Trigger) ||
-                     selection(edit_window, BrushOrder) > 0);
-    SetDlgItemTextW(edit_window, Clear, scope == 0 ? L"Clear global conditions" : L"Clear this step");
+    SetDlgItemTextW(edit_window, Clear,
+                    scope == 0 ? L"Clear global conditions" : L"Clear this step");
     RedrawWindow(edit_window, nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN);
     {
         std::lock_guard lock(state_mutex);
@@ -482,12 +480,10 @@ void App::editor_click(int x, int y, bool begin) {
         message("Save layer before editing the grid, or restore its body part.");
         return;
     }
-    const int chosen_tool = selection(edit_window, Tool);
-    const int tool = chosen_tool == 2 &&
-                             is_trigger(ConstraintType(selection(edit_window, ConstraintTypeId))) &&
-                             selection(edit_window, BrushOrder) == 0
-                         ? 1
-                         : chosen_tool;
+    const int tool = selection(edit_window, Tool);
+    if (tool == 2 || tool == 4) {
+        return;
+    }
     if (!PtInRect(&editor_grid, {x, y})) {
         return;
     }
@@ -498,7 +494,7 @@ void App::editor_click(int x, int y, bool begin) {
     }
     const int cell_x = int(std::floor(point.x));
     const int cell_y = int(std::floor(point.y));
-    if (tool == 1 || tool == 2 || tool == 4) {
+    if (tool == 1) {
         layer_visible[landmarks[selection(edit_window, Members)].index] = true;
     }
     auto& list = current_constraints();
@@ -551,12 +547,8 @@ void App::editor_click(int x, int y, bool begin) {
         stroke = true;
         last_brush_cell = {cell_x, cell_y};
     }
-    if (tool == 3 || tool == 4) {
-        if (tool == 3) {
-            erase_at(cell_x, cell_y);
-        } else if (begin) {
-            add_contour(point);
-        }
+    if (tool == 3) {
+        erase_at(cell_x, cell_y);
         last_brush_cell = {cell_x, cell_y};
         InvalidateRect(edit_window, nullptr, FALSE);
         return;
@@ -594,7 +586,10 @@ void App::editor_click(int x, int y, bool begin) {
             int maximum = 0;
             for (const auto& item : list) {
                 if (item.landmark == brush.landmark) {
-                    maximum = std::max(maximum, item.order);
+                    if (chosen_order > 0 || brush.type != ConstraintType::Required ||
+                        !is_trigger(item.type)) {
+                        maximum = std::max(maximum, item.order);
+                    }
                     if (chosen_order > 0 && item.order == chosen_order && item.type != brush.type) {
                         throw std::runtime_error(
                             "Choose a different number: this order uses another colour");
@@ -602,6 +597,22 @@ void App::editor_click(int x, int y, bool begin) {
                 }
             }
             brush.order = chosen_order > 0 ? chosen_order : maximum + 1;
+            if (chosen_order == 0 && brush.type == ConstraintType::Required) {
+                const auto existing = std::find_if(list.begin(), list.end(), [&](const auto& item) {
+                    return item.landmark == brush.landmark && item.type == brush.type &&
+                           item.priority == Priority::High && item.cell == Cell{cell_x, cell_y};
+                });
+                if (existing != list.end()) {
+                    brush.order = existing->order;
+                } else {
+                    for (auto& item : list) {
+                        if (item.landmark == brush.landmark && is_trigger(item.type) &&
+                            item.priority == Priority::High && item.order >= brush.order) {
+                            ++item.order;
+                        }
+                    }
+                }
+            }
             if (chosen_order == 0 && is_trigger(brush.type)) {
                 const auto finish = std::find_if(list.begin(), list.end(), [&](const auto& item) {
                     return item.landmark == brush.landmark && is_trigger(item.type) &&
@@ -612,17 +623,6 @@ void App::editor_click(int x, int y, bool begin) {
                 }
             }
         }
-    }
-    if (brush.priority == Priority::Low && brush.type != ConstraintType::Forbidden) {
-        brush.tolerance_for = ui::tolerance_target(list, brush, point);
-        if (brush.tolerance_for.empty()) {
-            message("Draw a main region of this colour before adding tolerance.");
-            return;
-        }
-        const auto target = std::find_if(list.begin(), list.end(), [&](const auto& region) {
-            return region.id == brush.tolerance_for;
-        });
-        brush.interaction = target->interaction;
     }
     if (tool == 1) {
         if (is_trigger(brush.type) && selection(edit_window, BrushOrder) == 0) {
@@ -660,10 +660,6 @@ void App::editor_click(int x, int y, bool begin) {
                 std::rotate(finish, list.begin() + old_size, list.end());
             }
         }
-    }
-    if (tool == 2 && begin) {
-        ui::bucket(list, brush, cell_x, cell_y, brush.id + "_",
-                   selection(edit_window, BrushOrder) > 0);
     }
     last_brush_cell = {cell_x, cell_y};
     if (!list.empty()) {
@@ -737,8 +733,8 @@ void App::open_controls() {
     GetClientRect(window, &client);
     control_window =
         CreateWindowExW(WS_EX_CONTROLPARENT, klass.lpszClassName, L"MIG - Remote controls",
-                        WS_CHILD | WS_CLIPCHILDREN, 0, 96, client.right, client.bottom - 128,
-                        window, nullptr, klass.hInstance, nullptr);
+                        WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0, 96, client.right,
+                        client.bottom - 128, window, nullptr, klass.hInstance, nullptr);
     const auto index = [](ControlBinding binding) {
         return binding.gesture == Gesture::None
                    ? 0

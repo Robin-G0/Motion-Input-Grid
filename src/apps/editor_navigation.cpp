@@ -72,8 +72,7 @@ bool App::editor_drawing_tools(int id, int notification) {
         RedrawWindow(edit_window, nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN);
         return true;
     }
-    if (notification == BN_CLICKED &&
-        (id == DrawPencil || id == DrawBucket || id == DrawContour)) {
+    if (notification == BN_CLICKED && (id == DrawPencil || id == DrawBucket || id == DrawContour)) {
         return true; // Retired authoring tools: imported rules remain supported.
     }
     if (notification == BN_CLICKED &&

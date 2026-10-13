@@ -329,7 +329,6 @@ struct App {
     void click(int x, int y);
     void editor_click(int x, int y, bool begin);
     void select_regions(Vec2 point, bool begin);
-    void add_contour(Vec2 point);
     void erase_at(int x, int y);
     void set_test(bool enabled);
     void open_controls();
@@ -366,6 +365,7 @@ LRESULT CALLBACK controls_procedure(HWND window, UINT msg, WPARAM wp, LPARAM lp)
 LRESULT CALLBACK keys_procedure(HWND window, UINT msg, WPARAM wp, LPARAM lp);
 HWND control(HWND parent, const wchar_t* type, const wchar_t* text, int id, int x, int y, int width,
              int height, DWORD style = 0);
+void position_control(HWND child, int x, int y, int width, int height);
 void choices(HWND parent, int id, std::initializer_list<const wchar_t*> items);
 inline RECT motion_button_rect(RECT row, int index) {
     const int width = (row.right - row.left - 36) / 3;

@@ -7,6 +7,16 @@ App* application{};
 namespace {
 LRESULT CALLBACK modern_control(HWND window, UINT message, WPARAM wp, LPARAM lp, UINT_PTR id,
                                 DWORD_PTR) {
+    if (message == WM_ERASEBKGND) {
+        // The custom combo painter covers its entire client area in WM_PAINT.
+        if (id != 2) {
+            RECT area{};
+            GetClientRect(window, &area);
+            FillRect(reinterpret_cast<HDC>(wp), &area,
+                     id == 3 ? application->surface_brush : application->background_brush);
+        }
+        return 1;
+    }
     if (id == 3 && (GetWindowLongW(window, GWL_STYLE) & ES_MULTILINE) &&
         (message == WM_PRINTCLIENT || message == WM_PRINT)) {
         return DefSubclassProc(window, message, wp, lp);
@@ -69,9 +79,9 @@ HWND control(HWND parent, const wchar_t* type, const wchar_t* text, int id, int 
     } else if (std::wstring_view(type) == L"COMBOBOX") {
         style |= CBS_OWNERDRAWFIXED | CBS_HASSTRINGS;
     }
-    auto child = CreateWindowExW(0, type, text, WS_CHILD | WS_VISIBLE | WS_TABSTOP | style, x, y,
-                                 width, height, parent, reinterpret_cast<HMENU>(INT_PTR(id)),
-                                 GetModuleHandleW(nullptr), nullptr);
+    auto child = CreateWindowExW(
+        0, type, text, WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_CLIPSIBLINGS | style, x, y, width,
+        height, parent, reinterpret_cast<HMENU>(INT_PTR(id)), GetModuleHandleW(nullptr), nullptr);
     SendMessageW(child, WM_SETFONT, reinterpret_cast<WPARAM>(application->font), TRUE);
     if (std::wstring_view(type) == L"BUTTON" || std::wstring_view(type) == L"COMBOBOX" ||
         std::wstring_view(type) == L"EDIT") {
@@ -93,6 +103,29 @@ HWND control(HWND parent, const wchar_t* type, const wchar_t* text, int id, int 
         theme_scrollbars(info.hwndList, scroll);
     }
     return child;
+}
+void position_control(HWND child, int x, int y, int width, int height) {
+    if (!child) {
+        return;
+    }
+    RECT current{};
+    GetWindowRect(child, &current);
+    MapWindowPoints(nullptr, GetParent(child), reinterpret_cast<POINT*>(&current), 2);
+    wchar_t type[32]{};
+    GetClassNameW(child, type, 32);
+    int current_height = current.bottom - current.top;
+    if (_wcsicmp(type, L"COMBOBOX") == 0) {
+        RECT dropped{};
+        SendMessageW(child, CB_GETDROPPEDCONTROLRECT, 0, reinterpret_cast<LPARAM>(&dropped));
+        current_height = dropped.bottom - dropped.top;
+    }
+    if (current.left == x && current.top == y && current.right - current.left == width &&
+        current_height == height) {
+        return;
+    }
+    // Schedule one final paint after layout, rather than erase/paint every move synchronously.
+    SetWindowPos(child, nullptr, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW);
+    RedrawWindow(child, nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_FRAME);
 }
 void choices(HWND parent, int id, std::initializer_list<const wchar_t*> items) {
     for (auto item : items) {

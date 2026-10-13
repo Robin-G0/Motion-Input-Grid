@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <deque>
+#include <map>
 #include <mig/core/engine.hpp>
 #include <queue>
 #include <stdexcept>
@@ -254,8 +255,11 @@ inline void set_route_mode(Step& step, StepMode mode) {
         zone.order = 0;
     }
     if (mode == StepMode::Ordered) {
-        for (const auto& zone : step.constraints) {
-            number_lane(step.constraints, zone.landmark);
+        std::map<int, int> lanes;
+        for (auto& zone : step.constraints) {
+            if (zone.priority == Priority::High && zone.type != ConstraintType::Forbidden) {
+                zone.order = ++lanes[zone.landmark];
+            }
         }
     }
 }

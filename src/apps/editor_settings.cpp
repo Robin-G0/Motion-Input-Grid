@@ -29,7 +29,7 @@ bool App::editor_settings(int id, int notification) {
         } catch (const std::exception&) {
         }
         if (id == Key) {
-            InvalidateRect(GetDlgItem(edit_window, KeyTokens), nullptr, TRUE);
+            InvalidateRect(GetDlgItem(edit_window, KeyTokens), nullptr, FALSE);
         }
         return true;
     }
@@ -108,9 +108,6 @@ bool App::editor_settings(int id, int notification) {
                 sync_interaction_hand();
             }
             refresh_layers();
-            EnableWindow(GetDlgItem(edit_window, DrawBucket),
-                         selection(edit_window, ConstraintTypeId) != int(ConstraintType::Trigger) ||
-                             selection(edit_window, BrushOrder) > 0);
             layout_editor();
             RedrawWindow(edit_window, nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN);
         }

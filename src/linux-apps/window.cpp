@@ -42,9 +42,12 @@ Window::Window(std::string runtime, unsigned camera)
     logs_->setReadOnly(true);
     logs_->setMaximumBlockCount(256);
     log_dock_->setWidget(logs_);
-    log_dock_->setFeatures(QDockWidget::NoDockWidgetFeatures);
+    log_dock_->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable |
+                           QDockWidget::DockWidgetFloatable);
     addDockWidget(Qt::BottomDockWidgetArea, log_dock_);
     log_dock_->hide();
+    log_dock_->setFloating(true);
+    log_dock_->resize(640, 320);
     build_sidebar();
     build_menus();
     apply_theme(true);
@@ -318,6 +321,7 @@ void Window::build_sidebar() {
     layout->addWidget(step_field_);
     auto* step_actions = new QHBoxLayout;
     auto* add_step = new QPushButton("Add step", panel);
+    add_step->setObjectName("add-step");
     auto* delete_step = new QPushButton("Delete step", panel);
     delete_step->setProperty("role", "danger");
     step_actions->addWidget(add_step);
@@ -332,7 +336,7 @@ void Window::build_sidebar() {
     step_mode_field_->addItems({"Any order", "Simultaneous", "In order"});
     layout->addWidget(step_mode_field_);
     step_hold_field_ = new QSpinBox(panel);
-    step_hold_field_->setRange(0, 10000);
+    step_hold_field_->setRange(0, 1000);
     step_hold_field_->setSuffix(" ms hold");
     layout->addWidget(step_hold_field_);
     connect(step_field_, &QComboBox::currentIndexChanged, this, [this](int index) {
@@ -361,7 +365,7 @@ void Window::build_sidebar() {
         canvas_->motion->steps[canvas_->scope - 1].hold_ms = value;
     });
     connect(add_step, &QPushButton::clicked, this, [this] {
-        if (!canvas_->motion) {
+        if (!canvas_->motion || canvas_->motion->steps.size() >= 64) {
             return;
         }
         stop();
@@ -423,7 +427,7 @@ void Window::build_sidebar() {
             canvas_->selection.clear();
             interaction_controls_->setVisible(type == int(ConstraintType::Interaction));
             order_controls_->setVisible(
-                type == int(ConstraintType::Required) && canvas_->motion &&
+                type == int(ConstraintType::Required) && canvas_->motion && canvas_->scope > 0 &&
                 !canvas_->motion->steps.empty() &&
                 canvas_->motion->steps[std::max(0, canvas_->scope - 1)].mode == StepMode::Ordered);
         });
@@ -458,7 +462,8 @@ void Window::build_sidebar() {
     order_controls_ = section("Route numbering");
     auto* route_hint = new QLabel(
         "Cells are numbered as you draw: reach 1, then 2, then 3. Each tracked point has its "
-        "own route. This is separate from the movement steps.", panel);
+        "own route. This is separate from the movement steps.",
+        panel);
     route_hint->setWordWrap(true);
     layout->addWidget(route_hint);
     interaction_controls_ = section("Hand sign condition");
@@ -512,7 +517,8 @@ void Window::select_input(int index) {
         if (canvas_->motion) {
             canvas_->scope = std::min(canvas_->scope, int(canvas_->motion->steps.size()));
             for (std::size_t i = 0; i < canvas_->motion->steps.size(); ++i) {
-                step_field_->addItem(QString("Step %1 of %2").arg(i + 1).arg(canvas_->motion->steps.size()));
+                step_field_->addItem(
+                    QString("Step %1 of %2").arg(i + 1).arg(canvas_->motion->steps.size()));
             }
         }
         step_field_->setCurrentIndex(canvas_->scope);
@@ -522,11 +528,14 @@ void Window::select_input(int index) {
 }
 void Window::refresh_step() {
     const bool step = canvas_->motion && canvas_->scope > 0;
-    step_help_->setText(step
-        ? "Steps run one after another. Choose how to reach the cells inside this step: in "
-          "order, any order, or all at the same time. One step is enough for a simple movement."
-        : "Global conditions apply throughout the movement. Place action and hand sign zones "
-          "inside a step.");
+    step_help_->setText(
+        step
+            ? "Steps run one after another. Choose how to reach the cells inside this step: in "
+              "order, any order, or all at the same time. One step is enough for a simple movement."
+            : "Global conditions apply throughout the movement. Place action and hand sign zones "
+              "inside a step.");
+    findChild<QPushButton*>("add-step")
+        ->setEnabled(canvas_->motion && canvas_->motion->steps.size() < 64);
     findChild<QPushButton*>("delete-step")->setEnabled(step && canvas_->motion->steps.size() > 1);
     step_mode_field_->setVisible(step);
     const QSignalBlocker mode_blocker(step_mode_field_), hold_blocker(step_hold_field_);

@@ -4,6 +4,28 @@
 #include <dwmapi.h>
 #include <uxtheme.h>
 namespace mig::app {
+namespace {
+void theme_window(HWND handle) {
+    const BOOL enabled = application->dark;
+    DwmSetWindowAttribute(handle, 20, &enabled, sizeof(enabled));
+    EnumChildWindows(
+        handle,
+        [](HWND child, LPARAM) -> BOOL {
+            SetWindowTheme(child, L"", L"");
+            const auto colors = application->palette();
+            const ScrollbarColors scroll{colors.surface, colors.border, colors.muted};
+            theme_scrollbars(child, scroll);
+            COMBOBOXINFO info{sizeof(info)};
+            if (GetComboBoxInfo(child, &info) && info.hwndList) {
+                SetWindowTheme(info.hwndList, L"", L"");
+                theme_scrollbars(info.hwndList, scroll);
+            }
+            return TRUE;
+        },
+        0);
+    RedrawWindow(handle, nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_FRAME);
+}
+} // namespace
 Palette App::palette() const noexcept {
     const auto colors = ui::design::palette(dark);
     const auto rgb = [](std::uint32_t value) { return RGB(value >> 16, value >> 8, value); };
@@ -29,25 +51,7 @@ void App::update_theme() {
         if (!handle) {
             continue;
         }
-        const BOOL enabled = dark;
-        DwmSetWindowAttribute(handle, 20, &enabled, sizeof(enabled));
-        EnumChildWindows(
-            handle,
-            [](HWND child, LPARAM) -> BOOL {
-                SetWindowTheme(child, L"", L"");
-                const auto colors = application->palette();
-                const ScrollbarColors scroll{colors.surface, colors.border, colors.muted};
-                theme_scrollbars(child, scroll);
-                COMBOBOXINFO info{sizeof(info)};
-                if (GetComboBoxInfo(child, &info) && info.hwndList) {
-                    SetWindowTheme(info.hwndList, L"", L"");
-                    theme_scrollbars(info.hwndList, scroll);
-                }
-                return TRUE;
-            },
-            0);
-        RedrawWindow(handle, nullptr, nullptr,
-                     RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_ERASE | RDW_FRAME);
+        theme_window(handle);
     }
 }
 void App::draw_control(const DRAWITEMSTRUCT& item) {
@@ -264,8 +268,9 @@ void App::draw_control(const DRAWITEMSTRUCT& item) {
         const bool tool_active = item.CtlID >= DrawSelect && item.CtlID <= DrawContour &&
                                  selection(edit_window, Tool) == int(item.CtlID - DrawSelect);
         const bool paint_button = item.CtlID >= PaintRequired && item.CtlID <= PaintInteraction;
-        const bool paint_active = paint_button && selection(edit_window, Tool) == 1 && selection(edit_window, ConstraintTypeId) ==
-                                                      int(item.CtlID - PaintRequired);
+        const bool paint_active =
+            paint_button && selection(edit_window, Tool) == 1 &&
+            selection(edit_window, ConstraintTypeId) == int(item.CtlID - PaintRequired);
         const auto paint_color = item.CtlID == PaintRequired      ? RGB(48, 195, 135)
                                  : item.CtlID == PaintForbidden   ? RGB(242, 87, 105)
                                  : item.CtlID == PaintInteraction ? RGB(184, 112, 245)
@@ -346,21 +351,31 @@ void App::toggle_logs() {
         klass.lpszClassName = L"MIGLogs";
         klass.hCursor = LoadCursor(nullptr, IDC_ARROW);
         RegisterClassW(&klass);
-        RECT client{};
-        GetClientRect(window, &client);
-        log_window = CreateWindowW(klass.lpszClassName, L"MIG - Log terminal",
-                                   editor ? WS_CHILD | WS_CLIPCHILDREN : WS_OVERLAPPEDWINDOW,
-                                   editor ? 0 : 240, editor ? 96 : 200, editor ? client.right : 760,
-                                   editor ? client.bottom - 128 : 480, window, nullptr,
-                                   klass.hInstance, nullptr);
+        RECT owner{};
+        GetWindowRect(window, &owner);
+        MONITORINFO monitor{sizeof(monitor)};
+        GetMonitorInfoW(MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST), &monitor);
+        const auto& work = monitor.rcWork;
+        const int width = std::min(640, int(work.right - work.left));
+        const int height = std::min(320, int(work.bottom - work.top));
+        const int x =
+            std::clamp(int(owner.right) - width - 24, int(work.left), int(work.right) - width);
+        const int y =
+            std::clamp(int(owner.bottom) - height - 36, int(work.top), int(work.bottom) - height);
+        log_window =
+            CreateWindowExW(WS_EX_TOOLWINDOW, klass.lpszClassName,
+                            editor ? L"Motion Input Grid Studio - Terminal"
+                                   : L"Motion Input Grid Controller - Terminal",
+                            WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_CLIPCHILDREN, x,
+                            y, width, height, window, nullptr, klass.hInstance, nullptr);
         if (!log_window) {
             throw std::runtime_error("Cannot open log terminal");
         }
+        theme_window(log_window);
     }
     logs_visible = !logs_visible;
     ShowWindow(log_window, logs_visible && !diagnostic_mode ? SW_SHOW : SW_HIDE);
     SetDlgItemTextW(window, Logs, logs_visible ? L"Logs: On" : L"Logs: Off");
-    update_theme();
     shown_log_version = ~std::uint64_t{};
 }
 LRESULT CALLBACK log_procedure(HWND window, UINT message, WPARAM wp, LPARAM lp) {
@@ -370,20 +385,31 @@ LRESULT CALLBACK log_procedure(HWND window, UINT message, WPARAM wp, LPARAM lp) 
         const auto edit = control(window, L"EDIT", L"", 1, 0, 0, 740, 420,
                                   ES_MULTILINE | ES_READONLY | WS_VSCROLL | ES_AUTOVSCROLL);
         SendMessageW(edit, WM_SETFONT, reinterpret_cast<WPARAM>(app.mono_font), TRUE);
-        if constexpr (editor) {
-            control(window, L"BUTTON", L"Back to workspace", KeyCancel, 16, 12, 180, 32);
-        }
         return 0;
     }
     case WM_SIZE:
-        MoveWindow(GetDlgItem(window, 1), 0, editor ? 60 : 0, LOWORD(lp),
-                   HIWORD(lp) - (editor ? 60 : 0), TRUE);
+        position_control(GetDlgItem(window, 1), 8, 8, std::max(0, int(LOWORD(lp)) - 16),
+                         std::max(0, int(HIWORD(lp)) - 16));
+        InvalidateRect(window, nullptr, FALSE);
         return 0;
-    case WM_COMMAND:
-        if (LOWORD(wp) == KeyCancel) {
-            app.toggle_logs();
-        }
+    case WM_GETMINMAXINFO:
+        reinterpret_cast<MINMAXINFO*>(lp)->ptMinTrackSize = {360, 180};
         return 0;
+    case WM_ERASEBKGND:
+        return 1;
+    case WM_PRINTCLIENT: {
+        RECT area{};
+        GetClientRect(window, &area);
+        FillRect(reinterpret_cast<HDC>(wp), &area, app.surface_brush);
+        return 0;
+    }
+    case WM_PAINT: {
+        PAINTSTRUCT paint{};
+        const auto dc = BeginPaint(window, &paint);
+        FillRect(dc, &paint.rcPaint, app.surface_brush);
+        EndPaint(window, &paint);
+        return 0;
+    }
     case WM_DRAWITEM:
         app.draw_control(*reinterpret_cast<DRAWITEMSTRUCT*>(lp));
         return TRUE;

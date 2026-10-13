@@ -76,21 +76,29 @@ jambes. Comparez temps/âge/précision avec même éclairage et réglage Hands.
 
 File/Edit/View, commandes de session, MOVEMENTS et statut entourent la caméra reflétée. View
 choisit thème, grille, os des mains, dots et logs séparément. Cacher Hands ne
-supprime pas l'inférence ; overlays périmés disparaissent. Logs ferment avec
-l'app. Boutons remplis/arrondis, états hover/focus/activé. Action verte900 ms
+supprime pas l'inférence ; overlays périmés disparaissent. Le terminal de logs
+est une petite fenêtre flottante opaque : déplacez son titre ou redimensionnez
+ses bords. Fermer le masque ; le rouvrir conserve sa position et sa taille.
+Il reste ouvert entre les vues et ferme avec l'app. Lire ou sélectionner des
+événements anciens suspend le défilement automatique jusqu'au retour en bas.
+Boutons remplis/arrondis, états hover/focus/activé. Action verte900 ms
 même sans logs/clavier.
 
 Les vues **Movements**, **Edit** et **Test** restent dans la fenêtre principale.
 Activez la caméra explicitement et gardez les épaules visibles une seconde.
 Body suit les épaules ; Full grid montre27x27, dots/traces reflétés une fois.
 Pointage inverse identique ; un trait gèle sa vue.
-Nouveau mouvement vide, une étape Ordered sans limite. Choisissez corps, Pencil/Fill/Tolerance/
-Eraser/Select et couleur : vert Required, rouge Forbidden, jaune Trigger.
-Tolerance cible la région cliquée, même via son contour Low, sans sélection
-préalable. Select trace un rectangle ; Ctrl conserve la sélection précédente,
-Suppr retire les régions sélectionnées et leurs tolérances. Un trait=un undo. Order1/2 crée des
-alternatives horizontales ; une région de chaque numéro suffit. Trigger unique
-movable ; numéros centrés, X gardes, R Required non ordonné.
+Un mouvement commence vide avec une étape et sans limite de temps. Choisissez
+le point suivi, puis **Select**, **Passage**, **Action**, **Cancel**, **Hand sign**
+ou **Erase**, comme sur le web. Placez directement les cases : il n'y a plus
+d'outil de tolérance ni de sélecteur de priorité. Les marges importées sont conservées.
+Select trace un rectangle ; Ctrl conserve la sélection précédente, Suppr retire
+les régions et leurs marges liées. Un trait correspond à un undo. Action déplace
+la case de fin. Zones affiche **Step 1 of N** : les étapes sont des phases
+successives. Dans une phase, choisissez **In order**, **Any order** ou
+**Simultaneous**. Une étape suffit pour un mouvement simple. La position dans
+le parcours apparaît pour une région ordonnée sélectionnée ; un même numéro
+représente des alternatives pour le point suivi.
 
 La stack regroupe contraintes par landmark, autres layers en contour. Aide
 facultative ; Hide seulement présentation, Delete tous scopes, Clear step nettoie la portée courante.
@@ -99,7 +107,7 @@ ou rétablir avant changement/dessin/Test. IDs/régions/règles conservés, mais
 explicites et identité des traces inchangées. Save layer=brouillon, Apply=publication
 dans document, File Save=fichier.
 
-L’inspecteur sépare Movement, Zones, Fingers, Hand sign, Layers et Recording.
+L’inspecteur sépare Movement, Zones, Fingers, Hand sign, Body parts et Recording.
 Movement contient identité, clavier et délais ; Zones contient parcours et géométrie.
 Il n’y a plus de bascule Basic/Advanced. Violet : main/signe/hold 0..60000 ms avant dessin,
 Select/Update pour modifier. Fonctionne sans vert/jaune, réserve la main des

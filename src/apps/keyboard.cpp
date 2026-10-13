@@ -116,7 +116,7 @@ void App::refresh_diagnostics(const std::shared_ptr<const Snapshot>& displayed) 
         SendMessageW(list, LB_SETCURSEL, selected_constraint, 0);
         SendMessageW(list, LB_SETTOPINDEX, top, 0);
         SendMessageW(list, WM_SETREDRAW, TRUE, 0);
-        InvalidateRect(list, nullptr, TRUE);
+        InvalidateRect(list, nullptr, FALSE);
         updating_controls = false;
     }
 }
@@ -127,9 +127,28 @@ void App::refresh_logs(const std::vector<std::string>& entries, std::uint64_t ve
         for (const auto& item : entries) {
             text += wide(item) + L"\r\n";
         }
-        SetDlgItemTextW(log_window, 1, text.c_str());
-        SendDlgItemMessageW(log_window, 1, EM_SETSEL, text.size(), text.size());
-        SendDlgItemMessageW(log_window, 1, EM_SCROLLCARET, 0, 0);
+        const auto terminal = GetDlgItem(log_window, 1);
+        DWORD start{}, end{};
+        SendMessageW(terminal, EM_GETSEL, reinterpret_cast<WPARAM>(&start),
+                     reinterpret_cast<LPARAM>(&end));
+        const auto first_line = SendMessageW(terminal, EM_GETFIRSTVISIBLELINE, 0, 0);
+        SCROLLINFO scroll{sizeof(scroll), SIF_ALL};
+        const bool at_bottom = !GetScrollInfo(terminal, SB_VERT, &scroll) ||
+                               scroll.nPos >= scroll.nMax - int(scroll.nPage) + 1;
+        const bool follow = at_bottom && start == end;
+        SendMessageW(terminal, WM_SETREDRAW, FALSE, 0);
+        SetWindowTextW(terminal, text.c_str());
+        if (follow) {
+            SendMessageW(terminal, EM_SETSEL, text.size(), text.size());
+            SendMessageW(terminal, EM_LINESCROLL, 0, SendMessageW(terminal, EM_GETLINECOUNT, 0, 0));
+        } else {
+            SendMessageW(terminal, EM_SETSEL, std::min<std::size_t>(start, text.size()),
+                         std::min<std::size_t>(end, text.size()));
+            const auto current_line = SendMessageW(terminal, EM_GETFIRSTVISIBLELINE, 0, 0);
+            SendMessageW(terminal, EM_LINESCROLL, 0, first_line - current_line);
+        }
+        SendMessageW(terminal, WM_SETREDRAW, TRUE, 0);
+        RedrawWindow(terminal, nullptr, nullptr, RDW_INVALIDATE | RDW_FRAME);
         shown_log_version = version;
     }
 }

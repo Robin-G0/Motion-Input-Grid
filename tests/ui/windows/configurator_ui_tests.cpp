@@ -40,6 +40,7 @@ int run_ui_test(App& app, HWND window) {
             app.paint_editor(memory);
         } else {
             FillRect(memory, &rect, app.background_brush);
+            SendMessageW(target, WM_PRINTCLIENT, reinterpret_cast<WPARAM>(memory), PRF_CLIENT);
         }
         struct PreviewContext {
             HDC dc;
@@ -97,8 +98,9 @@ int run_ui_test(App& app, HWND window) {
     check(app.draft.constraints.empty() && app.draft.steps[0].constraints.empty() &&
               app.layer_members.empty() && !app.editor_help,
           "A new input must start with no forced cells or mandatory tutorial");
-    for (int id : {DrawPencil, DrawBucket, DrawSelect, DrawEraser, DrawContour, PaintRequired,
-                   PaintForbidden, PaintTrigger, Undo, Redo}) {
+    app.editor_command(ConstraintsTab, BN_CLICKED);
+    for (int id : {DrawSelect, DrawEraser, PaintRequired, PaintForbidden, PaintTrigger,
+                   PaintInteraction, Undo, Redo}) {
         RECT button{};
         GetWindowRect(GetDlgItem(app.edit_window, id), &button);
         MapWindowPoints(nullptr, app.edit_window, reinterpret_cast<POINT*>(&button), 2);
@@ -106,7 +108,7 @@ int run_ui_test(App& app, HWND window) {
     }
     check(app.draft.max_duration_ms == 0 && app.draft.steps[0].mode == StepMode::Ordered &&
               (GetWindowLongW(GetDlgItem(app.edit_window, AddStep), GWL_STYLE) & WS_VISIBLE) &&
-              (GetWindowLongW(GetDlgItem(app.edit_window, DrawPencil), GWL_STYLE) & WS_VISIBLE),
+              (GetWindowLongW(GetDlgItem(app.edit_window, PaintRequired), GWL_STYLE) & WS_VISIBLE),
           "Unified editor must expose steps and drawing tools without a mode switch");
     const auto set_choice = [&](int id, int value) {
         SendDlgItemMessageW(app.edit_window, id, CB_SETCURSEL, value, 0);
@@ -248,7 +250,32 @@ int run_ui_test(App& app, HWND window) {
     app.toggle_logs();
     const auto terminal = app.log_window;
     check(app.logs_visible && IsWindow(terminal), "Linked log terminal failed");
+    const auto terminal_style = GetWindowLongW(terminal, GWL_STYLE);
+    check((terminal_style & WS_POPUP) && !(terminal_style & WS_CHILD) &&
+              (terminal_style & WS_THICKFRAME) && GetWindow(terminal, GW_OWNER) == window &&
+              !(GetWindowLongW(terminal, GWL_EXSTYLE) & WS_EX_TRANSPARENT),
+          "Terminal must be an opaque, movable, resizable owned window, not an editor overlay");
+    RECT terminal_frame{};
+    GetWindowRect(terminal, &terminal_frame);
+    SetWindowPos(terminal, nullptr, terminal_frame.left + 16, terminal_frame.top + 16, 600, 280,
+                 SWP_NOZORDER | SWP_NOACTIVATE);
+    GetWindowRect(terminal, &terminal_frame);
+    const auto workspace_frame = app.editor_grid;
+    app.layout();
+    app.layout_editor();
+    RECT after_layout{};
+    GetWindowRect(terminal, &after_layout);
+    check(EqualRect(&terminal_frame, &after_layout) &&
+              EqualRect(&workspace_frame, &app.editor_grid),
+          "Workspace refresh must not resize or reposition a floating terminal or its grid");
+    POINT terminal_margin{2, 2};
+    ClientToScreen(terminal, &terminal_margin);
+    check(SendMessageW(terminal, WM_NCHITTEST, 0,
+                       MAKELPARAM(terminal_margin.x, terminal_margin.y)) == HTCLIENT,
+          "Terminal margins must consume pointer input instead of forwarding it to the editor");
     app.toggle_logs();
+    GetWindowRect(terminal, &after_layout);
+    check(EqualRect(&terminal_frame, &after_layout), "Reopening terminal must retain its geometry");
     check(!app.logs_visible && app.log_window == terminal,
           "Terminal should hide and remain reusable");
     app.toggle_logs();
@@ -260,14 +287,58 @@ int run_ui_test(App& app, HWND window) {
     app.undo(false, true);
     app.tick();
     check(GetWindowTextLengthW(GetDlgItem(terminal, 1)) > 0, "Terminal content failed");
+    app.show_studio_view(1);
+    check(app.logs_visible, "Changing workspace views must keep the terminal open");
+    std::vector<std::string> terminal_entries;
+    for (int line = 0; line < 60; ++line) {
+        terminal_entries.push_back("Event " + std::to_string(line));
+    }
+    const auto terminal_edit = GetDlgItem(terminal, 1);
+    app.refresh_logs(terminal_entries, app.log_version + 1000);
+    SendMessageW(terminal_edit, EM_SETSEL, 0, 4);
+    SendMessageW(terminal_edit, EM_LINESCROLL, 0, -1000);
+    terminal_entries.push_back("New event while reading");
+    app.refresh_logs(terminal_entries, app.log_version + 1001);
+    DWORD terminal_selection_start{}, terminal_selection_end{};
+    SendMessageW(terminal_edit, EM_GETSEL, reinterpret_cast<WPARAM>(&terminal_selection_start),
+                 reinterpret_cast<LPARAM>(&terminal_selection_end));
+    check(terminal_selection_start == 0 && terminal_selection_end == 4 &&
+              SendMessageW(terminal_edit, EM_GETFIRSTVISIBLELINE, 0, 0) == 0,
+          "Incoming logs must preserve selection and scroll position while reading older events");
+    const auto terminal_length = GetWindowTextLengthW(terminal_edit);
+    SendMessageW(terminal_edit, EM_SETSEL, terminal_length, terminal_length);
+    SendMessageW(terminal_edit, EM_SCROLLCARET, 0, 0);
+    SendMessageW(terminal_edit, EM_LINESCROLL, 0, 1000);
+    terminal_entries.push_back("Follow newest event");
+    app.refresh_logs(terminal_entries, app.log_version + 1002);
+    SendMessageW(terminal_edit, EM_GETSEL, reinterpret_cast<WPARAM>(&terminal_selection_start),
+                 reinterpret_cast<LPARAM>(&terminal_selection_end));
+    check(terminal_selection_start == DWORD(GetWindowTextLengthW(terminal_edit)) &&
+              terminal_selection_end == terminal_selection_start,
+          "Terminal must follow new events when already at the bottom without a selection");
+    {
+        PaintBuffer erase_buffer;
+        const auto compatible = GetDC(window);
+        check(erase_buffer.resize(compatible, 32, 32), "Allocate erase diagnostic buffer");
+        ReleaseDC(window, compatible);
+        for (const auto child : {terminal_edit, GetDlgItem(app.edit_window, InputName)}) {
+            PatBlt(erase_buffer.dc(), 0, 0, 32, 32, WHITENESS);
+            check(SendMessageW(child, WM_ERASEBKGND, reinterpret_cast<WPARAM>(erase_buffer.dc()),
+                               0) == 1 &&
+                      GetPixel(erase_buffer.dc(), 2, 2) == app.palette().surface,
+                  "Native edit controls must erase with the theme instead of flashing white");
+        }
+    }
     app.dialog_open = true;
     app.pending_events.push_back({0, now_ms()});
     app.finish_dialog();
     check(!app.dialog_open && app.pending_events.empty() && app.restart_requested,
           "Modal output barrier failed");
     draw_preview(window, app.directory / (editor ? "configurator-ui.bmp" : "controller-ui.bmp"));
+    draw_preview(terminal, app.directory / "terminal-dark-ui.bmp");
     SendMessageW(window, WM_COMMAND, ThemeLight, 0);
     check(!app.dark, "Explicit light appearance command failed");
+    draw_preview(terminal, app.directory / "terminal-light-ui.bmp");
     draw_preview(window, app.directory /
                              (editor ? "configurator-light-ui.bmp" : "controller-light-ui.bmp"));
     SendMessageW(window, WM_COMMAND, ThemeDark, 0);
@@ -289,16 +360,14 @@ int run_ui_test(App& app, HWND window) {
     draw_cell(7, 3, 4);
     check(app.draft.steps[0].constraints.back().type == ConstraintType::Trigger,
           "Extending a unified path must keep its Trigger last");
+    const auto before_retired_tool = app.draft;
     app.editor_command(DrawContour, BN_CLICKED);
-    const auto tolerance_point = app.grid_view.screen({2.5f, 5.5f});
-    SendMessageW(app.edit_window, WM_LBUTTONDOWN, MK_LBUTTON,
-                 MAKELPARAM(int(tolerance_point.x), int(tolerance_point.y)));
-    SendMessageW(app.edit_window, WM_LBUTTONUP, 0,
-                 MAKELPARAM(int(tolerance_point.x), int(tolerance_point.y)));
-    check(app.draft.steps[0].constraints.size() > 4,
-          "Unified tolerance tool must select its target directly on the grid");
-    app.undo(false, true);
-    check(app.draft.steps[0].constraints.size() == 4, "Tolerance must undo in one operation");
+    check(app.draft == before_retired_tool && !GetDlgItem(app.edit_window, DrawContour) &&
+              !GetDlgItem(app.edit_window, DrawPencil) &&
+              !GetDlgItem(app.edit_window, DrawBucket) && !GetDlgItem(app.edit_window, StepUp) &&
+              !GetDlgItem(app.edit_window, StepDown) &&
+              !(GetWindowLongW(GetDlgItem(app.edit_window, PriorityId), GWL_STYLE) & WS_VISIBLE),
+          "Authoring must expose six tools without tolerance, priority or step arrows");
     SetDlgItemTextW(app.edit_window, Cooldown, L"500");
     check(app.draft.cooldown_ms == 500, "Unified cooldown editing failed");
     app.editor_command(PaintForbidden, BN_CLICKED);
@@ -743,21 +812,20 @@ int run_ui_test(App& app, HWND window) {
     check(app.draft.keyboard == old_keyboard, "Keyboard sequence edits must undo");
     app.editor_command(PaintInteraction, BN_CLICKED);
     const auto alternate_cell = app.grid_view.screen({6.5f, 5.5f});
-    app.editor_command(DrawPencil, BN_CLICKED);
     SendMessageW(app.edit_window, WM_LBUTTONDOWN, MK_LBUTTON,
                  MAKELPARAM(int(alternate_cell.x), int(alternate_cell.y)));
     SendMessageW(app.edit_window, WM_LBUTTONUP, 0,
                  MAKELPARAM(int(alternate_cell.x), int(alternate_cell.y)));
-    check(app.draft.steps[0].constraints.size() == 2 &&
+    check(app.draft.steps[0].constraints.size() == 1 &&
               app.draft.steps[0].constraints[0].order == 1 &&
-              app.draft.steps[0].constraints[1].order == 1,
-          "Auto purple cells must form one valid alternative firing group");
+              app.draft.steps[0].constraints[0].cell == Cell{6, 5},
+          "Direct hand sign drawing must move the terminal zone instead of duplicating it");
     validate(Configuration{{app.draft}});
     app.editor_command(DrawBucket, BN_CLICKED);
-    check(selection(app.edit_window, Tool) == 2,
-          "Purple alternatives must support Fill without requiring a manual number");
+    check(selection(app.edit_window, Tool) == 1,
+          "Retired Fill must leave direct cell drawing active");
     draw_preview(app.edit_window, app.directory / "editor-bindings-ui.bmp");
-    app.editor_command(DrawPencil, BN_CLICKED);
+    app.editor_command(PaintInteraction, BN_CLICKED);
     SendDlgItemMessageW(app.edit_window, Members, CB_SETCURSEL, 7, 0);
     app.editor_command(Members, CBN_SELCHANGE);
     check(selection(app.edit_window, InteractionHand) == int(HandSide::Right),
@@ -820,17 +888,9 @@ int run_ui_test(App& app, HWND window) {
     check(!ui::needs_fingers(app.draft), "Clear fingers must remove rules from every scope");
     app.undo(false, true);
     check(app.draft == with_fingers, "Finger cleanup must be fully undoable");
-    app.editor_command(DrawContour, BN_CLICKED);
-    const auto contour_point = app.grid_view.screen({2.5f, 4.5f});
-    SendMessageW(app.edit_window, WM_LBUTTONDOWN, MK_LBUTTON,
-                 MAKELPARAM(int(contour_point.x), int(contour_point.y)));
-    SendMessageW(app.edit_window, WM_LBUTTONUP, 0,
-                 MAKELPARAM(int(contour_point.x), int(contour_point.y)));
-    check(app.draft.steps[0].constraints.size() > 3,
-          "Pro tolerance must resolve a clicked region without requiring High preselection");
     app.editor_command(PaintRequired, BN_CLICKED);
-    check(selection(app.edit_window, Tool) == 1,
-          "Choosing a colour must leave Tolerance and restore Pencil");
+    check(selection(app.edit_window, Tool) == 1 && selection(app.edit_window, BrushOrder) == 0,
+          "Choosing a zone tool must reset numbering to automatic");
     app.editor_command(Clear, BN_CLICKED);
     check(app.draft.steps[0].constraints.empty() && app.draft.steps[0].fingers.empty() &&
               !app.draft.fingers.empty(),
@@ -842,6 +902,36 @@ int run_ui_test(App& app, HWND window) {
     check(!app.draft.fingers.empty(), "Clearing a step must preserve global finger rules");
     app.editor_command(ClearFingers, BN_CLICKED);
     check(!ui::needs_fingers(app.draft), "Clear drawing must not leave invisible finger rules");
+    SpatialConstraint imported_main{"main", 15, {2, 3}};
+    auto imported_margin = imported_main;
+    imported_margin.id = "margin";
+    imported_margin.priority = Priority::Low;
+    imported_margin.tolerance_for = "main";
+    app.draft.steps[0].constraints = {imported_main, imported_margin};
+    app.selected_constraint = 1;
+    app.refresh_editor();
+    SetDlgItemInt(app.edit_window, CellX, 3, TRUE);
+    app.update_constraint();
+    check(app.draft.steps[0].constraints[1].priority == Priority::Low &&
+              app.draft.steps[0].constraints[1].tolerance_for == "main" &&
+              app.draft.steps[0].constraints[1].cell.x == 3,
+          "Editing imported margin geometry must retain its priority and target");
+    SpatialConstraint route_start{"start", 15, {0, 1}};
+    route_start.order = 1;
+    SpatialConstraint route_finish{"finish", 15, {0, 0}, ConstraintType::Trigger};
+    route_finish.order = 2;
+    app.draft.steps[0].constraints = {route_start, route_finish};
+    app.selected_constraint = -1;
+    app.refresh_editor();
+    app.editor_command(PaintRequired, BN_CLICKED);
+    draw_cell(6, 1, 2);
+    draw_cell(6, 1, 2);
+    const auto& extended_route = app.draft.steps[0].constraints;
+    check(extended_route.size() == 3 && extended_route[1].order == 2 &&
+              extended_route.back().type == ConstraintType::Trigger &&
+              extended_route.back().order == 3,
+          "Extending a numbered route must keep its finish last and repainting must not duplicate "
+          "cells");
     SendMessageW(window, WM_CLOSE, 0, 0);
     check(!IsWindow(terminal), "Linked terminal must close with application");
     application = nullptr;

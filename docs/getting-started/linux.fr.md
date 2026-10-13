@@ -40,16 +40,18 @@ requises. Start ouvre explicitement ; arrêtez une app avant l'autre.
 
 Les commandes de session restent hors de la caméra. Les vues **Movements**, **Edit**
 et **Test** partagent la fenêtre principale, avec outils compacts, parties du corps
-et réaffectation de layer. Les étapes proposent ordre libre, simultané ou ordonné ;
+et les six outils du web : Select, Passage, Action, Cancel, Hand sign et Erase.
+Les étapes sont des phases successives ; leur parcours est libre, simultané ou ordonné ;
 le maintien apparaît pour les étapes simultanées. Le test désactive la sortie clavier.
-L’ordre apparaît pour Required dans un mouvement ordonné ; Interaction affiche
+Les cases sont numérotées automatiquement pour un parcours ordonné ; Hand sign affiche
 le signe et le maintien 0..60000 ms. Dessinez en Full grid ; Body ajuste l'image
-complète reflétée. View gère grille, dots/hands, logs et thèmes. Input édite
+complète reflétée. Le terminal de logs est flottant, déplaçable, redimensionnable
+et ancrable. View gère grille, dots/hands, logs et thèmes. Input édite
 séquences, Mirror, Single/Hold/Repeat, intervalle et cooldown. Save valide atomiquement.
 La page intégrée **Complete JSON profile** conserve tous les champs : doigts, étapes, tolérance, commandes, traces.
 
 L'UI Linux a moins d'outils : géométrie précise et doigts via JSON ; enregistrement
-interactif, revue des traces, bucket/tolerance et undo ne sont pas encore portés.
+interactif, revue des traces et undo ne sont pas encore portés.
 Tous les profils restent reconnus identiquement. Restart/Recalibrate fonctionnent,
 RecordToggle attend la future interface d'enregistrement.
 

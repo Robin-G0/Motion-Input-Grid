@@ -78,7 +78,11 @@ seated/standing speedup is assumed.
 File/Edit/View menus, session toolbar, MOVEMENTS sidebar and status bar surround the mirrored
 camera. View selects light/dark and toggles grid, hand bones, body dots and linked
 logs independently. Hiding hands does not disable inference. Stale overlays vanish.
-Logs close with the app. Rounded filled controls expose enabled/hover/focus state.
+The log terminal is a small, opaque floating window: drag its title bar or resize
+its edges. Closing hides it; reopening retains its position and size. It remains
+open when switching workspace views and closes with the app. Reading or selecting
+older events pauses automatic scrolling until you return to the bottom.
+Rounded filled controls expose enabled/hover/focus state.
 Accepted actions flash green for 900ms without logs or keyboard enabled.
 
 Use **Movements**, **Edit** and **Test** in the main window. No separate
@@ -87,13 +91,16 @@ visible for about one second. Body view projects the grid using shoulder scale; 
 27x27 cells, mirrored once including dots/traces. Pointer mapping uses the same
 inverse transform; a stroke freezes its view until release.
 
-A new movement starts empty with one Ordered step and no time limit. Select body part,
-Pencil/Fill/Tolerance/Eraser/Select and green Required, red Forbidden or yellow
-Trigger. Tolerance targets the clicked region, including an existing Low contour,
-without preselection. Select drags a rectangle; Ctrl retains the previous
-selection, and Delete removes selected regions with their linked tolerances. A stroke is
-one Undo. Manual Order1/2 draws alternative horizontal rows; any one region of
-each number advances that anatomical lane. Trigger is one movable finish.
+A new movement starts empty with one step and no time limit. Choose the tracked
+point, then **Select**, **Passage**, **Action**, **Cancel**, **Hand sign** or
+**Erase**, like the web Studio. Place the cells directly; there is no tolerance
+tool or priority selector. Imported margins remain intact. Select drags a rectangle;
+Ctrl retains the previous selection, and Delete removes selected regions and linked
+imported margins. A stroke is one Undo. Action is one movable finish.
+The Zones inspector labels phases as **Step 1 of N**: phases run successively.
+Within a phase, choose **In order**, **Any order** or **Simultaneous**. One phase
+is enough for a simple movement. Route position edits appear only for a selected
+ordered region; equal numbers are alternatives for that tracked point.
 The grid displays centered numbers, X guards and R unordered Required.
 
 The layer stack groups independent landmark constraints; other layers remain
@@ -105,7 +112,7 @@ remain intact, but explicit sign/finger hands and recorded trace identity do not
 change. Save layer edits the draft, Apply input publishes, File Save persists.
 
 The inspector separates **Movement**, **Zones**, **Fingers**, **Hand sign**,
-**Layers** and **Recording**. Movement contains identity, keyboard, reference and
+**Body parts** and **Recording**. Movement contains identity, keyboard, reference and
 timing. Zones contains the current step, route mode and region geometry; hold
 settings appear for simultaneous steps. There is no Basic/Advanced switch. Purple Interaction needs a hand/sign and continuous hold
 0..60000ms; choose settings before painting, Select/Update interaction to edit.

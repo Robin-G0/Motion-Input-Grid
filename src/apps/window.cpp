@@ -87,7 +87,7 @@ void App::layout() {
         const auto child = GetDlgItem(window, id);
         wchar_t type[32]{};
         GetClassNameW(child, type, 32);
-        MoveWindow(child, x, y, width, _wcsicmp(type, L"COMBOBOX") == 0 ? 280 : height, TRUE);
+        position_control(child, x, y, width, _wcsicmp(type, L"COMBOBOX") == 0 ? 280 : height);
     };
     place(FileMenu, 500, 10, 62, 28);
     place(EditMenu, 568, 10, 62, 28);
@@ -116,23 +116,23 @@ void App::layout() {
         const int id = GetDlgCtrlID(child);
         const bool header = id == FileMenu || id == EditMenu || id == ViewMenu || id == Theme ||
                             id == StudioMovements || id == StudioEdit || id == StudioTest;
-        ShowWindow(child, header || !workspace ? SW_SHOW : SW_HIDE);
+        const bool visible = header || !workspace;
+        if (bool(GetWindowLongW(child, GWL_STYLE) & WS_VISIBLE) != visible) {
+            ShowWindow(child, visible ? SW_SHOW : SW_HIDE);
+        }
     }
     if (edit_window) {
-        MoveWindow(edit_window, 0, 96, client.right, std::max(400, int(client.bottom) - 128), TRUE);
+        position_control(edit_window, 0, 96, client.right, std::max(400, int(client.bottom) - 128));
         ShowWindow(edit_window, workspace ? SW_SHOW : SW_HIDE);
     }
     if (key_window) {
-        MoveWindow(key_window, 0, 96, client.right, client.bottom - 128, TRUE);
+        position_control(key_window, 0, 96, client.right, client.bottom - 128);
     }
     if (details_window) {
-        MoveWindow(details_window, 0, 96, client.right, client.bottom - 128, TRUE);
-    }
-    if (log_window) {
-        MoveWindow(log_window, 0, 96, client.right, client.bottom - 128, TRUE);
+        position_control(details_window, 0, 96, client.right, client.bottom - 128);
     }
     if (control_window) {
-        MoveWindow(control_window, 0, 96, client.right, client.bottom - 128, TRUE);
+        position_control(control_window, 0, 96, client.right, client.bottom - 128);
     }
     InvalidateRect(window, nullptr, FALSE);
 }
@@ -149,9 +149,6 @@ void App::show_studio_view(int view) {
     }
     if (control_window) {
         DestroyWindow(control_window);
-    }
-    if (logs_visible) {
-        toggle_logs();
     }
     if (view == 2) {
         set_test(true);
@@ -186,18 +183,18 @@ void App::layout_editor() {
         const auto child = GetDlgItem(edit_window, id);
         wchar_t type[32]{};
         GetClassNameW(child, type, 32);
-        MoveWindow(child, x, y, width, _wcsicmp(type, L"COMBOBOX") == 0 ? 280 : height, TRUE);
+        position_control(child, x, y, width, _wcsicmp(type, L"COMBOBOX") == 0 ? 280 : height);
     };
     const auto show = [&](int id, bool visible) {
-        ShowWindow(GetDlgItem(edit_window, id), visible ? SW_SHOW : SW_HIDE);
+        const auto child = GetDlgItem(edit_window, id);
+        if (child && bool(GetWindowLongW(child, GWL_STYLE) & WS_VISIBLE) != visible) {
+            ShowWindow(child, visible ? SW_SHOW : SW_HIDE);
+        }
     };
     // Keep the grid fixed when switching Edit / Test. Context lives in the inspector.
-    for (int id : {StepList,       AddStep,      DeleteStep,       StepUp,     StepDown,
-                   StepModeId,     HoldTime,     Trigger,          Members,    PaintRequired,
-                   PaintForbidden, PaintTrigger, PaintInteraction, DrawPencil, DrawBucket,
-                   DrawSelect,     DrawEraser,   DrawContour,      Undo,       Redo,
-                   ConstraintsTab, FingersTab,   RecordingTab,     LayersTab,  InteractionTab,
-                   MovementTab,    EditorHelp,   Commit,           Clear}) {
+    for (int id : {PaintRequired, PaintForbidden, PaintTrigger, PaintInteraction, DrawSelect,
+                   DrawEraser, Undo, Redo, ConstraintsTab, FingersTab, RecordingTab, LayersTab,
+                   InteractionTab, MovementTab, EditorHelp, Commit}) {
         show(id, editing);
     }
     show(Tool, false);
@@ -254,10 +251,7 @@ void App::layout_editor() {
     place(Cooldown, 804, 482, 216, 28);
     place(BindingSummary, 580, 526, 440);
     const bool zones = editing && inspector_tab == 0 && !editor_help;
-    for (int id : {ConstraintList, CellX, CellY, CellWidth, CellHeight, UpdateConstraint,
-                   ConstraintUp, ConstraintDown, DeleteConstraint}) {
-        show(id, zones);
-    }
+    show(ConstraintList, zones);
     const int list_height = std::max(80, int(client.bottom) - 520);
     place(ConstraintList, 580, 304, 440, list_height);
     for (const auto [id, x] :
@@ -271,6 +265,7 @@ void App::layout_editor() {
     for (int id : {StepList, AddStep, DeleteStep}) {
         show(id, zones);
     }
+    EnableWindow(GetDlgItem(edit_window, AddStep), draft.steps.size() < 64);
     EnableWindow(GetDlgItem(edit_window, DeleteStep), scope > 0 && draft.steps.size() > 1);
     place(Members, 24, 60, 280);
     show(Members, editing);
@@ -281,10 +276,10 @@ void App::layout_editor() {
     show(HoldTime, zones && scope > 0 && draft.steps[scope - 1].mode == StepMode::Simultaneous);
     show(Trigger, zones && scope > 0 && draft.steps[scope - 1].mode == StepMode::Simultaneous);
     place(BrushOrder, 800, 260, 220);
-    const bool ordered = scope > 0 && draft.steps[scope - 1].mode == StepMode::Ordered &&
-                         selected_constraint >= 0 &&
-                         selection(edit_window, ConstraintTypeId) != int(ConstraintType::Forbidden) &&
-                         selection(edit_window, PriorityId) == int(Priority::High);
+    const bool ordered =
+        scope > 0 && draft.steps[scope - 1].mode == StepMode::Ordered && selected_constraint >= 0 &&
+        selection(edit_window, ConstraintTypeId) != int(ConstraintType::Forbidden) &&
+        selection(edit_window, PriorityId) == int(Priority::High);
     EnableWindow(GetDlgItem(edit_window, BrushOrder), ordered);
     show(BrushOrder, zones && ordered);
     for (int id : {CellX, CellY, CellWidth, CellHeight, UpdateConstraint, DeleteConstraint}) {
@@ -706,8 +701,8 @@ LRESULT CALLBACK editor_procedure(HWND window, UINT message, WPARAM wp, LPARAM l
             button(window, Trigger, L"Apply hold (ms)", 855, 80, 165);
             combo(window, Tool, 20, 120, 155);
             choices(window, Tool,
-                    {L"Select", L"Pencil", L"Bucket", L"Eraser", L"Contour / tolerance",
-                     L"Move trace point", L"Delete trace sample"});
+                    {L"Select", L"Draw", L"Reserved", L"Erase", L"Reserved", L"Move trace point",
+                     L"Delete trace sample"});
             SendDlgItemMessageW(window, Tool, CB_SETCURSEL, 1, 0);
             button(window, DrawEraser, L"Erase", 350, 80, 100);
             button(window, DrawSelect, L"Select", 460, 80, 100);

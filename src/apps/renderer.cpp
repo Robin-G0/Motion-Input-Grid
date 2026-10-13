@@ -264,19 +264,24 @@ void App::paint_editor(HDC dc) {
     }
     const int list_height = std::max(80, int(client.bottom) - 520);
     if (studio_view != 2) {
-        TextOutW(dc, 312, 66, L"Point for new / selected zones", 30);
+        const wchar_t* point_hint = L"Point for new / selected zones";
+        TextOutW(dc, 312, 66, point_hint, int(wcslen(point_hint)));
     }
     if (studio_view != 2 && inspector_tab == 0 && !editor_help) {
         RECT explanation{580 + inspector_offset, 218, client.right - 24, 256};
-        const wchar_t* text = scope == 0
-            ? L"These conditions apply throughout the movement."
-            : L"Steps run one after another. Route order applies to the cells inside this step.";
-        DrawTextW(dc, text, -1, &explanation, DT_WORDBREAK);
+        const wchar_t* route_hint =
+            scope == 0 ? L"These conditions apply throughout the movement."
+            : draft.steps[scope - 1].mode == StepMode::Visited
+                ? L"Steps run in sequence. Here, reach every required cell in any order."
+            : draft.steps[scope - 1].mode == StepMode::Simultaneous
+                ? L"Steps run in sequence. Here, occupy all cells together for the hold time."
+                : L"Steps run in sequence. Here, reach the cells in numbered order.";
+        DrawTextW(dc, route_hint, -1, &explanation, DT_WORDBREAK);
         if (selected_constraint >= 0) {
-        for (const auto [text, x] :
-             {std::pair{L"X", 580}, {L"Y", 690}, {L"Width", 800}, {L"Height", 910}}) {
-            TextOutW(dc, x + inspector_offset, 312 + list_height, text, int(wcslen(text)));
-        }
+            for (const auto [text, x] :
+                 {std::pair{L"X", 580}, {L"Y", 690}, {L"Width", 800}, {L"Height", 910}}) {
+                TextOutW(dc, x + inspector_offset, 312 + list_height, text, int(wcslen(text)));
+            }
         }
     } else if (studio_view != 2 && inspector_tab == 2 && !editor_help) {
         TextOutW(dc, 580 + inspector_offset, client.bottom - 152, L"Trim samples [start, end)", 24);

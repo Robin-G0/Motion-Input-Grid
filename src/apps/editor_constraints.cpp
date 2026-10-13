@@ -149,32 +149,25 @@ void App::edit_authoring(int id) {
         case Mirror:
             draft.mirror = !draft.mirror;
             break;
-        case AddStep:
+        case AddStep: {
             if (draft.steps.size() == 64) {
                 throw std::runtime_error("Maximum 64 steps");
             }
-            draft.steps.push_back({"step_" + std::to_string(++serial)});
+            std::string step_id;
+            do {
+                step_id = "step_" + std::to_string(++serial);
+            } while (std::any_of(draft.steps.begin(), draft.steps.end(),
+                                 [&](const auto& step) { return step.id == step_id; }));
+            draft.steps.push_back({step_id, StepMode::Ordered});
             scope = int(draft.steps.size());
             break;
+        }
         case DeleteStep:
             if (scope > 0 && draft.steps.size() > 1) {
                 draft.steps.erase(draft.steps.begin() + scope - 1);
-                --scope;
-                if (draft.steps.empty()) {
-                    draft.steps.push_back({"step_" + std::to_string(++serial), StepMode::Ordered});
-                    scope = 1;
-                }
+                scope = std::min(scope, int(draft.steps.size()));
             }
             break;
-        case StepUp:
-        case StepDown: {
-            const int next = scope + (id == StepUp ? -1 : 1);
-            if (scope > 0 && next > 0 && next <= int(draft.steps.size())) {
-                std::swap(draft.steps[scope - 1], draft.steps[next - 1]);
-                scope = next;
-            }
-            break;
-        }
         case Trigger:
             if (scope > 0) {
                 draft.steps[scope - 1].hold_ms = integer_value(edit_window, HoldTime, 0, 1000);

@@ -41,9 +41,10 @@ capture; stop one application before starting the other.
 
 The session toolbar stays outside the camera canvas. The main window separates
 **Movements**, **Edit** and **Test**, with compact drawing tools, body selection and
-explicit layer reassignment. Ordered-route options appear for Required zones in
-an ordered movement; Interaction reveals sign/0..60000 ms hold settings. Draw in Full grid;
-Body view fits the complete mirrored image. View toggles grid, dots/hands, logs and
+the same six tools as the web: Select, Passage, Action, Cancel, Hand sign and Erase.
+Cells are numbered automatically for ordered routes; Hand sign reveals sign/0..60000 ms hold settings. Draw in Full grid;
+Body view fits the complete mirrored image. The log terminal opens as a small
+floating window and can be moved, resized or docked. View toggles grid, dots/hands, logs and
 light/dark themes. Input settings edit keys/sequences, Mirror, Single/Hold/Repeat,
 repeat interval and cooldown. Steps offer any-order, simultaneous and ordered routes,
 with hold time shown for simultaneous steps. Test disables keyboard output.
@@ -52,7 +53,7 @@ fields through a complete-profile JSON editor, preserving scoped fingers, stages
 tolerance, controls and recordings.
 
 The Linux visual frontend has fewer tools than Win32: precise region geometry and finger
-editing uses JSON; interactive recording/trace review, bucket/tolerance tools and
+editing uses JSON; interactive recording/trace review and
 Undo/Redo are not yet ported. Existing profiles keep all settings and recognition
 uses the same engine. Global Restart/Recalibrate signs work; RecordToggle needs
 the future recording UI. These are frontend limits, not removed profile fields.

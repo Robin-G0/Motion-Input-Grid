@@ -40,14 +40,4 @@ void App::select_regions(Vec2 point, bool begin) {
     }
     InvalidateRect(edit_window, nullptr, FALSE);
 }
-void App::add_contour(Vec2 point) {
-    auto& regions = current_constraints();
-    const auto target =
-        ui::contour_target(regions, point, landmarks[selection(edit_window, Members)].index);
-    if (target.empty()) {
-        message("Tolerance: click an existing region, or choose Pencil to draw.");
-        return;
-    }
-    ui::contour(regions, target, "contour_" + std::to_string(++serial) + "_");
-}
 } // namespace mig::app
