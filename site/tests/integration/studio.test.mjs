@@ -1,7 +1,20 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import createMIG from "../../dist/mig/mig.mjs";
-import { starter, newInput, addRegion, pasteRegion, parseProfile, ProfileHistory, MAX_BYTES } from "../../studio/src/profile.mjs";
+import { starter, newInput, addRegion, pasteRegion, parseProfile, parseDraft, ProfileHistory, MAX_BYTES } from "../../studio/src/profile.mjs";
+
+test("unfinished drafts restore without execution validation while damaged draft structures stay rejected", async () => {
+    const draft = {schema_version:2,tracking:{hands:false},inputs:[newInput()]};
+    assert.deepEqual(parseDraft(JSON.stringify(draft)),draft);
+    const module = await createMIG(), tracker = new module.Tracker();
+    try { assert.notEqual(tracker.load(JSON.stringify(draft)), ""); } finally { tracker.delete(); }
+    const broken = structuredClone(draft); broken.inputs[0].steps = [null];
+    assert.throws(() => parseDraft(JSON.stringify(broken)), /draftUnreadable/);
+    assert.throws(() => parseDraft(JSON.stringify({...draft,inputs:[null]})), /draftUnreadable/);
+    const advanced = starter(); advanced.inputs[0].steps.push({id:"unfinished",mode:"simultaneous",constraints:[],hold_ms:100});
+    advanced.inputs[0].mirror = true;
+    assert.deepEqual(parseDraft(JSON.stringify(advanced)),advanced);
+});
 import { PreviewGrid, trackedPoint } from "../../studio/src/camera.mjs";
 import { copy } from "../../studio/src/copy.mjs";
 import { NoteLayer, lineCells, previewCell } from "../../studio/src/notes.mjs";

@@ -1,7 +1,7 @@
 import { ThemeToggle } from "../../src/ui/theme.mjs";
 import { cameraError } from "../../src/camera/camera.mjs";
 import { copy } from "./copy.mjs";
-import { MAX_BYTES, landmarks, clone, id, newInput, starter, parseProfile, regions, scopedRegions, cellRect, rectangle, addRegion, pasteRegions, ProfileHistory } from "./profile.mjs";
+import { MAX_BYTES, landmarks, clone, id, newInput, starter, parseProfile, parseDraft, regions, scopedRegions, cellRect, rectangle, addRegion, pasteRegions, ProfileHistory } from "./profile.mjs";
 import { createStudioSession, validateProfile, disposeValidator, PreviewGrid, trackedPoint } from "./camera.mjs";
 import { GridEditor, drawPreview, selectionRect, transformSelection, RegionHighlights } from "./grid.mjs";
 import { Journal } from "./journal.mjs";
@@ -748,20 +748,24 @@ function tabKeys(group, selector, activate) {
 }
 tabKeys(document.querySelector(".view-tabs"), "button", button => setView(button.dataset.view, false));
 tabKeys(document.querySelector(".detail-tabs"), "button", button => setDetail(button.dataset.detail));
-window.addEventListener("pagehide", () => { stopTest(); disposeValidator(); });
+window.addEventListener("pagehide", () => {
+    const field = document.activeElement;
+    if (hasDraft && field?.matches('input[type="text"], input:not([type]), input[type="number"], select')
+        && field.closest("#input-fields, #region-dialog")) field.dispatchEvent(new Event("change", {bubbles:true}));
+    stopTest(); disposeValidator();
+});
 
 renderLanguage();
 try { notes.load(localStorage.getItem(notesKey)); } catch { /* Invalid notes never block a profile. */ }
-// Restore only after the same native validation used by file imports.
+// A saved draft may be unfinished. Validate its editable shape here, and keep
+// native execution validation for imports, exports and camera tests.
 try {
     const saved = localStorage.getItem(storageKey);
     if (saved) {
-        setBusy(true);
         try {
-            const profile = parseProfile(saved); await validateProfile(saved);
+            const profile = parseDraft(saved);
             history = new ProfileHistory(profile); selectImported(profile); hasDraft = true;
-        } catch (error) { const { key, detail } = errorDetails(error); feedback(key, true, detail); }
-        finally { setBusy(false); }
+        } catch { feedback("draftUnreadable", true); }
     }
 } catch { storageAvailable = false; }
 setView("home", false);

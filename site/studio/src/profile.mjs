@@ -35,6 +35,26 @@ export function parseProfile(text) {
 export function regions(input) {
     return [...(input?.constraints ?? []), ...(input?.steps ?? []).flatMap(step => step.constraints ?? [])];
 }
+export function parseDraft(text) {
+    const profile = parseProfile(text);
+    const object = value => value && typeof value === "object" && !Array.isArray(value);
+    const rules = value => value === undefined || Array.isArray(value) && value.every(object);
+    const list = value => value === undefined || Array.isArray(value) && value.length <= 4096 && value.every(region => {
+        if (!object(region) || typeof region.id !== "string" || typeof region.landmark !== "string"
+            || !["required", "trigger", "forbidden", "interaction"].includes(region.type)
+            || !Array.isArray(region.cell) || ![2,4].includes(region.cell.length) || !region.cell.every(Number.isInteger)
+            || !rules(region.fingers) || region.interaction !== undefined && !object(region.interaction)) return false;
+        const {x,y,w,h} = cellRect(region.cell);
+        return x >= -9 && y >= -9 && w > 0 && h > 0 && x+w <= 18 && y+h <= 18;
+    });
+    if (profile.inputs.length > 64 || !profile.inputs.every(input => object(input)
+        && ["id", "name", "action"].every(key => typeof input[key] === "string")
+        && rules(input.fingers) && list(input.constraints)
+        && (input.steps === undefined || Array.isArray(input.steps) && input.steps.length <= 64 && input.steps.every(step => object(step)
+            && typeof step.id === "string" && [undefined,"ordered","visited","simultaneous"].includes(step.mode)
+            && rules(step.fingers) && list(step.constraints))))) throw new Error("draftUnreadable");
+    return profile;
+}
 export function scopedRegions(input, scope) {
     if (scope === "global") return input?.constraints ?? [];
     return input?.steps?.[Number(scope)]?.constraints ?? [];

@@ -66,4 +66,6 @@ Object.assign(en, {
     orderedStepHelp: "Each point follows its numbers in order; different points advance independently. Equal numbers offer alternatives.", visitedStepHelp: "Visits accumulate in any order during this step.", simultaneousStepHelp: "All required regions must be occupied together. One point cannot occupy two separate regions simultaneously.", shoulderReference: "Last available reference · waiting for tracking",
     selectHelp: "Select a region. Drag its edges or corners. Double-click for details.", cameraEditHelp: "Annotate the camera or turn its display off to draw regions."
 });
+fr.draftUnreadable = "Le brouillon enregistré est endommagé et ne peut pas être ouvert. Il a été conservé sur cet appareil ; vous pouvez importer une configuration ou créer un nouveau profil.";
+en.draftUnreadable = "The saved draft is damaged and cannot be opened. It has been kept on this device; you can import a configuration or create a new profile.";
 export const copy = { fr, en };

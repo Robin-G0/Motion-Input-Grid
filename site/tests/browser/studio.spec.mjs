@@ -70,6 +70,37 @@ test("Studio draws with pointer and keyboard, supports undo, restores drafts and
     expect(errors).toEqual([]);
 });
 
+test("unfinished local drafts and pending names survive reload and reopening without fetching the native validator", async ({ page }) => {
+    await openStudio(page,"home"); await page.locator("#new-profile").click();
+    await page.locator("#editor-note-toggle").click();
+    await page.locator('#editor-grid button[data-x="3"][data-y="3"]').click();
+    await page.locator("#input-name").fill("Brouillon incomplet");
+    await page.context().route("**/mig/mig-tracker.mjs", route => route.abort());
+    await page.reload();
+    await expect(page.locator("#resume-profile")).toBeVisible();
+    await page.locator("#resume-profile").click(); await page.locator(".movement-card button").first().click();
+    await expect(page.locator("#input-name")).toHaveValue("Brouillon incomplet");
+    await expect(page.locator(".grid-region")).toHaveCount(0);
+    await expect(page.locator(".grid-note")).toHaveCount(1);
+    const reopened = await page.context().newPage(); await page.close();
+    await reopened.goto("./studio/"); await reopened.getByRole("button",{name:"FR",exact:true}).click();
+    await expect(reopened.locator("#resume-profile")).toBeVisible();
+    await reopened.locator("#resume-profile").click();
+    await expect(reopened.locator(".movement-card h3")).toHaveText("Brouillon incomplet");
+    await expect(reopened.locator("#feedback")).toBeHidden();
+});
+
+test("damaged local drafts show recovery feedback and retain their saved data", async ({ page }) => {
+    const saved = JSON.stringify({schema_version:2,inputs:[null]});
+    const errors = []; page.on("pageerror",error => errors.push(error.message));
+    await page.addInitScript(saved => localStorage.setItem("mig-studio-profile-v2",saved), saved);
+    await page.goto("./studio/"); await page.getByRole("button",{name:"FR",exact:true}).click();
+    await expect(page.locator("#feedback")).toContainText("endommagé");
+    await expect(page.locator("#resume-profile")).toBeHidden();
+    expect(await page.evaluate(() => localStorage.getItem("mig-studio-profile-v2"))).toBe(saved);
+    expect(errors).toEqual([]);
+});
+
 test("invalid imports and JSON edits preserve the current profile; advanced imports keep all options", async ({ page }) => {
     await openStudio(page);
     const original = await page.locator("#input-name").inputValue();
