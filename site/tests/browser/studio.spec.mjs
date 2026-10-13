@@ -673,7 +673,7 @@ test("Studio fits phone and desktop screens, changes language and shares theme a
         }
     }
     await page.getByRole("button", { name: "EN", exact: true }).click();
-    await expect(page.locator("#studio-title")).toHaveText("MIG Studio");
+    await expect(page.locator("#studio-title")).toHaveText("Motion Input Grid Studio");
     await page.locator("#open-json").click(); await page.keyboard.press("Escape");
     await expect(page.locator("#open-json")).toBeFocused();
 });

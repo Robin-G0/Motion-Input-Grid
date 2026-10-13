@@ -137,7 +137,11 @@ bool App::editor_session_command(int id) {
         return true;
     }
     if (id == TestInput) {
-        set_test(true);
+        show_studio_view(2);
+        return true;
+    }
+    if (id == Start || id == Stop) {
+        SendMessageW(window, WM_COMMAND, id, 0);
         return true;
     }
     if (id == RestartTest) {

@@ -21,7 +21,7 @@ Pour compiler depuis le dépôt complet : `python -m pip install ./bindings/pyth
 
 ## Envoyer des observations
 
-Enregistrez un profil depuis le MIG Studio sous `profile.json`. Passez `None`
+Enregistrez un profil depuis le Motion Input Grid Studio sous `profile.json`. Passez `None`
 pour utiliser le moteur fourni ou un chemin explicite vers un SDK externe.
 Cet exemple envoie **une frame** ; votre application doit alimenter le tracker
 à chaque nouvelle observation. Une seule frame ne suffit pas pour calibrer et

@@ -56,10 +56,12 @@ void App::open_keys() {
     klass.lpszClassName = L"MIGKeys";
     klass.hCursor = LoadCursor(nullptr, IDC_ARROW);
     RegisterClassW(&klass);
+    RECT client{};
+    GetClientRect(window, &client);
     key_window =
         CreateWindowExW(WS_EX_CONTROLPARENT, klass.lpszClassName, L"MIG - Keyboard sequence",
-                        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN, 160, 100, 760,
-                        560, edit_window, nullptr, klass.hInstance, nullptr);
+                        WS_CHILD | WS_CLIPCHILDREN, 0, 96, client.right, client.bottom - 128,
+                        window, nullptr, klass.hInstance, nullptr);
     if (!key_window) {
         throw std::runtime_error("Cannot open keyboard editor");
     }
@@ -134,6 +136,8 @@ LRESULT CALLBACK keys_procedure(HWND window, UINT message, WPARAM wp, LPARAM lp)
             return 0;
         case WM_DESTROY:
             app.key_window = nullptr;
+            app.layout();
+            SetFocus(app.edit_window);
             app.key_preview.clear();
             app.key_preview_rows.clear();
             app.key_error.clear();
@@ -159,10 +163,16 @@ LRESULT CALLBACK details_procedure(HWND window, UINT message, WPARAM wp, LPARAM 
                      "\r\nKeyboard: " + ui::binding_label(app.draft.keyboard))
                     .c_str(),
                 1, 12, 12, 700, 440, ES_MULTILINE | ES_READONLY | WS_VSCROLL | WS_BORDER);
+        control(window, L"BUTTON", L"Back to editing", KeyCancel, 12, 12, 180, 32);
+        return 0;
+    case WM_COMMAND:
+        if (LOWORD(wp) == KeyCancel) {
+            DestroyWindow(window);
+        }
         return 0;
     case WM_SIZE:
-        MoveWindow(GetDlgItem(window, 1), 12, 12, std::max(100, int(LOWORD(lp)) - 24),
-                   std::max(100, int(HIWORD(lp)) - 24), TRUE);
+        MoveWindow(GetDlgItem(window, 1), 12, 60, std::max(100, int(LOWORD(lp)) - 24),
+                   std::max(100, int(HIWORD(lp)) - 76), TRUE);
         return 0;
     case WM_CTLCOLOREDIT:
     case WM_CTLCOLORSTATIC:
@@ -174,6 +184,8 @@ LRESULT CALLBACK details_procedure(HWND window, UINT message, WPARAM wp, LPARAM 
         return 0;
     case WM_DESTROY:
         app.details_window = nullptr;
+        app.layout();
+        SetFocus(app.edit_window);
         return 0;
     case WM_ERASEBKGND: {
         RECT rect{};
@@ -195,9 +207,12 @@ void App::open_binding_details() {
     klass.lpszClassName = L"MIGBindings";
     klass.hCursor = LoadCursor(nullptr, IDC_ARROW);
     RegisterClassW(&klass);
-    details_window = CreateWindowExW(WS_EX_CONTROLPARENT, klass.lpszClassName,
-                                     L"MIG - Input bindings", WS_OVERLAPPEDWINDOW, 180, 120, 760,
-                                     520, edit_window, nullptr, klass.hInstance, nullptr);
+    RECT client{};
+    GetClientRect(window, &client);
+    details_window =
+        CreateWindowExW(WS_EX_CONTROLPARENT, klass.lpszClassName, L"MIG - Input bindings",
+                        WS_CHILD | WS_CLIPCHILDREN, 0, 96, client.right, client.bottom - 128,
+                        window, nullptr, klass.hInstance, nullptr);
     update_theme();
     if (!diagnostic_mode) {
         ShowWindow(details_window, SW_SHOW);

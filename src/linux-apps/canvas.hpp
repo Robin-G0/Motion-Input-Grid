@@ -9,7 +9,8 @@ public:
     explicit Canvas(QWidget* parent = nullptr);
     Snapshot snapshot;
     Motion* motion{};
-    int landmark{15}, order{};
+    int landmark{15}, order{}, scope{1};
+    std::vector<SpatialConstraint>& current_constraints();
     ConstraintType type{ConstraintType::Required};
     Interaction interaction;
     bool erase{}, show_grid{true}, show_dots{true}, full_grid{true};

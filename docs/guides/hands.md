@@ -23,17 +23,17 @@ matching headers. Subsequent builds may skip bootstrap.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/build/build-windows.ps1
-.\build\windows\bin\mig-configurator.exe --hands
+.\build\windows\bin\motion-input-grid-studio.exe --hands
 # Stop the first application's camera before starting the other:
-.\build\windows\bin\mig-controller.exe --config profile.json
+.\build\windows\bin\motion-input-grid-controller.exe --config profile.json
 ```
 
 Both applications use **Hands ON/OFF** and the same saved
 `"tracking": {"hands": true}` switch. Loading/undoing a profile restores that switch.
-In the MIG Studio, `--hands` sets it initially. Applying gesture bindings or an
+In the Motion Input Grid Studio, `--hands` sets it initially. Applying gesture bindings or an
 input with finger rules enables Hands in an ON build; Save persists the setting.
 Absent flags mean body-only.
-The MIG Input's `--hands` flag is accepted only for diagnostics, not normal use.
+The Motion Input Grid Controller's `--hands` flag is accepted only for diagnostics, not normal use.
 
 Click Start camera. The main video is unobstructed; rule diagnostics appear in the separate editor.
 Hand tracking does not require shoulder calibration; body path
@@ -101,9 +101,9 @@ See [the performance and safety audit](../architecture/performance.md).
 
 ```powershell
 ctest --test-dir build/windows -C Release --output-on-failure
-.\build\windows\bin\mig-controller.exe --hands-test
-.\build\windows\bin\mig-controller.exe --camera-test --hands
-.\build\windows\bin\mig-controller.exe --session-test --hands
+.\build\windows\bin\motion-input-grid-controller.exe --hands-test
+.\build\windows\bin\motion-input-grid-controller.exe --camera-test --hands
+.\build\windows\bin\motion-input-grid-controller.exe --session-test --hands
 ```
 
 The hands smoke test creates/closes both models three times, infers nine blank

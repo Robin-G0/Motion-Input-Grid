@@ -13,7 +13,7 @@
 - [Recording, limits and validation](#recording-limits-and-validation)
 - [Example: generic Jump](#example-generic-jump)
 - [Editor presentation and live scaling](#editor-presentation-and-live-scaling)
-- [MIG Input profile list](#mig-input-profile-list)
+- [Motion Input Grid Controller profile list](#motion-input-grid-controller-profile-list)
 
 </details>
 
@@ -33,7 +33,7 @@ validator and 1 MiB / 32-level limits. `serialize_configuration(config)` exports
 same v2 document without filesystem access; `save_configuration` uses it for atomic
 file replacement. On Windows, temporary sharing/locking conflicts are retried for
 up to 500 ms. Persistent failures preserve the saved profile and report the OS error.
-Native and WebAssembly consumers import MIG Studio profiles
+Native and WebAssembly consumers import Motion Input Grid Studio profiles
 without migration or a separate JavaScript schema. Failed web imports retain the
 current engine. See [integration examples](../integrations/overview.md).
 
@@ -504,7 +504,7 @@ The C++ examples keep their camera source while replacing the recognition engine
 All camera profile importers follow `tracking.hands` when deciding whether to run
 their hand model; raised-hands demos enable it for visualization. Text feedback, profile
 file paths and demo/import mode are presentation state, not JSON schema fields.
-Native MIG Input/C-ABI capture rejects recognition older than 250 ms using the
+Native Motion Input Grid Controller/C-ABI capture rejects recognition older than 250 ms using the
 current monotonic clock; hosts submitting their own packets own their time source.
 
 React, Vue and Next.js use the same schema-v2 profile through the browser session.
@@ -517,12 +517,12 @@ Repeat scheduler. See [JavaScript integration](../integrations/javascript.md).
 
 MIG 1.0.2 uses schema version 2. See [bootstrap](../getting-started/bootstrap.md) and [example code](../getting-started/examples.md).
 
-## MIG Input profile list
+## Motion Input Grid Controller profile list
 
-The MIG Input keeps its named profile list in a separate `profiles.json`, with
+The Motion Input Grid Controller keeps its named profile list in a separate `profiles.json`, with
 `version: 1`, `selected` (zero-based index, or -1) and a `profiles` array of
 `{ "id": "1", "name": "Game" }` entries. Numeric IDs identify managed files
 `1.json`, `2.json`, etc.; these remain normal schema-v2 configurations. The list
 is bounded to 64 entries and 64 KiB, names to 256 UTF-8 bytes. Imports and list
 updates use atomic replacement. Camera visibility, verification and keyboard consent
-are session settings and do not change motion JSON. See [MIG Input](../guides/controller.md).
+are session settings and do not change motion JSON. See [Motion Input Grid Controller](../guides/controller.md).

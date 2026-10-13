@@ -52,7 +52,8 @@ int run_application(int argc, wchar_t** argv) {
                 }
                 index = static_cast<unsigned>(std::stoul(camera_number));
             } else {
-                std::cout << "Usage: mig-[configurator|controller] [--config file.json] [--camera "
+                std::cout << "Usage: motion-input-grid-[studio|controller] [--config file.json] "
+                             "[--camera "
                              "index] [--hands] [--pose-lite|--pose-full]"
 #ifdef MIG_APP_TESTS
                              " [--infer-test|--hands-test|--camera-test|--ui-test|--session-test]"

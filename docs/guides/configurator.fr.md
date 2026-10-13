@@ -1,7 +1,7 @@
-# MIG Studio
+# Motion Input Grid Studio
 
-MIG Studio est l’éditeur de bureau. Son exécutable reste `mig-configurator` pour
-préserver la compatibilité des releases et scripts. [MIG Studio Web](studio-web.fr.md)
+Motion Input Grid Studio est l’éditeur de bureau. Son exécutable reste `motion-input-grid-studio` pour
+préserver la compatibilité des releases et scripts. [Motion Input Grid Studio Web](studio-web.fr.md)
 offre une alternative dans le navigateur pour dessiner, importer et tester avec
 la caméra. L’éditeur de bureau conserve l’enregistrement natif et les tests clavier système.
 
@@ -18,15 +18,15 @@ la caméra. L’éditeur de bureau conserve l’enregistrement natif et les test
 
 </details>
 
-Le MIG Studio de Motion Input Grid (MIG) transforme les mouvements dessinés
+Le Motion Input Grid Studio de Motion Input Grid (MIG) transforme les mouvements dessinés
 en profils JSON. Choisissez une partie du corps, dessinez son parcours et définissez
-l'action à envoyer. Exécutez le profil enregistré dans le [MIG Input](controller.fr.md)
+l'action à envoyer. Exécutez le profil enregistré dans le [Motion Input Grid Controller](controller.fr.md)
 ou dans une application utilisant MIG.
 
 ## Où trouver et lancer l'application
 
 > [!NOTE]
-> Sur Debian, MIG Studio, MIG Input et certains exemples natifs sont
+> Sur Debian, Motion Input Grid Studio, Motion Input Grid Controller et certains exemples natifs sont
 > encore en cours de développement et de test. Ils peuvent ne pas fonctionner
 > entièrement pour le moment.
 
@@ -35,12 +35,12 @@ archive native correspondant à votre système, lorsqu'elle est disponible :
 
 | Système | Archive | Fichier après extraction |
 | --- | --- | --- |
-| Windows x64 | `motion-input-grid-<version>-windows-x64-native.zip` | `windows/mig-configurator.exe` |
-| Linux x64 | `motion-input-grid-<version>-linux-x64-native.tar.gz` | `./mig-configurator` |
+| Windows x64 | `motion-input-grid-<version>-windows-x64-native.zip` | `windows/motion-input-grid-studio.exe` |
+| Linux x64 | `motion-input-grid-<version>-linux-x64-native.tar.gz` | `./motion-input-grid-studio` |
 
 Ces chemins partent du dossier principal de l'archive extraite. Sous Windows,
 ouvrez l'exécutable. Sous Linux, ouvrez un terminal dans ce dossier et lancez
-`./mig-configurator` ; ce lanceur configure les bibliothèques fournies avant d'ouvrir
+`./motion-input-grid-studio` ; ce lanceur configure les bibliothèques fournies avant d'ouvrir
 le binaire dans `bin/`. Conservez les DLL, modèles, configurations et autres
 ressources de l'archive ensemble. Windows nécessite le runtime Visual C++ 2022
 x64 ; les archives Linux nécessitent glibc 2.35+.
@@ -60,8 +60,8 @@ partie du corps. Plusieurs layers peuvent appartenir au même input.
    La touche doit correspondre au raccourci de votre application de présentation.
 4. Sous Windows, utilisez **Save layer**, puis **Apply** et **File → Save**.
    Sous Linux, enregistrez le profil depuis l'interface principale.
-5. Arrêtez la caméra du MIG Studio, importez le fichier dans le
-   [MIG Input](controller.fr.md) et vérifiez le retour visuel avant d'activer
+5. Arrêtez la caméra du Motion Input Grid Studio, importez le fichier dans le
+   [Motion Input Grid Controller](controller.fr.md) et vérifiez le retour visuel avant d'activer
    **Keyboard output**. Donnez ensuite le focus à la présentation.
 
 Baissez la main avant de refaire le mouvement. Pour commencer avec un parcours
@@ -86,12 +86,12 @@ détaille les limites et les séquences.
 
 ## Créer un premier profil
 
-1. Ouvrez MIG Studio et démarrez la caméra. Gardez les deux épaules visibles pendant le calibrage.
+1. Ouvrez Motion Input Grid Studio et démarrez la caméra. Gardez les deux épaules visibles pendant le calibrage.
 2. Ajoutez un input. Sous Windows, **Add/Edit** ouvre l'éditeur de dessin ; Linux utilise le volet latéral.
 3. Choisissez la partie du corps suivie, par exemple un poignet, et dessinez ses régions sur la grille.
 4. Définissez le nom de l'input, son action et éventuellement ses touches clavier.
 5. Enregistrez le profil en JSON. Sous Windows, appliquez l'input au document avant **File → Save**.
-6. Arrêtez la caméra, ouvrez MIG Input et importez le profil enregistré.
+6. Arrêtez la caméra, ouvrez Motion Input Grid Controller et importez le profil enregistré.
 
 Les couleurs des régions indiquent leurs conditions :
 
@@ -104,13 +104,12 @@ Les couleurs des régions indiquent leurs conditions :
 
 Sous Windows, utilisez **Save layer** après avoir changé la partie du corps d'un
 layer ; **Apply** enregistre cet input dans le document ouvert et **File → Save**
-écrit le fichier JSON. **Advanced** expose signes, doigts et contraintes avancées.
-Sous Linux, **Movements** et **Draw zones** séparent les tâches ; les réglages de
-signe et de maintien apparaissent avec Interaction, et l’ordre avec Required dans
-un mouvement ordonné. **File → Advanced: complete JSON profile…** conserve les
-champs complets du profil.
-Linux propose les champs avancés via son éditeur Advanced JSON ; ses outils de dessin
-diffèrent de Windows. Les guides [Windows](../getting-started/windows.fr.md#dessiner)
+écrit le fichier JSON. Les vues **Movements**, **Edit** et **Test** restent dans la fenêtre principale,
+comme sur le web. Les réglages contextuels séparent identité/action, outils de
+dessin et conditions de zone. Changer de vue conserve le mouvement et la frame
+caméra. Windows propose Movement, Zones, Fingers, Hand sign, Layers et Recording ;
+Linux propose Zones et Movement. **File → Complete JSON profile** ouvre une page
+intégrée pour éditer tous les champs du schéma. Les guides [Windows](../getting-started/windows.fr.md#dessiner)
 et [Linux](../getting-started/linux.fr.md) détaillent les outils disponibles.
 
 ## Vérifier et utiliser le profil
@@ -122,13 +121,13 @@ tolérances liées. Sous Linux, utilisez la vue grille complète pour sélection
 Sous Windows, **Tolerance** cible directement la région cliquée, y compris sa
 tolérance existante ; aucune sélection préalable n'est nécessaire.
 
-Passer de Basic à Advanced conserve les conditions de l'input. Supprimer une région
+Changer de section conserve les conditions du mouvement. Supprimer une région
 violette retire son signe et ses règles de doigts propres, mais les règles
 indépendantes de l'input entier et des étapes restent actives. Le résumé des
 bindings indique ces règles. **Clear fingers** sous Windows ou
 **Clear all finger rules** sous Linux efface les conditions
 de doigts de toutes les portées sans supprimer les régions ni les signes des
-cases violettes. Sous Windows, le sélecteur de portée en Advanced indique aussi le
+cases violettes. Sous Windows, le sélecteur de portée dans Fingers indique aussi le
 nombre de règles par portée. Après modification, appliquez de nouveau l'input
 avant de le tester et enregistrez le document pour conserver les changements.
 
@@ -137,7 +136,7 @@ mouvement et observez le retour des actions. Consultez le [suivi des mains](hand
 pour les signes et conditions de doigts. Fermez la caméra d'une application avant
 d'ouvrir celle de l'autre.
 
-La sortie clavier est désactivée au lancement. Le guide du MIG Input explique
+La sortie clavier est désactivée au lancement. Le guide du Motion Input Grid Controller explique
 comment l'activer et utiliser Single press, Hold et Repeat. **View** règle le thème,
 les calques de l'aperçu et les logs. La [référence de configuration](../reference/configuration.fr.md)
 décrit les champs enregistrés et les modes d'action.
@@ -148,9 +147,9 @@ Après compilation depuis les sources :
 
 | Méthode | Fichier depuis la racine du dépôt |
 | --- | --- |
-| Preset Windows `release` | `build/release/bin/mig-configurator.exe` |
-| Script `tools/build/build-windows.ps1` par défaut | `build/windows/bin/mig-configurator.exe` |
-| Compilation du guide Linux | `build/linux-apps/bin/mig-configurator` |
+| Preset Windows `release` | `build/release/bin/motion-input-grid-studio.exe` |
+| Script `tools/build/build-windows.ps1` par défaut | `build/windows/bin/motion-input-grid-studio.exe` |
+| Compilation du guide Linux | `build/linux-apps/bin/motion-input-grid-studio` |
 
 Suivez les guides [Windows](../getting-started/windows.fr.md) ou
 [Linux](../getting-started/linux.fr.md) pour compiler. Le guide Linux indique

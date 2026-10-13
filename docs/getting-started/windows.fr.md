@@ -1,4 +1,4 @@
-# MIG Studio et MIG Input Windows
+# Motion Input Grid Studio et Motion Input Grid Controller Windows
 
 [English](windows.md) | [Français](windows.fr.md)
 
@@ -13,7 +13,7 @@
 </details>
 
 Pour utiliser les applications précompilées, suivez les guides du
-[MIG Studio](../guides/configurator.fr.md) et du [MIG Input](../guides/controller.fr.md).
+[Motion Input Grid Studio](../guides/configurator.fr.md) et du [Motion Input Grid Controller](../guides/controller.fr.md).
 Cette page décrit la compilation et les contrôles propres à la plateforme.
 Pour une bibliothèque seule, consultez le [SDK C++ / CMake](cpp.fr.md),
 [Python](../../bindings/python/README.fr.md) ou [JavaScript](../../bindings/javascript/README.fr.md).
@@ -22,10 +22,10 @@ Les deux apps C++20 Win32/GDI partagent capture Media Foundation, MediaPipe nati
 moteur et schéma 2. Pas d'interpréteur ni pont UDP. L'UI reste anglaise ; les guides
 sont bilingues.
 
-Le MIG Input dispose d’une interface dédiée aux profils et actions. Consultez
-le [guide du MIG Input](../guides/controller.fr.md) pour l’import, la sélection mémorisée,
+Le Motion Input Grid Controller dispose d’une interface dédiée aux profils et actions. Consultez
+le [guide du Motion Input Grid Controller](../guides/controller.fr.md) pour l’import, la sélection mémorisée,
 le mode compact et la vérification. Les outils de dessin ci-dessous concernent
-MIG Studio.
+Motion Input Grid Studio.
 
 ## Compiler et lancer
 
@@ -35,8 +35,8 @@ C++ 2022 Redistributable correspondant est requis sur la machine de destination.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/build/build-windows.ps1
-.\build\windows\bin\mig-configurator.exe
-.\build\windows\bin\mig-controller.exe
+.\build\windows\bin\motion-input-grid-studio.exe
+.\build\windows\bin\motion-input-grid-controller.exe
 ```
 
 ### VS Code et presets CMake
@@ -57,8 +57,8 @@ Choisissez `sdk-release` pour les bibliothèques seules, sans applications camé
 
 Arrêtez une caméra avant l'autre app. Gardez DLL/modèles/configs près du binaire,
 ressources relatives à l'exécutable. --config et --camera N choisissent profil et
-caméra. Le MIG Studio démarre vide, Right V Recalibrate inactive sans Hands. Le profil fourni
-est ouvert explicitement et n'impose aucun dessin. Le MIG Input restaure son dernier
+caméra. Le Motion Input Grid Studio démarre vide, Right V Recalibrate inactive sans Hands. Le profil fourni
+est ouvert explicitement et n'impose aucun dessin. Le Motion Input Grid Controller restaure son dernier
 profil sélectionné, avec la caméra et la sortie clavier désactivées.
 
 ```powershell
@@ -80,10 +80,11 @@ supprime pas l'inférence ; overlays périmés disparaissent. Logs ferment avec
 l'app. Boutons remplis/arrondis, états hover/focus/activé. Action verte900 ms
 même sans logs/clavier.
 
-Start puis épaules visibles environ une seconde. Add/Edit ouvre un éditeur réduit.
+Les vues **Movements**, **Edit** et **Test** restent dans la fenêtre principale.
+Activez la caméra explicitement et gardez les épaules visibles une seconde.
 Body suit les épaules ; Full grid montre27x27, dots/traces reflétés une fois.
 Pointage inverse identique ; un trait gèle sa vue.
-Basic vide, une étape Ordered sans limite. Choisissez corps, Pencil/Fill/Tolerance/
+Nouveau mouvement vide, une étape Ordered sans limite. Choisissez corps, Pencil/Fill/Tolerance/
 Eraser/Select et couleur : vert Required, rouge Forbidden, jaune Trigger.
 Tolerance cible la région cliquée, même via son contour Low, sans sélection
 préalable. Select trace un rectangle ; Ctrl conserve la sélection précédente,
@@ -92,14 +93,15 @@ alternatives horizontales ; une région de chaque numéro suffit. Trigger unique
 movable ; numéros centrés, X gardes, R Required non ordonné.
 
 La stack regroupe contraintes par landmark, autres layers en contour. Aide
-facultative ; Hide seulement présentation, Delete tous scopes, Basic Clear tout.
+facultative ; Hide seulement présentation, Delete tous scopes, Clear step nettoie la portée courante.
 Layer body part puis Save layer réaffecte. Collision rejetée ; pending à sauver
 ou rétablir avant changement/dessin/Test. IDs/régions/règles conservés, mais mains
 explicites et identité des traces inchangées. Save layer=brouillon, Apply=publication
 dans document, File Save=fichier.
 
-Advanced expose étapes/modes/hold, High/Low, doigts, Interaction, traces, espace/durée.
-Basic préserve les règles. Violet : main/signe/hold 0..60000 ms avant dessin,
+L’inspecteur sépare Movement, Zones, Fingers, Hand sign, Layers et Recording.
+Movement contient identité, clavier et délais ; Zones contient parcours et géométrie.
+Il n’y a plus de bascule Basic/Advanced. Violet : main/signe/hold 0..60000 ms avant dessin,
 Select/Update pour modifier. Fonctionne sans vert/jaune, réserve la main des
 commandes globales. Details montre tous scopes/doigts/signes/délais/touches.
 Jump/Crouch sont des régions calibrées ordinaires ; body suit torse. Mirror
@@ -109,7 +111,7 @@ activé par règles/signes en ON ; absence ne contourne rien. OFF édite sans in
 
 ## Sorties, Test, enregistrement
 
-Nom/action/clavier dans les deux modes. Keys/Ctrl+K et Edit keys acceptent
+Nom/action/clavier dans **Movement**. Keys/Ctrl+K et Edit keys acceptent
 `"Hello world" _ Enter _ Ctrl + C`, répétitions, accords+ ; boîtes de confirmation.
 None événement logique. Single press, Hold ou Repeat 20..60000 ms ; Hold doit finir
 par accord. Clavier désactivé au départ, envoie au premier plan après consentement.

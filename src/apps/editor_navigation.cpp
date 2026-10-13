@@ -81,6 +81,8 @@ bool App::editor_drawing_tools(int id, int notification) {
             selected_constraint = -1;
             SendDlgItemMessageW(edit_window, ConstraintTypeId, CB_SETCURSEL, id - PaintRequired, 0);
             SendDlgItemMessageW(edit_window, PriorityId, CB_SETCURSEL, 0, 0);
+            inspector_tab = 0;
+            editor_help = false;
             if (id == PaintInteraction) {
                 sync_interaction_hand();
                 if (scope == 0) {
@@ -118,31 +120,11 @@ bool App::editor_views(int id, int notification) {
         layout_editor();
         return true;
     }
-    if (id == ProMode && notification == BN_CLICKED) {
-        region_selection.clear();
-        selected_constraint = selected_finger = -1;
-        SendDlgItemMessageW(edit_window, FingerScope, CB_SETCURSEL, 0, 0);
-        pro_mode = !pro_mode;
-        SetDlgItemTextW(edit_window, ProMode, pro_mode ? L"Advanced: On" : L"Advanced: Off");
-        if (!pro_mode) {
-            if (selection(edit_window, ConstraintTypeId) == int(ConstraintType::Interaction)) {
-                SendDlgItemMessageW(edit_window, ConstraintTypeId, CB_SETCURSEL, 0, 0);
-                selected_constraint = -1;
-            }
-            scope = std::max(1, scope);
-            SendDlgItemMessageW(edit_window, PriorityId, CB_SETCURSEL, 0, 0);
-            if (selection(edit_window, Tool) >= 5) {
-                SendDlgItemMessageW(edit_window, Tool, CB_SETCURSEL, 1, 0);
-            }
-        }
-        layout_editor();
-        refresh_editor();
-        return true;
-    }
     if (notification == BN_CLICKED &&
         (id == ConstraintsTab || id == FingersTab || id == RecordingTab || id == LayersTab ||
-         id == InteractionTab)) {
-        inspector_tab = id == InteractionTab   ? 4
+         id == InteractionTab || id == MovementTab)) {
+        inspector_tab = id == MovementTab      ? 5
+                        : id == InteractionTab ? 4
                         : id == LayersTab      ? 3
                         : id == ConstraintsTab ? 0
                         : id == FingersTab     ? 1
@@ -172,23 +154,6 @@ bool App::editor_navigation(int id, int notification) {
     }
     if (id == TrackHands && notification == BN_CLICKED) {
         SendMessageW(window, WM_COMMAND, TrackHands, 0);
-        return true;
-    }
-    if (id == Clear && notification == BN_CLICKED && !pro_mode) {
-        {
-            std::lock_guard lock(state_mutex);
-            draft_history.commit({draft, reviewed_recording});
-            reviewed_recording.discard();
-        }
-        draft.constraints.clear();
-        draft.fingers.clear();
-        draft.steps = {{"step_1", StepMode::Ordered}};
-        draft.recordings.clear();
-        scope = 1;
-        selected_constraint = -1;
-        selected_finger = -1;
-        region_selection.clear();
-        refresh_editor();
         return true;
     }
     if (id == RecordAll && notification == BN_CLICKED) {

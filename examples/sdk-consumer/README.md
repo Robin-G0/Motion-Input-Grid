@@ -59,7 +59,7 @@ build/mig-sdk-example configuration/default.json
 Visual Studio puts the binary under `build/Release/` and appends `.exe`.
 Source-only folders require an installed SDK and your configuration file.
 The local `configuration/default.json` is included in source folders too.
-Replace it with your own MIG Studio profile. Compilation exceeds the prebuilt trial time.
+Replace it with your own Motion Input Grid Studio profile. Compilation exceeds the prebuilt trial time.
 
 ## Reuse and troubleshooting
 

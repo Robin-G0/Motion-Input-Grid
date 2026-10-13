@@ -50,12 +50,12 @@ with tempfile.TemporaryDirectory(dir=ROOT / 'build', prefix='example-package-tes
     (sdk / 'include/header.hpp').write_text('header')
     (sdk / 'bin/models').mkdir(parents=True)
     (sdk / 'bin/mig-c.dll').write_bytes(b'abi')
-    (sdk / 'bin/mig-controller.exe').write_bytes(b'app')
+    (sdk / 'bin/motion-input-grid-controller.exe').write_bytes(b'app')
     (sdk / 'bin/models/full.task').write_bytes(b'model')
     staged = root / 'staged-sdk'
     packager.copy_example_sdk(sdk, staged)
     assert (staged / 'bin/mig-c.dll').read_bytes() == b'abi'
-    assert not (staged / 'bin/mig-controller.exe').exists()
+    assert not (staged / 'bin/motion-input-grid-controller.exe').exists()
     assert not (staged / 'bin/models').exists()
     single = load('single_tutorial', 'packaging/package-single-example.py')
     examples = root / 'prepared'

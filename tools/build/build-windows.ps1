@@ -48,4 +48,4 @@ if ($Architecture -eq 'x64' -or $env:PROCESSOR_ARCHITECTURE -eq 'ARM64') {
 } else {
     Write-Output 'ARM64 binaries cross-compiled; run CTest on Windows ARM64 before publishing.'
 }
-Write-Output "Run $buildPath/bin/mig-configurator.exe or mig-controller.exe"
+Write-Output "Run $buildPath/bin/motion-input-grid-studio.exe or motion-input-grid-controller.exe"

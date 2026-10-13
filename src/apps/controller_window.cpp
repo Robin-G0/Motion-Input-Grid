@@ -19,7 +19,7 @@ void create_controller(App& app, HWND window) {
                                    DEFAULT_PITCH, L"Georgia");
     if (!app.profiles) {
         app.profiles = std::make_unique<controller::Profiles>(
-            std::filesystem::temp_directory_path() / "mig-controller-ui-unused");
+            std::filesystem::temp_directory_path() / "motion-input-grid-controller-ui-unused");
     }
     control(window, L"COMBOBOX", L"", ProfileList, 0, 0, 250, 280, CBS_DROPDOWNLIST | WS_VSCROLL);
     control(window, L"EDIT", L"", ProfileName, 0, 0, 250, 32, ES_AUTOHSCROLL);

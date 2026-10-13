@@ -33,8 +33,8 @@ runtime are separate downloads from
 [Releases](https://github.com/Robin-G0/Motion-Input-Grid/releases).
 
 The distributable packages are in `distribution/windows`, `distribution/linux` and
-`distribution/web`. Windows has directly accessible `mig-configurator.exe` and
-`mig-controller.exe`; keep their `libmediapipe.dll`, models and configs beside them.
+`distribution/web`. Windows has directly accessible `motion-input-grid-studio.exe` and
+`motion-input-grid-controller.exe`; keep their `libmediapipe.dll`, models and configs beside them.
 Each native package also has an installed CMake SDK under `sdk/`.
 The native Linux archive contains the Qt6 applications and camera runtime.
 Runnable SDL2/SFML tutorials are in the separate examples archives; the
@@ -107,7 +107,7 @@ use logical callbacks, and do not inject desktop keyboard shortcuts.
 
 ## SDL2 and SFML examples
 
-Both examples in `examples` load a MIG Studio JSON profile, draw body/hand
+Both examples in `examples` load a Motion Input Grid Studio JSON profile, draw body/hand
 coordinates, use wrist XYZ to move a marker, and route recognized actions into game
 logic. They support SDL2 >=2.0.10 and SFML 2.5/2.6. The sample's SFML API is version 2;
 SFML 3 applications can use the same MIG SDK with their own version-3 drawing calls.

@@ -9,7 +9,7 @@ identifying the accepted action. They report events without sending keyboard key
 ## Launch a demo
 
 > [!NOTE]
-> On Debian, the MIG Studio, MIG Input and some native examples are still
+> On Debian, the Motion Input Grid Studio, Motion Input Grid Controller and some native examples are still
 > being developed and tested. They may not yet work fully.
 
 Download one **`*-standalone`** tutorial and extract it completely.
@@ -25,7 +25,7 @@ included; browser examples require Node 22.12+ and a modern browser.
 1. Start one viewer from the table below and allow camera access.
 2. Keep both shoulders visible for a second to calibrate, then lower your hands.
 3. Raise either wrist through the green region into the yellow row.
-4. Open the profile variant to import a JSON file saved by the MIG Studio.
+4. Open the profile variant to import a JSON file saved by the Motion Input Grid Studio.
 
 The flying props and hand bones follow your wrists. The image is mirrored once;
 feedback is anatomical.

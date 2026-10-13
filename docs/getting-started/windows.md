@@ -1,4 +1,4 @@
-# Windows MIG Studio and MIG Input
+# Windows Motion Input Grid Studio and Motion Input Grid Controller
 
 [English](windows.md) | [Français](windows.fr.md)
 
@@ -12,8 +12,8 @@
 
 </details>
 
-To use prebuilt applications, follow the [MIG Studio](../guides/configurator.md)
-and [MIG Input](../guides/controller.md) guides. This page covers source builds
+To use prebuilt applications, follow the [Motion Input Grid Studio](../guides/configurator.md)
+and [Motion Input Grid Controller](../guides/controller.md) guides. This page covers source builds
 and platform-specific controls. For just a library, see the [C++ SDK / CMake](cpp.md),
 [Python](../../bindings/python/README.md) or [JavaScript](../../bindings/javascript/README.md) guide.
 
@@ -21,9 +21,9 @@ Both C++20 Win32/GDI applications use Media Foundation capture, native MediaPipe
 and the same engine/schema-v2 reader. No interpreter, UDP bridge or separate
 inference process is used. The interface is English; documentation is bilingual.
 
-The MIG Input has a dedicated profile/bindings interface. See the
-[MIG Input guide](../guides/controller.md) for import, remembered selection, compact mode
-and verification. The drawing tools described below belong to the MIG Studio.
+The Motion Input Grid Controller has a dedicated profile/bindings interface. See the
+[Motion Input Grid Controller guide](../guides/controller.md) for import, remembered selection, compact mode
+and verification. The drawing tools described below belong to the Motion Input Grid Studio.
 
 ## Build and launch
 
@@ -33,8 +33,8 @@ The matching Visual C++ 2022 Redistributable is needed on deployment machines.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/build/build-windows.ps1
-.\build\windows\bin\mig-configurator.exe
-.\build\windows\bin\mig-controller.exe
+.\build\windows\bin\motion-input-grid-studio.exe
+.\build\windows\bin\motion-input-grid-controller.exe
 ```
 
 ### VS Code and CMake presets
@@ -55,9 +55,9 @@ PATH, use VS Code's CMake commands or the build script above. Choose
 
 Stop the first camera before starting another. Keep libmediapipe.dll, models and
 configs with the executables. Paths resolve relative to the executable, not cwd.
---config path.json loads a profile; --camera N selects a device. MIG Studio startup
+--config path.json loads a profile; --camera N selects a device. Motion Input Grid Studio startup
 is empty with Right V Recalibrate, inactive until Hands is enabled. The bundled
-default profile must be opened explicitly and is not a forced drawing. The MIG Input
+default profile must be opened explicitly and is not a forced drawing. The Motion Input Grid Controller
 restores its last selected profile and starts with camera and keyboard output off.
 
 ```powershell
@@ -81,12 +81,13 @@ logs independently. Hiding hands does not disable inference. Stale overlays vani
 Logs close with the app. Rounded filled controls expose enabled/hover/focus state.
 Accepted actions flash green for 900ms without logs or keyboard enabled.
 
-Start and keep shoulders visible about one second. Add/Edit opens the smaller
-editor. Body view projects the grid using shoulder scale; Full grid shows all
+Use **Movements**, **Edit** and **Test** in the main window. No separate
+movement editor opens. Start the camera explicitly and keep both shoulders
+visible for about one second. Body view projects the grid using shoulder scale; Full grid shows all
 27x27 cells, mirrored once including dots/traces. Pointer mapping uses the same
 inverse transform; a stroke freezes its view until release.
 
-Basic starts empty with one Ordered step and no time limit. Select body part,
+A new movement starts empty with one Ordered step and no time limit. Select body part,
 Pencil/Fill/Tolerance/Eraser/Select and green Required, red Forbidden or yellow
 Trigger. Tolerance targets the clicked region, including an existing Low contour,
 without preselection. Select drags a rectangle; Ctrl retains the previous
@@ -97,15 +98,16 @@ The grid displays centered numbers, X guards and R unordered Required.
 
 The layer stack groups independent landmark constraints; other layers remain
 outlined. Help is optional. Hide changes display only, Delete removes that
-landmark across scopes, Basic Clear clears the drawing. Select a layer, change
+landmark across scopes, Clear step removes the current scope. Select a layer, change
 Layer body part, then Save layer. Destination collisions fail; pending assignment
 must be saved or restored before switching/drawing/testing. IDs, cells and rules
 remain intact, but explicit sign/finger hands and recorded trace identity do not
 change. Save layer edits the draft, Apply input publishes, File Save persists.
 
-Advanced exposes stages/modes/hold, High/Low geometry/tolerance, scoped fingers,
-Interaction, recordings, coordinate space and optional duration. Switching modes
-preserves definitions. Purple Interaction needs a hand/sign and continuous hold
+The inspector separates **Movement**, **Zones**, **Fingers**, **Hand sign**,
+**Layers** and **Recording**. Movement contains identity, keyboard, reference and
+timing. Zones contains the current step, route mode and region geometry; hold
+settings appear for simultaneous steps. There is no Basic/Advanced switch. Purple Interaction needs a hand/sign and continuous hold
 0..60000ms; choose settings before painting, Select/Update interaction to edit.
 Purple-only inputs work without green/yellow. Matching signs reserve the hand
 from global commands. Details shows every scope/finger/sign/time/key binding.
@@ -118,7 +120,7 @@ cannot infer hands. See [hand contract](../guides/hands.md).
 
 ## Output, test and recording
 
-Set name/action and keyboard in Basic/Advanced. Keys/Ctrl+K and Edit keys recognize
+Set name/action and keyboard in **Movement**. Keys/Ctrl+K and Edit keys recognize
 `"Hello world" _ Enter _ Ctrl + C`, repeated actions and simultaneous + chords.
 Outlined boxes confirm parsing. None gives a logical event only.
 Action mode offers Single press, Hold or Repeat with interval20..60000ms.

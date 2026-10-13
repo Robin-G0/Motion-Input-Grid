@@ -214,20 +214,11 @@ void App::edit_authoring(int id) {
             delete_layer();
             break;
         case Clear:
-            if (pro_mode) {
-                current_constraints().clear();
-                if (scope == 0) {
-                    draft.fingers.clear();
-                } else {
-                    draft.steps[scope - 1].fingers.clear();
-                }
-            } else {
-                draft.constraints.clear();
+            current_constraints().clear();
+            if (scope == 0) {
                 draft.fingers.clear();
-                draft.steps = {{"step_1", StepMode::Ordered}};
-                draft.recordings.clear();
-                scope = 1;
-                selected_constraint = -1;
+            } else {
+                draft.steps[scope - 1].fingers.clear();
             }
             break;
         default:

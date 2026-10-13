@@ -5,14 +5,21 @@ add_executable(mig-paint-buffer-tests paint_buffer_tests.cpp)
 target_link_libraries(mig-paint-buffer-tests PRIVATE gdi32 user32)
 add_test(NAME paint-buffer COMMAND mig-paint-buffer-tests)
 foreach(application configurator controller)
-    if(TARGET mig-${application})
-        target_sources(mig-${application} PRIVATE
+    if(application STREQUAL "configurator")
+        set(app_target motion-input-grid-studio)
+        set(run_target run-motion-input-grid-studio)
+    else()
+        set(app_target motion-input-grid-controller)
+        set(run_target run-motion-input-grid-controller)
+    endif()
+    if(TARGET ${app_target})
+        target_sources(${app_target} PRIVATE
             "${CMAKE_CURRENT_SOURCE_DIR}/session_ui_tests.cpp"
             "${CMAKE_CURRENT_SOURCE_DIR}/${application}_ui_tests.cpp")
-        target_include_directories(mig-${application} PRIVATE
+        target_include_directories(${app_target} PRIVATE
             "${CMAKE_CURRENT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/src/apps")
-        target_compile_definitions(mig-${application} PRIVATE MIG_APP_TESTS)
-        add_test(NAME ${application}-ui COMMAND mig-${application} --ui-test)
+        target_compile_definitions(${app_target} PRIVATE MIG_APP_TESTS)
+        add_test(NAME ${application}-ui COMMAND ${app_target} --ui-test)
         set_tests_properties(${application}-ui PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
     endif()
 endforeach()

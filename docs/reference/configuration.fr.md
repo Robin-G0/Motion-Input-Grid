@@ -33,7 +33,7 @@ est une responsabilité de l'interface desktop. MIG n'exécute pas directement d
 - [Enregistrement et validation](#enregistrement-et-validation)
 - [Présentation et layers](#présentation-et-layers)
 - [Exemples JSON de la référence](#exemples-json-de-la-référence)
-- [Liste des profils du MIG Input](#liste-des-profils-du-mig-input)
+- [Liste des profils du Motion Input Grid Controller](#liste-des-profils-du-motion-input-grid-controller)
 
 </details>
 
@@ -341,7 +341,7 @@ Profile importeurs commencent inputs vide, rapportent action/ID textuels.
 Succès remplace/recalibre ; échec conserve. Python importe/redémarre capture sur
 son propriétaire ; C++ garde caméra et remplace moteur. Tous respectent
 tracking.hands ; démos l'activent pour dessiner. Fenêtres/chemins ne sont pas JSON.
-Capture MIG Input/ABI rejette observations âgées>250 ms via horloge actuelle ;
+Capture Motion Input Grid Controller/ABI rejette observations âgées>250 ms via horloge actuelle ;
 hôtes positions possèdent leur horloge.
 
 React/Vue/Next partagent schéma 2/session ; import valide efface retour et
@@ -424,13 +424,13 @@ s'insèrent dans leur scope décrit ci-dessus ; seul le document Jump est comple
 }
 ```
 
-## Liste des profils du MIG Input
+## Liste des profils du Motion Input Grid Controller
 
-Le MIG Input conserve les noms dans un `profiles.json` séparé, avec `version: 1`,
+Le Motion Input Grid Controller conserve les noms dans un `profiles.json` séparé, avec `version: 1`,
 `selected` (indice à partir de zéro, ou -1) et un tableau `profiles` contenant
 des objets `{ "id": "1", "name": "Jeu" }`. Les identifiants numériques désignent
 les fichiers gérés `1.json`, `2.json`, etc., qui restent des configurations du schéma v2.
 La liste est limitée à 64 entrées et 64 Kio ; les noms à 256 octets UTF-8.
 Les imports et modifications de liste utilisent un remplacement atomique.
 L’aperçu, la vérification et l’activation du clavier sont des réglages de session
-et ne changent pas le JSON des mouvements. Voir le [MIG Input](../guides/controller.fr.md).
+et ne changent pas le JSON des mouvements. Voir le [Motion Input Grid Controller](../guides/controller.fr.md).

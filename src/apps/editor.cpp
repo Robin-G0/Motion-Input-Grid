@@ -50,6 +50,9 @@ void App::change_document(Configuration proposed) {
     refresh_list();
 }
 void App::undo(bool redo, bool draft_scope) {
+    if (studio_view == 2) {
+        return;
+    }
     if (draft_scope && edit_window) {
         bool changed;
         {
@@ -113,7 +116,7 @@ void App::open_editor(bool creating, bool test) {
     if (creating) {
         draft = {};
         draft.id = "input_" + std::to_string(now_ms()) + "_" + std::to_string(++serial);
-        draft.name = "New input";
+        draft.name = "New movement";
         draft.action = "action";
         draft.steps.push_back({"step_1"});
         draft.steps.back().mode = StepMode::Ordered;
@@ -133,11 +136,10 @@ void App::open_editor(bool creating, bool test) {
     }
     draft_history = {};
     scope = 1;
-    pro_mode = false;
     editor_help = false;
     layer_visible.fill(true);
     editing_layer = -1;
-    inspector_tab = 3;
+    inspector_tab = creating ? 5 : 3;
     selected_constraint = selected_finger = -1;
     WNDCLASSW klass{};
     klass.lpfnWndProc = editor_procedure;
@@ -145,13 +147,12 @@ void App::open_editor(bool creating, bool test) {
     klass.lpszClassName = L"MIGInputEditor";
     klass.hCursor = LoadCursor(nullptr, IDC_ARROW);
     RegisterClassW(&klass);
-    RECT work{};
-    SystemParametersInfoW(SPI_GETWORKAREA, 0, &work, 0);
-    const int height = std::min(800, int(work.bottom - work.top) - 40);
-    edit_window = CreateWindowExW(
-        WS_EX_CONTROLPARENT, klass.lpszClassName, L"MIG Studio — Edit movement / Test",
-        WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, work.left + 40, work.top + 20, 1080, height, window,
-        nullptr, klass.hInstance, nullptr);
+    RECT client{};
+    GetClientRect(window, &client);
+    edit_window = CreateWindowExW(WS_EX_CONTROLPARENT, klass.lpszClassName,
+                                  L"Motion Input Grid Studio workspace", WS_CHILD | WS_CLIPCHILDREN,
+                                  0, 96, client.right, client.bottom - 128, window, nullptr,
+                                  klass.hInstance, nullptr);
     if (!edit_window) {
         throw std::runtime_error("Cannot open input editor");
     }
@@ -162,12 +163,7 @@ void App::open_editor(bool creating, bool test) {
         recording_landmarks = {15, 16};
         recording_space = draft.space;
     }
-    if (!diagnostic_mode) {
-        ShowWindow(edit_window, SW_SHOW);
-    }
-    if (test) {
-        set_test(true);
-    }
+    show_studio_view(test ? 2 : 1);
 }
 std::vector<SpatialConstraint>& App::current_constraints() {
     if (scope == 0) {
@@ -277,16 +273,14 @@ void App::refresh_editor() {
     SendDlgItemMessageW(edit_window, ConstraintList, LB_RESETCONTENT, 0, 0);
     for (std::size_t i = 0; i < constraints.size(); ++i) {
         const auto& item = constraints[i];
-        const auto text = wide(ui::landmark_label(item.landmark) + " | " +
-                               (pro_mode ? std::string{} : order_labels[offset + i] + " | ") +
-                               (item.type == ConstraintType::Required      ? "Required"
-                                : item.type == ConstraintType::Forbidden   ? "Forbidden"
-                                : item.type == ConstraintType::Interaction ? "Interaction"
-                                                                           : "Trigger") +
-                               (pro_mode ? (item.priority == Priority::High ? " High " : " Low ") +
-                                               std::string("[") + std::to_string(item.cell.x) +
-                                               "," + std::to_string(item.cell.y) + "]"
-                                         : (item.priority == Priority::Low ? " tolerance" : "")));
+        const auto text =
+            wide(ui::landmark_label(item.landmark) + " | " + (order_labels[offset + i] + " | ") +
+                 (item.type == ConstraintType::Required      ? "Required"
+                  : item.type == ConstraintType::Forbidden   ? "Forbidden"
+                  : item.type == ConstraintType::Interaction ? "Interaction"
+                                                             : "Trigger") +
+                 ((item.priority == Priority::High ? " High " : " Low ") + std::string("[") +
+                  std::to_string(item.cell.x) + "," + std::to_string(item.cell.y) + "]"));
         SendDlgItemMessageW(edit_window, ConstraintList, LB_ADDSTRING, 0,
                             reinterpret_cast<LPARAM>(text.c_str()));
     }
@@ -335,7 +329,7 @@ void App::refresh_editor() {
     EnableWindow(GetDlgItem(edit_window, DrawBucket),
                  selection(edit_window, ConstraintTypeId) != int(ConstraintType::Trigger) ||
                      selection(edit_window, BrushOrder) > 0);
-    SetDlgItemTextW(edit_window, Clear, pro_mode ? L"Clear scope" : L"Clear drawing");
+    SetDlgItemTextW(edit_window, Clear, L"Clear step");
     RedrawWindow(edit_window, nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN);
     {
         std::lock_guard lock(state_mutex);
@@ -468,6 +462,10 @@ void App::request_record() {
     record_requested = true;
 }
 void App::editor_command(int id, int notification) {
+    if (studio_view == 2 && id != Start && id != Stop && id != RestartTest && id != Calibrate &&
+        id != GridViewMode) {
+        return;
+    }
     if (editor_navigation(id, notification) || updating_controls ||
         editor_settings(id, notification)) {
         return;
@@ -484,7 +482,7 @@ void App::editor_click(int x, int y, bool begin) {
         return;
     }
     const int chosen_tool = selection(edit_window, Tool);
-    const int tool = !pro_mode && chosen_tool == 2 &&
+    const int tool = chosen_tool == 2 &&
                              is_trigger(ConstraintType(selection(edit_window, ConstraintTypeId))) &&
                              selection(edit_window, BrushOrder) == 0
                          ? 1
@@ -567,9 +565,6 @@ void App::editor_click(int x, int y, bool begin) {
     brush.landmark = landmarks[selection(edit_window, Members)].index;
     brush.type = ConstraintType(selection(edit_window, ConstraintTypeId));
     if (brush.type == ConstraintType::Interaction) {
-        if (!pro_mode) {
-            throw std::runtime_error("Enable Advanced to draw Interaction cells");
-        }
         if (scope == 0) {
             throw std::runtime_error("Interaction cells belong to a step");
         }
@@ -579,9 +574,6 @@ void App::editor_click(int x, int y, bool begin) {
             integer_value(edit_window, InteractionHold, 0, maximum_interaction_hold_ms)};
     }
     brush.priority = Priority(selection(edit_window, PriorityId));
-    if (!pro_mode) {
-        brush.priority = Priority::High;
-    }
     if (brush.type == ConstraintType::Interaction && scope > 0 &&
         draft.steps[scope - 1].mode == StepMode::Ordered &&
         selection(edit_window, BrushOrder) == 0 && brush.priority == Priority::High) {
@@ -632,7 +624,7 @@ void App::editor_click(int x, int y, bool begin) {
         brush.interaction = target->interaction;
     }
     if (tool == 1) {
-        if (!pro_mode && is_trigger(brush.type) && selection(edit_window, BrushOrder) == 0) {
+        if (is_trigger(brush.type) && selection(edit_window, BrushOrder) == 0) {
             // The finish is one movable cell; remove linked tolerance with it.
             std::vector<std::string> removed;
             for (auto& step : draft.steps) {
@@ -659,8 +651,7 @@ void App::editor_click(int x, int y, bool begin) {
                          ui::pencil(list, sampled, cx, cy, selection(edit_window, BrushOrder) > 0);
                      });
         }
-        if (!pro_mode && brush.order == 0 && brush.type == ConstraintType::Required &&
-            list.size() > old_size) {
+        if (brush.order == 0 && brush.type == ConstraintType::Required && list.size() > old_size) {
             const auto finish = std::find_if(list.begin(), list.end(), [](const auto& item) {
                 return is_trigger(item.type) && item.priority == Priority::High;
             });
@@ -704,6 +695,9 @@ void App::file_dialog(bool saving) {
         return;
     }
     if (saving) {
+        if (edit_window && studio_view != 0) {
+            apply();
+        }
         save_configuration(config, file);
         message("Saved schema-v2 configuration.");
     } else {
@@ -738,10 +732,12 @@ void App::open_controls() {
     klass.lpszClassName = L"MIGControls";
     klass.hCursor = LoadCursor(nullptr, IDC_ARROW);
     RegisterClassW(&klass);
+    RECT client{};
+    GetClientRect(window, &client);
     control_window =
         CreateWindowExW(WS_EX_CONTROLPARENT, klass.lpszClassName, L"MIG - Remote controls",
-                        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU, 260, 180, 480, 280, window,
-                        nullptr, klass.hInstance, nullptr);
+                        WS_CHILD | WS_CLIPCHILDREN, 0, 96, client.right, client.bottom - 128,
+                        window, nullptr, klass.hInstance, nullptr);
     const auto index = [](ControlBinding binding) {
         return binding.gesture == Gesture::None
                    ? 0

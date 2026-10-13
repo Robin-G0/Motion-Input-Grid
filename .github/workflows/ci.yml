@@ -160,7 +160,7 @@ jobs:
                   xvfb-run -a python3 tests/examples/example_picker_tests.py build/graphics/sfml/mig-sfml-profile
             - name: Package native runtime and examples
               run: |
-                  cp build/graphics/sdl2/mig-sdl2 build/graphics/sfml/mig-sfml build/linux-native/bin/mig-configurator build/linux-native/bin/mig-controller distribution/linux/
+                  cp build/graphics/sdl2/mig-sdl2 build/graphics/sfml/mig-sfml build/linux-native/bin/motion-input-grid-studio build/linux-native/bin/motion-input-grid-controller distribution/linux/
                   cp build/linux-native/src/c-api/libmig-c.so distribution/linux/
                   cp build/native-linux-deps/libmediapipe.so build/native-linux-deps/LICENSE build/native-linux-deps/nlohmann-LICENSE distribution/linux/
                   cp -r build/native-linux-deps/models configs distribution/linux/

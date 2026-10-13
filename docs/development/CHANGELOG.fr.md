@@ -4,10 +4,15 @@
 
 ## Non publié
 
-- MIG Studio et MIG Input reprennent la palette claire/sombre du site et séparent
+- Renomme les interfaces, le Studio web et les exécutables en Motion Input Grid
+  Studio / Controller (`motion-input-grid-studio`, `motion-input-grid-controller`).
+- Studio regroupe édition contextuelle et test dans une fenêtre, sans mode
+  Basic/Advanced. Linux expose aussi étapes, parcours et maintien simultané.
+
+- Motion Input Grid Studio et Motion Input Grid Controller reprennent la palette claire/sombre du site et séparent
   session, mouvements et zones sous Windows/Linux. La précision avancée et le
-  consentement clavier restent disponibles ; les noms d’exécutables restent compatibles.
-- MIG Studio Web est documenté comme alternative navigateur partageant les profils JSON.
+  consentement clavier restent disponibles.
+- Motion Input Grid Studio Web est documenté comme alternative navigateur partageant les profils JSON.
 
 ## 1.0.2
 

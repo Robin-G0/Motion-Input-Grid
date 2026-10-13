@@ -1,22 +1,22 @@
-# Linux MIG Studio and MIG Input
+# Linux Motion Input Grid Studio and Motion Input Grid Controller
 
 [English](linux.md) | [Français](linux.fr.md)
 
 > [!NOTE]
-> On Debian, the MIG Studio, MIG Input and some native examples are still
+> On Debian, the Motion Input Grid Studio, Motion Input Grid Controller and some native examples are still
 > being developed and tested. They may not yet work fully.
 
-To use prebuilt applications, follow the [MIG Studio](../guides/configurator.md)
-and [MIG Input](../guides/controller.md) guides. This page covers source builds
+To use prebuilt applications, follow the [Motion Input Grid Studio](../guides/configurator.md)
+and [Motion Input Grid Controller](../guides/controller.md) guides. This page covers source builds
 and platform-specific controls. For just a library, see the [C++ SDK / CMake](cpp.md),
 [Python](../../bindings/python/README.md) or [JavaScript](../../bindings/javascript/README.md) guide.
 
-Both `mig-configurator` and `mig-controller` build as native Qt6 applications,
+Both `motion-input-grid-studio` and `motion-input-grid-controller` build as native Qt6 applications,
 sharing the existing engine, estimator and schema-v2 profiles with Windows.
 
-The MIG Input has a dedicated profile/bindings interface. See the
-[MIG Input guide](../guides/controller.md) for import, remembered selection, compact mode
-and verification. The drawing tools described below belong to the MIG Studio.
+The Motion Input Grid Controller has a dedicated profile/bindings interface. See the
+[Motion Input Grid Controller guide](../guides/controller.md) for import, remembered selection, compact mode
+and verification. The drawing tools described below belong to the Motion Input Grid Studio.
 
 ```sh
 sudo apt-get install cmake ninja-build g++ python3 qt6-base-dev libxtst-dev libegl1 libgles2
@@ -24,8 +24,8 @@ python3 tools/bootstrap/bootstrap-native-linux.py
 cmake -S . -B build/linux-apps -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build/linux-apps --parallel 3
 ctest --test-dir build/linux-apps --output-on-failure
-build/linux-apps/bin/mig-configurator --runtime "$PWD/build/native-linux-deps"
-build/linux-apps/bin/mig-controller --runtime "$PWD/build/native-linux-deps" --config configs/default.json
+build/linux-apps/bin/motion-input-grid-studio --runtime "$PWD/build/native-linux-deps"
+build/linux-apps/bin/motion-input-grid-controller --runtime "$PWD/build/native-linux-deps" --config configs/default.json
 ```
 
 Use `bash tools/build/build-linux.sh [build-directory] [ON|OFF]` to bootstrap/build/test
@@ -39,17 +39,19 @@ Use `--camera N` for `/dev/videoN`;
 single-plane YUYV V4L2 and camera permissions are required. Start explicitly opens
 capture; stop one application before starting the other.
 
-The session toolbar stays outside the camera canvas. The sidebar separates
-**Movements** from **Draw zones**, with compact drawing tools, body selection and
+The session toolbar stays outside the camera canvas. The main window separates
+**Movements**, **Edit** and **Test**, with compact drawing tools, body selection and
 explicit layer reassignment. Ordered-route options appear for Required zones in
 an ordered movement; Interaction reveals sign/0..60000 ms hold settings. Draw in Full grid;
 Body view fits the complete mirrored image. View toggles grid, dots/hands, logs and
 light/dark themes. Input settings edit keys/sequences, Mirror, Single/Hold/Repeat,
-repeat interval and cooldown. Save validates atomically. Advanced edits all schema-v2
+repeat interval and cooldown. Steps offer any-order, simultaneous and ordered routes,
+with hold time shown for simultaneous steps. Test disables keyboard output.
+Save validates atomically. The in-app **Complete JSON profile** page edits all schema-v2
 fields through a complete-profile JSON editor, preserving scoped fingers, stages,
 tolerance, controls and recordings.
 
-The Linux visual frontend has fewer tools than Win32: advanced region/step/finger
+The Linux visual frontend has fewer tools than Win32: precise region geometry and finger
 editing uses JSON; interactive recording/trace review, bucket/tolerance tools and
 Undo/Redo are not yet ported. Existing profiles keep all settings and recognition
 uses the same engine. Global Restart/Recalibrate signs work; RecordToggle needs

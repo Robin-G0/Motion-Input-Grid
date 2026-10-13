@@ -9,8 +9,8 @@ for platform requirements and integration maturity.
 
 ## Desktop applications and examples
 
-- `desktop applications` archives contain the MIG Studio, MIG Input, camera runtime and models.
-  Follow the [MIG Studio](../guides/configurator.md) or [MIG Input](../guides/controller.md) guide.
+- `desktop applications` archives contain the Motion Input Grid Studio, Motion Input Grid Controller, camera runtime and models.
+  Follow the [Motion Input Grid Studio](../guides/configurator.md) or [Motion Input Grid Controller](../guides/controller.md) guide.
 - Each example is a separate `*-standalone` download; choose your technology and
   platform in the [examples guide](../../examples/README.md).
 - `*-standalone` archives contain one native, browser or editor tutorial.

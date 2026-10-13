@@ -10,9 +10,9 @@ ou intégrez le même moteur dans votre projet. Choisissez un point de départ.
 
 | Je veux… | Guide |
 | --- | --- |
-| Créer ou tester un profil dans le navigateur | [MIG Studio Web](guides/studio-web.fr.md) |
-| Dessiner un mouvement et lui attribuer un raccourci | [MIG Studio](guides/configurator.fr.md) |
-| Utiliser mon profil avec une autre application | [MIG Input](guides/controller.fr.md) |
+| Créer ou tester un profil dans le navigateur | [Motion Input Grid Studio Web](guides/studio-web.fr.md) |
+| Dessiner un mouvement et lui attribuer un raccourci | [Motion Input Grid Studio](guides/configurator.fr.md) |
+| Utiliser mon profil avec une autre application | [Motion Input Grid Controller](guides/controller.fr.md) |
 | Essayer une démo caméra sans créer de profil | [Exemples autonomes](../examples/README.fr.md) |
 | Ajouter un signe de main ou une condition sur les doigts | [Suivi des mains](guides/hands.fr.md) |
 

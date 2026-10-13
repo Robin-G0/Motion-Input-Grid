@@ -1,9 +1,9 @@
-# MIG Studio Web
+# Motion Input Grid Studio Web
 
 [English](studio-web.md) | [Français](studio-web.fr.md)
 
-[Ouvrir MIG Studio Web](https://robin-g0.github.io/Motion-Input-Grid/studio/).
-C’est une alternative statique dans le navigateur à [MIG Studio](configurator.fr.md),
+[Ouvrir Motion Input Grid Studio Web](https://robin-g0.github.io/Motion-Input-Grid/studio/).
+C’est une alternative statique dans le navigateur à [Motion Input Grid Studio](configurator.fr.md),
 avec le même format de profil JSON et le même moteur de reconnaissance.
 
 1. Choisissez **Importer JSON**, **Nouveau profil**, ou l’exemple. L’accueil propose
@@ -15,7 +15,7 @@ avec le même format de profil JSON et le même moteur de reconnaissance.
 3. Choisissez **Tester**, autorisez la caméra et gardez les deux épaules visibles.
    Affichez seulement les actions ou choisissez un niveau de log. Les zones
    déclenchées s’allument brièvement.
-4. Exportez le JSON et importez-le dans [MIG Input](controller.fr.md) pour utiliser
+4. Exportez le JSON et importez-le dans [Motion Input Grid Controller](controller.fr.md) pour utiliser
    les raccourcis clavier.
 
 La grille miroir correspond au retour caméra. Dessinez ou gommez des notes pendant
@@ -27,7 +27,7 @@ agissent dans l’éditeur.
 Les images sont traitées localement ; le chargement initial télécharge les modèles
 et le moteur. Le navigateur émet des actions mais ne peut pas envoyer de raccourcis
 aux autres applications. L’enregistrement natif et les tests clavier système restent
-dans MIG Studio. L’export fonctionne aussi sans autorisation caméra.
+dans Motion Input Grid Studio. L’export fonctionne aussi sans autorisation caméra.
 
 Les brouillons appartiennent à un navigateur et une origine (protocole, hôte et port).
 Un autre port localhost ou navigateur ne les partage pas. Exportez le JSON pour une

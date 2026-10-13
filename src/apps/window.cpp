@@ -89,28 +89,90 @@ void App::layout() {
         GetClassNameW(child, type, 32);
         MoveWindow(child, x, y, width, _wcsicmp(type, L"COMBOBOX") == 0 ? 280 : height, TRUE);
     };
-    place(FileMenu, 230, 10, 62, 28);
-    place(EditMenu, 298, 10, 62, 28);
-    place(ViewMenu, 366, 10, 62, 28);
+    place(FileMenu, 500, 10, 62, 28);
+    place(EditMenu, 568, 10, 62, 28);
+    place(ViewMenu, 636, 10, 62, 28);
     place(Theme, client.right - 156, 6, 136, 28);
-    place(Start, 24, 88, 122);
-    place(Stop, 154, 88, 70);
-    place(Calibrate, 232, 88, 112);
-    place(RestartTest, 352, 88, 88);
-    place(StopTest, 448, 88, 100);
-    place(MotionList, sidebar + 16, 104, 300, std::max(100, int(client.bottom) - 366));
+    place(Start, 24, 104, 122);
+    place(Stop, 154, 104, 70);
+    place(Calibrate, 232, 104, 112);
+    place(RestartTest, 352, 104, 88);
+    place(StopTest, 448, 104, 100);
+    place(MotionList, sidebar + 16, 130, 300, std::max(100, int(client.bottom) - 366));
     place(NewMotion, sidebar + 16, client.bottom - 242, 300);
     place(RemoteControls, sidebar + 16, client.bottom - 200, 300);
     place(TrackHands, sidebar + 16, client.bottom - 148, 140);
     place(Keys, sidebar + 164, client.bottom - 148, 152);
     place(Logs, sidebar + 16, client.bottom - 106, 300);
+    place(StudioMovements, 24, 52, 144);
+    place(StudioEdit, 176, 52, 110);
+    place(StudioTest, 294, 52, 110);
+    EnableWindow(GetDlgItem(window, EditMenu), studio_view != 2);
+    const bool workspace = studio_view != 0 && edit_window;
+    for (HWND child = GetWindow(window, GW_CHILD); child; child = GetWindow(child, GW_HWNDNEXT)) {
+        if (child == edit_window || child == control_window || child == log_window) {
+            continue;
+        }
+        const int id = GetDlgCtrlID(child);
+        const bool header = id == FileMenu || id == EditMenu || id == ViewMenu || id == Theme ||
+                            id == StudioMovements || id == StudioEdit || id == StudioTest;
+        ShowWindow(child, header || !workspace ? SW_SHOW : SW_HIDE);
+    }
+    if (edit_window) {
+        MoveWindow(edit_window, 0, 96, client.right, std::max(400, int(client.bottom) - 128), TRUE);
+        ShowWindow(edit_window, workspace ? SW_SHOW : SW_HIDE);
+    }
+    if (key_window) {
+        MoveWindow(key_window, 0, 96, client.right, client.bottom - 128, TRUE);
+    }
+    if (details_window) {
+        MoveWindow(details_window, 0, 96, client.right, client.bottom - 128, TRUE);
+    }
+    if (log_window) {
+        MoveWindow(log_window, 0, 96, client.right, client.bottom - 128, TRUE);
+    }
+    if (control_window) {
+        MoveWindow(control_window, 0, 96, client.right, client.bottom - 128, TRUE);
+    }
     InvalidateRect(window, nullptr, FALSE);
+}
+void App::show_studio_view(int view) {
+    if (view != 0 && !edit_window) {
+        open_editor(false, view == 2);
+        return;
+    }
+    if (key_window) {
+        DestroyWindow(key_window);
+    }
+    if (details_window) {
+        DestroyWindow(details_window);
+    }
+    if (control_window) {
+        DestroyWindow(control_window);
+    }
+    if (logs_visible) {
+        toggle_logs();
+    }
+    if (view == 2) {
+        set_test(true);
+    } else if (testing >= 0) {
+        set_test(false);
+    }
+    studio_view = view;
+    layout();
+    if (edit_window) {
+        layout_editor();
+    }
+    SetFocus(view == 0 ? window : edit_window);
 }
 void App::layout_editor() {
     RECT client{};
     GetClientRect(edit_window, &client);
-    const int side = std::min(540, std::max(270, int(client.bottom) - (pro_mode ? 402 : 326)));
-    editor_grid = {20, pro_mode ? 155 : 80, 20 + side, (pro_mode ? 155 : 80) + side};
+    const int inspector_offset = int(client.right) - 1040;
+    const bool editing = studio_view != 2;
+    const int side = std::min(526, std::max(240, int(client.bottom) - 270));
+    const int left = 24 + std::max(0, (570 + inspector_offset - 48 - side) / 2);
+    editor_grid = {left, 170, left + side, 170 + side};
     std::shared_ptr<const Snapshot> result;
     {
         std::lock_guard lock(state_mutex);
@@ -118,6 +180,9 @@ void App::layout_editor() {
     }
     update_grid_view(result);
     const auto place = [&](int id, int x, int y, int width, int height = 32) {
+        if (x >= 580) {
+            x += inspector_offset;
+        }
         const auto child = GetDlgItem(edit_window, id);
         wchar_t type[32]{};
         GetClassNameW(child, type, 32);
@@ -126,146 +191,168 @@ void App::layout_editor() {
     const auto show = [&](int id, bool visible) {
         ShowWindow(GetDlgItem(edit_window, id), visible ? SW_SHOW : SW_HIDE);
     };
-    for (int id : {Duration, DurationCaption, StepList, AddStep, DeleteStep, StepUp, StepDown,
-                   StepModeId, HoldTime, Trigger, PriorityId, ConstraintsTab, FingersTab,
-                   RecordingTab, LayersTab, InteractionTab, PaintInteraction}) {
-        show(id, pro_mode);
+    // Keep the grid fixed when switching Edit / Test. Context lives in the inspector.
+    for (int id : {StepList,       AddStep,      DeleteStep,       StepUp,     StepDown,
+                   StepModeId,     HoldTime,     Trigger,          Members,    PaintRequired,
+                   PaintForbidden, PaintTrigger, PaintInteraction, DrawPencil, DrawBucket,
+                   DrawSelect,     DrawEraser,   DrawContour,      Undo,       Redo,
+                   ConstraintsTab, FingersTab,   RecordingTab,     LayersTab,  InteractionTab,
+                   MovementTab,    EditorHelp,   Commit,           Clear}) {
+        show(id, editing);
     }
     show(Tool, false);
-    place(KeyCaption, 20, client.bottom - 150, 125, 22);
-    place(Key, 150, client.bottom - 154, 292, 28);
-    place(EditKeys, 452, client.bottom - 156, 98);
-    place(KeyTokens, 20, client.bottom - 118, 530, 28);
-    place(ActionModeCaption, 20, client.bottom - 194, 125, 22);
-    place(ActionModeId, 150, client.bottom - 198, 200);
-    place(RepeatCaption, 360, client.bottom - 194, 90, 22);
-    place(RepeatInterval, 452, client.bottom - 198, 98, 28);
-    const bool repeat = selection(edit_window, ActionModeId) == int(ActionMode::Repeat);
+    show(ConstraintTypeId, false);
+    place(Commit, 408, 16, 142);
+    place(StepList, 24, 60, 180);
+    place(AddStep, 212, 60, 76);
+    place(DeleteStep, 296, 60, 84);
+    place(StepUp, 388, 60, 76);
+    place(StepDown, 472, 60, 78);
+    place(PaintRequired, 24, 104, 124);
+    place(PaintForbidden, 156, 104, 124);
+    place(PaintTrigger, 288, 104, 124);
+    place(PaintInteraction, 420, 104, 130);
+    place(DrawSelect, 24, 140, 94, 26);
+    place(DrawPencil, 124, 140, 94, 26);
+    place(DrawBucket, 224, 140, 94, 26);
+    place(DrawEraser, 324, 140, 94, 26);
+    place(DrawContour, 424, 140, 126, 26);
+    place(MovementTab, 580, 16, 92);
+    place(ConstraintsTab, 680, 16, 92);
+    place(FingersTab, 780, 16, 80);
+    place(InteractionTab, 868, 16, 152);
+    place(LayersTab, 580, 58, 92);
+    place(RecordingTab, 680, 58, 92);
+    place(Undo, 780, 58, 80);
+    place(Redo, 868, 58, 80);
+    place(EditorHelp, 956, 58, 64);
+    const bool movement = editing && inspector_tab == 5 && !editor_help;
+    for (int id : {NameCaption, InputName, ActionCaption, ActionId, KeyCaption, Key, EditKeys,
+                   KeyTokens, ActionModeCaption, ActionModeId, SpaceCaption, Space, DurationCaption,
+                   Duration, CooldownCaption, Cooldown, Mirror, BindingSummary}) {
+        show(id, movement);
+    }
+    place(NameCaption, 580, 144, 210, 22);
+    place(ActionCaption, 804, 144, 216, 22);
+    place(InputName, 580, 168, 210, 28);
+    place(ActionId, 804, 168, 216, 28);
+    place(KeyCaption, 580, 212, 300, 22);
+    place(Key, 580, 236, 308, 28);
+    place(EditKeys, 896, 234, 124);
+    place(KeyTokens, 580, 276, 440, 28);
+    place(ActionModeCaption, 580, 318, 210, 22);
+    place(ActionModeId, 580, 344, 210);
+    place(RepeatCaption, 804, 318, 216, 22);
+    place(RepeatInterval, 804, 344, 216, 28);
+    const bool repeat = movement && selection(edit_window, ActionModeId) == int(ActionMode::Repeat);
     show(RepeatCaption, repeat);
     show(RepeatInterval, repeat);
-    place(BindingSummary, 580, 66, 300, 28);
-    place(ClearFingers, 890, 66, 130, 28);
-    show(ConstraintTypeId, false);
-    show(ClearFingers, pro_mode && inspector_tab == 1 && !editor_help);
-    show(Space, pro_mode);
-    show(Cooldown, !pro_mode || inspector_tab == 0);
-    show(CooldownCaption, !pro_mode || inspector_tab == 0);
-    if (!pro_mode) {
-        inspector_tab = 3;
+    place(SpaceCaption, 580, 388, 300, 22);
+    place(Space, 580, 412, 288);
+    place(Mirror, 880, 412, 140);
+    place(DurationCaption, 580, 458, 210, 22);
+    place(CooldownCaption, 804, 458, 216, 22);
+    place(Duration, 580, 482, 210, 28);
+    place(Cooldown, 804, 482, 216, 28);
+    place(BindingSummary, 580, 526, 440);
+    const bool zones = editing && inspector_tab == 0 && !editor_help;
+    for (int id : {ConstraintList, CellX, CellY, CellWidth, CellHeight, UpdateConstraint,
+                   ConstraintUp, ConstraintDown, DeleteConstraint, PriorityId}) {
+        show(id, zones);
     }
-    place(StepList, 20, 80, 220);
-    place(AddStep, 250, 80, 80);
-    place(DeleteStep, 340, 80, 80);
-    place(StepUp, 430, 80, 60);
-    place(StepDown, 500, 80, 60);
-    place(StepModeId, 20, 120, 170);
-    place(HoldTime, 200, 120, 90, 28);
-    place(Trigger, 300, 118, 130);
-    place(PriorityId, 440, 120, 120);
-    place(Members, 580, 100, 280);
-    place(BrushOrder, 870, 100, 150);
-    EnableWindow(GetDlgItem(edit_window, BrushOrder),
-                 scope > 0 && draft.steps[scope - 1].mode == StepMode::Ordered &&
-                     selection(edit_window, ConstraintTypeId) != int(ConstraintType::Forbidden) &&
-                     selection(edit_window, PriorityId) == int(Priority::High));
-    show(BrushOrder, IsWindowEnabled(GetDlgItem(edit_window, BrushOrder)) != FALSE);
-    place(PaintRequired, 580, 142, pro_mode ? 104 : 140);
-    place(PaintForbidden, pro_mode ? 692 : 730, 142, pro_mode ? 104 : 140);
-    place(PaintTrigger, pro_mode ? 804 : 880, 142, pro_mode ? 104 : 140);
-    place(PaintInteraction, 916, 142, 104);
-    place(DrawPencil, 580, 184, 140);
-    place(DrawBucket, 730, 184, 140);
-    place(DrawSelect, 880, 184, 140);
-    place(DrawEraser, 580, 226, 214);
-    place(DrawContour, 804, 226, 216);
-    place(Undo, 580, 268, 100);
-    place(Redo, 690, 268, 100);
-    place(DeleteConstraint, 800, 268, 220);
-    show(DeleteConstraint, true);
-    place(LayersTab, 580, 310, 72);
-    place(ConstraintsTab, 660, 310, 92);
-    place(FingersTab, 760, 310, 72);
-    place(RecordingTab, 840, 310, 80);
-    place(InteractionTab, 928, 310, 92);
-    // Clicking the active advanced tab again returns to the layer stack.
-    const bool layers = inspector_tab == 3 && !editor_help && !layer_members.empty();
-    show(LayerList, layers);
-    show(ToggleLayer, layers);
-    show(DeleteLayer, layers);
-    show(LayerBodyPart, layers);
-    show(SaveLayer, layers);
-    show(LayerCaption, layers);
-    place(LayerList, 580, pro_mode ? 376 : 338, 440,
-          std::max(80, int(client.bottom) - (pro_mode ? 558 : 520)));
+    const int list_height = std::max(80, int(client.bottom) - 436);
+    place(ConstraintList, 580, 220, 440, list_height);
+    for (const auto [id, x] :
+         {std::pair{CellX, 580}, {CellY, 690}, {CellWidth, 800}, {CellHeight, 910}}) {
+        place(id, x, 250 + list_height, 100, 28);
+    }
+    place(UpdateConstraint, 580, 292 + list_height, 160);
+    place(ConstraintUp, 750, 292 + list_height, 130);
+    place(ConstraintDown, 890, 292 + list_height, 130);
+    place(DeleteConstraint, 804, client.bottom - 54, 216);
+    place(PriorityId, 890, 178, 130);
+    place(Members, 580, 144, 280);
+    show(Members, editing && inspector_tab != 5 && !editor_help);
+    place(StepModeId, 580, 178, 178);
+    place(HoldTime, 766, 178, 80, 28);
+    place(Trigger, 854, 178, 166);
+    show(StepModeId, zones && scope > 0);
+    show(HoldTime, zones && scope > 0 && draft.steps[scope - 1].mode == StepMode::Simultaneous);
+    show(Trigger, zones && scope > 0 && draft.steps[scope - 1].mode == StepMode::Simultaneous);
+    show(PriorityId,
+         zones && (scope == 0 || draft.steps[scope - 1].mode != StepMode::Simultaneous));
+    place(BrushOrder, 870, 144, 150);
+    const bool ordered =
+        scope > 0 && draft.steps[scope - 1].mode == StepMode::Ordered &&
+        selection(edit_window, ConstraintTypeId) != int(ConstraintType::Forbidden) &&
+        selection(edit_window, PriorityId) == int(Priority::High);
+    EnableWindow(GetDlgItem(edit_window, BrushOrder), ordered);
+    show(BrushOrder, editing && inspector_tab != 5 && !editor_help && ordered);
+    const bool layers = editing && inspector_tab == 3 && !editor_help && !layer_members.empty();
+    for (int id : {LayerList, ToggleLayer, DeleteLayer, LayerBodyPart, SaveLayer, LayerCaption}) {
+        show(id, layers);
+    }
+    place(LayerList, 580, 200, 440, std::max(80, int(client.bottom) - 410));
     place(LayerCaption, 580, client.bottom - 172, 440, 22);
     place(LayerBodyPart, 580, client.bottom - 144, 280);
     place(SaveLayer, 870, client.bottom - 144, 150);
     place(ToggleLayer, 580, client.bottom - 96, 214);
     place(DeleteLayer, 804, client.bottom - 96, 216);
-    for (int id : {ConstraintList, CellX, CellY, CellWidth, CellHeight, UpdateConstraint,
-                   ConstraintUp, ConstraintDown}) {
-        show(id, pro_mode && inspector_tab == 0 && !editor_help);
-    }
+    const bool fingers = editing && inspector_tab == 1 && !editor_help;
     for (int id : {FingerScope, FingerHand, FingerId, FingerPoseId, FingerList, AddFinger,
-                   DeleteFinger, FingerStable, FingerGrace, FingerTimingCaption}) {
-        show(id, pro_mode && inspector_tab == 1 && !editor_help);
+                   DeleteFinger, FingerStable, FingerGrace, FingerTimingCaption, ClearFingers}) {
+        show(id, fingers);
     }
+    place(FingerScope, 580, 200, 440);
+    place(FingerHand, 580, 242, 136);
+    place(FingerId, 726, 242, 146);
+    place(FingerPoseId, 882, 242, 138);
+    place(FingerTimingCaption, 580, 286, 208, 24);
+    place(FingerStable, 794, 284, 104, 28);
+    place(FingerGrace, 908, 284, 112, 28);
+    place(FingerList, 580, 324, 440, std::max(64, int(client.bottom) - 500));
+    place(AddFinger, 580, client.bottom - 132, 214);
+    place(DeleteFinger, 804, client.bottom - 132, 216);
+    place(ClearFingers, 804, client.bottom - 90, 216);
+    const bool signs = editing && inspector_tab == 4 && !editor_help;
     for (int id : {InteractionHand, InteractionGesture, InteractionHold, InteractionCaption,
                    SetInteraction}) {
-        show(id, pro_mode && inspector_tab == 4 && !editor_help);
+        show(id, signs);
     }
-    place(InteractionCaption, 580, 376, 440, 54);
-    place(InteractionHand, 580, 442, 136);
-    place(InteractionGesture, 726, 442, 294);
-    place(InteractionHold, 580, 490, 136, 28);
-    place(SetInteraction, 726, 488, 294);
+    place(InteractionCaption, 580, 200, 440, 64);
+    place(InteractionHand, 580, 280, 136);
+    place(InteractionGesture, 726, 280, 294);
+    place(InteractionHold, 580, 328, 136, 28);
+    place(SetInteraction, 726, 326, 294);
+    const bool recording = editing && inspector_tab == 2 && !editor_help;
     for (int id : {RecordLandmarks, RecordToggle, ConvertRecording, DiscardRecording, TrimBegin,
                    TrimEnd, TrimRecording, RecordAll, TraceMove, TraceDelete}) {
-        show(id, pro_mode && inspector_tab == 2 && !editor_help);
+        show(id, recording);
     }
-    const int list_height = std::max(80, int(client.bottom) - 560);
-    place(ConstraintList, 580, 376, 440, list_height - 12);
-    for (const auto [id, x] :
-         {std::pair{CellX, 580}, {CellY, 690}, {CellWidth, 800}, {CellHeight, 910}}) {
-        place(id, x, 396 + list_height, 100, 28);
-    }
-    place(UpdateConstraint, 580, 436 + list_height, 160);
-    place(ConstraintUp, 750, 436 + list_height, 130);
-    place(ConstraintDown, 890, 436 + list_height, 130);
-    place(FingerScope, 580, 376, 440);
-    place(FingerHand, 580, 416, 136);
-    place(FingerId, 726, 416, 146);
-    place(FingerPoseId, 882, 416, 138);
-    place(FingerTimingCaption, 580, 460, 208, 24);
-    place(FingerStable, 794, 458, 104, 28);
-    place(FingerGrace, 908, 458, 112, 28);
-    place(FingerList, 580, 498, 440, std::max(32, int(client.bottom) - 630));
-    place(AddFinger, 580, client.bottom - 116, 214);
-    place(DeleteFinger, 804, client.bottom - 116, 216);
-    place(RecordLandmarks, 580, 376, 260, std::max(64, int(client.bottom) - 526));
-    place(RecordToggle, 850, 376, 170);
-    place(ConvertRecording, 850, 414, 170);
-    place(DiscardRecording, 850, 452, 170);
-    place(RecordAll, 850, 490, 170);
+    place(RecordLandmarks, 580, 200, 260, std::max(64, int(client.bottom) - 370));
+    place(RecordToggle, 850, 200, 170);
+    place(ConvertRecording, 850, 242, 170);
+    place(DiscardRecording, 850, 284, 170);
+    place(RecordAll, 850, 326, 170);
     place(TrimBegin, 580, client.bottom - 132, 80, 28);
     place(TrimEnd, 670, client.bottom - 132, 80, 28);
     place(TrimRecording, 760, client.bottom - 134, 260);
     place(TraceMove, 580, client.bottom - 92, 214);
     place(TraceDelete, 804, client.bottom - 92, 216);
-    place(Space, 20, editor_grid.bottom + 10, 180);
-    place(GridViewMode, pro_mode ? 210 : 20, editor_grid.bottom + 10, 195);
-    place(CooldownCaption, pro_mode ? 580 : 380, pro_mode ? client.bottom - 82 : 10, 170, 22);
-    place(Cooldown, pro_mode ? 580 : 380, pro_mode ? client.bottom - 58 : 32, 170, 28);
     place(Clear, 580, client.bottom - 54, 214);
-    show(Clear, !(pro_mode && inspector_tab == 0));
-    place(EditorHelp, 804, client.bottom - 54, 216);
-    SetDlgItemTextW(edit_window, EditorHelp, editor_help ? L"Hide help" : L"Drawing help");
-    for (const auto [id, x, width] : {std::tuple{TestInput, 20, 110},
-                                      {RestartTest, 140, 100},
-                                      {Calibrate, 250, 120},
-                                      {TrackHands, 380, 180}}) {
-        place(id, x, client.bottom - 82, width);
-    }
+    show(Clear, zones);
+    place(GridViewMode, 24, client.bottom - 92, 195);
+    place(TestInput, 24, client.bottom - 52, 130);
+    place(RestartTest, 164, client.bottom - 52, 90);
+    place(Calibrate, 264, client.bottom - 52, 130);
+    place(TrackHands, 404, client.bottom - 52, 146);
+    show(TrackHands, editing);
+    place(Start, 230, client.bottom - 92, 156);
+    place(Stop, 396, client.bottom - 92, 154);
+    show(Start, true);
+    show(Stop, true);
+    show(TestInput, editing);
+    show(RestartTest, !editing);
     InvalidateRect(edit_window, nullptr, FALSE);
 }
 LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM wp, LPARAM lp) {
@@ -309,6 +396,9 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM wp, LPARAM lp) {
                 SetWindowLongPtrW(list, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(list_procedure)));
             button(window, NewMotion, L"+ New movement", 950, 650, 300);
             button(window, RemoteControls, L"Remote hand controls", 950, 690, 300);
+            button(window, StudioMovements, L"Movements", 24, 52, 144);
+            button(window, StudioEdit, L"Edit", 176, 52, 110);
+            button(window, StudioTest, L"Test", 294, 52, 110);
             app.update_theme();
             app.refresh_list();
             app.layout();
@@ -333,6 +423,18 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM wp, LPARAM lp) {
                 return 0;
             }
             switch (id) {
+            case StudioMovements:
+                if (app.studio_view != 0 && app.edit_window) {
+                    app.apply();
+                }
+                app.show_studio_view(0);
+                break;
+            case StudioEdit:
+                app.show_studio_view(1);
+                break;
+            case StudioTest:
+                app.show_studio_view(2);
+                break;
             case FileMenu:
             case EditMenu:
             case ViewMenu: {
@@ -566,9 +668,9 @@ LRESULT CALLBACK editor_procedure(HWND window, UINT message, WPARAM wp, LPARAM l
         switch (message) {
         case WM_CREATE:
             app.edit_window = window;
-            label(window, L"Name", 20, 10);
+            label(window, L"Name", 20, 10, 150, NameCaption);
             edit(window, InputName, L"", 20, 32, 170);
-            label(window, L"Action", 200, 10);
+            label(window, L"Action", 200, 10, 150, ActionCaption);
             edit(window, ActionId, L"", 200, 32, 170);
             label(window, L"Keys / Ctrl+K", 20, 640, 125, KeyCaption);
             edit(window, Key, L"None", 150, 640, 400);
@@ -585,7 +687,8 @@ LRESULT CALLBACK editor_procedure(HWND window, UINT message, WPARAM wp, LPARAM l
             edit(window, Duration, L"0", 450, 32, 100);
             label(window, L"Cooldown ms (0 = off)", 380, 10, 170, CooldownCaption);
             edit(window, Cooldown, L"0", 380, 32, 170);
-            button(window, ProMode, L"Advanced: Off", 690, 30, 165);
+            button(window, MovementTab, L"Movement", 580, 16, 92);
+            label(window, L"Coordinate reference", 580, 388, 300, SpaceCaption);
             button(window, Mirror, L"Mirror: Off", 570, 30, 110);
             combo(window, Space, 690, 32, 165);
             choices(window, Space, {L"Body relative", L"Calibration anchor"});
@@ -613,7 +716,7 @@ LRESULT CALLBACK editor_procedure(HWND window, UINT message, WPARAM wp, LPARAM l
             button(window, PaintForbidden, L"Forbidden", 730, 118, 140);
             button(window, PaintTrigger, L"Trigger", 880, 118, 140);
             button(window, PaintInteraction, L"Interaction", 916, 142, 104);
-            button(window, InteractionTab, L"Interaction", 928, 310, 92);
+            button(window, InteractionTab, L"Hand sign", 928, 310, 92);
             control(
                 window, L"STATIC",
                 L"Your Left / Right hand; hold 0..60000 ms (0 = immediate).\nDraw purple cells, "
@@ -631,7 +734,7 @@ LRESULT CALLBACK editor_procedure(HWND window, UINT message, WPARAM wp, LPARAM l
             edit(window, InteractionHold, L"0", 580, 490, 136);
             button(window, SetInteraction, L"Update interaction", 726, 488, 294);
             button(window, GridViewMode, L"View: Body", 365, 118, 195);
-            button(window, ConstraintsTab, L"Constraints", 580, 160, 140);
+            button(window, ConstraintsTab, L"Zones", 580, 160, 140);
             button(window, FingersTab, L"Fingers", 730, 160, 140);
             button(window, RecordingTab, L"Recording", 880, 160, 140);
             button(window, LayersTab, L"Layers", 580, 310, 104);
@@ -673,7 +776,7 @@ LRESULT CALLBACK editor_procedure(HWND window, UINT message, WPARAM wp, LPARAM l
                                     reinterpret_cast<LPARAM>(text.c_str()));
             }
             button(window, SaveLayer, L"Save layer", 870, 560, 150);
-            button(window, EditorHelp, L"Drawing help", 804, 710, 216);
+            button(window, EditorHelp, L"Help", 804, 710, 216);
             button(window, TrackHands, app.config.track_hands ? L"Hands: On" : L"Hands: Off", 380,
                    710, 180);
             button(window, TraceMove, L"Move trace point", 580, 670, 214);
@@ -720,7 +823,9 @@ LRESULT CALLBACK editor_procedure(HWND window, UINT message, WPARAM wp, LPARAM l
             edit(window, TrimBegin, L"0", 580, 690, 75);
             edit(window, TrimEnd, L"0", 665, 690, 75);
             button(window, TrimRecording, L"Trim [start,end)", 750, 688, 90);
-            button(window, TestInput, L"Test", 20, 716, 110);
+            button(window, Start, L"Start camera", 24, 104, 156);
+            button(window, Stop, L"Stop camera", 190, 104, 100);
+            button(window, TestInput, L"Test movement", 20, 716, 130);
             button(window, RestartTest, L"Restart", 140, 716, 100);
             button(window, Calibrate, L"Recalibrate", 250, 716, 120);
             button(window, Clear, L"Clear scope", 380, 716, 180);
@@ -763,6 +868,9 @@ LRESULT CALLBACK editor_procedure(HWND window, UINT message, WPARAM wp, LPARAM l
             }
             break;
         case WM_LBUTTONDOWN:
+            if (app.studio_view == 2) {
+                return 0;
+            }
             SetFocus(window);
             SetCapture(window);
             app.editor_click(GET_X_LPARAM(lp), GET_Y_LPARAM(lp), true);
@@ -811,6 +919,8 @@ LRESULT CALLBACK editor_procedure(HWND window, UINT message, WPARAM wp, LPARAM l
             return 0;
         case WM_DESTROY:
             app.edit_window = nullptr;
+            app.studio_view = 0;
+            app.layout();
             {
                 std::lock_guard lock(app.state_mutex);
                 app.testing = -1;
@@ -833,7 +943,6 @@ LRESULT CALLBACK editor_procedure(HWND window, UINT message, WPARAM wp, LPARAM l
             ReleaseCapture();
         }
         app.message(error.what());
-        MessageBoxW(window, wide(error.what()).c_str(), L"Motion Input Grid", MB_OK | MB_ICONERROR);
     }
     return DefWindowProcW(window, message, wp, lp);
 }
@@ -859,6 +968,7 @@ LRESULT CALLBACK controls_procedure(HWND window, UINT message, WPARAM wp, LPARAM
                     }
                 }
             }
+            button(window, KeyCancel, L"Back to workspace", 20, 270, 200);
             button(window, ApplyControls, L"Apply bindings", 220, 175, 215);
             label(window, L"Left / Right refer to your own hands. Hold the sign.", 20, 217, 430);
             app.update_theme();
@@ -875,6 +985,8 @@ LRESULT CALLBACK controls_procedure(HWND window, UINT message, WPARAM wp, LPARAM
                         }
                     }
                 }
+            } else if (LOWORD(wp) == KeyCancel) {
+                DestroyWindow(window);
             } else if (LOWORD(wp) == ApplyControls) {
                 app.apply_controls();
             }
@@ -901,6 +1013,7 @@ LRESULT CALLBACK controls_procedure(HWND window, UINT message, WPARAM wp, LPARAM
             return 0;
         case WM_DESTROY:
             app.control_window = nullptr;
+            app.layout();
             return 0;
         }
     } catch (const std::exception& error) {

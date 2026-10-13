@@ -28,10 +28,10 @@ function Copy-Artifact([string]$source, [string]$target) {
     New-Item -ItemType Directory -Force -Path (Split-Path $target) | Out-Null
     Copy-Item -LiteralPath $source -Destination $target -Force -Recurse
 }
-if (Test-Path "$projectRoot/$WindowsBuild/bin/mig-configurator.exe") {
+if (Test-Path "$projectRoot/$WindowsBuild/bin/motion-input-grid-studio.exe") {
     & $CMakePath --install "$projectRoot/$WindowsBuild" --config Release --prefix "$targetRoot/windows/sdk"
     if ($LASTEXITCODE) { throw 'Windows SDK installation failed.' }
-    foreach ($name in @('mig-configurator.exe', 'mig-controller.exe', 'libmediapipe.dll', 'models', 'configs')) {
+    foreach ($name in @('motion-input-grid-studio.exe', 'motion-input-grid-controller.exe', 'libmediapipe.dll', 'models', 'configs')) {
         Copy-Artifact "$projectRoot/$WindowsBuild/bin/$name" "$targetRoot/windows/$name"
     }
     if (Test-Path "$targetRoot/windows/sdk/bin/mig-c.dll") {
@@ -52,7 +52,7 @@ if (Test-Path "$projectRoot/$LinuxInstall/include") {
             Copy-Artifact "$projectRoot/$LinuxExamples/$exampleFolder/$name" "$targetRoot/linux/$name"
         }
     }
-    foreach ($name in @('mig-configurator', 'mig-controller')) {
+    foreach ($name in @('motion-input-grid-studio', 'motion-input-grid-controller')) {
         if (Test-Path "$projectRoot/$LinuxInstall/bin/$name") {
             Copy-Artifact "$projectRoot/$LinuxInstall/bin/$name" "$targetRoot/linux/$name"
         }

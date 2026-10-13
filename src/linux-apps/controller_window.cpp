@@ -12,10 +12,11 @@
 
 namespace mig::linux_ui {
 ControllerWindow::ControllerWindow(std::string runtime, unsigned camera, bool diagnostic)
-    : profiles_(diagnostic ? std::filesystem::temp_directory_path() / "mig-controller-ui-unused"
+    : profiles_(diagnostic ? std::filesystem::temp_directory_path() /
+                                 "motion-input-grid-controller-ui-unused"
                            : controller::user_directory()),
       runtime_(std::move(runtime)), camera_(camera) {
-    setWindowTitle("MIG Input — Motion Input Grid");
+    setWindowTitle("Motion Input Grid Controller");
     resize(560, 680);
     auto* center = new QWidget(this);
     auto* layout = new QHBoxLayout(center);
@@ -63,7 +64,7 @@ void ControllerWindow::build_controls() {
     auto* layout = new QVBoxLayout(panel_);
     layout->setContentsMargins(16, 16, 16, 16);
     layout->setSpacing(12);
-    auto* heading = new QLabel("MIG Input", panel_);
+    auto* heading = new QLabel("Motion Input Grid Controller", panel_);
     heading->setProperty("role", "heading");
     layout->addWidget(heading);
     auto* hint = new QLabel("Run your movements. Keep the controls close.", panel_);

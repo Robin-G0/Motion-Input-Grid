@@ -1,5 +1,5 @@
 if(WIN32)
     add_subdirectory(windows)
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND (TARGET mig-controller OR TARGET mig-configurator))
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND (TARGET motion-input-grid-controller OR TARGET motion-input-grid-studio))
     add_subdirectory(linux)
 endif()

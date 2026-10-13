@@ -101,7 +101,7 @@ def bundle_apps(root, install, runtime):
     binary_directory = root / "bin"
     binary_directory.mkdir()
     seeds = [root / "libmediapipe.so"]
-    for name in ("mig-controller", "mig-configurator"):
+    for name in ("motion-input-grid-controller", "motion-input-grid-studio"):
         binary = binary_directory / name
         shutil.copy2(install / "bin" / name, binary)
         binary.chmod(0o755)
@@ -197,7 +197,7 @@ def main():
         copy_tree(project / "configs", root / "configs")
         (root / "licenses").mkdir()
         shutil.copy2(project / "LICENSE", root / "LICENSE")
-        usage = ("Run `./mig-controller` or `./mig-configurator` from this directory."
+        usage = ("Run `./motion-input-grid-controller` or `./motion-input-grid-studio` from this directory."
                  if options.native else "Set CMAKE_PREFIX_PATH to the extracted `sdk` directory.")
         (root / "README.md").write_text(
             f"# Motion Input Grid (MIG) {options.version} — Linux {options.architecture}\n\n"
@@ -205,7 +205,7 @@ def main():
             f"{usage}\n\n"
             "See [package installation](docs/getting-started/packages.md) and the "
             "[verification report](docs/reference/support.md) for prerequisites and limitations.\n")
-        usage_fr = ("Lancez ./mig-controller ou ./mig-configurator depuis ce dossier."
+        usage_fr = ("Lancez ./motion-input-grid-controller ou ./motion-input-grid-studio depuis ce dossier."
                     if options.native else "Utilisez le dossier sdk comme CMAKE_PREFIX_PATH.")
         (root / "README.fr.md").write_text(
             f"# Motion Input Grid (MIG) {options.version} — Linux {options.architecture}\n\n"

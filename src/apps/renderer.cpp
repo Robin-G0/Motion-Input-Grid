@@ -13,17 +13,17 @@ void App::paint(HDC dc) {
     const auto write = [&](int x, int y, const std::wstring& text) {
         TextOutW(dc, x, y, text.c_str(), int(text.size()));
     };
-    const RECT title_bar{0, 0, client.right, 48},
-        sidebar{client.right - 332, 48, client.right, client.bottom - 32};
+    const RECT title_bar{0, 0, client.right, 96},
+        sidebar{client.right - 332, 96, client.right, client.bottom - 32};
     FillRect(dc, &title_bar, surface_brush);
     FillRect(dc, &sidebar, surface_brush);
     SetTextColor(dc, palette().text);
     SelectObject(dc, heading_font ? heading_font : font);
-    write(24, 6, L"MIG Studio");
+    write(24, 6, L"Motion Input Grid Studio");
     SelectObject(dc, font);
     SetTextColor(dc, palette().muted);
-    write(24, 60, L"SESSION / CAMERA WORKSPACE");
-    write(client.right - 316, 68, L"MOVEMENTS");
+
+    write(client.right - 316, 96, L"MOVEMENTS");
     if (config.motions.empty()) {
         write(client.right - 316, 112, L"No movements yet.");
         write(client.right - 316, 138, L"Create a movement to get started.");
@@ -32,7 +32,7 @@ void App::paint(HDC dc) {
     const auto old_pen = SelectObject(dc, divider);
     MoveToEx(dc, 0, 47, nullptr);
     LineTo(dc, client.right, 47);
-    MoveToEx(dc, client.right - 333, 48, nullptr);
+    MoveToEx(dc, client.right - 333, 96, nullptr);
     LineTo(dc, client.right - 333, client.bottom - 32);
     SelectObject(dc, old_pen);
     DeleteObject(divider);
@@ -48,7 +48,7 @@ void App::paint(HDC dc) {
         result = snapshot;
         message = status;
     }
-    const RECT area{24, 132, client.right - 356, client.bottom - 92};
+    const RECT area{24, 144, client.right - 356, client.bottom - 92};
     FillRect(dc, &area, surface_brush);
     video_rect = area;
     if (video && video->width > 0 && video->height > 0) {
@@ -214,25 +214,28 @@ void App::update_grid_view(const std::shared_ptr<const Snapshot>& result) {
 void App::paint_editor(HDC dc) {
     RECT client{};
     GetClientRect(edit_window, &client);
+    const int inspector_offset = int(client.right) - 1040;
     FillRect(dc, &client, background_brush);
     SelectObject(dc, font);
     SetBkMode(dc, TRANSPARENT);
     std::shared_ptr<const Snapshot> result;
-    RECT inspector{570, 80, client.right - 20, client.bottom - 20};
+    RECT inspector{570 + inspector_offset, 0, client.right - 20, client.bottom - 20};
     FillRect(dc, &inspector, surface_brush);
     SetTextColor(dc, palette().muted);
     const auto current_layers = ui::layers(draft);
-    const int heading_y = pro_mode ? 350 : 310;
-    const wchar_t* heading = editor_help          ? L"DRAWING HELP"
+    const int heading_y = 108;
+    const wchar_t* heading = studio_view == 2     ? L"TEST / LIVE FEEDBACK"
+                             : inspector_tab == 5 ? L"MOVEMENT / IDENTITY & ACTION"
+                             : editor_help        ? L"DRAWING HELP"
                              : inspector_tab == 3 ? L"LAYERS"
                              : inspector_tab == 0 ? L"Spatial constraints / current step"
                              : inspector_tab == 1 ? L"Finger rules / scope and anatomy"
                              : inspector_tab == 4 ? L"Interaction / hand sign and hold time"
                                                   : L"Recording / review before conversion";
-    TextOutW(dc, 580, heading_y, heading, int(wcslen(heading)));
-    if (editor_help || (current_layers.empty() && inspector_tab == 3)) {
+    TextOutW(dc, 580 + inspector_offset, heading_y, heading, int(wcslen(heading)));
+    if (studio_view != 2 && (editor_help || (current_layers.empty() && inspector_tab == 3))) {
         const auto hint = [&](int y, const wchar_t* text) {
-            TextOutW(dc, 580, y, text, int(wcslen(text)));
+            TextOutW(dc, 580 + inspector_offset, y, text, int(wcslen(text)));
         };
         if (editor_help) {
             hint(heading_y + 40, L"Choose a body part, a colour, then draw on the grid.");
@@ -247,14 +250,26 @@ void App::paint_editor(HDC dc) {
             hint(heading_y + 84, L"Drawing help is available below.");
         }
     }
-    const int list_height = std::max(80, int(client.bottom) - 560);
-    if (pro_mode && inspector_tab == 0 && !editor_help) {
+    SelectObject(dc, heading_font ? heading_font : font);
+    SetTextColor(dc, palette().text);
+    RECT movement_title{24, 12, 390, 48};
+    const auto movement_name = wide(draft.name.empty() ? "New movement" : draft.name);
+    DrawTextW(dc, movement_name.c_str(), -1, &movement_title, DT_SINGLELINE | DT_END_ELLIPSIS);
+    SelectObject(dc, font);
+    if (studio_view == 2) {
+        RECT help{580 + inspector_offset, 144, client.right - 24, 216};
+        const wchar_t* text = L"Start the camera, then follow the coloured zones.\nTesting never "
+                              L"sends keyboard input.";
+        DrawTextW(dc, text, -1, &help, DT_WORDBREAK);
+    }
+    const int list_height = std::max(80, int(client.bottom) - 436);
+    if (studio_view != 2 && inspector_tab == 0 && !editor_help) {
         for (const auto [text, x] :
              {std::pair{L"X", 580}, {L"Y", 690}, {L"Width", 800}, {L"Height", 910}}) {
-            TextOutW(dc, x, 376 + list_height, text, int(wcslen(text)));
+            TextOutW(dc, x + inspector_offset, 228 + list_height, text, int(wcslen(text)));
         }
-    } else if (pro_mode && inspector_tab == 2 && !editor_help) {
-        TextOutW(dc, 580, client.bottom - 152, L"Trim samples [start, end)", 24);
+    } else if (studio_view != 2 && inspector_tab == 2 && !editor_help) {
+        TextOutW(dc, 580 + inspector_offset, client.bottom - 152, L"Trim samples [start, end)", 24);
     }
     std::vector<RecordedTrace> traces;
     int test_index;
@@ -486,13 +501,13 @@ void App::paint_editor(HDC dc) {
     const auto view_text = grid_view.live ? L"Body view / live shoulder scale"
                            : body_view    ? L"Full grid / waiting for camera calibration"
                                           : L"Full grid / authoring";
-    RECT view_label{pro_mode ? 415 : 225, rect.bottom + 14, rect.right, rect.bottom + 36};
+    RECT view_label{234, client.bottom - 88, 550, client.bottom - 66};
     DrawTextW(dc, view_text, -1, &view_label, DT_SINGLELINE | DT_END_ELLIPSIS);
     SetTextColor(dc, palette().muted);
     std::wstring summary =
         L"Required: green | Forbidden: red | Trigger: yellow | Interaction: purple";
-    TextOutW(dc, 20, client.bottom - 40, summary.c_str(), int(summary.size()));
-    if (progress) {
+
+    if (progress && studio_view == 2) {
         summary = L"Step " + std::to_wstring(progress->step + 1) + L"/" +
                   std::to_wstring(draft.steps.size()) +
                   (progress->failed      ? L"  INVALID"
@@ -539,7 +554,7 @@ void App::paint_editor(HDC dc) {
         for (const auto& step : draft.steps) {
             explain(step.constraints);
         }
-        RECT status_rect{20, client.bottom - 26, client.right - 20, client.bottom - 4};
+        RECT status_rect{580 + inspector_offset, 180, client.right - 24, client.bottom - 24};
         DrawTextW(dc, summary.c_str(), -1, &status_rect, DT_SINGLELINE | DT_END_ELLIPSIS);
     }
 }

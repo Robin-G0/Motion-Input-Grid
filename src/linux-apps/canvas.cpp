@@ -9,6 +9,13 @@ Canvas::Canvas(QWidget* parent) : QWidget(parent) {
     setMinimumSize(500, 420);
     setFocusPolicy(Qt::StrongFocus);
 }
+std::vector<SpatialConstraint>& Canvas::current_constraints() {
+    if (scope == 0 || motion->steps.empty()) {
+        return motion->constraints;
+    }
+    scope = std::min(scope, int(motion->steps.size()));
+    return motion->steps[scope - 1].constraints;
+}
 QRectF Canvas::area() const {
     const auto size = std::min(width(), height()) - 32;
     return {(width() - size) / 2.0, (height() - size) / 2.0, double(size), double(size)};
@@ -169,7 +176,11 @@ void Canvas::edit_cell(QPointF point) {
     if (motion->steps.empty()) {
         motion->steps.push_back({"step1", StepMode::Ordered});
     }
-    auto& cells = motion->steps[0].constraints;
+    auto& cells = current_constraints();
+    const bool ordered = scope > 0 && motion->steps[scope - 1].mode == StepMode::Ordered;
+    if (scope == 0 && is_trigger(type) && !erase) {
+        throw std::runtime_error("Place action and hand sign zones in a step.");
+    }
     if (erase) {
         const auto remove = [&](auto& regions) {
             std::vector<std::string> ids;
@@ -180,18 +191,15 @@ void Canvas::edit_cell(QPointF point) {
             }
             ui::erase_regions(regions, ids);
         };
-        remove(motion->constraints);
-        for (auto& step : motion->steps) {
-            remove(step.constraints);
-        }
+        remove(cells);
         selection.clear();
     } else {
         SpatialConstraint brush;
-        brush.id = "cell" + std::to_string(cells.size() + 1);
+        brush.id = "scope" + std::to_string(scope) + "_cell" + std::to_string(cells.size() + 1);
         unsigned serial = unsigned(cells.size() + 1);
         while (std::any_of(cells.begin(), cells.end(),
                            [&](const auto& cell) { return cell.id == brush.id; })) {
-            brush.id = "cell" + std::to_string(++serial);
+            brush.id = "scope" + std::to_string(scope) + "_cell" + std::to_string(++serial);
         }
         brush.landmark = landmark;
         brush.type = type;
@@ -216,8 +224,8 @@ void Canvas::edit_cell(QPointF point) {
             interaction.hand = landmark == 16 ? HandSide::Right : HandSide::Left;
             brush.interaction = interaction;
         }
-        brush.order = order ? order : brush.order;
-        if (!brush.order) {
+        brush.order = ordered ? (order ? order : brush.order) : 0;
+        if (ordered && !brush.order) {
             for (const auto& cell : cells) {
                 if (cell.landmark == landmark && cell.type != ConstraintType::Forbidden &&
                     (type != ConstraintType::Required || !is_trigger(cell.type))) {
@@ -252,9 +260,7 @@ void Canvas::mousePressEvent(QMouseEvent* event) {
         if (select) {
             if (motion && full_grid && !read_only && area().contains(event->position())) {
                 selection.begin(local(event->position()), event->modifiers() & Qt::ControlModifier);
-                selection.update(motion->steps.empty() ? motion->constraints
-                                                       : motion->steps[0].constraints,
-                                 local(event->position()), landmark);
+                selection.update(current_constraints(), local(event->position()), landmark);
                 update();
             }
         } else {
@@ -269,9 +275,7 @@ void Canvas::mouseMoveEvent(QMouseEvent* event) {
 #ifndef MIG_CONTROLLER
     if (event->buttons() & Qt::LeftButton) {
         if (selection.dragging && motion) {
-            selection.update(motion->steps.empty() ? motion->constraints
-                                                   : motion->steps[0].constraints,
-                             local(event->position()), landmark);
+            selection.update(current_constraints(), local(event->position()), landmark);
             update();
         } else if (!select) {
             paint_cell(event->position());

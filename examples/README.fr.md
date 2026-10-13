@@ -10,7 +10,7 @@ transmettent des événements sans envoyer de touches clavier.
 ## Lancer une démo
 
 > [!NOTE]
-> Sur Debian, le MIG Studio, le MIG Input et certains exemples natifs sont
+> Sur Debian, le Motion Input Grid Studio, le Motion Input Grid Controller et certains exemples natifs sont
 > encore en cours de développement et de test. Ils peuvent ne pas fonctionner
 > entièrement pour le moment.
 
@@ -27,7 +27,7 @@ sont inclus ; les exemples navigateur demandent Node 22.12+ et un navigateur mod
 1. Lancez un viewer du tableau ci-dessous et autorisez la caméra.
 2. Gardez les deux épaules visibles une seconde pour le calibrage, puis baissez les mains.
 3. Levez un poignet à travers les lignes vertes jusqu'à la ligne jaune.
-4. Ouvrez la variante profil pour importer un JSON enregistré par le MIG Studio.
+4. Ouvrez la variante profil pour importer un JSON enregistré par le Motion Input Grid Studio.
 
 Les objets et os des mains suivent les poignets. L'image est reflétée une fois ;
 les actions restent anatomiques.

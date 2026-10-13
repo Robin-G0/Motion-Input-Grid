@@ -12,7 +12,7 @@
 - [Où modifier une fonctionnalité](#où-modifier-une-fonctionnalité)
 - [Exécution et propriété](#exécution-et-propriété)
 - [Disponible et prévu](#disponible-et-prévu)
-- [Interface du MIG Input](#interface-du-mig-input)
+- [Interface du Motion Input Grid Controller](#interface-du-motion-input-grid-controller)
 
 </details>
 
@@ -75,7 +75,7 @@ sont générés localement. Modifiez les sources, pas leurs copies dans ces doss
 | src/native / MIG::native | Capture Windows/Linux, tâches/résultats MediaPipe et conversion |
 | src/c-api / MIG::c | ABI 1 handles/paquets, bibliothèque partagée et capture facultative |
 | src/web | Même moteur exposé par les bindings C++/JavaScript Emscripten |
-| src/MIG Input | Copies des profils, noms et dernière sélection ; partagé par les deux contrôleurs |
+| src/Motion Input Grid Controller | Copies des profils, noms et dernière sélection ; partagé par les deux contrôleurs |
 | src/apps | UI Win32, brouillons/historique, workers et consentement |
 | src/linux-apps | UI Qt, worker propriétaire de capture/moteur, ordonnanceur partagé |
 | bindings | ctypes Python, pont C#, session npm et adaptateurs |
@@ -114,8 +114,8 @@ flowchart TD
 ```
 
 Le schéma représente les principaux chemins d'utilisation, pas chaque dépendance
-du linker. Les applications produisent `mig-configurator` et `mig-controller`.
-Le MIG Studio crée les profils ; MIG Input importe des copies gérées et
+du linker. Les applications produisent `motion-input-grid-studio` et `motion-input-grid-controller`.
+Le Motion Input Grid Studio crée les profils ; Motion Input Grid Controller importe des copies gérées et
 les exécute. Les interfaces sont séparées, mais reconnaissance, persistance des
 profils et ordonnanceur de sortie sont partagés. Win32/GDI se trouve dans
 `src/apps`, Qt6 dans `src/linux-apps`.
@@ -175,7 +175,7 @@ dépendances natives ; elles ne sont pas des jeux exportés. Voir
 | Reconnaissance ou coordonnées | `src/core`, éventuellement `src/hands`, régressions CTest |
 | Champs persistants d'un profil | `src/format`, définitions core, tests et [guide JSON](../reference/configuration.fr.md) |
 | Cycle de vie caméra/modèles | `src/native`, tests capture/conversion et guide plateforme |
-| Création desktop ou vues du MIG Input | `src/apps` / `src/linux-apps`, profils partagés dans `src/controller` |
+| Création desktop ou vues du Motion Input Grid Controller | `src/apps` / `src/linux-apps`, profils partagés dans `src/controller` |
 | API publique d'un langage | `src/c-api`, `src/web` ou `bindings`, tests des consommateurs |
 | Session navigateur et frameworks | `examples/web/session.mjs`, `bindings/javascript`, tests frameworks |
 | Comportement d'un exemple | Dossier de la technologie et ses fichiers locaux `example_usage`/`support`, tests des exemples |
@@ -216,14 +216,14 @@ porter. Face est un squelette. Gamepad, analogique, courbures, replay et façade
 threadée restent prévus. Aucune approximation de profondeur n'est une distance
 caméra réelle. [Limites de publication](../reference/support.fr.md).
 
-## Interface du MIG Input
+## Interface du Motion Input Grid Controller
 
-Le MIG Input compile ses propres modules de profils et de vues, sans la fenêtre
-de création du MIG Studio. Les deux plateformes partagent la persistance des
+Le Motion Input Grid Controller compile ses propres modules de profils et de vues, sans la fenêtre
+de création du Motion Input Grid Studio. Les deux plateformes partagent la persistance des
 profils et les contrats de reconnaissance/sortie. Un aperçu masqué évite la conversion
 BGRX sous Windows et la copie QImage sous Linux. La vérification lit la progression
 de l’action sélectionnée sans isoler le moteur et suspend les sorties clavier.
-Voir le [MIG Input](../guides/controller.fr.md).
+Voir le [Motion Input Grid Controller](../guides/controller.fr.md).
 
 Les [packages distribuables](../getting-started/packages.fr.md) utilisent ces mêmes modules ;
 les projets de démonstration restent dans `examples`.

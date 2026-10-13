@@ -14,14 +14,7 @@ void App::erase_at(int x, int y) {
         });
         ui::erase_regions(regions, removed);
     };
-    if (pro_mode) {
-        erase(current_constraints());
-    } else {
-        erase(draft.constraints);
-        for (auto& step : draft.steps) {
-            erase(step.constraints);
-        }
-    }
+    erase(current_constraints());
     region_selection.clear();
     selected_constraint = selected_finger = -1;
 }
@@ -40,6 +33,10 @@ void App::select_regions(Vec2 point, bool begin) {
             selected_constraint = int(index);
             break;
         }
+    }
+    if (selected_constraint >= 0) {
+        inspector_tab = 0;
+        editor_help = false;
     }
     InvalidateRect(edit_window, nullptr, FALSE);
 }

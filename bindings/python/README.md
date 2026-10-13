@@ -20,7 +20,7 @@ To build from a full checkout: `python -m pip install ./bindings/python`.
 
 ## Submit observations
 
-Save a MIG Studio profile as `profile.json`. Pass `None` to select the bundled
+Save a Motion Input Grid Studio profile as `profile.json`. Pass `None` to select the bundled
 engine or an explicit path to an external SDK. This example submits **one frame**;
 your application should feed the tracker each new observation. One frame alone
 does not calibrate or complete a movement.

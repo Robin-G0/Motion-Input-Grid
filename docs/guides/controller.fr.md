@@ -1,7 +1,7 @@
-# MIG Input
+# Motion Input Grid Controller
 
-MIG Input exécute les profils de MIG Studio ou [MIG Studio Web](studio-web.fr.md).
-Son exécutable reste `mig-controller` pour préserver les scripts existants.
+Motion Input Grid Controller exécute les profils de Motion Input Grid Studio ou [Motion Input Grid Studio Web](studio-web.fr.md).
+Son exécutable reste `motion-input-grid-controller` pour préserver les scripts existants.
 **Manage profile** regroupe import, export et renommage ; les commandes de session
 et le retour des mouvements restent visibles pendant l’utilisation.
 
@@ -20,15 +20,15 @@ et le retour des mouvements restent visibles pendant l’utilisation.
 
 </details>
 
-Le MIG Input exécute les profils créés dans MIG Studio pendant que vous
+Le Motion Input Grid Controller exécute les profils créés dans Motion Input Grid Studio pendant que vous
 utilisez une autre application ou jouez. Il permet de sélectionner un profil,
 de voir les actions reconnues et de vérifier les mouvements avec la caméra.
-Utilisez le [MIG Studio](configurator.fr.md) pour dessiner ou modifier les mouvements.
+Utilisez le [Motion Input Grid Studio](configurator.fr.md) pour dessiner ou modifier les mouvements.
 
 ## Où trouver et lancer l'application
 
 > [!NOTE]
-> Sur Debian, MIG Studio, MIG Input et certains exemples natifs sont
+> Sur Debian, Motion Input Grid Studio, Motion Input Grid Controller et certains exemples natifs sont
 > encore en cours de développement et de test. Ils peuvent ne pas fonctionner
 > entièrement pour le moment.
 
@@ -37,21 +37,21 @@ archive native correspondant à votre système, lorsqu'elle est disponible :
 
 | Système | Archive | Fichier après extraction |
 | --- | --- | --- |
-| Windows x64 | `motion-input-grid-<version>-windows-x64-native.zip` | `windows/mig-controller.exe` |
-| Linux x64 | `motion-input-grid-<version>-linux-x64-native.tar.gz` | `./mig-controller` |
+| Windows x64 | `motion-input-grid-<version>-windows-x64-native.zip` | `windows/motion-input-grid-controller.exe` |
+| Linux x64 | `motion-input-grid-<version>-linux-x64-native.tar.gz` | `./motion-input-grid-controller` |
 
 Ces chemins partent du dossier principal de l'archive extraite. Sous Windows,
 ouvrez l'exécutable. Sous Linux, ouvrez un terminal dans ce dossier et lancez
-`./mig-controller` ; ce lanceur configure les bibliothèques fournies avant d'ouvrir
+`./motion-input-grid-controller` ; ce lanceur configure les bibliothèques fournies avant d'ouvrir
 le binaire dans `bin/`. Conservez les DLL, modèles, configurations et autres
 ressources de l'archive ensemble. Windows nécessite le runtime Visual C++ 2022
 x64 ; les archives Linux nécessitent glibc 2.35+.
 
 ## Premier lancement
 
-1. Fermez la caméra du MIG Studio, puis ouvrez `mig-controller`.
+1. Fermez la caméra du Motion Input Grid Studio, puis ouvrez `motion-input-grid-controller`.
 2. Ouvrez **Manage profile**, puis **Import profile** (Windows) ou **Import…** (Linux),
-   et choisissez un JSON enregistré par MIG Studio ou MIG Studio Web.
+   et choisissez un JSON enregistré par Motion Input Grid Studio ou Motion Input Grid Studio Web.
 3. Donnez un nom reconnaissable au profil. Sous Windows, modifiez le champ du nom
    puis cliquez sur **Save name**. Sous Linux, cliquez sur **Rename profile**.
 4. Cliquez sur **Start**, faites face à la caméra et gardez les épaules visibles
@@ -77,7 +77,7 @@ La caméra et la sortie clavier doivent toujours être activées explicitement.
 
 Les fichiers importés sont copiés dans le dossier de données de l'application.
 Déplacer le fichier d'origine ne casse pas le profil importé. **Export file**
-enregistre le profil sélectionné dans un JSON utilisable avec MIG Studio
+enregistre le profil sélectionné dans un JSON utilisable avec Motion Input Grid Studio
 ou les bibliothèques. Pour utiliser une configuration modifiée, importez à nouveau
 son fichier comme nouveau profil. Un import invalide conserve le profil en cours.
 Vous pouvez conserver jusqu'à 64 profils.
@@ -103,9 +103,9 @@ en miroir. **Grid**, **Hand detections** et **Body dots** règlent les calques
 indépendamment. Masquer les mains ne désactive pas la reconnaissance nécessaire
 au profil. **Dark mode** permet de choisir le thème clair ou sombre.
 Les barres de défilement des listes, menus déroulants et journaux suivent le thème
-choisi sous Windows et Linux, dans MIG Input comme dans MIG Studio.
+choisi sous Windows et Linux, dans Motion Input Grid Controller comme dans Motion Input Grid Studio.
 
-**Compact background window** réduit MIG Input à une petite fenêtre avec
+**Compact background window** réduit Motion Input Grid Controller à une petite fenêtre avec
 un bouton **Open**. Le suivi et la sortie clavier activée continuent. **Open**
 restaure la fenêtre précédente. La réduction dans la barre des tâches laisse
 également le suivi actif. Les copies/conversions d'aperçu et le rendu sont ignorés
@@ -138,7 +138,7 @@ le profil. La vérification ne modifie pas les régions et n'isole pas la reconn
 
 > [!NOTE]
 > **Verify bindings** suspend toute sortie clavier. Les exemples et les libraries
-> transmettent des événements logiques ; MIG Input envoie des touches lorsque
+> transmettent des événements logiques ; Motion Input Grid Controller envoie des touches lorsque
 > vous activez cette option.
 
 ## Compilation et problèmes courants
@@ -147,9 +147,9 @@ Après compilation depuis les sources :
 
 | Méthode | Fichier depuis la racine du dépôt |
 | --- | --- |
-| Preset Windows `release` | `build/release/bin/mig-controller.exe` |
-| Script `tools/build/build-windows.ps1` par défaut | `build/windows/bin/mig-controller.exe` |
-| Compilation du guide Linux | `build/linux-apps/bin/mig-controller` |
+| Preset Windows `release` | `build/release/bin/motion-input-grid-controller.exe` |
+| Script `tools/build/build-windows.ps1` par défaut | `build/windows/bin/motion-input-grid-controller.exe` |
+| Compilation du guide Linux | `build/linux-apps/bin/motion-input-grid-controller` |
 
 Suivez les guides [Windows](../getting-started/windows.fr.md) ou
 [Linux](../getting-started/linux.fr.md) pour compiler. Le guide Linux indique
@@ -160,10 +160,10 @@ Consultez les guides [Windows](../getting-started/windows.fr.md) et [Linux](../g
 pour les dépendances et commandes de compilation. Gardez les bibliothèques natives
 et les modèles à côté de l'exécutable distribué. Un profil qui suit les mains
 nécessite une version compilée avec leur prise en charge.
-Si un profil enregistré manque ou est invalide, MIG Input signale le problème.
+Si un profil enregistré manque ou est invalide, Motion Input Grid Controller signale le problème.
 Importez un fichier valide ou choisissez un autre profil enregistré.
 
-Le MIG Input utilise le même moteur de reconnaissance et ordonnanceur clavier
-que MIG Studio. Les tests automatisés couvrent la persistance des profils,
+Le Motion Input Grid Controller utilise le même moteur de reconnaissance et ordonnanceur clavier
+que Motion Input Grid Studio. Les tests automatisés couvrent la persistance des profils,
 les vues, la vérification et l'annulation des sorties. La précision de la caméra
 et l'envoi des touches à un jeu donné se vérifient sur votre machine.

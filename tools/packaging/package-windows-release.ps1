@@ -24,7 +24,7 @@ function Write-ReleaseArchive([string]$folder, [string]$path) {
 $projectRoot = [IO.Path]::GetFullPath("$PSScriptRoot/../..")
 $source = [IO.Path]::GetFullPath((Join-Path $projectRoot $Distribution))
 $output = [IO.Path]::GetFullPath((Join-Path $projectRoot $Destination))
-foreach ($name in @('mig-controller.exe', 'mig-configurator.exe', 'libmediapipe.dll', 'mig-c.dll', 'sdk', 'models')) {
+foreach ($name in @('motion-input-grid-controller.exe', 'motion-input-grid-studio.exe', 'libmediapipe.dll', 'mig-c.dll', 'sdk', 'models')) {
     if (-not (Test-Path -LiteralPath (Join-Path $source $name))) {
         throw "Release artifact missing: $name"
     }
@@ -56,7 +56,7 @@ try {
 
 [English](README.md) | [Français](README.fr.md)
 
-Run windows/mig-controller.exe or windows/mig-configurator.exe.
+Run windows/motion-input-grid-controller.exe or windows/motion-input-grid-studio.exe.
 Install the matching Microsoft Visual C++ 2022 Redistributable first.
 Set CMAKE_PREFIX_PATH to windows/sdk for C++ consumers.
 
@@ -68,7 +68,7 @@ See [package installation](docs/getting-started/packages.md) and the
 
 [English](README.md) | [Français](README.fr.md)
 
-Lancez windows/mig-controller.exe ou windows/mig-configurator.exe.
+Lancez windows/motion-input-grid-controller.exe ou windows/motion-input-grid-studio.exe.
 Installez le Microsoft Visual C++ 2022 Redistributable correspondant.
 Utilisez windows/sdk comme CMAKE_PREFIX_PATH pour compiler un consommateur.
 

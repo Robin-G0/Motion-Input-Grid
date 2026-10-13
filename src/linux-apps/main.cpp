@@ -26,8 +26,8 @@ int main(int argc, char** argv) {
             } else if (option == "--camera" && index + 1 < argc) {
                 camera = unsigned(std::stoul(argv[++index]));
             } else {
-                throw std::runtime_error(
-                    "Usage: mig-app [--runtime DIR] [--config JSON] [--camera N]");
+                throw std::runtime_error("Usage: " MIG_APP_NAME
+                                         " [--runtime DIR] [--config JSON] [--camera N]");
             }
         }
 #ifdef MIG_CONTROLLER

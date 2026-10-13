@@ -29,10 +29,10 @@ namespace mig::app {
 using namespace mig::native;
 #ifdef MIG_CONFIGURATOR
 constexpr bool editor = true;
-constexpr wchar_t title[] = L"MIG Studio — Motion Input Grid";
+constexpr wchar_t title[] = L"Motion Input Grid Studio";
 #else
 constexpr bool editor = false;
-constexpr wchar_t title[] = L"MIG Input — Motion Input Grid";
+constexpr wchar_t title[] = L"Motion Input Grid Controller";
 #endif
 enum {
     Start = 101,
@@ -120,7 +120,13 @@ enum {
     FingersTab,
     RecordingTab,
     RecordAll,
-    ProMode,
+    StudioMovements,
+    StudioEdit,
+    StudioTest,
+    MovementTab,
+    NameCaption,
+    ActionCaption,
+    SpaceCaption,
     PaintRequired,
     PaintForbidden,
     PaintTrigger,
@@ -273,7 +279,7 @@ struct App {
     ui::GridView grid_view;
     std::shared_ptr<const Snapshot> grid_snapshot;
     bool body_view{true};
-    bool pro_mode{};
+    int studio_view{}; // 0: movements, 1: edit, 2: test
     bool editor_help{};
     std::array<bool, 34> layer_visible{};
     std::vector<int> layer_members;
@@ -292,6 +298,7 @@ struct App {
     void refresh_list();
     void select_motion();
     void open_editor(bool creating = false, bool test = false);
+    void show_studio_view(int view);
     void refresh_editor();
     void refresh_layers();
     bool layer_change_pending() const;

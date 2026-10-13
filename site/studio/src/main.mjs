@@ -325,7 +325,7 @@ function render() {
     $("draft-status").textContent = t(storageAvailable ? "saved" : "storageUnavailable");
 }
 function renderLanguage() {
-    document.title = `Studio — Motion Input Grid`;
+    document.title = "Motion Input Grid Studio";
     document.documentElement.lang = language;
     for (const node of document.querySelectorAll("[data-i18n]")) node.textContent = t(node.dataset.i18n);
     for (const node of document.querySelectorAll("[data-label]")) { node.setAttribute("aria-label", t(node.dataset.label)); node.title = t(node.dataset.label); }

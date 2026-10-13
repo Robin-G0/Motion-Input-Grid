@@ -1,9 +1,13 @@
 #include "../../../src/apps/authoring.hpp"
 #include "window.hpp"
 #include <QApplication>
+#include <QComboBox>
 #include <QDockWidget>
+#include <QLabel>
+#include <QLineEdit>
 #include <QMouseEvent>
 #include <QPushButton>
+#include <QSpinBox>
 #include <QTabWidget>
 #include <mig/format/configuration.hpp>
 
@@ -15,7 +19,7 @@ bool Window::ui_test() {
     config_.motions.push_back(input);
     refresh_inputs();
     auto* sections = findChild<QTabWidget*>("studio-sections");
-    if (!sections || sections->count() != 2 || !drawing_panel_->isEnabled()) {
+    if (!sections || sections->count() != 3 || !drawing_panel_->isEnabled()) {
         return false;
     }
     sections->setCurrentIndex(1);
@@ -59,6 +63,55 @@ bool Window::ui_test() {
         cells[1].type != ConstraintType::Trigger || cells[1].order != 2) {
         return false;
     }
+    const auto definition = config_;
+    const auto frame_size = canvas_->size();
+    show_view(2);
+    QApplication::processEvents();
+    if (!canvas_->read_only || canvas_->size() != frame_size || config_ != definition ||
+        keyboard_switch_->isEnabled() || inspector_pages_->currentIndex() != 1) {
+        return false;
+    }
+    show_view(1);
+    QApplication::processEvents();
+    if (canvas_->read_only || canvas_->size() != frame_size || config_ != definition) {
+        return false;
+    }
+    step_mode_field_->setCurrentIndex(int(StepMode::Visited));
+    if (config_.motions[0].steps[0].mode != StepMode::Visited ||
+        config_.motions[0].steps[0].constraints[0].order != 0 || !step_hold_field_->isHidden()) {
+        return false;
+    }
+    step_mode_field_->setCurrentIndex(int(StepMode::Simultaneous));
+    if (step_hold_field_->isHidden() || !order_controls_->isHidden()) {
+        return false;
+    }
+    step_hold_field_->setValue(800);
+    if (config_.motions[0].steps[0].hold_ms != 800) {
+        return false;
+    }
+    config_ = definition;
+    refresh_inputs();
+    step_mode_field_->setCurrentIndex(int(StepMode::Ordered));
+    edit_settings();
+    if (inspector_->currentIndex() != 1 || settings_panel_->window() != this) {
+        return false;
+    }
+    name_field_->setText("Updated movement");
+    if (!apply_settings() || config_.motions[0].name != "Updated movement") {
+        return false;
+    }
+    keys_field_->setText("This is not a keyboard shortcut");
+    const auto valid_profile = config_;
+    if (apply_settings() || config_ != valid_profile || settings_error_->text().isEmpty()) {
+        return false;
+    }
+    refresh_settings();
+    inspector_->setCurrentIndex(0);
+    edit_json();
+    if (json_panel_->window() != this) {
+        return false;
+    }
+    show_view(1);
     if (qEnvironmentVariableIsSet("MIG_UI_SCREENSHOTS")) {
         grab().save("studio-dark.png");
     }

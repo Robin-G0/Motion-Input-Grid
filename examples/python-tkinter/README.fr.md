@@ -6,7 +6,7 @@
 
 Un aperçu miroir, les doigts et des objets suivant les poignets illustrent
 **Left hand raised!** et **Right hand raised!**. Le second exécutable importe
-votre JSON du MIG Studio et affiche ses noms d'actions.
+votre JSON du Motion Input Grid Studio et affiche ses noms d'actions.
 
 ## Démarrage rapide — archive compilée
 

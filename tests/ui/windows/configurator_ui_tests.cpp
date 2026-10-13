@@ -48,10 +48,13 @@ int run_ui_test(App& app, HWND window) {
         EnumChildWindows(
             target,
             [](HWND child, LPARAM parameter) -> BOOL {
-                if (!(GetWindowLongW(child, GWL_STYLE) & WS_VISIBLE)) {
-                    return TRUE;
-                }
                 const auto& context = *reinterpret_cast<PreviewContext*>(parameter);
+                for (HWND ancestor = child; ancestor && ancestor != context.parent;
+                     ancestor = GetParent(ancestor)) {
+                    if (!(GetWindowLongW(ancestor, GWL_STYLE) & WS_VISIBLE)) {
+                        return TRUE;
+                    }
+                }
                 RECT rect{};
                 GetWindowRect(child, &rect);
                 MapWindowPoints(nullptr, context.parent, reinterpret_cast<POINT*>(&rect), 2);
@@ -78,13 +81,14 @@ int run_ui_test(App& app, HWND window) {
     };
 
     app.open_editor(true);
+    app.editor_command(MovementTab, BN_CLICKED);
     check(IsWindowEnabled(GetDlgItem(window, Keys)),
           "Keyboard switch must be enabled in both configurator and controller");
     check(GetWindowLongW(GetDlgItem(app.edit_window, Key), GWL_STYLE) & WS_VISIBLE,
-          "Shortcut binding must be visible in Basic mode");
+          "Shortcut binding must be visible in Unified mode");
     SetDlgItemTextW(app.edit_window, Key, L"Ctrl+Shift+K");
     check(app.draft.keyboard == ui::parse_binding("Ctrl+Shift+K"),
-          "Basic shortcut edit must update the input");
+          "Unified shortcut edit must update the input");
     RECT dropdown{};
     SendDlgItemMessageW(app.edit_window, Members, CB_GETDROPPEDCONTROLRECT, 0,
                         reinterpret_cast<LPARAM>(&dropdown));
@@ -98,14 +102,12 @@ int run_ui_test(App& app, HWND window) {
         RECT button{};
         GetWindowRect(GetDlgItem(app.edit_window, id), &button);
         MapWindowPoints(nullptr, app.edit_window, reinterpret_cast<POINT*>(&button), 2);
-        check(button.left >= 570, "Drawing buttons must belong to the sidebar");
+        check(button.left >= 0, "Drawing controls must stay within the workspace");
     }
-    check(!app.pro_mode && app.draft.max_duration_ms == 0 &&
-              app.draft.steps[0].mode == StepMode::Ordered &&
-              !(GetWindowLongW(GetDlgItem(app.edit_window, AddStep), GWL_STYLE) & WS_VISIBLE) &&
+    check(app.draft.max_duration_ms == 0 && app.draft.steps[0].mode == StepMode::Ordered &&
+              (GetWindowLongW(GetDlgItem(app.edit_window, AddStep), GWL_STYLE) & WS_VISIBLE) &&
               (GetWindowLongW(GetDlgItem(app.edit_window, DrawPencil), GWL_STYLE) & WS_VISIBLE),
-          "Basic editor must default to visible drawing tools and hide advanced steps");
-    app.editor_command(ProMode, BN_CLICKED);
+          "Unified editor must expose steps and drawing tools without a mode switch");
     const auto set_choice = [&](int id, int value) {
         SendDlgItemMessageW(app.edit_window, id, CB_SETCURSEL, value, 0);
     };
@@ -117,7 +119,6 @@ int run_ui_test(App& app, HWND window) {
         SendMessageW(app.edit_window, WM_LBUTTONDOWN, MK_LBUTTON, MAKELPARAM(px, py));
         SendMessageW(app.edit_window, WM_LBUTTONUP, 0, MAKELPARAM(px, py));
     };
-    app.editor_command(ProMode, BN_CLICKED);
     set_choice(Members, 7);
     app.editor_command(Members, CBN_SELCHANGE);
     set_choice(BrushOrder, 1);
@@ -148,7 +149,6 @@ int run_ui_test(App& app, HWND window) {
     check(app.draft.steps[0].constraints.size() == 6 && ui::constraint_labels(app.draft)[3] == "1",
           "Painting another number must reassign the existing square without duplicating it");
     app.undo(false, true);
-    app.editor_command(ProMode, BN_CLICKED);
     set_choice(Tool, 0);
     const auto select_cell = app.grid_view.screen({1.5f, 5.5f});
     SendMessageW(app.edit_window, WM_LBUTTONDOWN, MK_LBUTTON,
@@ -164,11 +164,9 @@ int run_ui_test(App& app, HWND window) {
           "Selected square must be reassignable to the opposite anatomical wrist");
     validate(Configuration{{app.draft}});
     app.undo(false, true);
-    app.editor_command(ProMode, BN_CLICKED);
     app.editor_command(Clear, BN_CLICKED);
     set_choice(BrushOrder, 0);
     set_choice(Tool, 1);
-    app.editor_command(ProMode, BN_CLICKED);
     SetDlgItemTextW(app.edit_window, InputName, L"Jump");
     SetDlgItemTextW(app.edit_window, ActionId, L"jump");
     set_choice(StepModeId, 1);
@@ -275,8 +273,7 @@ int run_ui_test(App& app, HWND window) {
     SendMessageW(window, WM_COMMAND, ThemeDark, 0);
     check(app.dark, "Explicit dark appearance command failed");
     draw_preview(app.edit_window, app.directory / "editor-ui.bmp");
-    app.editor_command(ProMode, BN_CLICKED);
-    draw_preview(app.edit_window, app.directory / "editor-basic-ui.bmp");
+    draw_preview(app.edit_window, app.directory / "editor-unified-ui.bmp");
     app.open_editor(true);
     set_choice(Members, 7);
     app.editor_command(PaintRequired, BN_CLICKED);
@@ -287,11 +284,11 @@ int run_ui_test(App& app, HWND window) {
     draw_cell(7, 3, 3);
     check(app.draft.steps[0].constraints.size() == 3 &&
               app.draft.steps[0].constraints.back().cell == Cell{3, 3},
-          "Basic yellow finish must move rather than create multiple Triggers");
+          "Unified yellow finish must move rather than create multiple Triggers");
     app.editor_command(PaintRequired, BN_CLICKED);
     draw_cell(7, 3, 4);
     check(app.draft.steps[0].constraints.back().type == ConstraintType::Trigger,
-          "Extending a basic path must keep its Trigger last");
+          "Extending a unified path must keep its Trigger last");
     app.editor_command(DrawContour, BN_CLICKED);
     const auto tolerance_point = app.grid_view.screen({2.5f, 5.5f});
     SendMessageW(app.edit_window, WM_LBUTTONDOWN, MK_LBUTTON,
@@ -299,19 +296,19 @@ int run_ui_test(App& app, HWND window) {
     SendMessageW(app.edit_window, WM_LBUTTONUP, 0,
                  MAKELPARAM(int(tolerance_point.x), int(tolerance_point.y)));
     check(app.draft.steps[0].constraints.size() > 4,
-          "Basic tolerance tool must select its target directly on the grid");
+          "Unified tolerance tool must select its target directly on the grid");
     app.undo(false, true);
     check(app.draft.steps[0].constraints.size() == 4, "Tolerance must undo in one operation");
     SetDlgItemTextW(app.edit_window, Cooldown, L"500");
-    check(app.draft.cooldown_ms == 500, "Basic cooldown editing failed");
+    check(app.draft.cooldown_ms == 500, "Unified cooldown editing failed");
     app.editor_command(PaintForbidden, BN_CLICKED);
     draw_cell(7, 1, 3);
     app.editor_command(PaintRequired, BN_CLICKED);
     app.editor_command(GridViewMode, BN_CLICKED);
-    draw_preview(app.edit_window, app.directory / "editor-basic-path-ui.bmp");
+    draw_preview(app.edit_window, app.directory / "editor-unified-path-ui.bmp");
     app.dark = false;
     app.update_theme();
-    draw_preview(app.edit_window, app.directory / "editor-basic-light-ui.bmp");
+    draw_preview(app.edit_window, app.directory / "editor-unified-light-ui.bmp");
     app.dark = true;
     app.update_theme();
     app.editor_command(EditorHelp, BN_CLICKED);
@@ -319,6 +316,7 @@ int run_ui_test(App& app, HWND window) {
     check(!app.editor_help && app.layer_members.size() == 2,
           "Drawing must replace optional help with per-body-part layers");
     const auto layered = app.draft;
+    app.editor_command(LayersTab, BN_CLICKED);
     SendDlgItemMessageW(app.edit_window, LayerList, LB_SETCURSEL, 0, 0);
     app.editor_command(LayerList, LBN_SELCHANGE);
     check(landmarks[selection(app.edit_window, Members)].index == 16,
@@ -333,11 +331,12 @@ int run_ui_test(App& app, HWND window) {
     check(app.draft == layered && app.layer_members.size() == 2,
           "Deleting a layer must undo as one operation");
     app.layer_visible[16] = true;
+    app.editor_command(LayersTab, BN_CLICKED);
     SendDlgItemMessageW(app.edit_window, LayerList, LB_SETCURSEL, 0, 0);
     app.editor_command(LayerList, LBN_SELCHANGE);
     check((GetWindowLongW(GetDlgItem(app.edit_window, SaveLayer), GWL_STYLE) & WS_VISIBLE) &&
               (GetWindowLongW(GetDlgItem(app.edit_window, LayerBodyPart), GWL_STYLE) & WS_VISIBLE),
-          "Basic layer editing must expose body part and Save layer");
+          "Unified layer editing must expose body part and Save layer");
     const auto choose_layer_body = [&](int landmark) {
         for (std::size_t i = 0; i < landmarks.size(); ++i) {
             if (landmarks[i].index == landmark) {
@@ -350,11 +349,9 @@ int run_ui_test(App& app, HWND window) {
     choose_layer_body(33);
     check(app.draft == layered && app.editing_layer == 16 && app.layer_change_pending(),
           "Changing layer target must keep its original drawing selected until saved");
-    app.editor_command(ProMode, BN_CLICKED);
     check(app.layer_change_pending() &&
               (GetWindowLongW(GetDlgItem(app.edit_window, SaveLayer), GWL_STYLE) & WS_VISIBLE),
           "Pro mode must preserve pending layer editing and expose Save layer");
-    app.editor_command(ProMode, BN_CLICKED);
     choose_layer_body(15);
     bool conflict_blocked = false;
     try {
@@ -396,24 +393,24 @@ int run_ui_test(App& app, HWND window) {
                  MAKELPARAM(int(erased_finish.x), int(erased_finish.y)));
     SendMessageW(app.edit_window, WM_LBUTTONUP, 0,
                  MAKELPARAM(int(erased_finish.x), int(erased_finish.y)));
-    check(std::none_of(app.draft.steps[0].constraints.begin(), app.draft.steps[0].constraints.end(),
-                       [](const auto& item) { return item.type == ConstraintType::Trigger; }),
-          "Basic eraser must erase the selected part's yellow cell without changing paint colour");
+    check(
+        std::none_of(app.draft.steps[0].constraints.begin(), app.draft.steps[0].constraints.end(),
+                     [](const auto& item) { return item.type == ConstraintType::Trigger; }),
+        "Unified eraser must erase the selected part's yellow cell without changing paint colour");
     app.undo(false, true);
     check(app.draft == layered, "Erasing a finish must undo with all independent layers intact");
     app.editor_command(Clear, BN_CLICKED);
     check(app.layer_members.empty() && app.draft.steps[0].constraints.empty(),
-          "Basic clear must remove all drawing layers");
+          "Unified clear must remove all drawing layers");
     app.undo(false, true);
     check(app.draft == layered, "Clear all layers must undo as one operation");
-    const auto basic_definition = app.draft;
-    app.editor_command(ProMode, BN_CLICKED);
-    check(app.pro_mode && app.draft == basic_definition &&
-              (GetWindowLongW(GetDlgItem(app.edit_window, AddStep), GWL_STYLE) & WS_VISIBLE),
-          "Pro mode must expose advanced controls without converting a basic input");
-    app.editor_command(ProMode, BN_CLICKED);
-    check(!app.pro_mode && app.draft == basic_definition,
-          "Returning to basic mode must preserve all rules");
+    const auto definition = app.draft;
+    app.editor_command(MovementTab, BN_CLICKED);
+    check(app.draft == definition && GetParent(app.edit_window) == window &&
+              (GetWindowLongW(app.edit_window, GWL_STYLE) & WS_CHILD),
+          "Movement settings must remain inside the main Studio window");
+    app.editor_command(FingersTab, BN_CLICKED);
+    check(app.draft == definition, "Context changes must preserve all movement rules");
     app.open_editor(true);
     set_choice(Members, 7);
     const auto drag_start = app.grid_view.screen({2.5f, 5.5f});
@@ -427,7 +424,6 @@ int run_ui_test(App& app, HWND window) {
     app.undo(false, true);
     check(app.draft.steps[0].constraints.empty(), "A whole interpolated stroke is one Undo");
     app.open_editor(true);
-    app.editor_command(ProMode, BN_CLICKED);
     SetDlgItemTextW(app.edit_window, InputName, L"Crouch");
     SetDlgItemTextW(app.edit_window, ActionId, L"crouch");
     set_choice(StepModeId, 1);
@@ -585,6 +581,7 @@ int run_ui_test(App& app, HWND window) {
     }
     check(app.show_grid && app.show_hands && app.show_dots && app.config == profile_without_overlay,
           "View overlays must toggle independently without changing detection configuration");
+    app.show_studio_view(0);
     draw_preview(window, app.directory / "main-overlays-ui.bmp");
     const auto has_color = [&](const std::filesystem::path& path, COLORREF color) {
         std::ifstream stream(path, std::ios::binary);
@@ -645,9 +642,8 @@ int run_ui_test(App& app, HWND window) {
     check(!has_color(app.directory / "main-trigger-expired-ui.bmp", RGB(25, 90, 65)),
           "Sidebar flash must expire independently of persistent Test progress");
     app.open_editor(true);
-    check(!(GetWindowLongW(GetDlgItem(app.edit_window, PaintInteraction), GWL_STYLE) & WS_VISIBLE),
-          "Interaction drawing belongs to Pro mode");
-    app.editor_command(ProMode, BN_CLICKED);
+    check(GetWindowLongW(GetDlgItem(app.edit_window, PaintInteraction), GWL_STYLE) & WS_VISIBLE,
+          "Hand sign drawing must be available without a mode switch");
     app.editor_command(PaintInteraction, BN_CLICKED);
     check(app.inspector_tab == 4 &&
               (GetWindowLongW(GetDlgItem(app.edit_window, InteractionGesture), GWL_STYLE) &
@@ -669,17 +665,17 @@ int run_ui_test(App& app, HWND window) {
               ui::needs_fingers(app.draft),
           "Purple cell must carry hand, sign, hold time and request hand inference");
     validate(Configuration{{app.draft}});
+    app.editor_command(MovementTab, BN_CLICKED);
     SendDlgItemMessageW(app.edit_window, ActionModeId, CB_SETCURSEL, int(ActionMode::Repeat), 0);
     app.editor_command(ActionModeId, CBN_SELCHANGE);
     SetDlgItemInt(app.edit_window, RepeatInterval, 375, FALSE);
     check(app.draft.action_mode == ActionMode::Repeat && app.draft.repeat_interval_ms == 375 &&
               (GetWindowLongW(GetDlgItem(app.edit_window, RepeatInterval), GWL_STYLE) & WS_VISIBLE),
           "Editor exposes the repeat interval and stores action mode in the draft");
-    app.editor_command(ProMode, BN_CLICKED);
+    app.editor_command(InteractionTab, BN_CLICKED);
     check(app.draft.action_mode == ActionMode::Repeat &&
-              (GetWindowLongW(GetDlgItem(app.edit_window, ActionModeId), GWL_STYLE) & WS_VISIBLE),
-          "Action modes remain visible in Basic and preserve their settings");
-    app.editor_command(ProMode, BN_CLICKED);
+              !(GetWindowLongW(GetDlgItem(app.edit_window, ActionModeId), GWL_STYLE) & WS_VISIBLE),
+          "Movement settings must remain stored without crowding the sign inspector");
     draw_preview(app.edit_window, app.directory / "editor-interaction-ui.bmp");
     check(has_color(app.directory / "editor-interaction-ui.bmp", RGB(184, 112, 245)),
           "Interaction cells and drawing button must render purple");
@@ -695,18 +691,32 @@ int run_ui_test(App& app, HWND window) {
     app.undo(false, true);
     check(app.draft.steps[0].constraints[0].interaction->hold_ms == 400,
           "Interaction edits must undo");
-    app.editor_command(ProMode, BN_CLICKED);
     check(app.draft.steps[0].constraints[0].type == ConstraintType::Interaction,
-          "Basic mode preserves Pro Interaction rules");
-    app.editor_command(ProMode, BN_CLICKED);
+          "Unified mode preserves Pro Interaction rules");
     app.editor_command(FingersTab, BN_CLICKED);
     SetDlgItemInt(app.edit_window, FingerStable, 250, FALSE);
     SetDlgItemInt(app.edit_window, FingerGrace, 75, FALSE);
     app.editor_command(AddFinger, BN_CLICKED);
     check(app.draft.fingers[0].stable_ms == 250 && app.draft.fingers[0].grace_ms == 75,
           "Pro finger editor must author its stable/grace timings");
+    const auto authored = app.draft;
+    const auto frame = app.editor_grid;
+    app.show_studio_view(2);
+    check(EqualRect(&frame, &app.editor_grid) && app.testing >= 0 && app.draft == authored,
+          "Test must preserve the grid frame and all authored rules");
+    const auto test_point = app.grid_view.screen({6.5f, 5.5f});
+    SendMessageW(app.edit_window, WM_LBUTTONDOWN, MK_LBUTTON,
+                 MAKELPARAM(int(test_point.x), int(test_point.y)));
+    check(app.draft == authored, "Test view must not paint accidental regions");
+    SendMessageW(app.edit_window, WM_KEYDOWN, VK_DELETE, 0);
+    app.undo(false, true);
+    check(app.draft == authored, "Test view must prevent deletion and history edits");
+    app.show_studio_view(1);
+    check(EqualRect(&frame, &app.editor_grid) && app.testing == -1 && app.draft == authored,
+          "Returning to editing must preserve geometry and leave Test mode");
     app.open_binding_details();
-    check(text_value(app.details_window, 1).find("400") != std::string::npos &&
+    check(GetParent(app.details_window) == window &&
+              text_value(app.details_window, 1).find("400") != std::string::npos &&
               text_value(app.details_window, 1).find("250") != std::string::npos,
           "Binding details must expose Interaction hold and scoped finger timing");
     DestroyWindow(app.details_window);
@@ -804,15 +814,12 @@ int run_ui_test(App& app, HWND window) {
     app.draft.steps[0].fingers.push_back({});
     app.refresh_editor();
     const auto with_fingers = app.draft;
-    app.editor_command(ProMode, BN_CLICKED);
-    app.editor_command(ProMode, BN_CLICKED);
     check(app.draft == with_fingers && selection(app.edit_window, FingerScope) == 0,
           "Mode switches must preserve finger rules and restore whole-input inspection");
     app.editor_command(ClearFingers, BN_CLICKED);
     check(!ui::needs_fingers(app.draft), "Clear fingers must remove rules from every scope");
     app.undo(false, true);
     check(app.draft == with_fingers, "Finger cleanup must be fully undoable");
-    app.editor_command(ProMode, BN_CLICKED);
     app.editor_command(DrawContour, BN_CLICKED);
     const auto contour_point = app.grid_view.screen({2.5f, 4.5f});
     SendMessageW(app.edit_window, WM_LBUTTONDOWN, MK_LBUTTON,
@@ -829,10 +836,11 @@ int run_ui_test(App& app, HWND window) {
               !app.draft.fingers.empty(),
           "Clear scope must remove scoped fingers without deleting whole-input rules");
     app.editor_command(DeleteStep, BN_CLICKED);
-    app.editor_command(ProMode, BN_CLICKED);
     check(app.draft.steps.size() == 1 && app.scope == 1,
-          "Deleting the last step must leave a usable drawing scope in Basic mode");
+          "Deleting the last step must leave a usable drawing scope in Unified mode");
     app.editor_command(Clear, BN_CLICKED);
+    check(!app.draft.fingers.empty(), "Clearing a step must preserve global finger rules");
+    app.editor_command(ClearFingers, BN_CLICKED);
     check(!ui::needs_fingers(app.draft), "Clear drawing must not leave invisible finger rules");
     SendMessageW(window, WM_CLOSE, 0, 0);
     check(!IsWindow(terminal), "Linked terminal must close with application");

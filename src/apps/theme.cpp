@@ -277,10 +277,14 @@ void App::draw_control(const DRAWITEMSTRUCT& item) {
                              (item.CtlID == FingersTab && inspector_tab == 1) ||
                              (item.CtlID == RecordingTab && inspector_tab == 2) ||
                              (item.CtlID == LayersTab && inspector_tab == 3) ||
-                             (item.CtlID == InteractionTab && inspector_tab == 4);
+                             (item.CtlID == InteractionTab && inspector_tab == 4) ||
+                             (item.CtlID == MovementTab && inspector_tab == 5) ||
+                             (item.CtlID == StudioMovements && studio_view == 0) ||
+                             (item.CtlID == StudioEdit && studio_view == 1) ||
+                             (item.CtlID == StudioTest && studio_view == 2);
         const bool toggle = item.CtlID == Theme || item.CtlID == Logs || item.CtlID == TrackHands ||
                             item.CtlID == Keys || item.CtlID == Mirror ||
-                            item.CtlID == GridViewMode || item.CtlID == ProMode;
+                            item.CtlID == GridViewMode;
         wchar_t label[256]{};
         GetWindowTextW(item.hwndItem, label, 256);
         const bool checked =
@@ -342,8 +346,13 @@ void App::toggle_logs() {
         klass.lpszClassName = L"MIGLogs";
         klass.hCursor = LoadCursor(nullptr, IDC_ARROW);
         RegisterClassW(&klass);
-        log_window = CreateWindowW(klass.lpszClassName, L"MIG - Log terminal", WS_OVERLAPPEDWINDOW,
-                                   240, 200, 760, 480, window, nullptr, klass.hInstance, nullptr);
+        RECT client{};
+        GetClientRect(window, &client);
+        log_window = CreateWindowW(klass.lpszClassName, L"MIG - Log terminal",
+                                   editor ? WS_CHILD | WS_CLIPCHILDREN : WS_OVERLAPPEDWINDOW,
+                                   editor ? 0 : 240, editor ? 96 : 200, editor ? client.right : 760,
+                                   editor ? client.bottom - 128 : 480, window, nullptr,
+                                   klass.hInstance, nullptr);
         if (!log_window) {
             throw std::runtime_error("Cannot open log terminal");
         }
@@ -361,11 +370,23 @@ LRESULT CALLBACK log_procedure(HWND window, UINT message, WPARAM wp, LPARAM lp) 
         const auto edit = control(window, L"EDIT", L"", 1, 0, 0, 740, 420,
                                   ES_MULTILINE | ES_READONLY | WS_VSCROLL | ES_AUTOVSCROLL);
         SendMessageW(edit, WM_SETFONT, reinterpret_cast<WPARAM>(app.mono_font), TRUE);
+        if constexpr (editor) {
+            control(window, L"BUTTON", L"Back to workspace", KeyCancel, 16, 12, 180, 32);
+        }
         return 0;
     }
     case WM_SIZE:
-        MoveWindow(GetDlgItem(window, 1), 0, 0, LOWORD(lp), HIWORD(lp), TRUE);
+        MoveWindow(GetDlgItem(window, 1), 0, editor ? 60 : 0, LOWORD(lp),
+                   HIWORD(lp) - (editor ? 60 : 0), TRUE);
         return 0;
+    case WM_COMMAND:
+        if (LOWORD(wp) == KeyCancel) {
+            app.toggle_logs();
+        }
+        return 0;
+    case WM_DRAWITEM:
+        app.draw_control(*reinterpret_cast<DRAWITEMSTRUCT*>(lp));
+        return TRUE;
     case WM_CTLCOLORSTATIC:
     case WM_CTLCOLOREDIT:
         SetTextColor(reinterpret_cast<HDC>(wp), app.palette().text);

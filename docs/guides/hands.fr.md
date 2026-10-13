@@ -9,12 +9,12 @@ Rebootstrap une fois pour modèle/headers, puis -SkipBootstrap :
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/build/build-windows.ps1
-.\build\windows\bin\mig-configurator.exe --hands
-.\build\windows\bin\mig-controller.exe --config profile.json
+.\build\windows\bin\motion-input-grid-studio.exe --hands
+.\build\windows\bin\motion-input-grid-controller.exe --config profile.json
 ```
 
 Arrêtez la première caméra. Hands ON/OFF et tracking.hands sont persistés,
-chargement/undo restaurent. --hands initialise MIG Studio ; MIG Input
+chargement/undo restaurent. --hands initialise Motion Input Grid Studio ; Motion Input Grid Controller
 ne l'accepte que pour diagnostics. Apply de règle/signe active Hands en ON,
 absence de demande=corps seul, aucune tâche main créée/inférée.
 Hands n'a pas besoin de calibrage épaules, le chemin body oui. Os jaunes, statut
@@ -54,9 +54,9 @@ cinq doigts connus étendus/fermés. Advanced édite signe/hold et stabilité/gr
 
 ```powershell
 ctest --test-dir build/windows -C Release --output-on-failure
-.\build\windows\bin\mig-controller.exe --hands-test
-.\build\windows\bin\mig-controller.exe --camera-test --hands
-.\build\windows\bin\mig-controller.exe --session-test --hands
+.\build\windows\bin\motion-input-grid-controller.exe --hands-test
+.\build\windows\bin\motion-input-grid-controller.exe --camera-test --hands
+.\build\windows\bin\motion-input-grid-controller.exe --session-test --hands
 ```
 
 Smoke ouvre/ferme trois fois, neuf images vides, résultats/metadata vérifiés.

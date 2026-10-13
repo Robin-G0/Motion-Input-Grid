@@ -22,9 +22,9 @@ hand sign to run a shortcut. You choose the movements and their bindings.
 
 ## Try MIG now
 
-Open [**MIG Studio Web**](https://robin-g0.github.io/Motion-Input-Grid/studio/) to
+Open [**Motion Input Grid Studio Web**](https://robin-g0.github.io/Motion-Input-Grid/studio/) to
 create, import and test a JSON profile without installing the desktop editor.
-Export your profile to **MIG Input** to send keyboard shortcuts to another
+Export your profile to **Motion Input Grid Controller** to send keyboard shortcuts to another
 application. [Studio Web guide](docs/guides/studio-web.md).
 
 Each download contains one tutorial, its sources and its dependencies. Extract the
@@ -57,15 +57,15 @@ Choose your use case, then an example and platform in the release table.
 ## Use MIG on your desktop
 
 > [!NOTE]
-> On Debian, the MIG Studio, MIG Input and some native examples are still
+> On Debian, the Motion Input Grid Studio, Motion Input Grid Controller and some native examples are still
 > being developed and tested. They may not yet work fully.
 
 No code is needed to create and run a movement profile.
 
 1. Download the [**desktop applications archive**](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.0.2#user-content-desktop-applications) for Windows x64 or Linux x64 and extract it completely.
-2. Open the [**MIG Studio**](docs/guides/configurator.md), start the camera,
+2. Open the [**Motion Input Grid Studio**](docs/guides/configurator.md), start the camera,
    draw your movement and save its profile.
-3. Open the [**MIG Input**](docs/guides/controller.md), import that profile and
+3. Open the [**Motion Input Grid Controller**](docs/guides/controller.md), import that profile and
    try the movement. Its row lights up when recognized. Enable **Keyboard output**
    when you want it to send keys to the application you are using.
 
@@ -89,7 +89,7 @@ paths, calibration, themes and troubleshooting.
 ## Add MIG to your application
 
 The **C++20 engine is shared by every integration**. Create a JSON profile once
-in the MIG Studio, then import it wherever your application runs. Supply body
+in the Motion Input Grid Studio, then import it wherever your application runs. Supply body
 landmarks yourself, or use an available camera adapter.
 
 Package managers use **`motion-input-grid`**. Technical APIs keep the short name:

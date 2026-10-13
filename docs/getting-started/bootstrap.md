@@ -134,7 +134,7 @@ uses these same presets; choosing one configures the project, it does not run it
 `CMakePresets.json` is shared in Git. Keep machine-specific overrides in
 `CMakeUserPresets.json`, which is ignored, including local toolchain paths.
 
-- `release`: optimized MIG Studio, MIG Input and engine. Bootstrap the native
+- `release`: optimized Motion Input Grid Studio, Motion Input Grid Controller and engine. Bootstrap the native
   dependencies first; see [Windows](windows.md) or [Linux](linux.md).
 - `debug`: the same applications with debugging information.
 - `sdk-release` / `sdk-debug`: portable engine and bindings only, without camera

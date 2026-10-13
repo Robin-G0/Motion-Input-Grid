@@ -19,8 +19,9 @@ int App::controller_ui_test() {
     check(!profile_management &&
               !(GetWindowLongW(GetDlgItem(window, ProfileName), GWL_STYLE) & WS_VISIBLE),
           "Profile management did not close.");
-    const auto temporary = std::filesystem::temp_directory_path() /
-                           ("mig-controller-ui-" + std::to_string(GetCurrentProcessId()));
+    const auto temporary =
+        std::filesystem::temp_directory_path() /
+        ("motion-input-grid-controller-ui-" + std::to_string(GetCurrentProcessId()));
     std::filesystem::create_directories(temporary);
     profiles = std::make_unique<controller::Profiles>(temporary);
     Configuration sample;

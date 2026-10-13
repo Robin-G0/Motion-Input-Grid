@@ -12,7 +12,7 @@
 - [Where to make a change](#where-to-make-a-change)
 - [Scheduling and application ownership](#scheduling-and-application-ownership)
 - [Implemented scope and plans](#implemented-scope-and-plans)
-- [MIG Input presentation](#mig-input-presentation)
+- [Motion Input Grid Controller presentation](#motion-input-grid-controller-presentation)
 
 </details>
 
@@ -114,8 +114,8 @@ flowchart TD
 ```
 
 The diagram shows the main consumption paths, not every linker dependency.
-Desktop apps produce `mig-configurator` and `mig-controller`. The MIG Studio
-authors profiles; the MIG Input imports managed copies and runs them. Their
+Desktop apps produce `motion-input-grid-studio` and `motion-input-grid-controller`. The Motion Input Grid Studio
+authors profiles; the Motion Input Grid Controller imports managed copies and runs them. Their
 interfaces are separate, while recognition, profile persistence and output
 scheduling are shared. Win32/GDI lives in `src/apps`; Qt6 lives in `src/linux-apps`.
 
@@ -172,7 +172,7 @@ exported games. See [package installation](../getting-started/packages.md) and
 | Recognition or coordinate semantics | `src/core`, optional `src/hands`, CTest regressions |
 | Persisted profile fields | `src/format`, core definitions, schema tests and [format guide](../reference/configuration.md) |
 | Camera/model lifecycle | `src/native`, native conversion/capture tests and platform guide |
-| Desktop authoring or MIG Input views | `src/apps` / `src/linux-apps`; shared profiles in `src/controller` |
+| Desktop authoring or Motion Input Grid Controller views | `src/apps` / `src/linux-apps`; shared profiles in `src/controller` |
 | Public language API | `src/c-api`, `src/web` or `bindings`; matching consumer tests |
 | Browser lifecycle/framework integration | `examples/web/session.mjs`, `bindings/javascript`, framework tests |
 | Example behavior | Technology folder, local `example_usage`/`support`; example and package tests |
@@ -213,13 +213,13 @@ Virtual gamepad, analog output, curvature matching, replay and a packaged thread
 SDK camera-session facade remain plans. No depth proxy is advertised as metric
 camera distance. See [release preparation](../reference/support.md) for platform limits.
 
-## MIG Input presentation
+## Motion Input Grid Controller presentation
 
-The MIG Input compiles dedicated profile/view modules instead of the MIG Studio
+The Motion Input Grid Controller compiles dedicated profile/view modules instead of the Motion Input Grid Studio
 authoring window. Both platforms share managed profile persistence and the existing
 recognition/output contracts. Hidden previews skip Windows BGRX conversion and Linux
 QImage copies. Verification reads selected-input progress without isolating the
-engine, and pauses output. See [MIG Input](../guides/controller.md).
+engine, and pauses output. See [Motion Input Grid Controller](../guides/controller.md).
 
 The [distributable packages](../getting-started/packages.md) use these same modules; demo
 projects remain under `examples`.

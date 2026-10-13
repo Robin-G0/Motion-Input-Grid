@@ -173,7 +173,8 @@ void App::paint(HDC dc) {
         DrawTextW(dc, name.c_str(), -1, &label, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
     } else {
         SelectObject(dc, heading_font ? heading_font : font);
-        TextOutW(dc, 16, 16, L"MIG Input", 9);
+        constexpr wchar_t name[] = L"Motion Input Grid Controller";
+        TextOutW(dc, 16, 16, name, int(wcslen(name)));
         SelectObject(dc, font);
         SetTextColor(dc, palette().muted);
         TextOutW(dc, 16, 56, L"Your movements, ready to run.", 29);
