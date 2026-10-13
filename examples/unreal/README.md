@@ -2,6 +2,8 @@
 
 [English](README.md) | [Français](README.fr.md)
 
+**Download the project:** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-unreal-examples) · [Linux x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-unreal-examples) · [Linux ARM64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-unreal-examples).
+
 ## What this example demonstrates
 
 One logical action per raised wrist, an on-screen panel and a profile-import

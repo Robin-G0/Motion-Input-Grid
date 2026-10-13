@@ -2,7 +2,7 @@
 
 [English](support.md) | [Français](support.fr.md)
 
-This is the canonical support matrix for MIG 1.0.2, JSON schema 2 and C ABI 1.
+This is the canonical support matrix for MIG 1.1.0, JSON schema 2 and C ABI 1.
 A maturity label describes the interface, not the quality of a particular camera.
 Automated synthetic and blank-frame checks cannot establish hardware compatibility.
 

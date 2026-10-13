@@ -1,9 +1,9 @@
 # Motion Input Grid Studio
 
-Motion Input Grid Studio est l’éditeur de bureau. Son exécutable reste `motion-input-grid-studio` pour
-préserver la compatibilité des releases et scripts. [Motion Input Grid Studio Web](studio-web.fr.md)
-offre une alternative dans le navigateur pour dessiner, importer et tester avec
-la caméra. L’éditeur de bureau conserve l’enregistrement natif et les tests clavier système.
+Motion Input Grid Studio est l’éditeur de bureau.
+[Studio Web](https://robin-g0.github.io/Motion-Input-Grid/studio/) permet de dessiner,
+importer et tester avec la caméra dans le navigateur, sans installation.
+L’éditeur de bureau permet de configurer et tester les raccourcis clavier système.
 
 [English](configurator.md) | [Français](configurator.fr.md)
 
@@ -30,20 +30,19 @@ ou dans une application utilisant MIG.
 > encore en cours de développement et de test. Ils peuvent ne pas fonctionner
 > entièrement pour le moment.
 
-Dans les [Releases](https://github.com/Robin-G0/Motion-Input-Grid/releases), choisissez une
-archive native correspondant à votre système, lorsqu'elle est disponible :
+Téléchargez pour votre système. Le même paquet contient le Studio et le Controller :
 
-| Système | Archive | Fichier après extraction |
+| Système | Télécharger v1.1.0 | Ouvrir après extraction |
 | --- | --- | --- |
-| Windows x64 | `motion-input-grid-<version>-windows-x64-native.zip` | `windows/motion-input-grid-studio.exe` |
-| Linux x64 | `motion-input-grid-<version>-linux-x64-native.tar.gz` | `./motion-input-grid-studio` |
+| Windows x64 | [Télécharger ZIP](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) | `windows/motion-input-grid-studio.exe` |
+| Linux x64 | [Télécharger tar.gz](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) | `./motion-input-grid-studio` |
 
 Ces chemins partent du dossier principal de l'archive extraite. Sous Windows,
 ouvrez l'exécutable. Sous Linux, ouvrez un terminal dans ce dossier et lancez
 `./motion-input-grid-studio` ; ce lanceur configure les bibliothèques fournies avant d'ouvrir
 le binaire dans `bin/`. Conservez les DLL, modèles, configurations et autres
-ressources de l'archive ensemble. Windows nécessite le runtime Visual C++ 2022
-x64 ; les archives Linux nécessitent glibc 2.35+.
+ressources de l'archive ensemble. Windows nécessite le [runtime Visual C++ 2022
+x64](https://aka.ms/vc14/vc_redist.x64.exe) ; les archives Linux nécessitent glibc 2.35+.
 
 ## Exemple : lever la main pour avancer une présentation
 

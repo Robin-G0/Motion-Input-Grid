@@ -1,5 +1,5 @@
 if(NOT TARGET MIG::core)
-    find_package(MIG 1.0 CONFIG QUIET HINTS "${CMAKE_CURRENT_LIST_DIR}/../sdk")
+    find_package(MIG 1.1 CONFIG QUIET HINTS "${CMAKE_CURRENT_LIST_DIR}/../sdk")
 endif()
 if(NOT TARGET MIG::core)
     get_filename_component(mig_repository "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)

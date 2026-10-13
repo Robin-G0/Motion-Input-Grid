@@ -2,6 +2,8 @@
 
 [English](everyday-use.md) | [Français](everyday-use.fr.md)
 
+**Télécharger Studio + Controller :** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications).
+
 Associez un mouvement volontaire à un raccourci connu de l'application au premier
 plan. Commencez sur un document jetable avec une action facile à annuler.
 

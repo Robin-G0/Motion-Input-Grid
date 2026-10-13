@@ -4,6 +4,16 @@
 
 ## Non publié
 
+## 1.1.0
+
+- Présentation et Studio web pour créer, importer, annoter et tester les profils.
+- Contrôles Required / Forbidden / Trigger / Interaction harmonisés et icônes natives.
+- Terminal de logs déplaçable, édition contextuelle et corrections de rafraîchissement.
+- Wheels Python : RECORD vérifié et normalisé après auditwheel.
+- Déclaration TypeScript corrigée : confidence sur MIGCoordinate.
+- Catalogue de téléchargement organisé par usage, plateforme et intégration.
+
+
 - Renomme les interfaces, le Studio web et les exécutables en Motion Input Grid
   Studio / Controller (`motion-input-grid-studio`, `motion-input-grid-controller`).
 - Studio regroupe édition contextuelle et test dans une fenêtre, sans mode

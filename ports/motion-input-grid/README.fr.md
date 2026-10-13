@@ -2,6 +2,8 @@
 
 [English](README.md) | [Français](README.fr.md)
 
+[**Télécharger l’overlay prêt à installer**](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-vcpkg-overlay) — extrayez-le avant `vcpkg install`. La génération ci-dessous est facultative.
+
 Ce dossier est le port de MIG lui-même. Le `vcpkg.json` à la racine est le manifeste
 séparé des dépendances nécessaires pour compiler MIG.
 

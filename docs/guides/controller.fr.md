@@ -1,7 +1,6 @@
 # Motion Input Grid Controller
 
 Motion Input Grid Controller exécute les profils de Motion Input Grid Studio ou [Motion Input Grid Studio Web](studio-web.fr.md).
-Son exécutable reste `motion-input-grid-controller` pour préserver les scripts existants.
 **Manage profile** regroupe import, export et renommage ; les commandes de session
 et le retour des mouvements restent visibles pendant l’utilisation.
 
@@ -32,24 +31,23 @@ Utilisez le [Motion Input Grid Studio](configurator.fr.md) pour dessiner ou modi
 > encore en cours de développement et de test. Ils peuvent ne pas fonctionner
 > entièrement pour le moment.
 
-Dans les [Releases](https://github.com/Robin-G0/Motion-Input-Grid/releases), choisissez une
-archive native correspondant à votre système, lorsqu'elle est disponible :
+Téléchargez pour votre système. Le même paquet contient le Studio et le Controller :
 
-| Système | Archive | Fichier après extraction |
+| Système | Télécharger v1.1.0 | Ouvrir après extraction |
 | --- | --- | --- |
-| Windows x64 | `motion-input-grid-<version>-windows-x64-native.zip` | `windows/motion-input-grid-controller.exe` |
-| Linux x64 | `motion-input-grid-<version>-linux-x64-native.tar.gz` | `./motion-input-grid-controller` |
+| Windows x64 | [Télécharger ZIP](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) | `windows/motion-input-grid-controller.exe` |
+| Linux x64 | [Télécharger tar.gz](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) | `./motion-input-grid-controller` |
 
 Ces chemins partent du dossier principal de l'archive extraite. Sous Windows,
 ouvrez l'exécutable. Sous Linux, ouvrez un terminal dans ce dossier et lancez
 `./motion-input-grid-controller` ; ce lanceur configure les bibliothèques fournies avant d'ouvrir
 le binaire dans `bin/`. Conservez les DLL, modèles, configurations et autres
-ressources de l'archive ensemble. Windows nécessite le runtime Visual C++ 2022
-x64 ; les archives Linux nécessitent glibc 2.35+.
+ressources de l'archive ensemble. Windows nécessite le [runtime Visual C++ 2022
+x64](https://aka.ms/vc14/vc_redist.x64.exe) ; les archives Linux nécessitent glibc 2.35+.
 
 ## Premier lancement
 
-1. Fermez la caméra du Motion Input Grid Studio, puis ouvrez `motion-input-grid-controller`.
+1. Fermez la caméra du Motion Input Grid Studio, puis ouvrez le Controller indiqué dans le tableau ci-dessus.
 2. Ouvrez **Manage profile**, puis **Import profile** (Windows) ou **Import…** (Linux),
    et choisissez un JSON enregistré par Motion Input Grid Studio ou Motion Input Grid Studio Web.
 3. Donnez un nom reconnaissable au profil. Sous Windows, modifiez le champ du nom

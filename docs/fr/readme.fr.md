@@ -2,7 +2,7 @@
 
 [English](../../readme.md) | [Français](readme.fr.md)
 
-# [Découvrez le site de présentation](https://robin-g0.github.io/Motion-Input-Grid/)
+# [<img src="../../site/favicon.svg" width="32" height="32" alt=""> Découvrez le site de présentation](https://robin-g0.github.io/Motion-Input-Grid/)
 
 Commencez ici pour une **introduction rapide et une démonstration interactive du concept**, directement dans votre navigateur.
 
@@ -13,7 +13,7 @@ actions dans votre projet ou envoyez des raccourcis à une application de bureau
 | Commencer ici | Ce que vous pouvez faire |
 | --- | --- |
 | **[Studio web / éditeur de configuration](https://robin-g0.github.io/Motion-Input-Grid/studio/)** | Créer, importer et tester un profil, puis exporter le JSON. Sans installation. |
-| **[Télécharger Motion Input Grid Controller](https://github.com/Robin-G0/Motion-Input-Grid/releases/latest#user-content-desktop-applications)** | Exécuter le profil et envoyer des raccourcis sur Windows ou Linux x64. Le Studio de bureau est également inclus. |
+| **Motion Input Grid Controller (bureau)** | [Télécharger pour Windows x64 (ZIP)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) · [Télécharger pour Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) — Studio inclus pour éditer les profils. |
 
 MIG débute son développement. Les applications Linux et les intégrations aux
 moteurs de jeu nécessitent encore davantage de tests ; consultez les
@@ -51,8 +51,8 @@ moteurs de jeu nécessitent encore davantage de tests ; consultez les
 Ces noms de conditions sont communs au web, au Studio de bureau et aux guides.
 Le navigateur affiche les actions reconnues ; le Controller peut envoyer les
 raccourcis. Conservez ensemble les fichiers des archives de bureau, qui incluent
-les modèles et le runtime caméra. Windows nécessite le runtime Visual C++ 2022
-x64 ; Linux nécessite glibc 2.35+. La sortie clavier Linux utilise X11/XTest ;
+les modèles et le runtime caméra. Windows nécessite le [runtime Visual C++ 2022
+x64](https://aka.ms/vc14/vc_redist.x64.exe) ; Linux nécessite glibc 2.35+. La sortie clavier Linux utilise X11/XTest ;
 elle n'est pas disponible sous Wayland natif.
 
 ## Utiliser les mouvements au quotidien
@@ -121,7 +121,7 @@ pas des applications de bureau et ils n'envoient pas de raccourcis aux autres ap
 
 | Paquet | Point de départ |
 | --- | --- |
-| SDK C++, paquets Debian et intégrations aux moteurs | [Catalogue de la release](https://github.com/Robin-G0/Motion-Input-Grid/releases/latest#user-content-downloads) |
+| SDK C++, paquets Debian et intégrations aux moteurs | [Catalogue de la release](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-downloads) |
 | Exemples natifs autonomes et tutoriels sources | [Catalogue des exemples](../../examples/README.fr.md) |
 | Exemples HTML / React / Vue / Next.js téléchargeables | [Paquets navigateur](../integrations/javascript.fr.md#archive-compilée) |
 

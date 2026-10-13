@@ -14,9 +14,9 @@ Utilisez de préférence un environnement virtuel Python 3.10+. Les wheels
 couvrent Windows x64 et Linux x64/ARM64 avec glibc 2.35+. Sur une autre
 plateforme, pip peut compiler le sdist et nécessite un compilateur C++20
 et CMake 3.25+. Pour installer une version précise :
-`python -m pip install motion-input-grid==1.0.2`.
+`python -m pip install motion-input-grid==1.1.0`.
 
-Alternative locale : `python -m pip install /chemin/motion_input_grid-1.0.2-<tags>.whl`.
+Alternative locale : `python -m pip install /chemin/motion_input_grid-1.1.0-<tags>.whl`.
 Pour compiler depuis le dépôt complet : `python -m pip install ./bindings/python`.
 
 ## Envoyer des observations

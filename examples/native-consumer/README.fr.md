@@ -2,6 +2,8 @@
 
 [English](README.md) | [Français](README.fr.md)
 
+**Télécharger cet exemple :** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-native-consumer-examples) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-native-consumer-examples).
+
 ## Ce que démontre cet exemple
 
 Charge MediaPipe et le modèle Full, estime une image RGB vide, active éventuellement les mains et libère les tâches. `sequence=1` confirme le câblage ; une image vide ne prouve pas la précision du suivi humain.

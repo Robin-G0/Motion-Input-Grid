@@ -2,6 +2,8 @@
 
 [English](linux.md) | [Français](linux.fr.md)
 
+**No build needed:** [Download Studio + Controller](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications).
+
 > [!NOTE]
 > On Debian, the Motion Input Grid Studio, Motion Input Grid Controller and some native examples are still
 > being developed and tested. They may not yet work fully.

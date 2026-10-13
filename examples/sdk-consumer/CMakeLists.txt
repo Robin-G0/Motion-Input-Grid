@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 project(MIGConsumer LANGUAGES CXX)
 if(NOT TARGET MIG::core)
-    find_package(MIG 1.0 CONFIG REQUIRED HINTS "${CMAKE_CURRENT_SOURCE_DIR}/sdk")
+    find_package(MIG 1.1 CONFIG REQUIRED HINTS "${CMAKE_CURRENT_SOURCE_DIR}/sdk")
 endif()
 add_executable(mig-sdk-example main.cpp)
 target_link_libraries(mig-sdk-example PRIVATE MIG::core MIG::format)

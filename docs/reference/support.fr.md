@@ -2,7 +2,7 @@
 
 [English](support.md) | [Français](support.fr.md)
 
-Cette page est la matrice canonique de MIG 1.0.2, schéma JSON 2 et C ABI 1.
+Cette page est la matrice canonique de MIG 1.1.0, schéma JSON 2 et C ABI 1.
 La maturité concerne les interfaces, pas la précision d’une webcam. Les tests
 synthétiques et les images vides ne prouvent pas une compatibilité matérielle.
 

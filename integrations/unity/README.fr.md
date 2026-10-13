@@ -2,6 +2,8 @@
 
 [English](README.md) | [Français](README.fr.md)
 
+**Télécharger l’intégration :** [Windows x64 (tgz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-unity-integration) · [Linux x64 (tgz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-unity-integration).
+
 **Preview.** Les exports éditeur/jeu et un fournisseur réel restent à valider. Voir la [matrice de support](../../docs/reference/support.fr.md).
 
 Utilisez Unity 2021.3+ sur Windows/Linux x64. Dans Package Manager, choisissez

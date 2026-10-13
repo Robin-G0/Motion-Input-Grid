@@ -16,9 +16,9 @@ ou intégrez le même moteur dans votre projet. Choisissez un point de départ.
 | Essayer une démo caméra sans créer de profil | [Exemples autonomes](../examples/README.fr.md) |
 | Ajouter un signe de main ou une condition sur les doigts | [Suivi des mains](guides/hands.fr.md) |
 
-Téléchargez une archive **desktop applications archive** pour les applications ou **`*-examples`**
-pour les démos depuis les [Releases](https://github.com/Robin-G0/Motion-Input-Grid/releases).
-Les guides des applications indiquent les fichiers à lancer et les prérequis.
+**Télécharger Studio + Controller :** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications).
+Les guides ci-dessus indiquent comment les lancer. Pour les tutoriels,
+choisissez un téléchargement dans le [catalogue des exemples](../examples/README.fr.md).
 
 ## Choisir une utilisation concrète
 

@@ -2,6 +2,8 @@
 
 [English](README.md) | [Français](README.fr.md)
 
+**Télécharger l’intégration :** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-unreal-integration) · [Linux x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-unreal-integration) · [Linux ARM64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-unreal-integration).
+
 **Preview.** Les exports éditeur/jeu et un fournisseur réel restent à valider. Voir la [matrice de support](../../docs/reference/support.fr.md).
 
 Extrayez le ZIP `motion-input-grid-<version>-<plateforme>-unreal.zip` adapté dans `Plugins` de

@@ -4,6 +4,16 @@
 
 ## Unreleased
 
+## 1.1.0
+
+- Browser presentation and Studio for profile creation, import, annotations and live tests.
+- Consistent Required / Forbidden / Trigger / Interaction tools and native application icons.
+- Movable log terminal, contextual editing and window refresh fixes.
+- Python wheels validate and normalize RECORD after auditwheel repair.
+- TypeScript MIGCoordinate now declares its existing confidence field.
+- Download catalogue organized by use, platform and integration.
+
+
 - Rename application displays, web Studio and executable files to Motion Input Grid
   Studio / Controller (`motion-input-grid-studio`, `motion-input-grid-controller`).
 - Studio uses one window for contextual editing and testing, without Basic/Advanced

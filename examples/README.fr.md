@@ -18,11 +18,22 @@ Téléchargez un seul tutoriel **`*-standalone`** et extrayez-le entièrement.
 Son README et ses lanceurs sont à la racine. Les modèles et bibliothèques natives
 sont inclus ; les exemples navigateur demandent Node 22.12+ et un navigateur moderne.
 
-| Type d'exemple | Choisir un tutoriel et sa plateforme |
+| Exemple | Télécharger |
 | --- | --- |
-| Python, SDL2, SFML et consumers C++ | [Exemples natifs](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.0.2#user-content-native-examples) |
-| HTML, React, Vue et Next.js | [Exemples navigateur](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.0.2#user-content-browser-examples) |
-| Godot, Unity et Unreal | [Projets et intégrations des moteurs](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.0.2#user-content-game-engines) |
+| Python / Tkinter | [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-python-tkinter-examples) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-python-tkinter-examples) |
+| Pygame | [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-pygame-examples) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-pygame-examples) |
+| SDL2 | [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-sdl2-examples) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-sdl2-examples) |
+| SFML | [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-sfml-examples) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-sfml-examples) |
+| C++ SDK consumer | [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-sdk-consumer-examples) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-sdk-consumer-examples) |
+| C++ native consumer | [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-native-consumer-examples) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-native-consumer-examples) |
+| HTML | [tar.gz](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-web-examples) |
+| React | [tar.gz](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-react-examples) |
+| Vue | [tar.gz](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-vue-examples) |
+| Next.js | [tar.gz](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-next-examples) |
+| Godot GDScript | [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-godot-gdscript-examples) · [Linux x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-godot-gdscript-examples) · [Linux ARM64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-godot-gdscript-examples) |
+| Unity | [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-unity-examples) · [Linux x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-unity-examples) |
+| Unreal | [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-unreal-examples) · [Linux x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-unreal-examples) · [Linux ARM64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-unreal-examples) |
+| Godot C# | [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-godot-csharp-examples) · [Linux x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-godot-csharp-examples) |
 
 1. Lancez un viewer du tableau ci-dessous et autorisez la caméra.
 2. Gardez les deux épaules visibles une seconde pour le calibrage, puis baissez les mains.

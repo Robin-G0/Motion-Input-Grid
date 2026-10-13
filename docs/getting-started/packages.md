@@ -3,11 +3,15 @@
 [English](packages.md) | [Français](packages.fr.md)
 
 Download packages for your operating system and architecture from
-[v1.0.2 release tables](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.0.2#user-content-downloads). Keep the complete
+[v1.1.0 release tables](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-downloads). Keep the complete
 archive together after extraction. See the [support matrix](../reference/support.md)
 for platform requirements and integration maturity.
 
 ## Desktop applications and examples
+
+**Download Studio + Controller:** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications).
+
+Extract the whole package, then follow the application guide below.
 
 - `desktop applications` archives contain the Motion Input Grid Studio, Motion Input Grid Controller, camera runtime and models.
   Follow the [Motion Input Grid Studio](../guides/configurator.md) or [Motion Input Grid Controller](../guides/controller.md) guide.
@@ -40,6 +44,10 @@ and payload; the [tests guide](../../tests/README.md) explains download validati
 
 ## C++ SDK and vcpkg
 
+**SDK :** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-cpp-sdk) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-cpp-sdk) · [Linux ARM64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-cpp-sdk).
+
+**vcpkg :** [Download the overlay](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-vcpkg-overlay).
+
 Extract the matching `*-sdk` archive and pass its SDK directory to CMake:
 
 ```sh
@@ -67,11 +75,16 @@ npm install motion-input-grid
 npx mig-copy-assets public/mig
 ```
 
+**Offline packages:**
+
+- Python (wheel) : [Windows x64](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-python-wheel) · [Linux x64](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-python-wheel) · [Linux ARM64](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-python-wheel).
+- npm : [TGZ](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-npm-package).
+
 For offline installation, use the downloaded wheel or npm tarball:
 
 ```sh
-python -m pip install /path/to/motion_input_grid-1.0.2-<tags>.whl
-npm install /path/to/motion-input-grid-1.0.2.tgz
+python -m pip install /path/to/motion_input_grid-1.1.0-<tags>.whl
+npm install /path/to/motion-input-grid-1.1.0.tgz
 ```
 
 Python imports `mig`; the wheel provides recognition for supplied positions.
@@ -82,10 +95,12 @@ These packages do not install the desktop applications. See the
 
 ## Debian/Ubuntu
 
+**Download:** [x64 (.deb)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-debian-ubuntu-sdk) · [ARM64 (.deb)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-debian-ubuntu-sdk).
+
 Install a downloaded package matching your architecture:
 
 ```sh
-sudo apt install ./motion-input-grid_1.0.2_amd64.deb
+sudo apt install ./motion-input-grid_1.1.0_amd64.deb
 ```
 
 Use the `arm64` package on ARM64. The Debian package supplies the C++ SDK and

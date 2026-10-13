@@ -16,9 +16,9 @@ engine in your own project. Choose a starting point below.
 | Try a camera demo without setting up a profile | [Standalone examples](../examples/README.md) |
 | Add a hand sign or finger condition | [Hand tracking](guides/hands.md) |
 
-Download a **desktop applications archive** for the applications or a **`*-examples`** archive
-for the demos from [Releases](https://github.com/Robin-G0/Motion-Input-Grid/releases).
-The application guides identify the files to launch and system requirements.
+**Download Studio + Controller:** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications).
+The guides above explain how to launch them. For tutorials, choose a download
+from the [example catalogue](../examples/README.md).
 
 ## Choose a practical use
 

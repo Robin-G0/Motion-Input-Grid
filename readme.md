@@ -2,7 +2,7 @@
 
 [English](readme.md) | [Français](docs/fr/readme.fr.md)
 
-# [Explore the presentation website](https://robin-g0.github.io/Motion-Input-Grid/)
+# [<img src="site/favicon.svg" width="32" height="32" alt=""> Explore the presentation website](https://robin-g0.github.io/Motion-Input-Grid/)
 
 Start here for a **quick introduction and an interactive demo of the concept**, directly in your browser.
 
@@ -13,7 +13,7 @@ keyboard shortcuts to a desktop application.
 | Start here | What you can do |
 | --- | --- |
 | **[Browser Studio / configuration editor](https://robin-g0.github.io/Motion-Input-Grid/studio/)** | Create, import and test a profile, then export JSON. No installation. |
-| **[Download Motion Input Grid Controller](https://github.com/Robin-G0/Motion-Input-Grid/releases/latest#user-content-desktop-applications)** | Run your profile and send keyboard shortcuts on Windows or Linux x64. The desktop Studio is included too. |
+| **Motion Input Grid Controller (desktop)** | [Download for Windows x64 (ZIP)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) · [Download for Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) — includes Studio for profile editing. |
 
 MIG is in early development. Desktop Linux applications and game-engine
 integrations still need wider testing; check the [support matrix](docs/reference/support.md).
@@ -48,7 +48,7 @@ integrations still need wider testing; check the [support matrix](docs/reference
 These condition names are shared by the web editor, desktop Studio and guides.
 The browser shows recognized actions; the Controller can deliver keyboard output.
 Desktop archives include camera models and runtime files: keep them together.
-Windows requires the Visual C++ 2022 x64 runtime; Linux requires glibc 2.35+.
+Windows requires the [Visual C++ 2022 x64 runtime](https://aka.ms/vc14/vc_redist.x64.exe); Linux requires glibc 2.35+.
 Linux keyboard output needs X11/XTest; native Wayland output is unavailable.
 
 ## Use movements in everyday applications
@@ -117,7 +117,7 @@ applications and cannot send keyboard shortcuts to another application.
 
 | Package | Where to start |
 | --- | --- |
-| C++ SDK, Debian packages and engine integrations | [Release package catalogue](https://github.com/Robin-G0/Motion-Input-Grid/releases/latest#user-content-downloads) |
+| C++ SDK, Debian packages and engine integrations | [Release package catalogue](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-downloads) |
 | Standalone native examples and source tutorials | [Example catalogue](examples/README.md) |
 | Downloadable HTML / React / Vue / Next.js examples | [Browser example packages](docs/integrations/javascript.md#built-examples-archive) |
 

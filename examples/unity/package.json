@@ -1,6 +1,6 @@
 {
     "name": "com.robin-g0.motion-input-grid.examples",
-    "version": "1.0.2",
+    "version": "1.1.0",
     "displayName": "Motion Input Grid (MIG) desktop input examples",
     "description": "Supplied-pose MIG action and raised-wrist components. Requires the MIG C ABI desktop plugin.",
     "license": "Apache-2.0",
@@ -10,6 +10,6 @@
         "pose"
     ],
     "dependencies": {
-        "com.robin-g0.motion-input-grid": "1.0.2"
+        "com.robin-g0.motion-input-grid": "1.1.0"
     }
 }

@@ -1,9 +1,8 @@
 # Motion Input Grid Studio
 
-Motion Input Grid Studio is the desktop editor. Its executable remains `motion-input-grid-studio` for
-compatibility with existing releases and scripts. Prefer
-[Motion Input Grid Studio Web](studio-web.md) for browser-based drawing, import and camera tests.
-Use the desktop editor for native recording and operating-system keyboard tests.
+Motion Input Grid Studio is the desktop editor. Prefer
+[Studio Web](https://robin-g0.github.io/Motion-Input-Grid/studio/) for browser-based drawing, import and camera tests without installation.
+Use the desktop editor to configure and test operating-system keyboard output.
 
 [English](configurator.md) | [Français](configurator.fr.md)
 
@@ -18,7 +17,7 @@ Use the desktop editor for native recording and operating-system keyboard tests.
 
 </details>
 
-The Motion Input Grid (MIG) Motion Input Grid Studio turns drawn body movements into JSON
+Motion Input Grid Studio turns drawn body movements into JSON
 profiles. Choose a tracked body part, draw its route and set the action to emit.
 Run the saved profile in the [Motion Input Grid Controller](controller.md) or an application using MIG.
 
@@ -28,19 +27,18 @@ Run the saved profile in the [Motion Input Grid Controller](controller.md) or an
 > On Debian, the Motion Input Grid Studio, Motion Input Grid Controller and some native examples are still
 > being developed and tested. They may not yet work fully.
 
-In [Releases](https://github.com/Robin-G0/Motion-Input-Grid/releases), choose a matching native
-archive when available:
+Download for your system. The same package includes Studio and Controller:
 
-| System | Archive | File after extraction |
+| System | Download v1.1.0 | Open after extraction |
 | --- | --- | --- |
-| Windows x64 | `motion-input-grid-<version>-windows-x64-native.zip` | `windows/motion-input-grid-studio.exe` |
-| Linux x64 | `motion-input-grid-<version>-linux-x64-native.tar.gz` | `./motion-input-grid-studio` |
+| Windows x64 | [Download ZIP](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) | `windows/motion-input-grid-studio.exe` |
+| Linux x64 | [Download tar.gz](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) | `./motion-input-grid-studio` |
 
 Paths start at the extracted archive's main folder. On Windows, open the executable.
 On Linux, open a terminal in that folder and run `./motion-input-grid-studio`; this launcher
 sets up the bundled libraries before starting the binary in `bin/`. Keep the
 archive's DLLs, models, configurations and other resources together. Windows
-requires the Visual C++ 2022 x64 runtime; Linux archives require glibc 2.35+.
+requires the [Visual C++ 2022 x64 runtime](https://aka.ms/vc14/vc_redist.x64.exe); Linux archives require glibc 2.35+.
 
 ## Example: raise a hand to advance a presentation
 

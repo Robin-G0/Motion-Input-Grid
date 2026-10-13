@@ -2,6 +2,8 @@
 
 [English](video-games.md) | [Français](video-games.fr.md)
 
+**Download Studio + Controller:** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications).
+
 There are two ways to use MIG with games: send keyboard events to an existing
 game using the Controller, or integrate recognition into a game you develop.
 

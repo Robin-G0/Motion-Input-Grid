@@ -28,9 +28,8 @@ Choose pip for Python (`from mig import Tracker`) or npm for the browser,
 React, Vue and Next.js. See the guides for
 [Python](../../bindings/python/README.md) · [JavaScript](../../bindings/javascript/README.md).
 
-These packages are libraries. Desktop applications and the Python camera
-runtime are separate downloads from
-[Releases](https://github.com/Robin-G0/Motion-Input-Grid/releases).
+Desktop applications and their camera runtime are separate downloads:
+[Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications).
 
 The distributable packages are in `distribution/windows`, `distribution/linux` and
 `distribution/web`. Windows has directly accessible `motion-input-grid-studio.exe` and

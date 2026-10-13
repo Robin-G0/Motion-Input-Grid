@@ -25,9 +25,8 @@ Choisissez pip pour Python (`from mig import Tracker`) ou npm pour le
 navigateur, React, Vue et Next.js. Consultez les guides
 [Python](../../bindings/python/README.fr.md) · [JavaScript](../../bindings/javascript/README.fr.md).
 
-Ces packages sont des bibliothèques. Les applications de bureau et le
-runtime caméra Python se téléchargent séparément dans les
-[Releases](https://github.com/Robin-G0/Motion-Input-Grid/releases).
+Les applications de bureau et leur runtime caméra se téléchargent séparément :
+[Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications).
 
 Le dossier `distribution/` regroupe les applications, le SDK CMake et les ressources
 préparées pour chaque plateforme ; `build/releases/` contient les archives compressées.

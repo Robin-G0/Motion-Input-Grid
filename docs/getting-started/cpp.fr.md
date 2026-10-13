@@ -18,8 +18,9 @@ les mêmes cibles `MIG::`. La caméra reste séparée du SDK de positions.
 
 ## Utiliser un SDK précompilé
 
-Téléchargez l'archive `motion-input-grid-<version>-<plateforme>-sdk` depuis les
-[Releases](https://github.com/Robin-G0/Motion-Input-Grid/releases), puis extrayez-la entièrement.
+**Télécharger le SDK :** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-cpp-sdk) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-cpp-sdk) · [Linux ARM64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-cpp-sdk).
+
+Extrayez entièrement le paquet de votre système.
 Choisissez votre système et architecture. Windows demande un toolset MSVC
 compatible ; les SDK Linux publiés ciblent glibc 2.35+ et GCC 11+.
 

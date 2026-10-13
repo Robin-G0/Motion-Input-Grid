@@ -2,6 +2,10 @@
 
 [English](README.md) | [Français](README.fr.md)
 
+**Télécharger le projet :** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-godot-gdscript-examples) · [Linux x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-godot-gdscript-examples) · [Linux ARM64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-godot-gdscript-examples).
+
+**C# :** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-godot-csharp-examples) · [Linux x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-godot-csharp-examples).
+
 Choisissez le dossier correspondant à votre projet :
 
 - [GDScript](gdscript/README.fr.md) : éditeur standard, pont GDExtension natif,

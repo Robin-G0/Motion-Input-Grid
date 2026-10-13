@@ -120,6 +120,6 @@ npm pack --workspace motion-input-grid --pack-destination build/releases
 Dans votre application, installez l'archive locale puis copiez les ressources :
 
 ```sh
-npm install /chemin/motion-input-grid-1.0.2.tgz
+npm install /chemin/motion-input-grid-1.1.0.tgz
 npx --package motion-input-grid mig-copy-assets public/mig
 ```

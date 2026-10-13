@@ -515,7 +515,7 @@ feedback are host presentation settings; no fields were added to JSON. Accepted
 callbacks are logical application events, not desktop key injection or a Hold/
 Repeat scheduler. See [JavaScript integration](../integrations/javascript.md).
 
-MIG 1.0.2 uses schema version 2. See [bootstrap](../getting-started/bootstrap.md) and [example code](../getting-started/examples.md).
+MIG 1.1.0 uses schema version 2. See [bootstrap](../getting-started/bootstrap.md) and [example code](../getting-started/examples.md).
 
 ## Motion Input Grid Controller profile list
 

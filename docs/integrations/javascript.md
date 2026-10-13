@@ -19,6 +19,10 @@ No new configuration schema or framework-specific recognition logic is added.
 
 ## Run an example
 
+**Download a ready-to-run example:** [HTML](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-web-examples) · [React](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-react-examples) · [Vue](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-vue-examples) · [Next.js](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-next-examples).
+Extract it, then run `run.cmd` or `sh run.sh` at its root with Node 22.12+.
+Open the displayed URL. The commands below are for source development.
+
 Use Node.js 22.12+ (Node 24 is tested). From the full checkout, first build WASM
 as described in [browser integration](../../examples/web/README.md). Then:
 
@@ -53,7 +57,7 @@ npm run build:examples
 npm run package:examples
 ```
 
-`build/releases/motion-input-grid-1.0.2-javascript-examples.tar.gz` contains source, docs,
+`build/releases/motion-input-grid-1.1.0-javascript-examples.tar.gz` contains source, docs,
 compiled React/Vue pages, Next.js static export, WASM, models, licenses and a
 SHA256 manifest. Extract it and run one script, with no dependency installation:
 
@@ -81,7 +85,7 @@ npx mig-copy-assets public/mig
 ```
 
 The package includes WASM and models; no Emscripten build is needed. As an offline
-alternative, install a release `.tgz` with `npm install /path/to/motion-input-grid-1.0.2.tgz`,
+alternative, install a release `.tgz` with `npm install /path/to/motion-input-grid-1.1.0.tgz`,
 then copy its assets with the same command. See the [npm guide](../../bindings/javascript/README.md). React uses:
 
 ```jsx
