@@ -50,6 +50,7 @@ private:
     QWidget* json_panel_{};
     QPlainTextEdit* json_source_{};
     QLabel* settings_error_{};
+    QLabel* step_help_{};
     QLabel* json_error_{};
     QLineEdit *name_field_{}, *action_field_{}, *keys_field_{};
     QComboBox *action_mode_field_{}, *space_field_{}, *step_field_{}, *step_mode_field_{};

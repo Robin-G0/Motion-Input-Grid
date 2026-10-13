@@ -16,7 +16,7 @@ void App::update_constraint() {
     } else {
         item.interaction.reset();
     }
-    item.priority = Priority(selection(edit_window, PriorityId));
+    // Editing an imported zone must preserve its priority and tolerance links.
     if (scope > 0 && draft.steps[scope - 1].mode == StepMode::Ordered &&
         item.priority == Priority::High && item.type != ConstraintType::Forbidden) {
         const int chosen_order = selection(edit_window, BrushOrder);
@@ -157,7 +157,7 @@ void App::edit_authoring(int id) {
             scope = int(draft.steps.size());
             break;
         case DeleteStep:
-            if (scope > 0) {
+            if (scope > 0 && draft.steps.size() > 1) {
                 draft.steps.erase(draft.steps.begin() + scope - 1);
                 --scope;
                 if (draft.steps.empty()) {

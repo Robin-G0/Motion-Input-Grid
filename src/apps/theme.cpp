@@ -264,7 +264,7 @@ void App::draw_control(const DRAWITEMSTRUCT& item) {
         const bool tool_active = item.CtlID >= DrawSelect && item.CtlID <= DrawContour &&
                                  selection(edit_window, Tool) == int(item.CtlID - DrawSelect);
         const bool paint_button = item.CtlID >= PaintRequired && item.CtlID <= PaintInteraction;
-        const bool paint_active = paint_button && selection(edit_window, ConstraintTypeId) ==
+        const bool paint_active = paint_button && selection(edit_window, Tool) == 1 && selection(edit_window, ConstraintTypeId) ==
                                                       int(item.CtlID - PaintRequired);
         const auto paint_color = item.CtlID == PaintRequired      ? RGB(48, 195, 135)
                                  : item.CtlID == PaintForbidden   ? RGB(242, 87, 105)

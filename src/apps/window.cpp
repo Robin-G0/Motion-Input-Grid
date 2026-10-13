@@ -203,20 +203,18 @@ void App::layout_editor() {
     show(Tool, false);
     show(ConstraintTypeId, false);
     place(Commit, 408, 16, 142);
-    place(StepList, 24, 60, 180);
-    place(AddStep, 212, 60, 76);
-    place(DeleteStep, 296, 60, 84);
-    place(StepUp, 388, 60, 76);
-    place(StepDown, 472, 60, 78);
-    place(PaintRequired, 24, 104, 124);
-    place(PaintForbidden, 156, 104, 124);
-    place(PaintTrigger, 288, 104, 124);
-    place(PaintInteraction, 420, 104, 130);
-    place(DrawSelect, 24, 140, 94, 26);
-    place(DrawPencil, 124, 140, 94, 26);
-    place(DrawBucket, 224, 140, 94, 26);
-    place(DrawEraser, 324, 140, 94, 26);
-    place(DrawContour, 424, 140, 126, 26);
+    place(StepList, 580, 144, 440);
+    place(AddStep, 580, 184, 214);
+    place(DeleteStep, 804, 184, 216);
+    for (int id : {StepUp, StepDown, DrawPencil, DrawBucket, DrawContour, PriorityId}) {
+        show(id, false);
+    }
+    place(DrawSelect, 24, 104, 170);
+    place(PaintRequired, 202, 104, 170);
+    place(PaintTrigger, 380, 104, 170);
+    place(PaintForbidden, 24, 140, 170, 26);
+    place(PaintInteraction, 202, 140, 170, 26);
+    place(DrawEraser, 380, 140, 170, 26);
     place(MovementTab, 580, 16, 92);
     place(ConstraintsTab, 680, 16, 92);
     place(FingersTab, 780, 16, 80);
@@ -257,37 +255,43 @@ void App::layout_editor() {
     place(BindingSummary, 580, 526, 440);
     const bool zones = editing && inspector_tab == 0 && !editor_help;
     for (int id : {ConstraintList, CellX, CellY, CellWidth, CellHeight, UpdateConstraint,
-                   ConstraintUp, ConstraintDown, DeleteConstraint, PriorityId}) {
+                   ConstraintUp, ConstraintDown, DeleteConstraint}) {
         show(id, zones);
     }
-    const int list_height = std::max(80, int(client.bottom) - 436);
-    place(ConstraintList, 580, 220, 440, list_height);
+    const int list_height = std::max(80, int(client.bottom) - 520);
+    place(ConstraintList, 580, 304, 440, list_height);
     for (const auto [id, x] :
          {std::pair{CellX, 580}, {CellY, 690}, {CellWidth, 800}, {CellHeight, 910}}) {
-        place(id, x, 250 + list_height, 100, 28);
+        place(id, x, 334 + list_height, 100, 28);
     }
-    place(UpdateConstraint, 580, 292 + list_height, 160);
-    place(ConstraintUp, 750, 292 + list_height, 130);
-    place(ConstraintDown, 890, 292 + list_height, 130);
+    place(UpdateConstraint, 580, 376 + list_height, 160);
+    place(ConstraintUp, 750, 376 + list_height, 130);
+    place(ConstraintDown, 890, 376 + list_height, 130);
     place(DeleteConstraint, 804, client.bottom - 54, 216);
-    place(PriorityId, 890, 178, 130);
-    place(Members, 580, 144, 280);
-    show(Members, editing && inspector_tab != 5 && !editor_help);
-    place(StepModeId, 580, 178, 178);
-    place(HoldTime, 766, 178, 80, 28);
-    place(Trigger, 854, 178, 166);
+    for (int id : {StepList, AddStep, DeleteStep}) {
+        show(id, zones);
+    }
+    EnableWindow(GetDlgItem(edit_window, DeleteStep), scope > 0 && draft.steps.size() > 1);
+    place(Members, 24, 60, 280);
+    show(Members, editing);
+    place(StepModeId, 580, 260, 210);
+    place(HoldTime, 800, 260, 80, 28);
+    place(Trigger, 888, 260, 132);
     show(StepModeId, zones && scope > 0);
     show(HoldTime, zones && scope > 0 && draft.steps[scope - 1].mode == StepMode::Simultaneous);
     show(Trigger, zones && scope > 0 && draft.steps[scope - 1].mode == StepMode::Simultaneous);
-    show(PriorityId,
-         zones && (scope == 0 || draft.steps[scope - 1].mode != StepMode::Simultaneous));
-    place(BrushOrder, 870, 144, 150);
-    const bool ordered =
-        scope > 0 && draft.steps[scope - 1].mode == StepMode::Ordered &&
-        selection(edit_window, ConstraintTypeId) != int(ConstraintType::Forbidden) &&
-        selection(edit_window, PriorityId) == int(Priority::High);
+    place(BrushOrder, 800, 260, 220);
+    const bool ordered = scope > 0 && draft.steps[scope - 1].mode == StepMode::Ordered &&
+                         selected_constraint >= 0 &&
+                         selection(edit_window, ConstraintTypeId) != int(ConstraintType::Forbidden) &&
+                         selection(edit_window, PriorityId) == int(Priority::High);
     EnableWindow(GetDlgItem(edit_window, BrushOrder), ordered);
-    show(BrushOrder, editing && inspector_tab != 5 && !editor_help && ordered);
+    show(BrushOrder, zones && ordered);
+    for (int id : {CellX, CellY, CellWidth, CellHeight, UpdateConstraint, DeleteConstraint}) {
+        show(id, zones && selected_constraint >= 0);
+    }
+    show(ConstraintUp, zones && ordered);
+    show(ConstraintDown, zones && ordered);
     const bool layers = editing && inspector_tab == 3 && !editor_help && !layer_members.empty();
     for (int id : {LayerList, ToggleLayer, DeleteLayer, LayerBodyPart, SaveLayer, LayerCaption}) {
         show(id, layers);
@@ -694,28 +698,23 @@ LRESULT CALLBACK editor_procedure(HWND window, UINT message, WPARAM wp, LPARAM l
             choices(window, Space, {L"Body relative", L"Calibration anchor"});
             button(window, Commit, L"Apply movement", 870, 30, 150);
             combo(window, StepList, 20, 82, 235);
-            button(window, AddStep, L"+ Step", 270, 80, 85);
-            button(window, DeleteStep, L"- Step", 365, 80, 85);
-            button(window, StepUp, L"Up", 460, 80, 60);
-            button(window, StepDown, L"Down", 530, 80, 60);
+            button(window, AddStep, L"Add step", 270, 80, 85);
+            button(window, DeleteStep, L"Delete step", 365, 80, 85);
             combo(window, StepModeId, 600, 82, 155);
-            choices(window, StepModeId, {L"Visited", L"Simultaneous", L"Ordered / landmark"});
+            choices(window, StepModeId, {L"Any order", L"Simultaneous", L"In order"});
             edit(window, HoldTime, L"0", 765, 82, 80);
-            button(window, Trigger, L"Set hold ms", 855, 80, 165);
+            button(window, Trigger, L"Apply hold (ms)", 855, 80, 165);
             combo(window, Tool, 20, 120, 155);
             choices(window, Tool,
                     {L"Select", L"Pencil", L"Bucket", L"Eraser", L"Contour / tolerance",
                      L"Move trace point", L"Delete trace sample"});
             SendDlgItemMessageW(window, Tool, CB_SETCURSEL, 1, 0);
-            button(window, DrawPencil, L"Pencil", 20, 80, 100);
-            button(window, DrawBucket, L"Fill", 130, 80, 100);
-            button(window, DrawContour, L"Tolerance", 240, 80, 100);
-            button(window, DrawEraser, L"Eraser", 350, 80, 100);
+            button(window, DrawEraser, L"Erase", 350, 80, 100);
             button(window, DrawSelect, L"Select", 460, 80, 100);
-            button(window, PaintRequired, L"Required", 580, 118, 140);
-            button(window, PaintForbidden, L"Forbidden", 730, 118, 140);
-            button(window, PaintTrigger, L"Trigger", 880, 118, 140);
-            button(window, PaintInteraction, L"Interaction", 916, 142, 104);
+            button(window, PaintRequired, L"Passage", 580, 118, 140);
+            button(window, PaintForbidden, L"Cancel", 730, 118, 140);
+            button(window, PaintTrigger, L"Action", 880, 118, 140);
+            button(window, PaintInteraction, L"Hand sign", 916, 142, 104);
             button(window, InteractionTab, L"Hand sign", 928, 310, 92);
             control(
                 window, L"STATIC",
@@ -737,14 +736,14 @@ LRESULT CALLBACK editor_procedure(HWND window, UINT message, WPARAM wp, LPARAM l
             button(window, ConstraintsTab, L"Zones", 580, 160, 140);
             button(window, FingersTab, L"Fingers", 730, 160, 140);
             button(window, RecordingTab, L"Recording", 880, 160, 140);
-            button(window, LayersTab, L"Layers", 580, 310, 104);
+            button(window, LayersTab, L"Body parts", 580, 310, 104);
             button(window, Undo, L"Undo", 185, 118, 80);
             button(window, Redo, L"Redo", 275, 118, 80);
             combo(window, BrushOrder, 870, 100, 150);
             SendDlgItemMessageW(window, BrushOrder, CB_ADDSTRING, 0,
-                                reinterpret_cast<LPARAM>(L"Order: Auto"));
+                                reinterpret_cast<LPARAM>(L"Route position: automatic"));
             for (int number = 1; number <= 1024; ++number) {
-                const auto text = L"Order: " + std::to_wstring(number);
+                const auto text = L"Route position: " + std::to_wstring(number);
                 SendDlgItemMessageW(window, BrushOrder, CB_ADDSTRING, 0,
                                     reinterpret_cast<LPARAM>(text.c_str()));
             }

@@ -92,12 +92,7 @@ bool App::editor_settings(int id, int notification) {
                 std::lock_guard lock(state_mutex);
                 recording_space = draft.space;
             } else if (scope > 0) {
-                draft.steps[scope - 1].mode = StepMode(selection(edit_window, id));
-                if (draft.steps[scope - 1].mode != StepMode::Ordered) {
-                    for (auto& item : draft.steps[scope - 1].constraints) {
-                        item.order = 0;
-                    }
-                }
+                ui::set_route_mode(draft.steps[scope - 1], StepMode(selection(edit_window, id)));
             }
             refresh_editor();
         } else if (id == Members || id == BrushOrder || id == Tool || id == ConstraintTypeId ||

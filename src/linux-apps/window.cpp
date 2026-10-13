@@ -323,6 +323,11 @@ void Window::build_sidebar() {
     step_actions->addWidget(add_step);
     step_actions->addWidget(delete_step);
     layout->addLayout(step_actions);
+    step_help_ = new QLabel(panel);
+    step_help_->setWordWrap(true);
+    step_help_->setProperty("role", "hint");
+    layout->addWidget(step_help_);
+    delete_step->setObjectName("delete-step");
     step_mode_field_ = new QComboBox(panel);
     step_mode_field_->addItems({"Any order", "Simultaneous", "In order"});
     layout->addWidget(step_mode_field_);
@@ -345,12 +350,7 @@ void Window::build_sidebar() {
         }
         stop();
         auto& step = canvas_->motion->steps[canvas_->scope - 1];
-        step.mode = StepMode(mode);
-        if (step.mode != StepMode::Ordered) {
-            for (auto& zone : step.constraints) {
-                zone.order = 0;
-            }
-        }
+        ui::set_route_mode(step, StepMode(mode));
         refresh_step();
     });
     connect(step_hold_field_, &QSpinBox::valueChanged, this, [this](int value) {
@@ -376,7 +376,7 @@ void Window::build_sidebar() {
         select_input(inputs_->currentRow());
     });
     connect(delete_step, &QPushButton::clicked, this, [this] {
-        if (!canvas_->motion || canvas_->scope <= 0) {
+        if (!canvas_->motion || canvas_->scope <= 0 || canvas_->motion->steps.size() <= 1) {
             return;
         }
         stop();
@@ -384,7 +384,7 @@ void Window::build_sidebar() {
         canvas_->scope = std::min(canvas_->scope, int(canvas_->motion->steps.size()));
         select_input(inputs_->currentRow());
     });
-    section("1. Tracked body part");
+    section("Point for new zones");
     auto* body = new QComboBox(panel);
     for (const auto& part : landmarks) {
         body->addItem(QString::fromStdString(ui::landmark_label(part.index)), part.index);
@@ -396,34 +396,20 @@ void Window::build_sidebar() {
         canvas_->selection.clear();
         canvas_->update();
     });
-    auto* layer = new QComboBox(panel);
-    layer->setObjectName("layer-source");
-    layout->addWidget(layer);
-    button("Reassign selected layer", [this, layer] {
-        stop();
-        if (!canvas_->motion || layer->currentIndex() < 0) {
-            return;
-        }
-        try {
-            ui::reassign_layer(*canvas_->motion, layer->currentData().toInt(), canvas_->landmark);
-            select_input(inputs_->currentRow());
-        } catch (const std::exception& error) {
-            report(error.what());
-        }
-    });
-    section("2. Zone and drawing tool");
+    section("Drawing tools");
     auto* tools = new QGridLayout;
     layout->addLayout(tools);
     auto* tool_group = new QButtonGroup(this);
     const auto tool = [&](const char* name, int index, auto callback) {
         auto* control = new QPushButton(name, panel);
         control->setCheckable(true);
+        control->setObjectName("zone-tool");
         tool_group->addButton(control);
         tools->addWidget(control, index / 2, index % 2);
         connect(control, &QPushButton::clicked, this, callback);
         return control;
     };
-    const char* labels[]{"Required", "Forbidden", "Trigger", "Interaction"};
+    const char* labels[]{"Passage", "Cancel", "Action", "Hand sign"};
     const char* roles[]{"required", "forbidden", "trigger", "interaction"};
     const char* hints[]{"Green: pass through this zone.", "Red: avoid this zone.",
                         "Yellow: finish the movement here.",
@@ -461,7 +447,7 @@ void Window::build_sidebar() {
             inputs_->setCurrentRow(index);
         }
     });
-    tool("Eraser", 5, [this] {
+    tool("Erase", 5, [this] {
         stop();
         canvas_->erase = true;
         canvas_->select = false;
@@ -469,13 +455,13 @@ void Window::build_sidebar() {
         interaction_controls_->hide();
         order_controls_->hide();
     });
-    order_controls_ = section("3. Ordered route");
-    auto* order = new QSpinBox(panel);
-    order->setRange(0, 1024);
-    order->setSpecialValueText("Order: automatic");
-    layout->addWidget(order);
-    connect(order, &QSpinBox::valueChanged, this, [this](int value) { canvas_->order = value; });
-    interaction_controls_ = section("3. Hand sign condition");
+    order_controls_ = section("Route numbering");
+    auto* route_hint = new QLabel(
+        "Cells are numbered as you draw: reach 1, then 2, then 3. Each tracked point has its "
+        "own route. This is separate from the movement steps.", panel);
+    route_hint->setWordWrap(true);
+    layout->addWidget(route_hint);
+    interaction_controls_ = section("Hand sign condition");
     interaction_controls_->hide();
     auto* gesture = new QComboBox(panel);
     for (const auto name : gesture_names) {
@@ -492,21 +478,11 @@ void Window::build_sidebar() {
     connect(hold, &QSpinBox::valueChanged, this,
             [this](int value) { canvas_->interaction.hold_ms = value; });
     // Destructive finger editing belongs with movement settings, away from drawing tools.
-    movements->layout()->addWidget(fingers);
+    form->addRow(fingers);
     drawing->addStretch();
     canvas_->changed = [this] {
         if (running_) {
             stop();
-        }
-        if (auto* layer = findChild<QComboBox*>("layer-source")) {
-            const QSignalBlocker blocker(layer);
-            layer->clear();
-            if (canvas_->motion) {
-                for (const auto& item : ui::layers(*canvas_->motion)) {
-                    layer->addItem(QString::fromStdString(ui::landmark_label(item.landmark)),
-                                   item.landmark);
-                }
-            }
         }
         config_.track_hands |= canvas_->type == ConstraintType::Interaction;
         canvas_->interaction.hand = canvas_->landmark == 16 ? HandSide::Right : HandSide::Left;
@@ -529,16 +505,6 @@ void Window::select_input(int index) {
         index >= 0 && index < int(config_.motions.size()) ? &config_.motions[index] : nullptr;
     drawing_panel_->setEnabled(canvas_->motion != nullptr);
     refresh_settings();
-    auto* layer = findChild<QComboBox*>("layer-source");
-    if (layer) {
-        layer->clear();
-        if (canvas_->motion) {
-            for (const auto& item : ui::layers(*canvas_->motion)) {
-                layer->addItem(QString::fromStdString(ui::landmark_label(item.landmark)),
-                               item.landmark);
-            }
-        }
-    }
     if (step_field_) {
         const QSignalBlocker blocker(step_field_);
         step_field_->clear();
@@ -546,7 +512,7 @@ void Window::select_input(int index) {
         if (canvas_->motion) {
             canvas_->scope = std::min(canvas_->scope, int(canvas_->motion->steps.size()));
             for (std::size_t i = 0; i < canvas_->motion->steps.size(); ++i) {
-                step_field_->addItem(QString("Step %1").arg(i + 1));
+                step_field_->addItem(QString("Step %1 of %2").arg(i + 1).arg(canvas_->motion->steps.size()));
             }
         }
         step_field_->setCurrentIndex(canvas_->scope);
@@ -556,6 +522,12 @@ void Window::select_input(int index) {
 }
 void Window::refresh_step() {
     const bool step = canvas_->motion && canvas_->scope > 0;
+    step_help_->setText(step
+        ? "Steps run one after another. Choose how to reach the cells inside this step: in "
+          "order, any order, or all at the same time. One step is enough for a simple movement."
+        : "Global conditions apply throughout the movement. Place action and hand sign zones "
+          "inside a step.");
+    findChild<QPushButton*>("delete-step")->setEnabled(step && canvas_->motion->steps.size() > 1);
     step_mode_field_->setVisible(step);
     const QSignalBlocker mode_blocker(step_mode_field_), hold_blocker(step_hold_field_);
     if (step) {

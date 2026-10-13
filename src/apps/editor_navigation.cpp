@@ -72,11 +72,15 @@ bool App::editor_drawing_tools(int id, int notification) {
         RedrawWindow(edit_window, nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN);
         return true;
     }
-    if (notification == BN_CLICKED && id >= PaintRequired && id <= DrawContour) {
+    if (notification == BN_CLICKED &&
+        (id == DrawPencil || id == DrawBucket || id == DrawContour)) {
+        return true; // Retired authoring tools: imported rules remain supported.
+    }
+    if (notification == BN_CLICKED &&
+        ((id >= PaintRequired && id <= PaintInteraction) || id == DrawSelect || id == DrawEraser)) {
         if (id <= PaintInteraction) {
-            if (selection(edit_window, Tool) != 1 && selection(edit_window, Tool) != 2) {
-                SendDlgItemMessageW(edit_window, Tool, CB_SETCURSEL, 1, 0);
-            }
+            SendDlgItemMessageW(edit_window, Tool, CB_SETCURSEL, 1, 0);
+            SendDlgItemMessageW(edit_window, BrushOrder, CB_SETCURSEL, 0, 0);
             region_selection.clear();
             selected_constraint = -1;
             SendDlgItemMessageW(edit_window, ConstraintTypeId, CB_SETCURSEL, id - PaintRequired, 0);
@@ -89,25 +93,11 @@ bool App::editor_drawing_tools(int id, int notification) {
                     scope = 1;
                 }
                 inspector_tab = 4;
-                editor_help = false;
                 refresh_editor();
             }
-            if ((id == PaintTrigger) && selection(edit_window, Tool) == 2 &&
-                selection(edit_window, BrushOrder) == 0) {
-                SendDlgItemMessageW(edit_window, Tool, CB_SETCURSEL, 1, 0);
-            }
         } else {
-            const int tool =
-                id == DrawBucket &&
-                        selection(edit_window, ConstraintTypeId) == int(ConstraintType::Trigger) &&
-                        selection(edit_window, BrushOrder) == 0
-                    ? 1
-                    : id - DrawSelect;
-            SendDlgItemMessageW(edit_window, Tool, CB_SETCURSEL, tool, 0);
+            SendDlgItemMessageW(edit_window, Tool, CB_SETCURSEL, id == DrawSelect ? 0 : 3, 0);
         }
-        EnableWindow(GetDlgItem(edit_window, DrawBucket),
-                     selection(edit_window, ConstraintTypeId) != int(ConstraintType::Trigger) ||
-                         selection(edit_window, BrushOrder) > 0);
         layout_editor();
         RedrawWindow(edit_window, nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN);
         return true;

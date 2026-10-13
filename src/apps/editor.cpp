@@ -139,7 +139,7 @@ void App::open_editor(bool creating, bool test) {
     editor_help = false;
     layer_visible.fill(true);
     editing_layer = -1;
-    inspector_tab = creating ? 5 : 3;
+    inspector_tab = creating ? 5 : 0;
     selected_constraint = selected_finger = -1;
     WNDCLASSW klass{};
     klass.lpfnWndProc = editor_procedure;
@@ -229,9 +229,10 @@ void App::refresh_editor() {
     SendDlgItemMessageW(edit_window, Space, CB_SETCURSEL, int(draft.space), 0);
     SendDlgItemMessageW(edit_window, StepList, CB_RESETCONTENT, 0, 0);
     SendDlgItemMessageW(edit_window, StepList, CB_ADDSTRING, 0,
-                        reinterpret_cast<LPARAM>(L"Whole movement guards"));
-    for (const auto& step : draft.steps) {
-        const auto text = wide(step.id);
+                        reinterpret_cast<LPARAM>(L"Global conditions"));
+    for (std::size_t i = 0; i < draft.steps.size(); ++i) {
+        const auto text = L"Step " + std::to_wstring(i + 1) + L" of " +
+                          std::to_wstring(draft.steps.size());
         SendDlgItemMessageW(edit_window, StepList, CB_ADDSTRING, 0,
                             reinterpret_cast<LPARAM>(text.c_str()));
     }
@@ -275,11 +276,11 @@ void App::refresh_editor() {
         const auto& item = constraints[i];
         const auto text =
             wide(ui::landmark_label(item.landmark) + " | " + (order_labels[offset + i] + " | ") +
-                 (item.type == ConstraintType::Required      ? "Required"
-                  : item.type == ConstraintType::Forbidden   ? "Forbidden"
-                  : item.type == ConstraintType::Interaction ? "Interaction"
-                                                             : "Trigger") +
-                 ((item.priority == Priority::High ? " High " : " Low ") + std::string("[") +
+                 (item.type == ConstraintType::Required      ? "Passage"
+                  : item.type == ConstraintType::Forbidden   ? "Cancel"
+                  : item.type == ConstraintType::Interaction ? "Hand sign"
+                                                             : "Action") +
+                 ((item.priority == Priority::High ? " " : " Imported margin ") + std::string("[") +
                   std::to_string(item.cell.x) + "," + std::to_string(item.cell.y) + "]"));
         SendDlgItemMessageW(edit_window, ConstraintList, LB_ADDSTRING, 0,
                             reinterpret_cast<LPARAM>(text.c_str()));
@@ -329,7 +330,7 @@ void App::refresh_editor() {
     EnableWindow(GetDlgItem(edit_window, DrawBucket),
                  selection(edit_window, ConstraintTypeId) != int(ConstraintType::Trigger) ||
                      selection(edit_window, BrushOrder) > 0);
-    SetDlgItemTextW(edit_window, Clear, L"Clear step");
+    SetDlgItemTextW(edit_window, Clear, scope == 0 ? L"Clear global conditions" : L"Clear this step");
     RedrawWindow(edit_window, nullptr, nullptr, RDW_INVALIDATE | RDW_ALLCHILDREN);
     {
         std::lock_guard lock(state_mutex);
@@ -573,7 +574,7 @@ void App::editor_click(int x, int y, bool begin) {
             Gesture(selection(edit_window, InteractionGesture) + 1),
             integer_value(edit_window, InteractionHold, 0, maximum_interaction_hold_ms)};
     }
-    brush.priority = Priority(selection(edit_window, PriorityId));
+    brush.priority = Priority::High;
     if (brush.type == ConstraintType::Interaction && scope > 0 &&
         draft.steps[scope - 1].mode == StepMode::Ordered &&
         selection(edit_window, BrushOrder) == 0 && brush.priority == Priority::High) {

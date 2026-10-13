@@ -227,8 +227,8 @@ void App::paint_editor(HDC dc) {
     const wchar_t* heading = studio_view == 2     ? L"TEST / LIVE FEEDBACK"
                              : inspector_tab == 5 ? L"MOVEMENT / IDENTITY & ACTION"
                              : editor_help        ? L"DRAWING HELP"
-                             : inspector_tab == 3 ? L"LAYERS"
-                             : inspector_tab == 0 ? L"Spatial constraints / current step"
+                             : inspector_tab == 3 ? L"BODY PARTS / MANAGE EXISTING ZONES"
+                             : inspector_tab == 0 ? L"ZONES / CURRENT STEP"
                              : inspector_tab == 1 ? L"Finger rules / scope and anatomy"
                              : inspector_tab == 4 ? L"Interaction / hand sign and hold time"
                                                   : L"Recording / review before conversion";
@@ -240,7 +240,7 @@ void App::paint_editor(HDC dc) {
         if (editor_help) {
             hint(heading_y + 40, L"Choose a body part, a colour, then draw on the grid.");
             hint(heading_y + 68, L"Green: pass through. Red: avoid. Yellow: fire action.");
-            hint(heading_y + 96, L"Tolerance: click a painted square to add its contour.");
+            hint(heading_y + 96, L"Place the coloured cells where the tracked point should go.");
             hint(heading_y + 124,
                  L"Select: drag a rectangle. Ctrl keeps selection; Delete removes it.");
             hint(heading_y + 152, L"Each body part has a layer; together they form the input.");
@@ -262,11 +262,21 @@ void App::paint_editor(HDC dc) {
                               L"sends keyboard input.";
         DrawTextW(dc, text, -1, &help, DT_WORDBREAK);
     }
-    const int list_height = std::max(80, int(client.bottom) - 436);
+    const int list_height = std::max(80, int(client.bottom) - 520);
+    if (studio_view != 2) {
+        TextOutW(dc, 312, 66, L"Point for new / selected zones", 30);
+    }
     if (studio_view != 2 && inspector_tab == 0 && !editor_help) {
+        RECT explanation{580 + inspector_offset, 218, client.right - 24, 256};
+        const wchar_t* text = scope == 0
+            ? L"These conditions apply throughout the movement."
+            : L"Steps run one after another. Route order applies to the cells inside this step.";
+        DrawTextW(dc, text, -1, &explanation, DT_WORDBREAK);
+        if (selected_constraint >= 0) {
         for (const auto [text, x] :
              {std::pair{L"X", 580}, {L"Y", 690}, {L"Width", 800}, {L"Height", 910}}) {
-            TextOutW(dc, x + inspector_offset, 228 + list_height, text, int(wcslen(text)));
+            TextOutW(dc, x + inspector_offset, 312 + list_height, text, int(wcslen(text)));
+        }
         }
     } else if (studio_view != 2 && inspector_tab == 2 && !editor_help) {
         TextOutW(dc, 580 + inspector_offset, client.bottom - 152, L"Trim samples [start, end)", 24);

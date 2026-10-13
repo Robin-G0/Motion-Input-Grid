@@ -245,6 +245,21 @@ inline void number_lane(std::vector<SpatialConstraint>& list, int landmark) {
         }
     }
 }
+inline void set_route_mode(Step& step, StepMode mode) {
+    if (step.mode == mode) {
+        return;
+    }
+    step.mode = mode;
+    for (auto& zone : step.constraints) {
+        zone.order = 0;
+    }
+    if (mode == StepMode::Ordered) {
+        for (const auto& zone : step.constraints) {
+            number_lane(step.constraints, zone.landmark);
+        }
+    }
+}
+
 inline void pencil(std::vector<SpatialConstraint>& list, SpatialConstraint brush, int x, int y,
                    bool replace_order = false) {
     if (x < Grid::min_cell || x >= Grid::max_cell || y < Grid::min_cell || y >= Grid::max_cell) {
