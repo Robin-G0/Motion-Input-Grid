@@ -28,7 +28,38 @@ export function transformSelection(selected, original, next) {
     }
 }
 
-export function drawPreview(canvas, session, profile, inputIndex, geometry, { grid = true, points = true, full = false, notes = [], shoulderLabels = {left:"L",right:"R"} } = {}) {
+// Presence feedback is visual only; confirmed actions come from the native engine.
+export class RegionHighlights {
+    constructor() { this.reset(); }
+    reset() { this.inputId = null; this.seen = new Map(); }
+    observe(input, session, geometry, aspect, now) {
+        if (this.inputId !== input?.id) { this.reset(); this.inputId = input?.id; }
+        const list = regions(input), valid = new Set(list.map(region => region.id));
+        for (const id of this.seen.keys()) if (!valid.has(id) || now - this.seen.get(id) > 700) this.seen.delete(id);
+        for (const region of list) {
+            const point = trackedPoint(session, region.landmark);
+            if (!point || (point.confidence ?? 1) < .6) continue;
+            const local = geometry.local(point.x, point.y, aspect, input.space ?? "calibrated");
+            if (!local) continue;
+            const rect = cellRect(region.cell);
+            if (local.x >= rect.x && local.x < rect.x + rect.w && local.y >= rect.y && local.y < rect.y + rect.h)
+                this.seen.set(region.id, Math.max(now, this.seen.get(region.id) ?? -Infinity));
+        }
+    }
+    confirm(input, now) {
+        if (this.inputId !== null && this.inputId !== input.id) return;
+        this.inputId = input.id;
+        for (const region of regions(input)) if (["trigger", "interaction"].includes(region.type)) this.seen.set(region.id, now + 250);
+    }
+    intensity(id, now, reducedMotion = false) {
+        const seen = this.seen.get(id);
+        if (seen === undefined) return 0;
+        const value = Math.max(0, Math.min(1, 1 - (now - seen) / 450));
+        return reducedMotion ? Number(value > 0) : value;
+    }
+}
+
+export function drawPreview(canvas, session, profile, inputIndex, geometry, { grid = true, points = true, full = false, notes = [], highlights, reducedMotion = false, shoulderLabels = {left:"L",right:"R"} } = {}) {
     const video = session.video;
     if (!video?.videoWidth || !video.videoHeight) return;
     const aspect = video.videoWidth / video.videoHeight;
@@ -41,7 +72,6 @@ export function drawPreview(canvas, session, profile, inputIndex, geometry, { gr
     const input = profile.inputs[inputIndex];
     if (!input) return;
     const space = input.space ?? "calibrated";
-    const active = !!session.tracker?.active?.(inputIndex);
     const colors = { required: "#a7d7c3", trigger: "#e9c18a", forbidden: "#ffaaa6", interaction: "#c7b1e0" };
     const project = (x, y) => geometry.project(x, y, aspect, space);
     const path = list => {
@@ -63,8 +93,9 @@ export function drawPreview(canvas, session, profile, inputIndex, geometry, { gr
             if (!path([[x, y], [x + w, y], [x + w, y + h], [x, y + h]])) continue;
             ctx.closePath();
             const color = colors[region.type] ?? "#fff";
-            ctx.fillStyle = `${color}33`; ctx.strokeStyle = color;
-            ctx.lineWidth = active ? 3 : 1.5;
+            const intensity = highlights?.intensity(region.id, performance.now(), reducedMotion) ?? 0;
+            ctx.fillStyle = `${color}${Math.round(51 + intensity * 48).toString(16).padStart(2, "0")}`; ctx.strokeStyle = color;
+            ctx.lineWidth = 1.5 + intensity * 1.5;
             ctx.setLineDash(region.priority === "low" ? [4, 4] : []);
             ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
             const centre = project(x + w / 2, y + h / 2);
@@ -282,14 +313,16 @@ export class GridEditor {
             this.position(node, { ...cell, w: 1, h: 1 }); return node;
         }));
     }
-    renderShoulders(points = {left:{x:7,y:3.5},right:{x:2,y:3.5}}) {
+    renderShoulders(points) {
+        if (!points || !this.shoulderPoints) this.shoulderPoints = {left:{x:7,y:3.5},right:{x:2,y:3.5}};
         for (const side of ["left", "right"]) {
             let marker = this.root.parentElement.querySelector(`[data-shoulder="${side}"]`);
             if (!marker) { marker = document.createElement("span"); marker.className = "shoulder-marker"; marker.dataset.shoulder = side; this.root.parentElement.append(marker); }
-            const point = points?.[side]; marker.hidden = !point;
-            if (!point) continue;
+            if (points?.[side] && Number.isFinite(points[side].x) && Number.isFinite(points[side].y)) this.shoulderPoints[side] = points[side];
+            const point = this.shoulderPoints[side]; marker.hidden = false;
+            marker.dataset.tracked = String(!points || !!points[side]);
             const x = (point.x - this.min) / this.size;
-            marker.style.left = `${(this.mirror ? 1 - x : x) * 100}%`; marker.style.top = `${(point.y - this.min) / this.size * 100}%`;
+            marker.style.left = `clamp(14px, ${(this.mirror ? 1 - x : x) * 100}%, calc(100% - 14px))`; marker.style.top = `clamp(14px, ${(point.y - this.min) / this.size * 100}%, calc(100% - 14px))`;
             marker.textContent = this.text(side === "left" ? "shoulderLeftShort" : "shoulderRightShort");
             marker.setAttribute("aria-label", `${this.text(`${side}_shoulder`)} [${point.x.toFixed(1)}, ${point.y.toFixed(1)}]`);
             marker.title = marker.getAttribute("aria-label");

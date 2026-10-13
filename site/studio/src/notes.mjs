@@ -43,8 +43,11 @@ export class NoteLayer {
 
 export function previewCell(event, canvas, geometry, aspect, space, mirror = false) {
     const bounds = canvas.getBoundingClientRect();
-    let x = (event.clientX - bounds.left) / bounds.width;
-    const y = (event.clientY - bounds.top) / bounds.height;
+    // The editor frame is fixed; the video and canvas fit inside it without cropping.
+    const width = Math.min(bounds.width, bounds.height * aspect), height = width / aspect;
+    let x = (event.clientX - bounds.left - (bounds.width - width) / 2) / width;
+    const y = (event.clientY - bounds.top - (bounds.height - height) / 2) / height;
+    if (x < 0 || x > 1 || y < 0 || y > 1) return null;
     if (mirror) x = 1 - x;
     const point = geometry.local(x, y, aspect, space);
     if (!point) return null;

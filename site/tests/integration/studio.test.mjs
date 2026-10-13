@@ -6,7 +6,31 @@ import { PreviewGrid, trackedPoint } from "../../studio/src/camera.mjs";
 import { copy } from "../../studio/src/copy.mjs";
 import { NoteLayer, lineCells, previewCell } from "../../studio/src/notes.mjs";
 import { setFingerRule } from "../../studio/src/fingers.mjs";
-import { transformRect, selectionRect, transformSelection } from "../../studio/src/grid.mjs";
+import { transformRect, selectionRect, transformSelection, RegionHighlights } from "../../studio/src/grid.mjs";
+
+test("camera region feedback follows each reliable landmark, fades after leaving and confirms only the native action zone", () => {
+    const input = {id:"move",space:"body",steps:[{constraints:[
+        {id:"pass",landmark:"left_wrist",type:"required",cell:[2,3,1,1]},
+        {id:"action",landmark:"right_wrist",type:"trigger",cell:[4,3,1,1]}
+    ]}]};
+    const geometry = {local:(x,y) => ({x,y})};
+    let reliable = true;
+    const session = {coordinate:index => ({x:index === 15 ? 2.5 : 10,y:3.5,confidence:reliable ? 1 : .1})};
+    const feedback = new RegionHighlights();
+    feedback.observe(input,session,geometry,1,100);
+    assert.equal(feedback.intensity("pass",100),1); assert.equal(feedback.intensity("action",100),0);
+    reliable = false; feedback.observe(input,session,geometry,1,200);
+    assert.equal(feedback.intensity("pass",325),.5);
+    assert.equal(feedback.intensity("pass",325,true),1);
+    assert.equal(feedback.intensity("pass",551),0);
+    feedback.confirm(input,600);
+    assert.equal(feedback.intensity("action",600),1);
+    assert.equal(feedback.intensity("action",1075),.5);
+    assert.equal(feedback.intensity("action",1301,true),0);
+    feedback.observe({...input,id:"other"},session,geometry,1,700);
+    assert.equal(feedback.intensity("action",700),0);
+    feedback.reset(); assert.equal(feedback.intensity("pass",700),0);
+});
 
 test("region moves and corner resizing preserve dimensions and stay within native grid bounds", () => {
     const rect = {x:2,y:3,w:3,h:2};
@@ -67,6 +91,40 @@ test("the Studio starter really emits its action through published MIG on landsc
         } finally { tracker.delete(); }
     }
 });
+test("published MIG distinguishes unordered visits, simultaneous occupancy and independent ordered landmark lanes", async () => {
+    const module = await createMIG();
+    const run = (mode, constraints, observations) => {
+        const tracker = new module.Tracker();
+        try {
+            const profile = {schema_version:2,tracking:{hands:false},inputs:[{...newInput(),cooldown_ms:0,steps:[{id:"step",mode,constraints}]}]};
+            assert.equal(tracker.load(JSON.stringify(profile)), "");
+            let time = 0, sequence = 0;
+            const observe = (left, right) => {
+                const buffer = tracker.bodyBuffer(); buffer.fill(0);
+                const put = (i,x,y) => buffer.set([x,y,0,1,0,0,0,0],i*8);
+                put(11,.65,.45); put(12,.35,.45);
+                for (const [i,point] of [[15,left],[16,right]]) put(i,.5+(point[0]-4.5)*.06,.45+(point[1]-3.5)*.06);
+                return tracker.update(time+=50,++sequence,1,0,0);
+            };
+            for(let i=0;i<30;i++) assert.equal(observe([4.5,8.5],[4.5,8.5]),0);
+            return observations.map(([left,right]) => observe(left,right));
+        } finally { tracker.delete(); }
+    };
+    const region = (id,landmark,x,y,order=0) => ({id,landmark,cell:[x,y,1,1],type:"required",priority:"high",order});
+    const both = [region("left","left_wrist",6,3),region("right","right_wrist",2,3)];
+    const alternate = [[[6.5,3.5],[2.5,5.5]],[[6.5,5.5],[2.5,3.5]],[[6.5,3.5],[2.5,3.5]]];
+    assert.deepEqual(run("visited",both,alternate.slice(0,2)),[0,1]);
+    assert.deepEqual(run("simultaneous",both,alternate),[0,0,1]);
+    const route = [region("first","left_wrist",6,5,1),region("second","left_wrist",6,3,2)];
+    const reversed = [[[6.5,3.5],[2.5,8.5]],[[6.5,5.5],[2.5,8.5]]];
+    assert.deepEqual(run("visited",route.map(region => ({...region,order:0})),reversed),[0,1]);
+    assert.deepEqual(run("ordered",route,[...reversed,[[6.5,3.5],[2.5,8.5]]]),[0,0,1]);
+    const parallel = [...route,region("right-first","right_wrist",2,5,1),region("right-second","right_wrist",2,3,2)];
+    assert.deepEqual(run("ordered",parallel,[[[6.5,5.5],[2.5,5.5]],[[6.5,5.5],[2.5,3.5]],[[6.5,3.5],[2.5,3.5]]]),[0,0,1]);
+    const alternatives = [...route,region("alternative","left_wrist",7,5,1)];
+    assert.deepEqual(run("ordered",alternatives,[[[7.5,5.5],[2.5,8.5]],[[6.5,3.5],[2.5,8.5]]]),[0,1]);
+});
+
 test("visual editing preserves advanced options across undo and redo; imports stay bounded", () => {
     const profile = starter();
     profile.inputs[0].keyboard = [{ text: "Example" }];
@@ -123,6 +181,21 @@ test("annotation coordinates match the grid in mirrored portrait and landscape p
         geometry.reset(); assert.equal(previewCell({ clientX: 100, clientY: 100 }, canvas, geometry, aspect), null);
     }
 });
+test("notes align with contained video in a fixed frame and ignore its letterbox margins", () => {
+    for (const aspect of [16 / 9, 9 / 16]) {
+        const geometry = new PreviewGrid();
+        for (let time = 0; time <= 1100; time += 50) geometry.observe({x:.65,y:.45,confidence:1}, {x:.35,y:.45,confidence:1}, aspect, time);
+        const canvas = {getBoundingClientRect: () => ({left:12,top:20,width:800,height:500})};
+        const width = Math.min(800, 500 * aspect), height = width / aspect;
+        for (const mirror of [false, true]) for (const space of ["body", "calibrated"]) {
+            const point = geometry.project(2.5, 4.5, aspect, space);
+            const event = {clientX:12+(800-width)/2+(mirror?1-point.x:point.x)*width, clientY:20+(500-height)/2+point.y*height};
+            assert.deepEqual(previewCell(event, canvas, geometry, aspect, space, mirror), {x:2,y:4});
+        }
+        assert.equal(previewCell({clientX:13,clientY:21}, canvas, geometry, aspect, "body"), null);
+    }
+});
+
 test("notes stay separate per movement, cover fast strokes, survive reload and can be cleaned", () => {
     const layer = new NoteLayer();
     layer.paint("one", lineCells({ x: 0, y: 0 }, { x: 8, y: 8 }));

@@ -50,4 +50,18 @@ fr.allSelected = "Zones de cette étape sélectionnées :";
 en.allSelected = "Selected regions in this step:";
 fr.selectHelp += " Ctrl+A : tout sélectionner dans cette étape.";
 en.selectHelp += " Ctrl+A: select all regions in this step.";
+Object.assign(fr, {
+    cameraLayer: "Caméra", gridZoom: "Zoom de la grille", zoomOut: "Dézoomer la grille", zoomIn: "Zoomer la grille", zoomReset: "Revenir à 100 %", deleteCard: "Supprimer",
+    profileSettings: "Réglages du profil", profileSettingsHint: "Ces réglages s’appliquent à tous les mouvements du profil.", handsSettingsHint: "Les conditions sur les doigts et les signes des mains activent automatiquement cette analyse.",
+    movementSettingsHint: "Le nom et l’action de ce mouvement uniquement.", advancedMovement: "Paramètres avancés", stepSettings: "Étape courante", stepSettingsHint: "Dessinez les zones de cette étape et choisissez leur ordre de passage.", globalGuardSettings: "Contraintes du mouvement", globalGuardHint: "Ces zones restent actives pendant toutes les étapes de ce mouvement.",
+    newRegionSettings: "Nouvelle zone", selectionSettings: "Sélection", selectionHint: "Bordures : déplacer · coins : redimensionner", copySelection: "Copier", deleteSelection: "Supprimer", global: "Tout le mouvement",
+    selectHelp: "Sélectionnez une zone. Glissez ses bordures ou ses coins. Double-cliquez pour les détails.", cameraEditHelp: "Annotez la caméra ou désactivez son affichage pour dessiner les zones."
+});
+Object.assign(en, {
+    cameraLayer: "Camera", gridZoom: "Grid zoom", zoomOut: "Zoom out", zoomIn: "Zoom in", zoomReset: "Reset to 100%", deleteCard: "Delete",
+    profileSettings: "Profile settings", profileSettingsHint: "These settings apply to all movements in this profile.", handsSettingsHint: "Finger conditions and hand signs enable this analysis automatically.",
+    movementSettingsHint: "The name and action of this movement only.", advancedMovement: "Advanced settings", stepSettings: "Current step", stepSettingsHint: "Draw regions for this step and choose their visiting order.", globalGuardSettings: "Movement guards", globalGuardHint: "These regions stay active throughout every step of this movement.",
+    newRegionSettings: "New region", selectionSettings: "Selection", selectionHint: "Edges: move · corners: resize", copySelection: "Copy", deleteSelection: "Delete", global: "Whole movement",
+    selectHelp: "Select a region. Drag its edges or corners. Double-click for details.", cameraEditHelp: "Annotate the camera or turn its display off to draw regions."
+});
 export const copy = { fr, en };

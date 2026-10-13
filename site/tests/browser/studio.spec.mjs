@@ -29,8 +29,8 @@ async function fakeObservations(page, failure = "") {
             return { pose: { close() {}, setOptions() {}, detectForVideo() {
                 window.studioInferenceCount = (window.studioInferenceCount || 0) + 1;
                 const points = Array.from({length:33}, () => ({x:.5,y:.45,z:0,visibility:0}));
-                points[11] = {x:.65,y:.45,z:0,visibility:1};
-                points[12] = {x:.35,y:.45,z:0,visibility:1};
+                points[11] = {x:.65,y:.45,z:0,visibility:window.studioShouldersVisible === false ? 0 : 1};
+                points[12] = {x:.35,y:.45,z:0,visibility:window.studioShouldersVisible === false ? 0 : 1};
                 points[15] = {x:.5,y:window.studioWristY,z:0,visibility:1};
                 return {landmarks:[points], worldLandmarks:[]};
             } }, hands: { close() {}, detectForVideo() { return {landmarks:[],handedness:[],worldLandmarks:[]}; } } };
@@ -105,12 +105,16 @@ test("the live Studio uses native recognition, filters logs, applies edits and r
     await page.locator("#start-test").click();
     await expect(page.locator("#live-badge")).toHaveAttribute("data-live", "true");
     await expect(page.locator("#camera-message")).toContainText("Suivi actif", { timeout: 15000 });
+    const zoneOpacity = y => page.locator("#camera-overlay").evaluate((canvas, y) => canvas.getContext("2d").getImageData(Math.floor(canvas.width * .45), Math.floor(canvas.height * y), 1, 1).data[3], y);
+    await expect.poll(() => zoneOpacity(.60)).toBeGreaterThan(80);
     await page.evaluate(() => { window.studioWristY = .45; });
     // Allow the selected pose to reach the actual session before the next one.
     await expect.poll(() => page.locator("#camera-overlay").evaluate(canvas => canvas.width)).toBe(960);
     await page.waitForTimeout(150);
     await page.evaluate(() => { window.studioWristY = .29; });
     await expect(page.locator('#log-list [data-level="action"]')).toContainText("hand_raised");
+    await expect.poll(() => zoneOpacity(.20)).toBeGreaterThan(80);
+    await expect.poll(() => zoneOpacity(.60)).toBe(51);
     await expect(page.locator("#action-count")).toHaveText("1 Action émise");
     await expect(page.locator("#log-list li")).toHaveCount(1);
     await page.locator("#log-level").selectOption("info");
@@ -237,10 +241,10 @@ test("editor mirrors coordinates, drawing and arrow navigation to match the came
     await cell(4).click();
     const note = page.locator("#grid-notes .grid-note").first();
     expect((await note.boundingBox()).x).toBeCloseTo((await cell(4).boundingBox()).x, 0);
-    await page.locator("#editor-camera-view").click();
+    await page.locator("#editor-camera-toggle").check();
     await page.locator(".preview-settings summary").click();
     await page.locator("#mirror-preview").uncheck();
-    await page.locator("#editor-grid-view").click();
+    await page.locator("#editor-camera-toggle").uncheck(); await page.locator("#zoom-reset").click();
     await cell(4).scrollIntoViewIfNeeded();
     a = await cell(4).boundingBox(); b = await cell(5).boundingBox();
     expect(b.x).toBeGreaterThan(a.x);
@@ -253,17 +257,17 @@ test("camera starts in an empty editor, stays active across views and applies ed
     await fakeObservations(page);
     await openStudio(page, "home");
     await page.locator("#new-profile").click();
-    await page.locator("#editor-camera-view").click();
+    await page.locator("#editor-camera-toggle").check();
     await expect(page.locator("#editor-camera #test-stage")).toBeVisible();
     await expect(page.locator(".grid-viewport")).toBeHidden();
     await page.locator("#start-test").click();
     await expect(page.locator("#camera-message")).toContainText("Suivi actif", {timeout:15000});
     await expect(page.locator("#camera-draft-hint")).toBeVisible();
     await page.evaluate(() => { window.originalStudioStream = window.studioStream; });
-    await page.locator("#editor-grid-view").click();
+    await page.locator("#editor-camera-toggle").uncheck(); await page.locator("#zoom-reset").click();
     await page.locator('#editor-grid button[data-x="4"][data-y="4"]').click();
     await expect(page.locator(".grid-region.required")).toHaveCount(1);
-    await page.locator("#editor-camera-view").click();
+    await page.locator("#editor-camera-toggle").check();
     await expect(page.locator("#camera-message")).toContainText("Suivi actif", {timeout:15000});
     await expect.poll(() => page.evaluate(() => window.studioInferenceCount)).toBeGreaterThan(15);
     await page.locator("#editor-note-toggle").click();
@@ -297,16 +301,16 @@ test("a cancelled model load cannot reopen the camera or lock the editor", async
     const pending = new Promise(resolve => { release = resolve; });
     await page.route("**/mig/models.mjs", async route => { await pending; await route.fallback(); });
     await openStudio(page);
-    await page.locator("#editor-camera-view").click();
+    await page.locator("#editor-camera-toggle").check();
     await page.locator("#start-test").click();
     await expect(page.locator("#stop-test")).toBeVisible();
-    await page.locator("#editor-grid-view").click();
+    await page.locator("#editor-camera-toggle").uncheck();
     await page.locator("#header-stop").click();
     release();
     await expect(page.locator("#start-test")).toBeEnabled();
     await expect(page.locator("#input-name")).toBeEnabled();
     await expect(page.locator("#live-badge")).toHaveAttribute("data-live", "false");
-    await page.locator("#editor-camera-view").click();
+    await page.locator("#editor-camera-toggle").check();
     await page.locator("#start-test").click();
     await expect(page.locator("#live-badge")).toHaveAttribute("data-live", "true");
     await page.locator("#stop-test").click();
@@ -371,10 +375,11 @@ test("horizontal scrollbar reaches distant cells and both shoulder markers follo
     await expect(page.locator('[data-shoulder="right"]')).toHaveAttribute("aria-label", /Épaule droite \[2.0, 3.5\]/);
     const a = await page.locator('[data-shoulder="left"]').boundingBox(), b = await page.locator('[data-shoulder="right"]').boundingBox();
     expect(a.x).toBeLessThan(b.x);
-    await expect(page.locator("#grid-scroll-x")).toBeEnabled();
-    await page.locator("#grid-scroll-x").focus(); await page.keyboard.press("End");
+    await expect(page.locator("#grid-scroll-x")).toHaveCount(0);
+    await page.locator(".grid-viewport").focus();
+    for (let i = 0; i < 4; i++) await page.keyboard.press("ArrowRight");
     await expect.poll(() => page.locator(".grid-viewport").evaluate(node => Math.round(node.scrollLeft))).toBeGreaterThan(100);
-    await page.keyboard.press("Home");
+    await page.locator(".grid-viewport").evaluate(node => node.scrollTo({left:0,behavior:"instant"}));
     await expect.poll(() => page.locator(".grid-viewport").evaluate(node => node.scrollLeft)).toBe(0);
 });
 
@@ -461,7 +466,7 @@ test("copy and paste select the new region for immediate resizing and keyboard u
 test("pasting from camera editing returns to the grid with handles, while invalid duplicates preserve the profile", async ({ page }) => {
     await openStudio(page);
     await page.locator("#region-list button").first().click(); await page.locator("#done-region").click();
-    await page.locator("#editor-camera-view").click();
+    await page.locator("#editor-camera-toggle").check();
     await page.keyboard.press("Control+c"); await page.keyboard.press("Control+v");
     await expect(page.locator(".grid-region")).toHaveCount(3);
     await expect(page.locator(".grid-viewport")).toBeVisible();
@@ -494,7 +499,7 @@ test("Ctrl+A selects and moves the step's regions together, supports copying the
     await expect(page.locator(".region-coordinate").last()).toHaveText("[5, 3, 1, 1]");
     await page.keyboard.press("Control+c");
     await page.locator("#tab-moves").click(); await page.locator("#add-input").click();
-    await page.locator("#editor-grid-view").click(); await page.keyboard.press("Control+v");
+    await page.locator("#editor-camera-toggle").uncheck(); await page.locator("#zoom-reset").click(); await page.keyboard.press("Control+v");
     await expect(page.locator(".grid-region.selected")).toHaveCount(2);
     await expect(page.locator(".region-coordinate").first()).toHaveText("[2, 4, 1, 1]");
     await expect(page.locator(".region-coordinate").last()).toHaveText("[4, 4, 1, 1]");
@@ -502,6 +507,116 @@ test("Ctrl+A selects and moves the step's regions together, supports copying the
     await page.keyboard.press("Control+a");
     expect(await page.locator("#input-name").evaluate(node => node.selectionEnd - node.selectionStart)).toBe(16);
     await expect(page.locator(".grid-region.selected")).toHaveCount(2);
+});
+
+test("camera display keeps the editor frame and tools fixed; grid zoom preserves notes and editing coordinates", async ({ page }) => {
+    await fakeObservations(page); await openStudio(page, "home"); await page.locator("#new-profile").click();
+    for (const size of [{width:1440,height:1000}, {width:390,height:844}]) {
+        await page.setViewportSize(size);
+        const before = await page.locator(".editor-frame").boundingBox();
+        const gridBounds = await page.locator(".grid-viewport").boundingBox();
+        const tools = await page.locator(".tool-group").boundingBox();
+        await page.locator("#editor-camera-toggle").check();
+        expect(await page.locator(".editor-frame").boundingBox()).toEqual(before);
+        expect(await page.locator("#test-stage").boundingBox()).toEqual(gridBounds);
+        expect(await page.locator(".tool-group").boundingBox()).toEqual(tools);
+        await expect(page.locator("#zoom-in")).toBeDisabled();
+        await page.locator("#editor-camera-toggle").uncheck();
+        expect(await page.locator(".editor-frame").boundingBox()).toEqual(before);
+    }
+    const square = await page.locator("#editor-grid button").first().boundingBox();
+    await page.locator("#zoom-in").click(); await page.locator("#zoom-in").click();
+    await expect(page.locator("#zoom-reset")).toHaveText("150%");
+    expect((await page.locator("#editor-grid button").first().boundingBox()).width).toBeCloseTo(square.width * 1.5, 0);
+    const cell = page.locator('#editor-grid button[data-x="3"][data-y="3"]');
+    await cell.click(); await expect(page.locator(".region-coordinate").first()).toHaveText("[3, 3, 1, 1]");
+    await page.locator("#editor-note-toggle").click(); await cell.click();
+    await expect(page.locator(".grid-note")).toHaveCount(1);
+    await page.locator("#zoom-reset").click(); await expect(page.locator("#zoom-reset")).toHaveText("100%");
+    await expect(page.locator(".grid-note")).toHaveCount(1);
+    await page.locator("#zoom-out").click(); await expect(page.locator("#zoom-reset")).toHaveText("75%");
+    await page.locator("#editor-camera-toggle").check(); await page.locator("#start-test").click();
+    await expect(page.locator("#camera-message")).toContainText("Suivi actif", {timeout:15000});
+    const active = await page.locator(".editor-frame").boundingBox();
+    await page.locator("#editor-camera-toggle").uncheck();
+    expect(await page.locator(".editor-frame").boundingBox()).toEqual(active);
+    await expect(page.locator("#zoom-reset")).toHaveText("75%");
+    await page.locator("#header-stop").click();
+});
+
+test("profile, movement, step and selection options have distinct scopes and contextual controls", async ({ page }) => {
+    await openStudio(page,"home"); await page.locator("#new-profile").click();
+    await expect(page.locator("#selection-inspector")).toBeHidden();
+    await expect(page.locator("#creation-settings")).toBeVisible();
+    await expect(page.locator(".movement-inspector #input-name")).toBeVisible();
+    await expect(page.locator(".step-inspector #step-mode")).toBeVisible();
+    await page.locator("#open-profile-settings").click();
+    await expect(page.locator("#profile-dialog #track-hands")).toBeVisible();
+    await page.locator("#done-profile-settings").click();
+    for (const x of [3,5]) await page.locator(`#editor-grid button[data-x="${x}"][data-y="3"]`).click();
+    await page.locator('[data-tool="select"]').click(); await page.keyboard.press("Control+a");
+    await expect(page.locator("#creation-settings")).toBeHidden();
+    await expect(page.locator("#selection-inspector")).toBeVisible();
+    await expect(page.locator("#selection-summary")).toContainText("2 zones");
+    await expect(page.locator("#selection-details")).toBeHidden();
+    await page.locator("#delete-selection").click(); await expect(page.locator(".grid-region")).toHaveCount(0);
+    await page.locator("#undo").click(); await expect(page.locator(".grid-region")).toHaveCount(2);
+    await page.locator("#scope").selectOption("global");
+    await expect(page.locator("#step-mode-field")).toBeHidden();
+    await expect(page.locator("#scope-help")).toContainText("toutes les étapes");
+});
+
+test("camera commands stay outside its frame and shoulder references survive live edits and lost observations", async ({ page }) => {
+    await fakeObservations(page); await openStudio(page,"home"); await page.locator("#new-profile").click();
+    await page.locator("#editor-camera-toggle").check();
+    const frame = await page.locator(".editor-frame").boundingBox();
+    const controls = await page.locator("#editor-camera-controls").boundingBox();
+    expect(controls.y).toBeGreaterThanOrEqual(frame.y+frame.height);
+    await page.locator("#start-test").click();
+    await expect(page.locator("#camera-message")).toContainText("Suivi actif",{timeout:15000});
+    await page.locator("#editor-camera-toggle").uncheck();
+    for (const side of ["left","right"]) await expect(page.locator(`[data-shoulder="${side}"]`)).toBeVisible();
+    await page.locator('#editor-grid button[data-x="3"][data-y="3"]').click();
+    for (const side of ["left","right"]) await expect(page.locator(`[data-shoulder="${side}"]`)).toBeVisible();
+    await page.evaluate(() => { window.studioShouldersVisible = false; });
+    await page.locator("#editor-camera-toggle").check();
+    await expect(page.locator("#camera-message")).toContainText("épaules",{timeout:15000});
+    await page.locator("#editor-camera-toggle").uncheck();
+    for (const side of ["left","right"]) {
+        const marker = page.locator(`[data-shoulder="${side}"]`);
+        await expect(marker).toBeVisible(); await expect(marker).toHaveAttribute("data-tracked","false");
+    }
+    await page.locator("#editor-note-toggle").click(); await page.locator('#editor-grid button[data-x="7"][data-y="3"]').click();
+    for (const side of ["left","right"]) await expect(page.locator(`[data-shoulder="${side}"]`)).toBeVisible();
+    await page.locator("#header-stop").click();
+});
+
+test("changing step modes exports native modes and appropriate order numbers, with undo", async ({ page }) => {
+    await openStudio(page);
+    for (const mode of ["visited","simultaneous","ordered"]) {
+        await page.locator("#step-mode").selectOption(mode);
+        await page.locator("#open-json").click();
+        const configuration = JSON.parse(await page.locator("#json-source").inputValue());
+        const step = configuration.inputs[0].steps[0];
+        expect(step.mode).toBe(mode);
+        expect(step.constraints.map(region => region.order)).toEqual(mode === "ordered" ? [1,2] : [0,0]);
+        await page.locator("#cancel-json").click();
+    }
+    await page.locator("#undo").click(); await expect(page.locator("#step-mode")).toHaveValue("simultaneous");
+});
+
+test("movement cards offer reversible deletion and hide the redundant movement picker", async ({ page }) => {
+    await openStudio(page);
+    await page.locator("#tab-moves").click();
+    await expect(page.locator(".movement-switch")).toBeHidden();
+    const remove = page.locator("[data-delete-movement]");
+    await expect(remove).toHaveText("Supprimer");
+    await expect(remove).toHaveClass(/danger-text/);
+    await remove.click(); await expect(page.locator(".movement-card")).toHaveCount(0);
+    await page.locator("#undo").click(); await expect(page.locator(".movement-card")).toHaveCount(1);
+    await page.locator(".movement-card .card-actions button").first().click();
+    await expect(page.locator(".movement-switch")).toBeVisible();
+    await page.locator("#tab-test").click(); await expect(page.locator(".movement-switch")).toBeVisible();
 });
 
 test("Studio fits phone and desktop screens, changes language and shares theme and icon", async ({ page }) => {
