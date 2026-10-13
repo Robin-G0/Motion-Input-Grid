@@ -2,171 +2,135 @@
 
 [English](readme.md) | [Français](docs/fr/readme.fr.md)
 
-## 🚀 [Try the project in your browser before learning more!](https://robin-g0.github.io/Motion-Input-Grid/) ✨
+# [Explore the presentation website](https://robin-g0.github.io/Motion-Input-Grid/)
 
-> [!NOTE]
-> MIG is under active development and has just started publishing its first versions.
-> All [feedback and suggestions](https://github.com/Robin-G0/Motion-Input-Grid/issues) are welcome.
+Start here for a **quick introduction and an interactive demo of the concept**, directly in your browser.
 
 **Turn a movement into an action.** Draw a route for a wrist or another body part,
-then use a camera to recognize it. MIG can send a keyboard shortcut to your desktop
-application or report an action to your game, website or Python program.
+then recognize it with a camera. Use the resulting actions in your project or send
+keyboard shortcuts to a desktop application.
 
-Use a raised hand to advance a presentation, a movement to control a game, or a
-hand sign to run a shortcut. You choose the movements and their bindings.
-
-[**Download**](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.0.2#user-content-downloads) ·
-[**Documentation**](docs/index.md) · [**Examples**](examples/README.md)
-
-[Try MIG](#try-mig-now) · [Downloads](#downloads) · [Desktop](#use-mig-on-your-desktop) · [Integrate MIG](#add-mig-to-your-application) · [Architecture](#explore-the-engine)
-
-## Try MIG now
-
-Open [**Motion Input Grid Studio Web**](https://robin-g0.github.io/Motion-Input-Grid/studio/) to
-create, import and test a JSON profile without installing the desktop editor.
-Export your profile to **Motion Input Grid Controller** to send keyboard shortcuts to another
-application. [Studio Web guide](docs/guides/studio-web.md).
-
-Each download contains one tutorial, its sources and its dependencies. Extract the
-complete archive and follow its README. Allow about 30–60 seconds with prerequisites
-installed; initial model loading depends on your hardware.
-
-| Example | Try me | Launch |
-| --- | --- | --- |
-| [Browser](examples/web/README.md) | [Download](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.0.2#user-content-web-examples) | `run.cmd` / `sh run.sh`, then open localhost and grant camera permission |
-| [Python/Tk](examples/python-tkinter/README.md) | [Windows / Linux](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.0.2#user-content-python-tkinter-examples) | `main.exe` / `./main`; Python is bundled |
-| [SDL2](examples/sdl2/README.md) | [Windows / Linux](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.0.2#user-content-sdl2-examples) | `mig-sdl2.exe` / `./mig-sdl2`; raise a wrist from green into yellow |
-
-Browser: Node 22.12+ and a modern browser. Native viewers: Visual C++ 2022 x64
-runtime on Windows, glibc 2.35+ on Linux. Engine tutorials require their editor
-and a tracking provider; they remain **Preview**.
-
-## Downloads
-
-Choose your use case, then an example and platform in the release table.
-
-| Your goal | v1.0.2 downloads |
+| Start here | What you can do |
 | --- | --- |
-| Create a profile and control an application | [Desktop applications](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.0.2#user-content-desktop-applications) |
-| Try Python, SDL2, SFML or a C++ consumer | [Independent native examples](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.0.2#user-content-native-examples) |
-| Try HTML, React, Vue or Next.js | [Independent browser examples](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.0.2#user-content-browser-examples) |
-| Use Godot, Unity or Unreal | [Engine tutorials and integrations](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.0.2#user-content-game-engines) |
-| Integrate MIG into your project | [SDKs and Python/npm/Debian packages](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.0.2#user-content-sdks-and-language-packages) |
-| Build from source or verify a download | [Source and checksums](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.0.2#user-content-source-and-integrity-files) |
+| **[Browser Studio / configuration editor](https://robin-g0.github.io/Motion-Input-Grid/studio/)** | Create, import and test a profile, then export JSON. No installation. |
+| **[Download Motion Input Grid Controller](https://github.com/Robin-G0/Motion-Input-Grid/releases/latest#user-content-desktop-applications)** | Run your profile and send keyboard shortcuts on Windows or Linux x64. The desktop Studio is included too. |
 
-## Use MIG on your desktop
+MIG is in early development. Desktop Linux applications and game-engine
+integrations still need wider testing; check the [support matrix](docs/reference/support.md).
 
-> [!NOTE]
-> On Debian, the Motion Input Grid Studio, Motion Input Grid Controller and some native examples are still
-> being developed and tested. They may not yet work fully.
+> [!WARNING]
+> **Windows may not recognize these early executables.** SmartScreen can warn
+> about an unfamiliar application. Download from this repository's
+> releases and verify the supplied checksums. If you trust that download,
+> **More info → Run anyway** may be available. Do not disable Windows protection.
 
-No code is needed to create and run a movement profile.
+## Use MIG now
 
-1. Download the [**desktop applications archive**](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.0.2#user-content-desktop-applications) for Windows x64 or Linux x64 and extract it completely.
-2. Open the [**Motion Input Grid Studio**](docs/guides/configurator.md), start the camera,
-   draw your movement and save its profile.
-3. Open the [**Motion Input Grid Controller**](docs/guides/controller.md), import that profile and
-   try the movement. Its row lights up when recognized. Enable **Keyboard output**
-   when you want it to send keys to the application you are using.
+1. Create or import a profile in the browser Studio above, or use the
+   [desktop Studio](docs/guides/configurator.md). Choose a movement's body part,
+   draw its conditions, and assign its action. For desktop shortcuts, add a
+   keyboard binding in the Studio JSON editor or desktop Studio.
+2. Test with the camera, then export or save the JSON profile. The
+   [browser Studio guide](docs/guides/studio-web.md) explains editing and live feedback.
+3. Download the Controller above and extract the **whole archive**. Stop the
+   Studio's camera, open the Controller and import your JSON.
+4. Start tracking and keep both shoulders visible for calibration. Check that
+   the movement lights up with **Keyboard output off**, then enable it and focus
+   the application you want to control. See the [Controller guide](docs/guides/controller.md).
 
-| Draw a condition | What it means |
+| **Draw a condition** | **What it means** |
 | --- | --- |
 | 🟩 Required | Pass through this region; numbers define the order. |
 | 🟥 Forbidden | Avoid this region. |
 | 🟨 Trigger | Finish the movement here. |
 | 🟪 Interaction | Make a hand sign here, optionally holding it. |
 
-> [!TIP]
-> Try the [standalone camera examples](examples/README.md) first if you just
-> want to see tracking work. Raise either hand and watch its feedback, without
-> sending any keys.
+These condition names are shared by the web editor, desktop Studio and guides.
+The browser shows recognized actions; the Controller can deliver keyboard output.
+Desktop archives include camera models and runtime files: keep them together.
+Windows requires the Visual C++ 2022 x64 runtime; Linux requires glibc 2.35+.
+Linux keyboard output needs X11/XTest; native Wayland output is unavailable.
 
-Desktop archives include the camera runtime and models. Keep their files together.
-Windows needs the Visual C++ 2022 x64 runtime; Linux needs glibc 2.35+.
-Linux keyboard output requires X11/XTest. See the application guides for launch
-paths, calibration, themes and troubleshooting.
+## Use movements in everyday applications
 
-## Add MIG to your application
+| Situation | Guide |
+| --- | --- |
+| Advance a PowerPoint presentation | [Presentation controls](docs/guides/presentations.md) |
+| Control a game using its existing keyboard bindings | [Video games](docs/guides/video-games.md) |
+| Run shortcuts while using your computer | [Everyday computer use](docs/guides/everyday-use.md) |
 
-The **C++20 engine is shared by every integration**. Create a JSON profile once
-in the Motion Input Grid Studio, then import it wherever your application runs. Supply body
-landmarks yourself, or use an available camera adapter.
+> [!CAUTION]
+> **Check the rules before using the Controller in competitive games.** MIG
+> generates operating-system keyboard events; it does not patch games, inject
+> code or read their process memory. This does not guarantee acceptance by an
+> anti-cheat system: unfamiliar processes or simulated input may be flagged.
+> Follow the game's policy and obtain permission where needed. Avoid ranked or
+> protected sessions when acceptance is unclear; MIG cannot guarantee protection
+> from an account penalty.
 
-Package managers use **`motion-input-grid`**. Technical APIs keep the short name:
-Python imports `mig`; CMake exports `MIG::core`.
+## Integrate MIG into your project
 
-### Python
+Every integration uses the same C++20 recognition engine and JSON profiles.
+Supply body landmarks yourself or use an available camera adapter.
+
+For **Python**, install from PyPI:
 
 ```sh
 python -m pip install motion-input-grid
-python -c "from mig import Tracker; print('MIG ready')"
 ```
 
-The wheel includes the recognition engine for supplied positions. Camera viewers
-use a separate native runtime. [Python usage and frame example](bindings/python/README.md).
+Import `Tracker` from `mig`. The wheel contains the engine for supplied positions;
+desktop camera viewers use a separate native runtime.
 
-### Browser, React, Vue and Next.js
+For **JavaScript / browser projects**, install from npm and copy the runtime assets:
 
 ```sh
 npm install motion-input-grid
 npx mig-copy-assets public/mig
 ```
 
-The package includes WASM, camera models and framework adapters. Serve the assets
-from your application and start tracking after a user click.
-[JavaScript usage](bindings/javascript/README.md) · [Framework examples](docs/integrations/javascript.md).
+The npm package includes WASM, camera models and framework adapters. Serve these
+assets from your application and start the camera after a user action.
 
-### C++ and game engines
-
-| Integration | Start here |
+| Project type | Integration guide |
 | --- | --- |
-| C++ / CMake / Make | [Install an SDK and link `MIG::core`](docs/getting-started/cpp.md) |
-| vcpkg | [Install through the release overlay](ports/motion-input-grid/README.md) |
-| Debian / Ubuntu | [Install a downloaded `.deb`](docs/getting-started/packages.md#debianubuntu) |
-| Godot | [GDScript add-on and C# examples](integrations/godot/README.md) |
-| Unity | [.NET / C ABI UPM package](integrations/unity/README.md) |
-| Unreal | [Native C ABI plugin](integrations/unreal/README.md) |
+| Python | [Installation, landmarks and action feedback](bindings/python/README.md) |
+| JavaScript / HTML | [npm, WASM and camera setup](bindings/javascript/README.md) |
+| React / Vue / Next.js | [Framework integration and examples](docs/integrations/javascript.md) |
+| C++ / CMake / Make | [SDK and `MIG::core`](docs/getting-started/cpp.md) |
+| vcpkg / Debian | [Package installation](docs/getting-started/packages.md) |
+| SDL2 / SFML | [Native application integration](docs/integrations/overview.md) |
+| .NET / C# | [Managed bridge](bindings/dotnet/README.md) |
+| Godot | [Add-on and C# integration](integrations/godot/README.md) |
+| Unity | [UPM integration](integrations/unity/README.md) |
+| Unreal | [Native plugin](integrations/unreal/README.md) |
 
-A CMake consumer links the installed SDK like this:
+Game-engine integrations are **Preview** and require a landmark provider; they do
+not bundle desktop camera tracking.
 
-```cmake
-find_package(MIG 1.0 CONFIG REQUIRED)
-target_link_libraries(my-application PRIVATE MIG::core MIG::format)
-```
+## Advanced downloads
 
-The [C++ guide](docs/getting-started/cpp.md) includes a complete project, build
-commands and runtime requirements. Editor integrations require a landmark
-provider; they do not include desktop camera tracking.
+Use pip or npm above for Python and JavaScript dependencies. Downloadable browser
+packages are **local example projects**, distinct from the hosted presentation
+and Studio: extract them and run their local web server. They are not desktop
+applications and cannot send keyboard shortcuts to another application.
 
-## Explore the engine
+| Package | Where to start |
+| --- | --- |
+| C++ SDK, Debian packages and engine integrations | [Release package catalogue](https://github.com/Robin-G0/Motion-Input-Grid/releases/latest#user-content-downloads) |
+| Standalone native examples and source tutorials | [Example catalogue](examples/README.md) |
+| Downloadable HTML / React / Vue / Next.js examples | [Browser example packages](docs/integrations/javascript.md#built-examples-archive) |
+
+Individual browser archives require Node 22.12+; the combined JavaScript examples
+archive includes Node. Follow the README inside each package.
+
+## Learn more and contribute
 
 ![Landmarks flow through calibration and recognition to actions](docs/assets/architecture/engine-flow.svg)
 
-[Architecture](docs/architecture/overview.md) explains module boundaries and
-ownership. The [configuration reference](docs/reference/configuration.md),
-[C++ API](docs/reference/cpp.md) and [C ABI](docs/reference/c-abi.md) describe
-recognition, live action state and lifecycle contracts.
-
-MIG 1.0.2 provides Windows/Linux x64 desktop applications and Linux ARM64
-positions-based SDKs. Engine integrations are Preview. Automated tests cover
-recognition and packages; physical cameras, target-game key delivery and editor
-exports need separate validation. Check the [support matrix](docs/reference/support.md)
-before choosing a platform.
-
-Build from source: [Windows](docs/getting-started/windows.md) ·
-[Linux](docs/getting-started/linux.md) · [Portable SDK](docs/getting-started/cpp.md).
-
-[Contributing](CONTRIBUTING.md) · [Changelog](docs/development/CHANGELOG.md) ·
-[Roadmap](docs/development/ROADMAP.md) · [Package installation](docs/getting-started/packages.md)
+The [documentation](docs/index.md) covers the configuration format, architecture,
+APIs, troubleshooting and source builds. Read the [changelog](docs/development/CHANGELOG.md)
+or [contribution guide](CONTRIBUTING.md), and report problems through
+[GitHub issues](https://github.com/Robin-G0/Motion-Input-Grid/issues).
 
 Licensed under [Apache-2.0](LICENSE). Redistributed dependencies retain their notices.
-
-## Tutorials you can copy
-
-Individual `*-standalone` archives put one example and its dependencies in one
-folder. Start with its README, then `example_usage.py`/`.hpp` or the named
-framework/editor integration file. The browser individual archives need Node
-22.12+; the combined JavaScript archive bundles Node. Native individual archives
-include their own libraries/models. [Choose a tutorial](examples/README.md).
-
-[Build tools and package contents](tools/README.md) · [Verify an integration](tests/README.md)

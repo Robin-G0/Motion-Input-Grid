@@ -55,6 +55,7 @@ set `MIG_PYTHON` to select another interpreter. Running compiled pages needs no 
 | [package-linux.py](packaging/package-linux.py) | Linux install → SDK or native desktop archive; `--native` adds applications, camera libraries, models and runtime dependencies. |
 | [package-distribution.ps1](packaging/package-distribution.ps1), [package-windows-release.ps1](packaging/package-windows-release.ps1) | Stage available SDK/application/browser outputs under `distribution/`, then archive a complete Windows desktop distribution. |
 | [package-python.py](packaging/package-python.py) | Engine/binding sources → positions-only native wheel and source distribution. A camera application needs a separate camera-enabled runtime. |
+| [normalize-python-wheels.py](packaging/normalize-python-wheels.py) | Validate file hashes/sizes and normalize wheel RECORD after repair, excluding directory entries. Runs automatically after wheel builds and Linux auditwheel repair. |
 | [package-source.py](packaging/package-source.py) | Core/CMake source → source archive and vcpkg overlay pinned to its checksum. |
 | [freeze-python-examples.py](packaging/freeze-python-examples.py) | Python tutorials → executable directories with an embedded interpreter and GUI dependencies. Requires PyInstaller 6.16.0, Pillow 11.3.0, Pygame 2.6.1 and the platform Tcl/Tk/Python shared runtime. |
 | [package-examples.py](packaging/package-examples.py) | Built/frozen native tutorials → combined archive sharing runtime/models; `--standalone` also creates six independent archives. |

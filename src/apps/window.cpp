@@ -717,10 +717,10 @@ LRESULT CALLBACK editor_procedure(HWND window, UINT message, WPARAM wp, LPARAM l
             SendDlgItemMessageW(window, Tool, CB_SETCURSEL, 1, 0);
             button(window, DrawEraser, L"Erase", 350, 80, 100);
             button(window, DrawSelect, L"Select", 460, 80, 100);
-            button(window, PaintRequired, L"Passage", 580, 118, 140);
-            button(window, PaintForbidden, L"Cancel", 730, 118, 140);
-            button(window, PaintTrigger, L"Action", 880, 118, 140);
-            button(window, PaintInteraction, L"Hand sign", 916, 142, 104);
+            button(window, PaintRequired, L"Required", 580, 118, 140);
+            button(window, PaintForbidden, L"Forbidden", 730, 118, 140);
+            button(window, PaintTrigger, L"Trigger", 880, 118, 140);
+            button(window, PaintInteraction, L"Interaction", 916, 142, 104);
             button(window, InteractionTab, L"Hand sign", 928, 310, 92);
             control(
                 window, L"STATIC",

@@ -54,6 +54,7 @@ Le bootstrap/packaging JavaScript utilise `python` sous Windows et `python3` sou
 | [package-linux.py](packaging/package-linux.py) | Installation Linux → archive SDK ou desktop ; `--native` ajoute applications, bibliothèques caméra, modèles et dépendances runtime. |
 | [package-distribution.ps1](packaging/package-distribution.ps1), [package-windows-release.ps1](packaging/package-windows-release.ps1) | Préparer les sorties SDK/applications/navigateur sous `distribution/`, puis archiver la distribution desktop Windows complète. |
 | [package-python.py](packaging/package-python.py) | Sources du moteur/binding → wheel natif pour points fournis et archive source. Une caméra nécessite aussi un runtime natif avec capture. |
+| [normalize-python-wheels.py](packaging/normalize-python-wheels.py) | Vérifier empreintes/tailles et normaliser RECORD après réparation, sans entrées de répertoires. Exécuté après compilation des wheels et réparation auditwheel Linux. |
 | [package-source.py](packaging/package-source.py) | Sources core/CMake → archive source et overlay vcpkg épinglé à son empreinte. |
 | [freeze-python-examples.py](packaging/freeze-python-examples.py) | Tutoriels Python → exécutables avec interpréteur et dépendances graphiques. Nécessite PyInstaller 6.16.0, Pillow 11.3.0, Pygame 2.6.1 et les runtimes Tcl/Tk/Python partagé du système. |
 | [package-examples.py](packaging/package-examples.py) | Tutoriels natifs compilés/figés → archive commune partageant runtime/modèles ; `--standalone` produit aussi six archives indépendantes. |

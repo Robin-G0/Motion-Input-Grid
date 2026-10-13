@@ -16,9 +16,17 @@ engine in your own project. Choose a starting point below.
 | Try a camera demo without setting up a profile | [Standalone examples](../examples/README.md) |
 | Add a hand sign or finger condition | [Hand tracking](guides/hands.md) |
 
-Download a **desktop applications archive** archive for the applications or a **`*-examples`** archive
+Download a **desktop applications archive** for the applications or a **`*-examples`** archive
 for the demos from [Releases](https://github.com/Robin-G0/Motion-Input-Grid/releases).
 The application guides identify the files to launch and system requirements.
+
+## Choose a practical use
+
+| Situation | Guide |
+| --- | --- |
+| PowerPoint and other slide shows | [Presentation controls](guides/presentations.md) |
+| Existing games or your own game | [Video games and anti-cheat precautions](guides/video-games.md) |
+| Shortcuts in desktop applications | [Everyday computer use](guides/everyday-use.md) |
 
 ## Build an application with MIG
 

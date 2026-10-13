@@ -89,7 +89,7 @@ Activez la caméra explicitement et gardez les épaules visibles une seconde.
 Body suit les épaules ; Full grid montre27x27, dots/traces reflétés une fois.
 Pointage inverse identique ; un trait gèle sa vue.
 Un mouvement commence vide avec une étape et sans limite de temps. Choisissez
-le point suivi, puis **Select**, **Passage**, **Action**, **Cancel**, **Hand sign**
+le point suivi, puis **Select**, **Required**, **Trigger**, **Forbidden**, **Interaction**
 ou **Erase**, comme sur le web. Placez directement les cases : il n'y a plus
 d'outil de tolérance ni de sélecteur de priorité. Les marges importées sont conservées.
 Select trace un rectangle ; Ctrl conserve la sélection précédente, Suppr retire

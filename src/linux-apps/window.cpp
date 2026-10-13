@@ -446,7 +446,7 @@ void Window::build_sidebar() {
         connect(control, &QPushButton::clicked, this, callback);
         return control;
     };
-    const char* labels[]{"Passage", "Cancel", "Action", "Hand sign"};
+    const char* labels[]{"Required", "Forbidden", "Trigger", "Interaction"};
     const char* roles[]{"required", "forbidden", "trigger", "interaction"};
     const char* hints[]{"Green: pass through this zone.", "Red: avoid this zone.",
                         "Yellow: finish the movement here.",

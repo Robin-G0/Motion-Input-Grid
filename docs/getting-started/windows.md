@@ -92,7 +92,7 @@ visible for about one second. Body view projects the grid using shoulder scale; 
 inverse transform; a stroke freezes its view until release.
 
 A new movement starts empty with one step and no time limit. Choose the tracked
-point, then **Select**, **Passage**, **Action**, **Cancel**, **Hand sign** or
+point, then **Select**, **Required**, **Trigger**, **Forbidden**, **Interaction** or
 **Erase**, like the web Studio. Place the cells directly; there is no tolerance
 tool or priority selector. Imported margins remain intact. Select drags a rectangle;
 Ctrl retains the previous selection, and Delete removes selected regions and linked

@@ -41,7 +41,7 @@ capture; stop one application before starting the other.
 
 The session toolbar stays outside the camera canvas. The main window separates
 **Movements**, **Edit** and **Test**, with compact drawing tools, body selection and
-the same six tools as the web: Select, Passage, Action, Cancel, Hand sign and Erase.
+the same six tools as the web: Select, Required, Trigger, Forbidden, Interaction and Erase.
 Cells are numbered automatically for ordered routes. Placing or selecting a purple
 conditional trigger reveals sign/0..60000 ms hold settings. Draw in Full grid;
 Body view fits the complete mirrored image. The log terminal opens as a small

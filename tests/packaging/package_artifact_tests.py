@@ -9,6 +9,7 @@ import zipfile
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools/lib"))
 from distribution_policy import EXCLUDED_NAMES
 from release_metadata import PACKAGE_NAME, PROJECT_NAME, REPOSITORY
+from wheel_record import validate_wheel
 
 
 def archive_files(path):
@@ -89,6 +90,7 @@ def verify(path):
             assert f"Standalone: {target}" in metadata
             assert "Any: \n    second:\n      enabled: 0" in metadata
     if path.suffix == ".whl":
+        validate_wheel(path)
         assert "none-any" not in path.name, "A self-contained wheel must be platform tagged"
         assert any("mig/_native/" in name and name.endswith((".dll", ".so.1")) for name in names)
         assert any(name.endswith("nlohmann-LICENSE") for name in names)

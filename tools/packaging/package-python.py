@@ -10,6 +10,7 @@ import tempfile
 
 from package_linux import copy_tree
 from release_metadata import build_directory, ROOT, rewrite_package_guides
+from wheel_record import normalize_wheel
 
 
 def stage_python(destination, dependencies):
@@ -39,8 +40,9 @@ def main():
     args.destination.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="python-source-", dir=build_directory()) as folder:
         source = Path(folder) / "package"
+        artifacts = Path(folder) / "dist"
         stage_python(source, args.dependencies.resolve())
-        command = [sys.executable, "-m", "build", str(source), "--outdir", str(args.destination.resolve())]
+        command = [sys.executable, "-m", "build", str(source), "--outdir", str(artifacts)]
         environment = os.environ.copy()
         if args.linux_arm64:
             if sys.platform != "linux":
@@ -49,6 +51,10 @@ def main():
             toolchain = source / "_engine/cmake/linux-arm64.cmake"
             command.append(f"--config-setting=cmake.define.CMAKE_TOOLCHAIN_FILE={toolchain}")
         subprocess.run(command, env=environment, check=True)
+        for wheel in artifacts.glob("*.whl"):
+            normalize_wheel(wheel)
+        for artifact in artifacts.iterdir():
+            shutil.copy2(artifact, args.destination / artifact.name)
 
 
 if __name__ == "__main__":

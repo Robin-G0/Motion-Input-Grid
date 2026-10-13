@@ -29,7 +29,7 @@ bool Window::ui_test() {
         return false;
     }
     for (auto* button : drawing_panel_->findChildren<QPushButton*>()) {
-        if (button->text() == "Hand sign") {
+        if (button->text() == "Interaction") {
             button->click();
         }
     }
@@ -37,7 +37,7 @@ bool Window::ui_test() {
         return false;
     }
     for (auto* button : drawing_panel_->findChildren<QPushButton*>()) {
-        if (button->text() == "Passage") {
+        if (button->text() == "Required") {
             button->click();
         }
     }

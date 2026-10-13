@@ -118,7 +118,7 @@ Use **Select** and drag with the left button held to select a rectangle on the
 current layer. Hold **Ctrl** to retain the previous selection. Press **Delete**
 to remove the selected regions and their linked tolerances. On Linux, use the
 full-grid view for selection. Both native frontends use the web's six tools:
-Select, Passage, Action, Cancel, Hand sign and Erase. Place cells directly;
+Select, Required, Trigger, Forbidden, Interaction and Erase. Place cells directly;
 tolerance authoring and priority controls have been removed. Imported margin
 rules remain supported. Steps are successive phases, whereas route mode controls
 the cells inside a phase (in order, any order or simultaneous).

@@ -55,6 +55,7 @@ build_python() {
             build/release-python-env/bin/auditwheel repair --plat manylinux_2_35_x86_64 "$wheel" -w build/releases
         rm "$wheel"
     done
+    build/release-python-env/bin/python tools/packaging/normalize-python-wheels.py build/releases/motion_input_grid-*.whl
     build/release-python-env/bin/python -m twine check \
         build/releases/motion_input_grid-*.whl build/releases/motion_input_grid-*.tar.gz
 }

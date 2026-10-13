@@ -122,8 +122,8 @@ Choisissez **Select**, puis maintenez le clic gauche en déplaçant la souris po
 sélectionner un rectangle du layer courant. Maintenez **Ctrl** pour conserver
 la sélection précédente. **Suppr** retire les régions sélectionnées et leurs
 tolérances liées. Sous Linux, utilisez la vue grille complète pour sélectionner.
-Les deux interfaces natives reprennent les six outils du web : Select, Passage,
-Action, Cancel, Hand sign et Erase. Placez directement les cases ; l'outil de
+Les deux interfaces natives reprennent les six outils du web : Select, Required,
+Trigger, Forbidden, Interaction et Erase. Placez directement les cases ; l'outil de
 tolérance et le sélecteur de priorité sont supprimés. Les marges des profils
 importés restent reconnues. Les étapes sont des phases successives ; le parcours
 détermine comment atteindre les cases d'une phase : dans l'ordre, en ordre libre

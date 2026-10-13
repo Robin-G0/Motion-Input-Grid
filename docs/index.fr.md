@@ -20,6 +20,14 @@ Téléchargez une archive **desktop applications archive** pour les applications
 pour les démos depuis les [Releases](https://github.com/Robin-G0/Motion-Input-Grid/releases).
 Les guides des applications indiquent les fichiers à lancer et les prérequis.
 
+## Choisir une utilisation concrète
+
+| Situation | Guide |
+| --- | --- |
+| PowerPoint et autres diaporamas | [Présentations](guides/presentations.fr.md) |
+| Jeux existants ou votre propre jeu | [Jeux vidéo et précautions anti-cheat](guides/video-games.fr.md) |
+| Raccourcis des applications de bureau | [Usage quotidien](guides/everyday-use.fr.md) |
+
 ## Développer une application avec MIG
 
 | Technologie | Installation et première action |

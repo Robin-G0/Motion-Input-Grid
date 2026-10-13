@@ -286,10 +286,10 @@ void App::refresh_editor() {
         const auto& item = constraints[i];
         const auto text =
             wide(ui::landmark_label(item.landmark) + " | " + (order_labels[offset + i] + " | ") +
-                 (item.type == ConstraintType::Required      ? "Passage"
-                  : item.type == ConstraintType::Forbidden   ? "Cancel"
-                  : item.type == ConstraintType::Interaction ? "Hand sign"
-                                                             : "Action") +
+                 (item.type == ConstraintType::Required      ? "Required"
+                  : item.type == ConstraintType::Forbidden   ? "Forbidden"
+                  : item.type == ConstraintType::Interaction ? "Interaction"
+                                                             : "Trigger") +
                  ((item.priority == Priority::High ? " " : " Imported margin ") + std::string("[") +
                   std::to_string(item.cell.x) + "," + std::to_string(item.cell.y) + "]"));
         SendDlgItemMessageW(edit_window, ConstraintList, LB_ADDSTRING, 0,

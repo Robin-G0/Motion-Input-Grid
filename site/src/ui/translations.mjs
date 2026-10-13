@@ -111,11 +111,11 @@ export const translations = {
         gridCancelled: "Case rouge : détection annulée. Recommencez par la case 1.",
         gridTriggered: "Action déclenchée ! Vous pouvez recommencer.",
         gridCondition: "Case violette : le pouce doit être levé pour déclencher l’action.",
-        firstCell: "Case verte 1, coordonnées [2, 2]",
-        secondCell: "Case verte 2, coordonnées [3, 2]",
-        cancelCell: "Case rouge, annuler la détection",
-        triggerCell: "Case jaune, lancer l’action",
-        conditionCell: "Case violette, déclencher si le pouce est levé",
+        firstCell: "Required, case verte 1, coordonnées [2, 2]",
+        secondCell: "Required, case verte 2, coordonnées [3, 2]",
+        cancelCell: "Forbidden, case rouge, annuler la détection",
+        triggerCell: "Trigger, case jaune, lancer l’action",
+        conditionCell: "Interaction, case violette, déclencher si le pouce est levé",
         slides: [
             {
                 "number": "01",
@@ -243,11 +243,11 @@ export const translations = {
         gridCancelled: "Red cell: detection cancelled. Start again at cell 1.",
         gridTriggered: "Action triggered! You can start again.",
         gridCondition: "Purple cell: a raised thumb is required to trigger the action.",
-        firstCell: "Green cell 1, coordinates [2, 2]",
-        secondCell: "Green cell 2, coordinates [3, 2]",
-        cancelCell: "Red cell, cancel detection",
-        triggerCell: "Yellow cell, trigger action",
-        conditionCell: "Purple cell, trigger if the thumb is raised",
+        firstCell: "Required, green cell 1, coordinates [2, 2]",
+        secondCell: "Required, green cell 2, coordinates [3, 2]",
+        cancelCell: "Forbidden, red cell, cancel detection",
+        triggerCell: "Trigger, yellow cell, trigger action",
+        conditionCell: "Interaction, purple cell, trigger if the thumb is raised",
         slides: [
             {
                 "number": "01",

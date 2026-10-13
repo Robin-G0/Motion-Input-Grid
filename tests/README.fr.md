@@ -51,6 +51,7 @@ Unity/Unreal et les exports nécessitent encore leurs éditeurs installés.
 python tests/tooling/release_version_tests.py
 python tests/tooling/version_resolution_tests.py
 python tests/packaging/example_package_tests.py
+python tests/packaging/wheel_record_tests.py
 python tests/bindings/python/python_tests.py build/windows/src/c-api/Release/mig-c.dll
 npm test
 npm run test:types

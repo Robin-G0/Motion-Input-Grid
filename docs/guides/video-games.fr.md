@@ -1,0 +1,54 @@
+# Jeux vidéo
+
+[English](video-games.md) | [Français](video-games.fr.md)
+
+MIG peut envoyer des touches à un jeu existant avec le Controller ou reconnaître
+directement des mouvements dans un jeu que vous développez.
+
+## Commander un jeu existant
+
+> [!CAUTION]
+> Vérifiez les règles de l'éditeur avant d'activer la sortie. MIG utilise des
+> événements clavier du système sans modifier le jeu ni accéder à la mémoire de
+> son processus. Un anti-cheat peut néanmoins signaler un logiciel inconnu ou des
+> entrées simulées. Cela ne garantit ni son acceptation ni l'absence de sanction.
+> Évitez les sessions compétitives ou protégées si l'autorisation est incertaine ;
+> ne cherchez pas à contourner une restriction anti-cheat.
+
+1. Choisissez une session hors ligne ou explicitement autorisée. Vérifiez les
+   touches réellement configurées dans le jeu et commencez par une action sans
+   conséquence importante, comme une direction dans un menu.
+2. Créez un mouvement de poignet dans le [Studio web](studio-web.fr.md) ou le
+   [Studio de bureau](configurator.fr.md). Dessinez des régions 🟩 **Required**
+   puis une 🟨 **Trigger**. Une 🟥 **Forbidden** annule un parcours indésirable ;
+   une 🟪 **Interaction** ajoute une condition de signe de main.
+3. Associez la touche dans les réglages du mouvement du Studio de bureau ou
+   ajoutez `keyboard` avec l'éditeur JSON du Studio web. Le
+   [guide des présentations](presentations.fr.md) montre cette modification ;
+   remplacez la touche par celle du jeu en suivant la
+   [référence clavier](../reference/configuration.fr.md).
+4. Exportez le JSON, arrêtez la caméra de l'éditeur et importez le profil dans le
+   [Controller](controller.fr.md). Calibrez et vérifiez le suivi sans sortie clavier.
+5. Activez la sortie et donnez le focus au jeu. Testez une action avant d'en
+   ajouter d'autres. Si le jeu refuse l'entrée simulée, arrêtez cette utilisation
+   plutôt que de modifier les protections pour la forcer.
+
+**Single press** correspond aux actions ponctuelles, **Hold** maintient la touche
+tant que les conditions finales sont remplies, et **Repeat** répète les pressions.
+Testez aussi le relâchement des touches. Arrêter le suivi ou désactiver la sortie
+libère les touches maintenues. Pendant l'apprentissage, privilégiez les actions
+dont une activation involontaire a peu de conséquences.
+
+## Intégrer dans votre propre jeu
+
+Traitez directement les actions logiques dans le jeu. Choisissez
+[SDL2 / SFML](../integrations/overview.fr.md),
+[Godot](../../integrations/godot/README.fr.md),
+[Unity](../../integrations/unity/README.fr.md),
+[Unreal](../../integrations/unreal/README.fr.md) ou les
+[frameworks JavaScript](../integrations/javascript.fr.md).
+
+Les intégrations aux moteurs nécessitent un fournisseur de positions. Importez
+le même JSON, fournissez les observations et associez les noms d'actions au jeu.
+Le [catalogue des exemples](../../examples/README.fr.md) donne des points de départ ;
+consultez les [plateformes prises en charge](../reference/support.fr.md) pour les limites Preview.

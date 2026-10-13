@@ -45,6 +45,7 @@ jobs:
                   python3 tests/tooling/release_version_tests.py
                   python3 tests/tooling/version_resolution_tests.py
                   python3 tests/packaging/example_package_tests.py
+                  python3 tests/packaging/wheel_record_tests.py
 
     windows:
         name: Windows Release (hands ${{ matrix.hands }})

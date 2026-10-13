@@ -40,7 +40,7 @@ requises. Start ouvre explicitement ; arrêtez une app avant l'autre.
 
 Les commandes de session restent hors de la caméra. Les vues **Movements**, **Edit**
 et **Test** partagent la fenêtre principale, avec outils compacts, parties du corps
-et les six outils du web : Select, Passage, Action, Cancel, Hand sign et Erase.
+et les six outils du web : Select, Required, Trigger, Forbidden, Interaction et Erase.
 Les étapes sont des phases successives ; leur parcours est libre, simultané ou ordonné ;
 le maintien apparaît pour les étapes simultanées. Le test désactive la sortie clavier.
 Les cases sont numérotées automatiquement pour un parcours ordonné ; poser ou

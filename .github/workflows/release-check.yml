@@ -243,6 +243,7 @@ jobs:
                   python3 tools/packaging/package-python.py --dependencies build/native-deps --destination build/python-arm64
                   mkdir -p build/releases
                   auditwheel repair --plat manylinux_2_35_aarch64 build/python-arm64/*-linux_aarch64.whl -w build/releases
+                  python3 tools/packaging/normalize-python-wheels.py build/releases/*-manylinux_2_35_aarch64.whl
                   python3 tests/packaging/python_package_tests.py build/releases/*-manylinux_2_35_aarch64.whl
                   python3 -m twine check build/releases/*.whl
             - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

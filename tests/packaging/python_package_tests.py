@@ -9,9 +9,12 @@ import tempfile
 import venv
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "tools/lib"))
+from wheel_record import validate_wheel
 
 
 def verify(wheel):
+    validate_wheel(wheel)
     with tempfile.TemporaryDirectory(prefix="wheel-test-") as temporary:
         folder = Path(temporary)
         venv.create(folder / "venv", with_pip=True)
