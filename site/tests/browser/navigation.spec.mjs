@@ -118,6 +118,9 @@ test("gift contents stay hidden until entering; leaving removes the temporary sl
 test("the evolving grid presents detection, cancellation, then a one-second thumb condition", async ({ page }) => {
     await page.clock.install();
     await page.goto("./");
+    // Keep locator checks and viewport changes from advancing the one-second steps.
+    // Only runFor should move the animation timeline in this test.
+    await page.clock.pauseAt(new Date(await page.evaluate(() => Date.now() + 1000)));
     await page.getByRole("button", { name: "EN", exact: true }).click();
     await page.locator("#next-slide").click();
     await page.locator("#next-slide").click();
@@ -195,7 +198,18 @@ test("the evolving grid presents detection, cancellation, then a one-second thum
     await expect(outcome).toBeEmpty();
     await expect(page.locator(".hero [data-text=tagline]")).toHaveText("Movement becomes an interface.");
     await page.getByRole("button", { name: "FR", exact: true }).click();
+    await finishRibbonAnimation(page);
     await page.locator("#presentation").scrollIntoViewIfNeeded();
+    // The language button scrolls away from the illustration. Wait for the
+    // browser's visibility observation before advancing the paused clock.
+    await page.locator("#history-illustration").evaluate(node => new Promise(resolve => {
+        const observer = new IntersectionObserver(entries => {
+            if (!entries[0].isIntersecting) return;
+            observer.disconnect();
+            resolve();
+        });
+        observer.observe(node);
+    }));
     await page.clock.runFor(50);
     await page.clock.runFor(3300);
     await expect(outcome).toHaveText("Entr\u00e9e d\u00e9tect\u00e9e");
@@ -376,7 +390,7 @@ test("brief missing camera observations keep the outline steady; a closed guide 
     await expect(card).toHaveClass(/has-hands/);
     await page.evaluate(() => window.demoCamera.frame(true));
     await page.locator("#assistance-toggle").click();
-    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "privacy");
+    await expect(page.locator("#assistance")).toHaveAttribute("data-step", "aim");
     await page.locator("[data-assistance-close]").click();
     await page.evaluate(() => window.demoCamera.frame(false));
     await page.clock.runFor(4100);
