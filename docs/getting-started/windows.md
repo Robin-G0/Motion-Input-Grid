@@ -103,19 +103,21 @@ is enough for a simple movement. Route position edits appear only for a selected
 ordered region; equal numbers are alternatives for that tracked point.
 The grid displays centered numbers, X guards and R unordered Required.
 
-The layer stack groups independent landmark constraints; other layers remain
-outlined. Help is optional. Hide changes display only, Delete removes that
-landmark across scopes, Clear step removes the current scope. Select a layer, change
-Layer body part, then Save layer. Destination collisions fail; pending assignment
-must be saved or restored before switching/drawing/testing. IDs, cells and rules
-remain intact, but explicit sign/finger hands and recorded trace identity do not
-change. Save layer edits the draft, Apply input publishes, File Save persists.
+Independent tracked points keep their own zones; other points remain outlined.
+Help is optional and Clear step removes the current scope.
+Click a movement to edit its tracked point and zones. Changing the tracked point
+reassigns its existing zones immediately; destination collisions preserve both
+drawings. Explicit sign/finger hands and recorded trace identity remain intact.
+**Movement settings** opens identity, keyboard, reference and timing; **Back to
+zones** returns to the movement's current step and selected-region geometry.
+The separate body-parts, recording and Undo/Redo toolbar options are removed.
+Ctrl+Z/Y remains available. The document updates automatically for existing
+movements; File Save persists it to disk. New movements are published with Apply.
 
-The inspector separates **Movement**, **Zones**, **Fingers**, **Hand sign**,
-**Body parts** and **Recording**. Movement contains identity, keyboard, reference and
-timing. Zones contains the current step, route mode and region geometry; hold
-settings appear for simultaneous steps. There is no Basic/Advanced switch. Purple Interaction needs a hand/sign and continuous hold
-0..60000ms; choose settings before painting, Select/Update interaction to edit.
+Purple conditional triggers reveal hand, sign and continuous hold (0..60000 ms)
+after placement or selection. Edits update the selected trigger immediately.
+Clicking with its existing colour selects a zone; a different colour asks before
+replacement. Erase removes zones explicitly. Imported margins remain supported.
 Purple-only inputs work without green/yellow. Matching signs reserve the hand
 from global commands. Details shows every scope/finger/sign/time/key binding.
 
@@ -143,12 +145,9 @@ to anatomical Thumb/V/OK/Open palm/Fist. Validation defaults250ms, recovery is
 exactly1000ms from validation, held command needs deliberate release. A sign/hand
 pair controls one command; reassignment removes its previous binding.
 
-Recording needs an open editor and selected landmarks/basis, or full body.
-Start/Stop manually or with its sign; review, move point, delete synchronized
-sample, trim, discard and explicitly convert to constraints. Sampling is20 Hz
-maximum,60s,2048 points/trace. More than64 cell transitions needs trimming.
-Raw temporary capture is not a final rule or saved video. Apply/Save publishes.
-Ctrl+Z/Y, copy/paste/duplicate/delete retain ordinary text-field editing.
+Recording tools are no longer exposed in Studio. Existing recording data remains
+compatible with the schema. Ctrl+Z/Y, copy/paste/duplicate/delete retain ordinary
+text-field editing.
 
 ## Diagnostics and provenance
 

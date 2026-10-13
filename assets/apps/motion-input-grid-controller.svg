@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <svg x="64" y="64" width="896" height="896" viewBox="0 0 64 64">
+    <rect width="64" height="64" rx="3" fill="#f7f4ed"/>
+    <!-- Empty cells outside the gesture path. -->
+    <g fill="none" stroke="#cdcfc5" stroke-width="1">
+        <rect x="6" y="42" width="16" height="16" rx="2"/>
+        <rect x="24" y="6" width="16" height="16" rx="2"/>
+        <rect x="42" y="6" width="16" height="16" rx="2"/>
+    </g>
+    <!-- Three green steps lead from the upper left to the gold trigger. -->
+    <g fill="#dce9df" stroke="#245e51" stroke-width="1">
+        <rect x="6" y="6" width="16" height="16" rx="2"/>
+        <rect x="6" y="24" width="16" height="16" rx="2"/>
+        <rect x="24" y="24" width="16" height="16" rx="2"/>
+    </g>
+    <rect x="42" y="24" width="16" height="16" rx="2" fill="#eee0bd" stroke="#846119"/>
+    <rect x="24" y="42" width="16" height="16" rx="2" fill="#eedbd4" stroke="#914b3c"/>
+    <rect x="42" y="42" width="16" height="16" rx="2" fill="#e4ddea" stroke="#65506c"/>
+</svg>
+  <image href="Hand.png" x="0" y="0" width="1024" height="1024"/>
+</svg>

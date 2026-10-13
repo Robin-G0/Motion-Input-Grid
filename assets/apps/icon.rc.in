@@ -1,0 +1,1 @@
+101 ICON "@CMAKE_SOURCE_DIR@/assets/apps/@app_target@.ico"

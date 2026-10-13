@@ -18,6 +18,8 @@ public:
     bool select{};
     ui::RegionSelection selection;
     std::function<void()> changed;
+    std::function<void()> selection_changed;
+    std::function<bool()> confirm_overwrite;
     std::function<void(const std::string&)> failed;
 
 protected:

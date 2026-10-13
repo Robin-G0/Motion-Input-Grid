@@ -107,6 +107,8 @@ def bundle_apps(root, install, runtime):
         binary.chmod(0o755)
         seeds.append(binary)
         write_launcher(root, name)
+    copy_tree(install / "share" / "applications", root / "share" / "applications")
+    copy_tree(install / "share" / "icons", root / "share" / "icons")
     plugin_directory = Path("/usr/lib/x86_64-linux-gnu/qt6/plugins")
     for category in ("platforms", "imageformats"):
         copy_tree(plugin_directory / category, root / "plugins" / category)

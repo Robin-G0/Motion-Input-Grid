@@ -1,6 +1,20 @@
 #include "app.hpp"
 namespace mig::app {
 bool App::editor_settings(int id, int notification) {
+    if (((id == InteractionHand || id == InteractionGesture) && notification == CBN_SELCHANGE) ||
+        (id == InteractionHold && notification == EN_KILLFOCUS)) {
+        if (selected_constraint >= 0 &&
+            std::size_t(selected_constraint) < current_constraints().size() &&
+            current_constraints()[selected_constraint].type == ConstraintType::Interaction) {
+            const auto before = draft;
+            update_interaction();
+            if (draft != before) {
+                remember_edit(before);
+            }
+            autosave_movement();
+        }
+        return true;
+    }
     if (notification == EN_CHANGE && (id == InputName || id == ActionId || id == Key ||
                                       id == Duration || id == Cooldown || id == RepeatInterval)) {
         if (typing_control != id) {
@@ -45,6 +59,12 @@ bool App::editor_settings(int id, int notification) {
             region_selection.ids.push_back(current_constraints()[selected_constraint].id);
         }
         refresh_editor();
+        if (selected_constraint >= 0 &&
+            std::size_t(selected_constraint) < current_constraints().size() &&
+            current_constraints()[selected_constraint].type == ConstraintType::Interaction) {
+            inspector_tab = 4;
+            layout_editor();
+        }
         return true;
     }
     if (id == RecordLandmarks && notification == LBN_SELCHANGE) {

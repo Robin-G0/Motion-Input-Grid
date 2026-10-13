@@ -33,7 +33,7 @@ bool Window::ui_test() {
             button->click();
         }
     }
-    if (interaction_controls_->isHidden() || !order_controls_->isHidden()) {
+    if (!interaction_controls_->isHidden() || !order_controls_->isHidden()) {
         return false;
     }
     for (auto* button : drawing_panel_->findChildren<QPushButton*>()) {
@@ -52,7 +52,7 @@ bool Window::ui_test() {
     if (config_.motions[0].steps[0].constraints.size() != 1) {
         return false;
     }
-    ui::reassign_layer(config_.motions[0], 15, 16);
+    body_field_->setCurrentIndex(body_field_->findData(16));
     if (config_.motions[0].steps[0].constraints[0].landmark != 16) {
         return false;
     }
@@ -68,7 +68,51 @@ bool Window::ui_test() {
         cells[1].type != ConstraintType::Trigger || cells[1].order != 2) {
         return false;
     }
+    if (canvas_->selection.ids.size() != 1 || zone_controls_->isHidden()) {
+        return false;
+    }
+    const auto unchanged = config_;
+    canvas_->select = false;
+    canvas_->type = ConstraintType::Forbidden;
+    canvas_->confirm_overwrite = [] { return false; };
+    QApplication::sendEvent(canvas_, &required);
+    if (config_ != unchanged) {
+        return false;
+    }
+    canvas_->confirm_overwrite = [] { return true; };
+    QApplication::sendEvent(canvas_, &required);
+    if (config_.motions[0].steps[0].constraints.size() != 2 ||
+        std::none_of(canvas_->current_constraints().begin(), canvas_->current_constraints().end(),
+                     [](const auto& cell) { return cell.type == ConstraintType::Forbidden; })) {
+        return false;
+    }
+    config_ = unchanged;
+    select_input(0);
+    canvas_->type = ConstraintType::Required;
+    canvas_->select = false;
     const auto definition = config_;
+    canvas_->type = ConstraintType::Interaction;
+    const auto conditional_point = center + QPointF(120, 0);
+    QMouseEvent conditional_click(QEvent::MouseButtonPress, conditional_point, conditional_point,
+                                  Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    QApplication::sendEvent(canvas_, &conditional_click);
+    if (interaction_controls_->isHidden() || zone_controls_->isHidden()) {
+        return false;
+    }
+    gesture_field_->setCurrentIndex(int(Gesture::OK));
+    interaction_hold_field_->setValue(750);
+    hand_field_->setCurrentIndex(int(HandSide::Left));
+    const auto sign =
+        std::find_if(canvas_->current_constraints().begin(), canvas_->current_constraints().end(),
+                     [](const auto& cell) { return cell.interaction.has_value(); });
+    if (sign == canvas_->current_constraints().end() || sign->interaction->gesture != Gesture::OK ||
+        sign->interaction->hold_ms != 750 || sign->interaction->hand != HandSide::Left) {
+        return false;
+    }
+    config_ = definition;
+    select_input(0);
+    canvas_->type = ConstraintType::Required;
+    canvas_->select = false;
     const auto frame_size = canvas_->size();
     show_view(2);
     QApplication::processEvents();

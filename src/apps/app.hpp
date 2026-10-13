@@ -324,6 +324,8 @@ struct App {
     void undo(bool redo, bool draft_scope);
     void remember_edit(const Motion& before);
     void apply();
+    void autosave_movement();
+    std::function<bool()> confirm_overwrite;
     void file_dialog(bool saving);
     void finish_dialog();
     void click(int x, int y);

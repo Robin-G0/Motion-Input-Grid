@@ -264,7 +264,7 @@ void App::paint_editor(HDC dc) {
     }
     const int list_height = std::max(80, int(client.bottom) - 520);
     if (studio_view != 2) {
-        const wchar_t* point_hint = L"Point for new / selected zones";
+        const wchar_t* point_hint = L"Movement / tracked point";
         TextOutW(dc, 312, 66, point_hint, int(wcslen(point_hint)));
     }
     if (studio_view != 2 && inspector_tab == 0 && !editor_help) {

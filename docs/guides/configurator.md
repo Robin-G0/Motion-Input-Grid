@@ -55,7 +55,7 @@ part. An input can have several layers.
    Wide regions give your movement more room.
 3. Set the action to `next_slide`, the key to `Right` and the mode to **Single press**.
    Match the key to your presentation application's shortcut.
-4. On Windows, use **Save layer**, then **Apply** and **File → Save**.
+4. On Windows, use **Apply** and **File → Save**.
    On Linux, save the profile from the main interface.
 5. Stop the Motion Input Grid Studio's camera, import the file in the [Motion Input Grid Controller](controller.md)
    and check the visual feedback before enabling **Keyboard output**.
@@ -98,14 +98,17 @@ Region colors describe their conditions:
 | 🟨 Yellow — Trigger | Complete the movement here to emit its action. |
 | 🟪 Purple — Interaction | Perform the selected hand sign in this region, optionally holding it. |
 
-On Windows, use **Save layer** after changing a layer's body part; **Apply** saves
-that input into the open document, and **File → Save** writes the JSON file.
-The main window separates **Movements**, **Edit** and **Test**, like the web
-Studio. Contextual settings keep identity/action apart from drawing tools and
-zone conditions. Switching views preserves the movement and the camera frame.
-On Windows, the inspector provides Movement, Zones, Fingers, Hand sign, Body parts
-and Recording. Linux provides Zones and Movement, with **File ? Complete JSON
-profile** opening an in-app page for all schema fields.
+Click a movement to open its tracked point and zones. Changing the tracked point
+immediately reassigns its existing zones in the document; a collision with another
+tracked point is rejected without losing either drawing. **Movement settings**
+opens identity and output settings; **Back to zones** returns to drawing.
+Hand-sign settings appear only after placing or selecting a purple conditional
+trigger. Changes update that trigger immediately. Clicking a cell with the current
+brush colour selects it; another colour asks before replacing its zone.
+Windows keeps Ctrl+Z/Y available without toolbar buttons. Recording and the
+separate body-parts menu are no longer presented. **File → Save** writes the JSON
+file; editing never silently overwrites an imported file. Linux also provides
+an in-app **Complete JSON profile** page for all schema fields.
 The [Windows controls](../getting-started/windows.md#workspace-and-drawing) and
 [Linux controls](../getting-started/linux.md) describe the available tools.
 

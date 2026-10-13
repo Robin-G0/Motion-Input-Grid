@@ -5,9 +5,12 @@
 #endif
 #include <QApplication>
 #include <QCoreApplication>
+#include <QIcon>
 #include <iostream>
 int main(int argc, char** argv) {
     QApplication application(argc, argv);
+    application.setDesktopFileName(MIG_APP_NAME);
+    application.setWindowIcon(QIcon(":/icons/" MIG_APP_NAME ".png"));
     try {
         std::string runtime = QCoreApplication::applicationDirPath().toStdString();
         std::string config;

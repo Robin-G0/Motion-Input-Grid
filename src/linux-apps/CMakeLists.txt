@@ -20,6 +20,10 @@ foreach(application configurator controller)
             list(APPEND app_sources window.cpp)
         endif()
         add_executable(${app_target} ${app_sources})
+        qt_add_resources(${app_target} app_icons
+            PREFIX "/icons"
+            BASE "${CMAKE_SOURCE_DIR}/assets/apps"
+            FILES "${CMAKE_SOURCE_DIR}/assets/apps/${app_target}.png")
         if(application STREQUAL "controller")
             target_compile_definitions(${app_target} PRIVATE MIG_CONTROLLER)
             target_link_libraries(${app_target} PRIVATE mig-controller-profiles)
@@ -30,6 +34,10 @@ foreach(application configurator controller)
         set_target_properties(${app_target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
         if(MIG_INSTALL)
             install(TARGETS ${app_target} RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+            install(FILES "${CMAKE_SOURCE_DIR}/assets/apps/${app_target}.desktop"
+                DESTINATION "${CMAKE_INSTALL_DATADIR}/applications")
+            install(FILES "${CMAKE_SOURCE_DIR}/assets/apps/${app_target}.png"
+                DESTINATION "${CMAKE_INSTALL_DATADIR}/icons/hicolor/256x256/apps")
         endif()
     endif()
 endforeach()

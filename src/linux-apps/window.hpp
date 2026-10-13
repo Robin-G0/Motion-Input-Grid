@@ -56,6 +56,11 @@ private:
     QComboBox *action_mode_field_{}, *space_field_{}, *step_field_{}, *step_mode_field_{};
     QSpinBox* step_hold_field_{};
     void refresh_step();
+    void refresh_zone();
+    QComboBox *body_field_{}, *gesture_field_{}, *hand_field_{};
+    QSpinBox* interaction_hold_field_{};
+    QWidget* zone_controls_{};
+    std::array<QSpinBox*, 4> zone_geometry_{};
     QCheckBox* mirror_field_{};
     QSpinBox *repeat_field_{}, *cooldown_field_{}, *duration_field_{};
     QListWidget* inputs_{};

@@ -1,6 +1,7 @@
 #include "theme.hpp"
 #include "../apps/design_tokens.hpp"
 #include <QFont>
+#include <QLabel>
 
 namespace mig::linux_ui {
 void apply_widget_theme(QWidget& window, bool dark) {
@@ -31,7 +32,7 @@ void apply_widget_theme(QWidget& window, bool dark) {
     window.setStyleSheet(
         QString(
             "QWidget { color: %1; background-color: %2; }"
-            "QLabel[role='heading'] { font-family: 'DejaVu Serif'; font-size: 26px; }"
+            "QLabel[role='heading'] { color: %1; font-family: 'DejaVu Serif'; font-size: 26px; }"
             "QLabel[role='hint'] { color: %5; background: transparent; }"
             "QGroupBox { border: 1px solid %4; border-radius: 8px; margin-top: 18px;"
             "padding: 16px 10px 10px; font-weight: 600; }"
@@ -74,5 +75,14 @@ void apply_widget_theme(QWidget& window, bool dark) {
             "QAbstractScrollArea::corner { background: %2; border: none; }")
             .arg(text, base, surface, thumb, hover, accent, selected,
                  dark ? "#ffaaa6" : "#a32726"));
+    // Toolbar widget actions may retain their own palette instead of inheriting it.
+    for (auto* label : window.findChildren<QLabel*>()) {
+        if (label->property("role") == "heading") {
+            label->setPalette(colors);
+            label->setStyleSheet(QString("color: %1; background: transparent; font-family: 'DejaVu "
+                                         "Serif'; font-size: 26px;")
+                                     .arg(text));
+        }
+    }
 }
 } // namespace mig::linux_ui

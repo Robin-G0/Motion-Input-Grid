@@ -23,6 +23,7 @@
 #include <QSpinBox>
 #include <QSplitter>
 #include <QStatusBar>
+#include <QTabBar>
 #include <QTabWidget>
 #include <QToolBar>
 #include <QVBoxLayout>
@@ -174,6 +175,15 @@ void Window::build_sidebar() {
     inspector_->addTab(scroll, "Zones");
     settings_panel_ = new QWidget(inspector_);
     inspector_->addTab(settings_panel_, "Movement");
+    inspector_->tabBar()->hide();
+    auto* context_navigation = new QHBoxLayout;
+    auto* movement_settings = new QPushButton("Movement settings", panel);
+    auto* back_to_zones = new QPushButton("Back to zones", panel);
+    context_navigation->addWidget(movement_settings);
+    context_navigation->addWidget(back_to_zones);
+    inspector_layout->insertLayout(0, context_navigation);
+    connect(movement_settings, &QPushButton::clicked, this, [this] { edit_settings(); });
+    connect(back_to_zones, &QPushButton::clicked, this, [this] { inspector_->setCurrentIndex(0); });
     auto* form = new QFormLayout(settings_panel_);
     form->setSpacing(12);
     name_field_ = new QLineEdit(settings_panel_);
@@ -268,7 +278,10 @@ void Window::build_sidebar() {
     inputs_ = new QListWidget(movements);
     layout->addWidget(inputs_, 1);
     connect(inputs_, &QListWidget::currentRowChanged, this, [this](int row) { select_input(row); });
-    connect(inputs_, &QListWidget::itemDoubleClicked, this, [this] { show_view(1); });
+    connect(inputs_, &QListWidget::itemClicked, this, [this] {
+        inspector_->setCurrentIndex(0);
+        show_view(1);
+    });
     const auto button = [&](const char* name, auto callback) {
         auto* control = new QPushButton(name, panel);
         layout->addWidget(control);
@@ -347,6 +360,7 @@ void Window::build_sidebar() {
         canvas_->scope = index;
         canvas_->selection.clear();
         refresh_step();
+        refresh_zone();
     });
     connect(step_mode_field_, &QComboBox::currentIndexChanged, this, [this](int mode) {
         if (!canvas_->motion || canvas_->scope <= 0) {
@@ -388,17 +402,36 @@ void Window::build_sidebar() {
         canvas_->scope = std::min(canvas_->scope, int(canvas_->motion->steps.size()));
         select_input(inputs_->currentRow());
     });
-    section("Point for new zones");
-    auto* body = new QComboBox(panel);
+    section("Movement / tracked point");
+    auto* body = body_field_ = new QComboBox(panel);
     for (const auto& part : landmarks) {
         body->addItem(QString::fromStdString(ui::landmark_label(part.index)), part.index);
     }
     body->setCurrentIndex(body->findData(15));
     layout->addWidget(body);
     connect(body, &QComboBox::currentIndexChanged, this, [this, body] {
-        canvas_->landmark = body->currentData().toInt();
+        const auto target = body->currentData().toInt();
+        try {
+            if (canvas_->motion && target != canvas_->landmark) {
+                const auto layers = ui::layers(*canvas_->motion);
+                if (std::any_of(layers.begin(), layers.end(), [this](const auto& layer) {
+                        return layer.landmark == canvas_->landmark;
+                    })) {
+                    ui::reassign_layer(*canvas_->motion, canvas_->landmark, target);
+                }
+            }
+        } catch (const std::exception& error) {
+            const QSignalBlocker blocker(body);
+            body->setCurrentIndex(body->findData(canvas_->landmark));
+            report(QString::fromUtf8(error.what()));
+            return;
+        }
+        stop();
+        canvas_->landmark = target;
         canvas_->selection.clear();
+        refresh_zone();
         canvas_->update();
+        report("Tracked point updated in this movement. Save to keep it on disk.");
     });
     section("Drawing tools");
     auto* tools = new QGridLayout;
@@ -425,7 +458,8 @@ void Window::build_sidebar() {
             canvas_->erase = false;
             canvas_->select = false;
             canvas_->selection.clear();
-            interaction_controls_->setVisible(type == int(ConstraintType::Interaction));
+            interaction_controls_->hide();
+            zone_controls_->hide();
             order_controls_->setVisible(
                 type == int(ConstraintType::Required) && canvas_->motion && canvas_->scope > 0 &&
                 !canvas_->motion->steps.empty() &&
@@ -457,6 +491,7 @@ void Window::build_sidebar() {
         canvas_->select = false;
         canvas_->selection.clear();
         interaction_controls_->hide();
+        zone_controls_->hide();
         order_controls_->hide();
     });
     order_controls_ = section("Route numbering");
@@ -466,22 +501,96 @@ void Window::build_sidebar() {
         panel);
     route_hint->setWordWrap(true);
     layout->addWidget(route_hint);
-    interaction_controls_ = section("Hand sign condition");
+    zone_controls_ = section("Selected zone / geometry");
+    auto* geometry = new QGridLayout;
+    layout->addLayout(geometry);
+    const char* geometry_names[]{"X", "Y", "Width", "Height"};
+    for (std::size_t i = 0; i < zone_geometry_.size(); ++i) {
+        auto* field = zone_geometry_[i] = new QSpinBox(zone_controls_);
+        field->setRange(i < 2 ? Grid::min_cell : 1, i < 2 ? Grid::max_cell - 1 : Grid::cell_count);
+        geometry->addWidget(new QLabel(geometry_names[i], zone_controls_), 0, int(i));
+        geometry->addWidget(field, 1, int(i));
+        connect(field, &QSpinBox::valueChanged, this, [this] {
+            if (!canvas_->motion || canvas_->selection.ids.size() != 1) {
+                return;
+            }
+            for (auto& cell : canvas_->current_constraints()) {
+                if (!canvas_->selection.includes(cell.id)) {
+                    continue;
+                }
+                const Cell proposed{zone_geometry_[0]->value(), zone_geometry_[1]->value(),
+                                    zone_geometry_[2]->value(), zone_geometry_[3]->value()};
+                if (proposed.x + proposed.width > Grid::max_cell ||
+                    proposed.y + proposed.height > Grid::max_cell) {
+                    report("The zone must stay inside the grid.");
+                    refresh_zone();
+                    return;
+                }
+                cell.cell = proposed;
+                stop();
+                canvas_->update();
+                break;
+            }
+        });
+    }
+    zone_controls_->hide();
+    interaction_controls_ = section("Selected conditional trigger / hand sign");
     interaction_controls_->hide();
-    auto* gesture = new QComboBox(panel);
+    auto* gesture = gesture_field_ = new QComboBox(panel);
+    auto* hand = hand_field_ = new QComboBox(panel);
+    hand->addItems({"Left hand", "Right hand"});
+    layout->addWidget(hand);
+    connect(hand, &QComboBox::currentIndexChanged, this, [this](int value) {
+        canvas_->interaction.hand = HandSide(value);
+        for (auto& cell : canvas_->current_constraints()) {
+            if (canvas_->selection.includes(cell.id) && cell.interaction) {
+                cell.interaction->hand = HandSide(value);
+                for (auto& margin : canvas_->current_constraints()) {
+                    if (margin.tolerance_for == cell.id) {
+                        margin.interaction = cell.interaction;
+                    }
+                }
+            }
+        }
+        stop();
+    });
     for (const auto name : gesture_names) {
         gesture->addItem(QString::fromUtf8(name.data(), int(name.size())));
     }
     gesture->setCurrentIndex(int(Gesture::V));
     layout->addWidget(gesture);
-    connect(gesture, &QComboBox::currentIndexChanged, this,
-            [this](int value) { canvas_->interaction.gesture = Gesture(value); });
-    auto* hold = new QSpinBox(panel);
+    connect(gesture, &QComboBox::currentIndexChanged, this, [this](int value) {
+        canvas_->interaction.gesture = Gesture(value);
+        for (auto& cell : canvas_->current_constraints()) {
+            if (canvas_->selection.includes(cell.id) && cell.interaction) {
+                cell.interaction->gesture = Gesture(value);
+                for (auto& margin : canvas_->current_constraints()) {
+                    if (margin.tolerance_for == cell.id) {
+                        margin.interaction = cell.interaction;
+                    }
+                }
+            }
+        }
+        stop();
+    });
+    auto* hold = interaction_hold_field_ = new QSpinBox(panel);
     hold->setRange(0, maximum_interaction_hold_ms);
     hold->setSuffix(" ms hold");
     layout->addWidget(hold);
-    connect(hold, &QSpinBox::valueChanged, this,
-            [this](int value) { canvas_->interaction.hold_ms = value; });
+    connect(hold, &QSpinBox::valueChanged, this, [this](int value) {
+        canvas_->interaction.hold_ms = value;
+        for (auto& cell : canvas_->current_constraints()) {
+            if (canvas_->selection.includes(cell.id) && cell.interaction) {
+                cell.interaction->hold_ms = value;
+                for (auto& margin : canvas_->current_constraints()) {
+                    if (margin.tolerance_for == cell.id) {
+                        margin.interaction = cell.interaction;
+                    }
+                }
+            }
+        }
+        stop();
+    });
     // Destructive finger editing belongs with movement settings, away from drawing tools.
     form->addRow(fingers);
     drawing->addStretch();
@@ -492,6 +601,57 @@ void Window::build_sidebar() {
         config_.track_hands |= canvas_->type == ConstraintType::Interaction;
         canvas_->interaction.hand = canvas_->landmark == 16 ? HandSide::Right : HandSide::Left;
     };
+    canvas_->selection_changed = [this] { refresh_zone(); };
+    canvas_->confirm_overwrite = [this] {
+        stop();
+        return QMessageBox::question(
+                   this, "Replace zone?",
+                   "This cell already belongs to a different coloured zone. Replace that zone?",
+                   QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes;
+    };
+}
+void Window::refresh_zone() {
+    if (canvas_->select) {
+        for (auto* button : drawing_panel_->findChildren<QPushButton*>("zone-tool")) {
+            if (button->text() == "Select") {
+                button->setChecked(true);
+            }
+        }
+    }
+    order_controls_->setVisible(
+        canvas_->motion && canvas_->scope > 0 &&
+        canvas_->scope <= int(canvas_->motion->steps.size()) &&
+        canvas_->motion->steps[canvas_->scope - 1].mode == StepMode::Ordered &&
+        canvas_->type == ConstraintType::Required && !canvas_->select && !canvas_->erase);
+    const SpatialConstraint* selected = nullptr;
+    const SpatialConstraint* zone = nullptr;
+    if (canvas_->motion) {
+        for (const auto& cell : canvas_->current_constraints()) {
+            if (canvas_->selection.ids.size() == 1 && canvas_->selection.includes(cell.id)) {
+                zone = &cell;
+            }
+            if (canvas_->selection.includes(cell.id) && cell.interaction) {
+                selected = &cell;
+                break;
+            }
+        }
+    }
+    zone_controls_->setVisible(zone != nullptr);
+    if (zone) {
+        const int values[]{zone->cell.x, zone->cell.y, zone->cell.width, zone->cell.height};
+        for (std::size_t i = 0; i < zone_geometry_.size(); ++i) {
+            const QSignalBlocker blocker(zone_geometry_[i]);
+            zone_geometry_[i]->setValue(values[i]);
+        }
+    }
+    interaction_controls_->setVisible(selected != nullptr);
+    if (selected) {
+        const QSignalBlocker gesture_blocker(gesture_field_), hold_blocker(interaction_hold_field_),
+            hand_blocker(hand_field_);
+        gesture_field_->setCurrentIndex(int(selected->interaction->gesture));
+        interaction_hold_field_->setValue(selected->interaction->hold_ms);
+        hand_field_->setCurrentIndex(int(selected->interaction->hand));
+    }
 }
 void Window::refresh_inputs() {
     canvas_->motion = nullptr;
@@ -509,6 +669,15 @@ void Window::select_input(int index) {
     canvas_->motion =
         index >= 0 && index < int(config_.motions.size()) ? &config_.motions[index] : nullptr;
     drawing_panel_->setEnabled(canvas_->motion != nullptr);
+    if (canvas_->motion) {
+        const auto layers = ui::layers(*canvas_->motion);
+        if (!layers.empty()) {
+            canvas_->landmark = layers.front().landmark;
+        }
+    }
+    const QSignalBlocker body_blocker(body_field_);
+    body_field_->setCurrentIndex(body_field_->findData(canvas_->landmark));
+    refresh_zone();
     refresh_settings();
     if (step_field_) {
         const QSignalBlocker blocker(step_field_);

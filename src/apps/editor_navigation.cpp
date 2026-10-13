@@ -1,14 +1,32 @@
 #include "app.hpp"
 namespace mig::app {
 bool App::editor_layer_selection(int id, int notification) {
-    if (id == Members && notification == CBN_SELCHANGE && layer_change_pending()) {
-        for (std::size_t i = 0; i < landmarks.size(); ++i) {
-            if (landmarks[i].index == editing_layer) {
-                SendDlgItemMessageW(edit_window, Members, CB_SETCURSEL, i, 0);
-                break;
+    if (id == Members && notification == CBN_SELCHANGE) {
+        const auto target = landmarks[selection(edit_window, Members)].index;
+        const auto before = draft;
+        try {
+            if (editing_layer >= 0 && editing_layer != target) {
+                ui::reassign_layer(draft, editing_layer, target);
+                remember_edit(before);
+                layer_visible[target] = true;
             }
+        } catch (...) {
+            for (std::size_t i = 0; i < landmarks.size(); ++i) {
+                if (landmarks[i].index == editing_layer) {
+                    SendDlgItemMessageW(edit_window, Members, CB_SETCURSEL, i, 0);
+                }
+            }
+            throw;
         }
-        throw std::runtime_error("Save layer before changing the drawing body part.");
+        editing_layer = target;
+        SendDlgItemMessageW(edit_window, LayerBodyPart, CB_SETCURSEL,
+                            selection(edit_window, Members), 0);
+        selected_constraint = -1;
+        region_selection.clear();
+        sync_interaction_hand();
+        refresh_editor();
+        autosave_movement();
+        return true;
     }
     if (id == LayerList && notification == LBN_SELCHANGE) {
         region_selection.clear();
@@ -91,7 +109,6 @@ bool App::editor_drawing_tools(int id, int notification) {
                 if (scope == 0) {
                     scope = 1;
                 }
-                inspector_tab = 4;
                 refresh_editor();
             }
         } else {

@@ -148,8 +148,12 @@ int run_ui_test(App& app, HWND window) {
     draw_preview(app.edit_window, app.directory / "editor-numbered-rows-ui.bmp");
     set_choice(BrushOrder, 1);
     draw_cell(7, 1, 3);
+    check(app.selected_constraint == 3 && ui::constraint_labels(app.draft)[3] == "2",
+          "Painting with the existing colour must select the square without modifying it");
+    set_choice(BrushOrder, 1);
+    app.editor_command(UpdateConstraint, BN_CLICKED);
     check(app.draft.steps[0].constraints.size() == 6 && ui::constraint_labels(app.draft)[3] == "1",
-          "Painting another number must reassign the existing square without duplicating it");
+          "Editing the selected zone's order must not duplicate it");
     app.undo(false, true);
     set_choice(Tool, 0);
     const auto select_cell = app.grid_view.screen({1.5f, 5.5f});
@@ -159,11 +163,11 @@ int run_ui_test(App& app, HWND window) {
                  MAKELPARAM(int(select_cell.x), int(select_cell.y)));
     set_choice(Members, 6);
     app.editor_command(Members, CBN_SELCHANGE);
-    check(app.selected_constraint >= 0,
-          "Changing a selected square's body part must retain the selection for Update region");
-    app.editor_command(UpdateConstraint, BN_CLICKED);
-    check(app.draft.steps[0].constraints[0].landmark == 15,
-          "Selected square must be reassignable to the opposite anatomical wrist");
+    check(app.selected_constraint == -1 &&
+              std::all_of(app.draft.steps[0].constraints.begin(),
+                          app.draft.steps[0].constraints.end(),
+                          [](const auto& cell) { return cell.landmark == 15; }),
+          "Changing a movement's tracked point must reassign its zones immediately");
     validate(Configuration{{app.draft}});
     app.undo(false, true);
     app.editor_command(Clear, BN_CLICKED);
@@ -385,77 +389,38 @@ int run_ui_test(App& app, HWND window) {
     check(!app.editor_help && app.layer_members.size() == 2,
           "Drawing must replace optional help with per-body-part layers");
     const auto layered = app.draft;
-    app.editor_command(LayersTab, BN_CLICKED);
-    SendDlgItemMessageW(app.edit_window, LayerList, LB_SETCURSEL, 0, 0);
-    app.editor_command(LayerList, LBN_SELCHANGE);
-    check(landmarks[selection(app.edit_window, Members)].index == 16,
-          "Selecting a layer must choose its body part");
-    app.editor_command(ToggleLayer, BN_CLICKED);
-    check(!app.layer_visible[16] && app.draft == layered,
-          "Layer visibility must not change input recognition");
-    app.editor_command(DeleteLayer, BN_CLICKED);
-    check(app.layer_members.size() == 1 && app.layer_members[0] == 15,
-          "Deleting a layer must remove its rules without deleting another body part");
-    app.undo(false, true);
-    check(app.draft == layered && app.layer_members.size() == 2,
-          "Deleting a layer must undo as one operation");
-    app.layer_visible[16] = true;
-    app.editor_command(LayersTab, BN_CLICKED);
-    SendDlgItemMessageW(app.edit_window, LayerList, LB_SETCURSEL, 0, 0);
-    app.editor_command(LayerList, LBN_SELCHANGE);
-    check((GetWindowLongW(GetDlgItem(app.edit_window, SaveLayer), GWL_STYLE) & WS_VISIBLE) &&
-              (GetWindowLongW(GetDlgItem(app.edit_window, LayerBodyPart), GWL_STYLE) & WS_VISIBLE),
-          "Unified layer editing must expose body part and Save layer");
-    const auto choose_layer_body = [&](int landmark) {
+    for (int id : {LayersTab, RecordingTab, Undo, Redo, InteractionTab}) {
+        check(!(GetWindowLongW(GetDlgItem(app.edit_window, id), GWL_STYLE) & WS_VISIBLE),
+              "Retired peer-level options must stay hidden");
+    }
+    const auto choose_body = [&](int landmark) {
         for (std::size_t i = 0; i < landmarks.size(); ++i) {
             if (landmarks[i].index == landmark) {
-                set_choice(LayerBodyPart, int(i));
-                app.editor_command(LayerBodyPart, CBN_SELCHANGE);
+                set_choice(Members, int(i));
+                app.editor_command(Members, CBN_SELCHANGE);
                 return;
             }
         }
     };
-    choose_layer_body(33);
-    check(app.draft == layered && app.editing_layer == 16 && app.layer_change_pending(),
-          "Changing layer target must keep its original drawing selected until saved");
-    check(app.layer_change_pending() &&
-              (GetWindowLongW(GetDlgItem(app.edit_window, SaveLayer), GWL_STYLE) & WS_VISIBLE),
-          "Pro mode must preserve pending layer editing and expose Save layer");
-    choose_layer_body(15);
     bool conflict_blocked = false;
     try {
-        app.editor_command(SaveLayer, BN_CLICKED);
+        choose_body(16);
     } catch (const std::exception&) {
         conflict_blocked = true;
     }
-    check(conflict_blocked && app.draft == layered && app.editing_layer == 16,
-          "Saving to another existing layer must preserve both drawings");
-    choose_layer_body(33);
-    bool switch_blocked = false;
-    try {
-        SendDlgItemMessageW(app.edit_window, LayerList, LB_SETCURSEL, 1, 0);
-        app.editor_command(LayerList, LBN_SELCHANGE);
-    } catch (const std::exception&) {
-        switch_blocked = true;
-    }
-    check(switch_blocked && app.editing_layer == 16 && app.layer_change_pending(),
-          "Switching layers must not silently discard a pending body part edit");
-    app.editor_command(SaveLayer, BN_CLICKED);
+    check(conflict_blocked && app.draft == layered,
+          "Changing tracked point must preserve another existing point's zones");
+    choose_body(33);
     auto reassigned = layered;
-    ui::reassign_layer(reassigned, 16, 33);
+    ui::reassign_layer(reassigned, 15, 33);
     check(app.draft == reassigned && app.editing_layer == 33 && !app.layer_change_pending(),
-          "Save layer must reassign its entire drawing and select the saved layer");
-    draw_preview(app.edit_window, app.directory / "editor-save-layer-ui.bmp");
+          "Changing the tracked point must update all its zones without Save layer");
     app.undo(false, true);
-    check(app.draft == layered && app.editing_layer == 16,
-          "Layer body part editing must undo in one operation");
+    check(app.draft == layered, "Automatic body reassignment must undo in one operation");
     app.undo(true, true);
-    check(app.draft == reassigned && app.editing_layer == 33,
-          "Layer body part editing must redo in one operation");
+    check(app.draft == reassigned, "Automatic body reassignment must redo in one operation");
     app.undo(false, true);
-    app.editor_command(SaveLayer, BN_CLICKED);
-    check(app.draft == layered, "Saving an existing drawing must not duplicate or erase cells");
-    draw_preview(app.edit_window, app.directory / "editor-layers-ui.bmp");
+    draw_preview(app.edit_window, app.directory / "editor-movement-zones-ui.bmp");
     app.editor_command(DrawEraser, BN_CLICKED);
     const auto erased_finish = app.grid_view.screen({3.5f, 3.5f});
     SendMessageW(app.edit_window, WM_LBUTTONDOWN, MK_LBUTTON,
@@ -714,10 +679,10 @@ int run_ui_test(App& app, HWND window) {
     check(GetWindowLongW(GetDlgItem(app.edit_window, PaintInteraction), GWL_STYLE) & WS_VISIBLE,
           "Hand sign drawing must be available without a mode switch");
     app.editor_command(PaintInteraction, BN_CLICKED);
-    check(app.inspector_tab == 4 &&
-              (GetWindowLongW(GetDlgItem(app.edit_window, InteractionGesture), GWL_STYLE) &
-               WS_VISIBLE),
-          "Purple drawing must open its hand/sign/hold settings");
+    check(app.inspector_tab == 0 &&
+              !(GetWindowLongW(GetDlgItem(app.edit_window, InteractionGesture), GWL_STYLE) &
+                WS_VISIBLE),
+          "Hand sign options must stay hidden until a conditional zone exists");
     SendDlgItemMessageW(app.edit_window, Members, CB_SETCURSEL, 6, 0);
     SendDlgItemMessageW(app.edit_window, InteractionGesture, CB_SETCURSEL, int(Gesture::OK) - 1, 0);
     SetDlgItemInt(app.edit_window, InteractionHold, 400, FALSE);
@@ -932,6 +897,52 @@ int run_ui_test(App& app, HWND window) {
               extended_route.back().order == 3,
           "Extending a numbered route must keep its finish last and repainting must not duplicate "
           "cells");
+    app.apply();
+    const auto published_id = app.draft.id;
+    set_choice(Members, 7);
+    app.editor_command(Members, CBN_SELCHANGE);
+    const auto published = [&]() -> const Motion& {
+        return *std::find_if(app.config.motions.begin(), app.config.motions.end(),
+                             [&](const auto& motion) { return motion.id == published_id; });
+    };
+    check(std::all_of(published().steps[0].constraints.begin(),
+                      published().steps[0].constraints.end(),
+                      [](const auto& cell) { return cell.landmark == 16; }),
+          "Tracked-point edits must immediately update the existing document movement");
+    const auto before_replace = app.draft;
+    app.confirm_overwrite = [] { return false; };
+    app.editor_command(PaintForbidden, BN_CLICKED);
+    draw_cell(7, 1, 2);
+    check(app.draft == before_replace && published() == before_replace,
+          "Declining a different-colour overwrite must preserve draft and document");
+    app.confirm_overwrite = [] { return true; };
+    draw_cell(7, 1, 2);
+    check(std::any_of(published().steps[0].constraints.begin(),
+                      published().steps[0].constraints.end(),
+                      [](const auto& cell) {
+                          return cell.type == ConstraintType::Forbidden && cell.cell == Cell{1, 2};
+                      }),
+          "Confirming an overwrite must replace the zone and update the document");
+    app.undo(false, true);
+    check(app.draft == before_replace && published() == before_replace,
+          "Undo must restore the overwritten zone in both draft and document");
+    app.editor_command(PaintInteraction, BN_CLICKED);
+    draw_cell(7, 4, 5);
+    check(app.selected_constraint >= 0 && app.inspector_tab == 4 &&
+              (GetWindowLongW(GetDlgItem(app.edit_window, InteractionGesture), GWL_STYLE) &
+               WS_VISIBLE),
+          "A newly placed conditional trigger must expose its sign settings");
+    set_choice(InteractionGesture, int(Gesture::OK) - 1);
+    app.editor_command(InteractionGesture, CBN_SELCHANGE);
+    SetDlgItemInt(app.edit_window, InteractionHold, 750, FALSE);
+    app.editor_command(InteractionHold, EN_KILLFOCUS);
+    const auto conditional = std::find_if(
+        published().steps[0].constraints.begin(), published().steps[0].constraints.end(),
+        [](const auto& cell) { return cell.interaction.has_value(); });
+    check(conditional != published().steps[0].constraints.end() &&
+              conditional->interaction->gesture == Gesture::OK &&
+              conditional->interaction->hold_ms == 750,
+          "Selected sign and hold edits must update the document without an Apply button");
     SendMessageW(window, WM_CLOSE, 0, 0);
     check(!IsWindow(terminal), "Linked terminal must close with application");
     application = nullptr;

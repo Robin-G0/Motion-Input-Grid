@@ -100,18 +100,22 @@ successives. Dans une phase, choisissez **In order**, **Any order** ou
 le parcours apparaît pour une région ordonnée sélectionnée ; un même numéro
 représente des alternatives pour le point suivi.
 
-La stack regroupe contraintes par landmark, autres layers en contour. Aide
-facultative ; Hide seulement présentation, Delete tous scopes, Clear step nettoie la portée courante.
-Layer body part puis Save layer réaffecte. Collision rejetée ; pending à sauver
-ou rétablir avant changement/dessin/Test. IDs/régions/règles conservés, mais mains
-explicites et identité des traces inchangées. Save layer=brouillon, Apply=publication
-dans document, File Save=fichier.
+Les contraintes de chaque point restent distinctes ; les autres points sont
+visibles en contour. Clear step retire la portée courante ; l'aide est facultative.
+Cliquez sur un mouvement pour éditer son point suivi et ses zones. Changer le
+point réaffecte immédiatement ses zones ; une collision avec un autre point est
+refusée sans perte. Les mains explicites et l’identité des traces sont conservées.
+**Movement settings** ouvre identité, clavier et délais ; **Back to zones** revient
+au parcours et à la géométrie de la zone sélectionnée. Les options séparées Body
+parts, Recording et les boutons Undo/Redo sont retirés ; Ctrl+Z/Y reste disponible.
+Les mouvements existants sont actualisés automatiquement dans le document,
+les nouveaux sont ajoutés par Apply ; File Save écrit le fichier.
 
-L’inspecteur sépare Movement, Zones, Fingers, Hand sign, Body parts et Recording.
-Movement contient identité, clavier et délais ; Zones contient parcours et géométrie.
-Il n’y a plus de bascule Basic/Advanced. Violet : main/signe/hold 0..60000 ms avant dessin,
-Select/Update pour modifier. Fonctionne sans vert/jaune, réserve la main des
-commandes globales. Details montre tous scopes/doigts/signes/délais/touches.
+Les réglages main/signe/maintien 0..60000 ms apparaissent après la pose ou la
+sélection d’un déclencheur conditionnel violet et modifient directement celui-ci.
+Un clic avec sa couleur sélectionne la zone ; une autre couleur demande
+confirmation avant remplacement. Erase supprime explicitement les zones.
+Les marges importées restent prises en charge.
 Jump/Crouch sont des régions calibrées ordinaires ; body suit torse. Mirror
 échange anatomie/règles/doigts séparément du miroir caméra. Hands partagé/persisté,
 activé par règles/signes en ON ; absence ne contourne rien. OFF édite sans inférer.
@@ -131,10 +135,9 @@ Recalibrate remplace l'ancre avec récupération. Remote contrôle Restart/Recal
 Record par Thumb/V/OK/Open palm/Fist anatomiques. Validation 250 ms par défaut,
 récupération exactement 1000 ms, relâchement volontaire requis. Un couple signe/main
 ne contrôle qu'une commande ; réaffectation retire l'ancienne.
-Enregistrement dans éditeur ouvert : landmarks/espace ou full body, Start/Stop
-manuel/signe, déplacer point, supprimer échantillon synchronisé, trim/discard puis
-conversion explicite.20 Hz max,60 s,2048 points ; au-delà de 64 transitions réduire.
-Pas de vidéo sauvée ni règle implicite. Apply/Save, undo/Ctrl+Z/Y et copie/duplication.
+L’interface d’enregistrement n’est plus présentée dans Studio. Les traces des
+profils existants restent compatibles avec le schéma. Ctrl+Z/Y et les commandes
+de copie/duplication restent disponibles.
 
 ## Tests et origine
 

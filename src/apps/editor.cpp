@@ -82,6 +82,7 @@ void App::undo(bool redo, bool draft_scope) {
                 }
             }
             refresh_editor();
+            autosave_movement();
         }
     } else {
         release_keys();
@@ -155,6 +156,15 @@ void App::open_editor(bool creating, bool test) {
                                   client.bottom - 128, window, nullptr, klass.hInstance, nullptr);
     if (!edit_window) {
         throw std::runtime_error("Cannot open input editor");
+    }
+    const auto assigned = ui::layers(draft);
+    if (!assigned.empty()) {
+        for (std::size_t i = 0; i < landmarks.size(); ++i) {
+            if (landmarks[i].index == assigned.front().landmark) {
+                SendDlgItemMessageW(edit_window, Members, CB_SETCURSEL, i, 0);
+                break;
+            }
+        }
     }
     refresh_editor();
     update_theme();
@@ -416,6 +426,18 @@ void App::apply() {
     new_input = false;
     message("Input applied. Save the document to persist it.");
 }
+void App::autosave_movement() {
+    // Incomplete new movements remain drafts; an opened document is never overwritten.
+    if (new_input) {
+        return;
+    }
+    try {
+        apply();
+        message("Movement updated. Save the document to keep it on disk.");
+    } catch (const std::exception& error) {
+        message(std::string("Draft kept: ") + error.what());
+    }
+}
 void App::set_test(bool enabled) {
     if (enabled) {
         apply();
@@ -498,6 +520,45 @@ void App::editor_click(int x, int y, bool begin) {
         layer_visible[landmarks[selection(edit_window, Members)].index] = true;
     }
     auto& list = current_constraints();
+    if (tool == 1 && begin) {
+        const auto landmark = landmarks[selection(edit_window, Members)].index;
+        const auto colour = ConstraintType(selection(edit_window, ConstraintTypeId));
+        const auto occupied = std::find_if(list.begin(), list.end(), [&](const auto& item) {
+            return item.landmark == landmark && item.priority == Priority::High &&
+                   ui::contains(item.cell, {float(cell_x), float(cell_y)});
+        });
+        if (occupied != list.end()) {
+            if (occupied->type == colour) {
+                selected_constraint = int(occupied - list.begin());
+                region_selection.ids = {occupied->id};
+                SendDlgItemMessageW(edit_window, Tool, CB_SETCURSEL, 0, 0);
+                inspector_tab = colour == ConstraintType::Interaction ? 4 : 0;
+                refresh_editor();
+                return;
+            }
+            ReleaseCapture();
+            release_keys();
+            dialog_open = true;
+            const bool replace =
+                confirm_overwrite
+                    ? confirm_overwrite()
+                    : MessageBoxW(edit_window,
+                                  L"This cell already belongs to a different coloured "
+                                  L"zone.\nReplace that zone with the selected colour?",
+                                  L"Replace zone?",
+                                  MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES;
+            finish_dialog();
+            if (!replace) {
+                return;
+            }
+            SetCapture(edit_window);
+            stroke_before = draft;
+            ui::erase_regions(list, {occupied->id});
+            stroke = true;
+            last_brush_cell = {cell_x, cell_y};
+            begin = false;
+        }
+    }
     if (tool >= 5) {
         std::lock_guard lock(state_mutex);
         if (begin) {
@@ -645,12 +706,21 @@ void App::editor_click(int x, int y, bool begin) {
         if (brush.type == ConstraintType::Trigger && selection(edit_window, BrushOrder) == 0) {
             ui::pencil(list, brush, cell_x, cell_y, selection(edit_window, BrushOrder) > 0);
         } else {
-            ui::line(last_brush_cell.first, last_brush_cell.second, cell_x, cell_y,
-                     [&](int cx, int cy) {
-                         auto sampled = brush;
-                         sampled.id += "_" + std::to_string(cx) + "_" + std::to_string(cy);
-                         ui::pencil(list, sampled, cx, cy, selection(edit_window, BrushOrder) > 0);
-                     });
+            ui::line(
+                last_brush_cell.first, last_brush_cell.second, cell_x, cell_y, [&](int cx, int cy) {
+                    const auto collision =
+                        std::find_if(list.begin(), list.end(), [&](const auto& item) {
+                            return item.landmark == brush.landmark &&
+                                   item.priority == Priority::High && item.type != brush.type &&
+                                   ui::contains(item.cell, {float(cx), float(cy)});
+                        });
+                    if (collision != list.end()) {
+                        return;
+                    }
+                    auto sampled = brush;
+                    sampled.id += "_" + std::to_string(cx) + "_" + std::to_string(cy);
+                    ui::pencil(list, sampled, cx, cy, selection(edit_window, BrushOrder) > 0);
+                });
         }
         if (brush.order == 0 && brush.type == ConstraintType::Required && list.size() > old_size) {
             const auto finish = std::find_if(list.begin(), list.end(), [](const auto& item) {
@@ -664,6 +734,17 @@ void App::editor_click(int x, int y, bool begin) {
     last_brush_cell = {cell_x, cell_y};
     if (!list.empty()) {
         editor_help = false;
+    }
+    if (brush.type == ConstraintType::Interaction) {
+        for (std::size_t i = 0; i < list.size(); ++i) {
+            if (list[i].type == brush.type && list[i].landmark == brush.landmark &&
+                ui::contains(list[i].cell, {float(cell_x), float(cell_y)})) {
+                selected_constraint = int(i);
+                region_selection.ids = {list[i].id};
+                inspector_tab = 4;
+                break;
+            }
+        }
     }
     InvalidateRect(edit_window, nullptr, FALSE);
 }

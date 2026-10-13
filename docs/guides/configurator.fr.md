@@ -58,7 +58,7 @@ partie du corps. Plusieurs layers peuvent appartenir au même input.
    au-dessus. Des régions larges laissent plus de liberté au mouvement.
 3. Définissez une action `next_slide`, la touche `Right` et le mode **Single press**.
    La touche doit correspondre au raccourci de votre application de présentation.
-4. Sous Windows, utilisez **Save layer**, puis **Apply** et **File → Save**.
+4. Sous Windows, utilisez **Apply** et **File → Save**.
    Sous Linux, enregistrez le profil depuis l'interface principale.
 5. Arrêtez la caméra du Motion Input Grid Studio, importez le fichier dans le
    [Motion Input Grid Controller](controller.fr.md) et vérifiez le retour visuel avant d'activer
@@ -102,14 +102,18 @@ Les couleurs des régions indiquent leurs conditions :
 | 🟨 Jaune — Trigger | Terminer le mouvement ici pour déclencher son action. |
 | 🟪 Violet — Interaction | Faire le signe de main choisi dans cette région, avec un maintien facultatif. |
 
-Sous Windows, utilisez **Save layer** après avoir changé la partie du corps d'un
-layer ; **Apply** enregistre cet input dans le document ouvert et **File → Save**
-écrit le fichier JSON. Les vues **Movements**, **Edit** et **Test** restent dans la fenêtre principale,
-comme sur le web. Les réglages contextuels séparent identité/action, outils de
-dessin et conditions de zone. Changer de vue conserve le mouvement et la frame
-caméra. Windows propose Movement, Zones, Fingers, Hand sign, Body parts et Recording ;
-Linux propose Zones et Movement. **File → Complete JSON profile** ouvre une page
-intégrée pour éditer tous les champs du schéma. Les guides [Windows](../getting-started/windows.fr.md#dessiner)
+Cliquez sur un mouvement pour afficher son point suivi et ses zones. Changer le
+point réaffecte immédiatement ses zones dans le document ; une collision avec un
+autre point est refusée sans perdre de dessin. **Movement settings** ouvre
+l’identité et les sorties ; **Back to zones** revient au dessin. Les réglages du
+signe apparaissent après la pose ou la sélection d’un déclencheur conditionnel
+violet et modifient directement cette condition. Un clic avec la même couleur
+sélectionne la zone ; une autre couleur demande confirmation avant remplacement.
+Windows conserve Ctrl+Z/Y sans boutons dans la barre d’outils. Enregistrement et
+menu séparé des parties du corps ne sont plus présentés. **File → Save** écrit le
+JSON ; l’édition n’écrase jamais silencieusement un fichier importé. Linux conserve
+la page intégrée **Complete JSON profile** pour tous les champs du schéma.
+Les guides [Windows](../getting-started/windows.fr.md#dessiner)
 et [Linux](../getting-started/linux.fr.md) détaillent les outils disponibles.
 
 ## Vérifier et utiliser le profil

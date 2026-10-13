@@ -143,6 +143,7 @@ int run_application(int argc, wchar_t** argv) {
         klass.hInstance = GetModuleHandleW(nullptr);
         klass.lpszClassName = L"MIGNativeWindow";
         klass.hCursor = LoadCursor(nullptr, IDC_ARROW);
+        klass.hIcon = LoadIconW(klass.hInstance, MAKEINTRESOURCEW(101));
         RegisterClassW(&klass);
         RECT work{};
         SystemParametersInfoW(SPI_GETWORKAREA, 0, &work, 0);

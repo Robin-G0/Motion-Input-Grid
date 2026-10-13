@@ -230,5 +230,6 @@ void App::edit_authoring(int id) {
         selected_finger = -1;
     }
     refresh_editor();
+    autosave_movement();
 }
 } // namespace mig::app

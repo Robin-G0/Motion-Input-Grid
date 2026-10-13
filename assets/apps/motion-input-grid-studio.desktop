@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Motion Input Grid Studio
+Comment=Create and test motion input configurations
+Exec=motion-input-grid-studio
+Icon=motion-input-grid-studio
+Terminal=false
+Categories=Utility;Accessibility;

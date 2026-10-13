@@ -194,6 +194,25 @@ void Canvas::edit_cell(QPointF point) {
         remove(cells);
         selection.clear();
     } else {
+        const auto occupied = std::find_if(cells.begin(), cells.end(), [&](const auto& cell) {
+            return cell.landmark == landmark && cell.priority == Priority::High &&
+                   ui::contains(cell.cell, {float(x), float(y)});
+        });
+        if (occupied != cells.end()) {
+            if (occupied->type == type) {
+                selection.ids = {occupied->id};
+                select = true;
+                update();
+                if (selection_changed) {
+                    selection_changed();
+                }
+                return;
+            }
+            if (!confirm_overwrite || !confirm_overwrite()) {
+                return;
+            }
+            ui::erase_regions(cells, {occupied->id});
+        }
         SpatialConstraint brush;
         brush.id = "scope" + std::to_string(scope) + "_cell" + std::to_string(cells.size() + 1);
         unsigned serial = unsigned(cells.size() + 1);
@@ -258,10 +277,23 @@ void Canvas::edit_cell(QPointF point) {
             }
         }
         ui::pencil(cells, brush, x, y, true);
+        if (type == ConstraintType::Interaction) {
+            selection.ids.clear();
+            for (const auto& cell : cells) {
+                if (cell.landmark == landmark && cell.type == type &&
+                    ui::contains(cell.cell, {float(x), float(y)})) {
+                    selection.ids.push_back(cell.id);
+                    break;
+                }
+            }
+        }
     }
     update();
     if (changed) {
         changed();
+    }
+    if (selection_changed) {
+        selection_changed();
     }
 }
 #endif
@@ -274,6 +306,9 @@ void Canvas::mousePressEvent(QMouseEvent* event) {
                 selection.begin(local(event->position()), event->modifiers() & Qt::ControlModifier);
                 selection.update(current_constraints(), local(event->position()), landmark);
                 update();
+                if (selection_changed) {
+                    selection_changed();
+                }
             }
         } else {
             paint_cell(event->position());
@@ -301,6 +336,9 @@ void Canvas::mouseReleaseEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton) {
         selection.dragging = false;
         update();
+        if (selection_changed) {
+            selection_changed();
+        }
     }
     QWidget::mouseReleaseEvent(event);
 }

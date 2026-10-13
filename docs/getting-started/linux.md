@@ -42,7 +42,8 @@ capture; stop one application before starting the other.
 The session toolbar stays outside the camera canvas. The main window separates
 **Movements**, **Edit** and **Test**, with compact drawing tools, body selection and
 the same six tools as the web: Select, Passage, Action, Cancel, Hand sign and Erase.
-Cells are numbered automatically for ordered routes; Hand sign reveals sign/0..60000 ms hold settings. Draw in Full grid;
+Cells are numbered automatically for ordered routes. Placing or selecting a purple
+conditional trigger reveals sign/0..60000 ms hold settings. Draw in Full grid;
 Body view fits the complete mirrored image. The log terminal opens as a small
 floating window and can be moved, resized or docked. View toggles grid, dots/hands, logs and
 light/dark themes. Input settings edit keys/sequences, Mirror, Single/Hold/Repeat,
@@ -52,11 +53,17 @@ Save validates atomically. The in-app **Complete JSON profile** page edits all s
 fields through a complete-profile JSON editor, preserving scoped fingers, stages,
 tolerance, controls and recordings.
 
-The Linux visual frontend has fewer tools than Win32: precise region geometry and finger
-editing uses JSON; interactive recording/trace review and
-Undo/Redo are not yet ported. Existing profiles keep all settings and recognition
-uses the same engine. Global Restart/Recalibrate signs work; RecordToggle needs
-the future recording UI. These are frontend limits, not removed profile fields.
+Click a movement to edit its tracked point and zones. Changing the tracked point
+reassigns its zones immediately; collisions with another existing point are
+rejected without loss. **Movement settings** and **Back to zones** keep identity
+apart from drawing. Selecting one zone reveals its X/Y/width/height controls.
+Hand-sign settings appear only for a newly placed or selected purple conditional
+trigger; changing its hand, sign or hold updates the condition immediately.
+Clicking with the same colour selects a zone; a different colour asks before
+replacement. Save persists the document; imported files are never overwritten
+automatically. Imported margin and finger rules remain supported, with detailed
+finger editing available through JSON. Interactive recording and Undo/Redo are
+not exposed in this frontend.
 
 One worker owns camera/models/engine/controls. A mutex-protected latest snapshot
 transfers copied observations/image and at most 64 timestamped events. Profile

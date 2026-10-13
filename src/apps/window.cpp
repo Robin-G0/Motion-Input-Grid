@@ -221,6 +221,17 @@ void App::layout_editor() {
     place(Undo, 780, 58, 80);
     place(Redo, 868, 58, 80);
     place(EditorHelp, 956, 58, 64);
+    for (int id : {LayersTab, RecordingTab, Undo, Redo, InteractionTab}) {
+        show(id, false);
+    }
+    place(MovementTab, 580, 16, 214);
+    SetDlgItemTextW(edit_window, MovementTab, L"Movement settings");
+    place(ConstraintsTab, 804, 16, 216);
+    SetDlgItemTextW(edit_window, ConstraintsTab, L"Back to zones");
+    show(ConstraintsTab, editing && inspector_tab != 0);
+    show(FingersTab, editing && inspector_tab == 4 && selected_constraint >= 0);
+    place(FingersTab, 580, 58, 210);
+    SetDlgItemTextW(edit_window, FingersTab, L"Detailed finger rules");
     const bool movement = editing && inspector_tab == 5 && !editor_help;
     for (int id : {NameCaption, InputName, ActionCaption, ActionId, KeyCaption, Key, EditKeys,
                    KeyTokens, ActionModeCaption, ActionModeId, SpaceCaption, Space, DurationCaption,
@@ -287,7 +298,7 @@ void App::layout_editor() {
     }
     show(ConstraintUp, zones && ordered);
     show(ConstraintDown, zones && ordered);
-    const bool layers = editing && inspector_tab == 3 && !editor_help && !layer_members.empty();
+    const bool layers = false;
     for (int id : {LayerList, ToggleLayer, DeleteLayer, LayerBodyPart, SaveLayer, LayerCaption}) {
         show(id, layers);
     }
@@ -313,17 +324,18 @@ void App::layout_editor() {
     place(AddFinger, 580, client.bottom - 132, 214);
     place(DeleteFinger, 804, client.bottom - 132, 216);
     place(ClearFingers, 804, client.bottom - 90, 216);
-    const bool signs = editing && inspector_tab == 4 && !editor_help;
+    const bool signs = editing && inspector_tab == 4 && !editor_help && selected_constraint >= 0;
     for (int id : {InteractionHand, InteractionGesture, InteractionHold, InteractionCaption,
                    SetInteraction}) {
         show(id, signs);
     }
+    show(SetInteraction, false); // Selected-condition changes apply directly.
     place(InteractionCaption, 580, 200, 440, 64);
     place(InteractionHand, 580, 280, 136);
     place(InteractionGesture, 726, 280, 294);
     place(InteractionHold, 580, 328, 136, 28);
     place(SetInteraction, 726, 326, 294);
-    const bool recording = editing && inspector_tab == 2 && !editor_help;
+    const bool recording = false;
     for (int id : {RecordLandmarks, RecordToggle, ConvertRecording, DiscardRecording, TrimBegin,
                    TrimEnd, TrimRecording, RecordAll, TraceMove, TraceDelete}) {
         show(id, recording);
@@ -412,6 +424,7 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM wp, LPARAM lp) {
             if (id == MotionList && notification == LBN_SELCHANGE) {
                 app.selected =
                     std::size_t(SendDlgItemMessageW(window, MotionList, LB_GETCURSEL, 0, 0));
+                app.open_editor();
                 return 0;
             }
             if (id == MotionList && notification == LBN_DBLCLK) {
@@ -446,8 +459,6 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM wp, LPARAM lp) {
                     add(Load, L"Open configuration   Ctrl+O");
                     add(Save, L"Save configuration   Ctrl+S");
                 } else if (id == EditMenu) {
-                    add(Undo, L"Undo   Ctrl+Z");
-                    add(Redo, L"Redo   Ctrl+Y");
                     add(CopyInput, L"Copy input   Ctrl+C");
                     add(PasteInput, L"Paste input   Ctrl+V");
                     add(DuplicateInput, L"Duplicate input");
@@ -889,6 +900,7 @@ LRESULT CALLBACK editor_procedure(HWND window, UINT message, WPARAM wp, LPARAM l
                 app.stroke = false;
                 app.region_selection.dragging = false;
                 app.refresh_editor();
+                app.autosave_movement();
             }
             if (message == WM_LBUTTONUP) {
                 ReleaseCapture();

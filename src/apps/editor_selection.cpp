@@ -35,7 +35,7 @@ void App::select_regions(Vec2 point, bool begin) {
         }
     }
     if (selected_constraint >= 0) {
-        inspector_tab = 0;
+        inspector_tab = regions[selected_constraint].type == ConstraintType::Interaction ? 4 : 0;
         editor_help = false;
     }
     InvalidateRect(edit_window, nullptr, FALSE);

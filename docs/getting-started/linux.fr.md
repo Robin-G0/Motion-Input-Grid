@@ -43,17 +43,25 @@ et **Test** partagent la fenêtre principale, avec outils compacts, parties du c
 et les six outils du web : Select, Passage, Action, Cancel, Hand sign et Erase.
 Les étapes sont des phases successives ; leur parcours est libre, simultané ou ordonné ;
 le maintien apparaît pour les étapes simultanées. Le test désactive la sortie clavier.
-Les cases sont numérotées automatiquement pour un parcours ordonné ; Hand sign affiche
-le signe et le maintien 0..60000 ms. Dessinez en Full grid ; Body ajuste l'image
+Les cases sont numérotées automatiquement pour un parcours ordonné ; poser ou
+sélectionner un déclencheur violet affiche le signe et le maintien 0..60000 ms.
+Dessinez en Full grid ; Body ajuste l'image
 complète reflétée. Le terminal de logs est flottant, déplaçable, redimensionnable
 et ancrable. View gère grille, dots/hands, logs et thèmes. Input édite
 séquences, Mirror, Single/Hold/Repeat, intervalle et cooldown. Save valide atomiquement.
 La page intégrée **Complete JSON profile** conserve tous les champs : doigts, étapes, tolérance, commandes, traces.
 
-L'UI Linux a moins d'outils : géométrie précise et doigts via JSON ; enregistrement
-interactif, revue des traces et undo ne sont pas encore portés.
-Tous les profils restent reconnus identiquement. Restart/Recalibrate fonctionnent,
-RecordToggle attend la future interface d'enregistrement.
+Cliquez sur un mouvement pour éditer son point suivi et ses zones. Changer le
+point réaffecte ses zones immédiatement ; les collisions avec un autre point
+sont refusées sans perte. **Movement settings** et **Back to zones** séparent
+l’identité du dessin. Sélectionner une zone affiche X/Y/largeur/hauteur.
+Les réglages main/signe/maintien apparaissent pour un déclencheur conditionnel
+violet nouvellement posé ou sélectionné et modifient directement la condition.
+Un clic avec sa couleur sélectionne la zone ; une autre couleur demande
+confirmation. Save écrit le document ; aucun fichier importé n’est écrasé
+automatiquement. Les marges et doigts importés restent reconnus ; l’édition
+détaillée des doigts passe par JSON. Enregistrement et Undo/Redo ne sont pas
+présentés dans cette interface.
 
 Un worker possède caméra/modèles/moteur/commandes. Snapshot sous mutex avec image
 Qt copiée et au plus 64 événements. Changement de profil stop/join, rejet sorties

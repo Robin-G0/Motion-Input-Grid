@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Motion Input Grid Controller
+Comment=Run motion input profiles
+Exec=motion-input-grid-controller
+Icon=motion-input-grid-controller
+Terminal=false
+Categories=Utility;Accessibility;
