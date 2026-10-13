@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/../.."
-version=$(cat VERSION)
+version=$(tr -d '\r\n' < VERSION)
 dependencies=build/native-linux-deps
 mode="${1:-}"
 if [[ $# -gt 1 || ( -n "$mode" && "$mode" != --engines-only ) ]]; then

@@ -271,7 +271,7 @@ jobs:
               env:
                   RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
               run: |
-                  version=$(cat VERSION)
+                  version=$(tr -d '\r\n' < VERSION)
                   for suffix in javascript-examples.tar.gz windows-x64-examples.zip linux-x64-examples.tar.gz; do
                       collection="build/release-candidates/motion-input-grid-$version-$suffix"
                       rm -f "$collection" "$collection.sha256"
