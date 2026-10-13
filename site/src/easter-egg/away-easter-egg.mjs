@@ -68,6 +68,7 @@ export class AwayEasterEgg {
 
     reset() {
         cancelAnimationFrame(this.frame);
+        this.sky.reset();
         this.frame = null;
         this.startedAt = null;
         this.lastFrame = -Infinity;
