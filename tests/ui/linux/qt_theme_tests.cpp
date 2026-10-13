@@ -46,8 +46,8 @@ int main(int argc, char** argv) {
         for (const bool dark : {true, false, true}) {
             mig::linux_ui::apply_widget_theme(window, dark);
             application.processEvents();
-            const QColor track(dark ? "#252526" : "#f3f3f3");
-            const QColor thumb(dark ? "#5a5d5e" : "#b7b7b7");
+            const QColor track(dark ? "#0b101a" : "#f7f4ed");
+            const QColor thumb(dark ? "#354043" : "#cdcfc5");
             check_bar(vertical, track, thumb);
             check_bar(horizontal, track, thumb);
         }

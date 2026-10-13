@@ -3,6 +3,8 @@
 #include <QApplication>
 #include <QDockWidget>
 #include <QMouseEvent>
+#include <QPushButton>
+#include <QTabWidget>
 #include <mig/format/configuration.hpp>
 
 namespace mig::linux_ui {
@@ -12,6 +14,27 @@ bool Window::ui_test() {
     input.steps.push_back({"step1", StepMode::Ordered});
     config_.motions.push_back(input);
     refresh_inputs();
+    auto* sections = findChild<QTabWidget*>("studio-sections");
+    if (!sections || sections->count() != 2 || !drawing_panel_->isEnabled()) {
+        return false;
+    }
+    sections->setCurrentIndex(1);
+    for (auto* button : drawing_panel_->findChildren<QPushButton*>()) {
+        if (button->text() == "Interaction") {
+            button->click();
+        }
+    }
+    if (interaction_controls_->isHidden() || !order_controls_->isHidden()) {
+        return false;
+    }
+    for (auto* button : drawing_panel_->findChildren<QPushButton*>()) {
+        if (button->text() == "Required") {
+            button->click();
+        }
+    }
+    if (!interaction_controls_->isHidden() || order_controls_->isHidden()) {
+        return false;
+    }
     canvas_->type = ConstraintType::Trigger;
     const QPointF center(canvas_->width() / 2.0, canvas_->height() / 2.0);
     QMouseEvent click(QEvent::MouseButtonPress, center, center, Qt::LeftButton, Qt::LeftButton,
@@ -36,7 +59,13 @@ bool Window::ui_test() {
         cells[1].type != ConstraintType::Trigger || cells[1].order != 2) {
         return false;
     }
+    if (qEnvironmentVariableIsSet("MIG_UI_SCREENSHOTS")) {
+        grab().save("studio-dark.png");
+    }
     apply_theme(false);
+    if (qEnvironmentVariableIsSet("MIG_UI_SCREENSHOTS")) {
+        grab().save("studio-light.png");
+    }
     apply_theme(true);
     log_dock_->show();
     log_dock_->hide();

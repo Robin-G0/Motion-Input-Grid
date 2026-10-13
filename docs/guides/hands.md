@@ -30,10 +30,10 @@ powershell -ExecutionPolicy Bypass -File tools/build/build-windows.ps1
 
 Both applications use **Hands ON/OFF** and the same saved
 `"tracking": {"hands": true}` switch. Loading/undoing a profile restores that switch.
-In the configurator, `--hands` sets it initially. Applying gesture bindings or an
+In the MIG Studio, `--hands` sets it initially. Applying gesture bindings or an
 input with finger rules enables Hands in an ON build; Save persists the setting.
 Absent flags mean body-only.
-The controller's `--hands` flag is accepted only for diagnostics, not normal use.
+The MIG Input's `--hands` flag is accepted only for diagnostics, not normal use.
 
 Click Start camera. The main video is unobstructed; rule diagnostics appear in the separate editor.
 Hand tracking does not require shoulder calibration; body path
@@ -121,7 +121,7 @@ alongside fingers from the same anatomical wrist association and source frame;
 host integrations must supply this evidence for OK. Unknown contact never counts
 as OK or deliberate global-command release. Open palm/Fist use known extended/
 closed observations on all five fingers. These signs are available for global
-commands and purple Interaction cells. Pro edits Interaction hand/sign/hold and
+commands and purple Interaction cells. Advanced edits Interaction hand/sign/hold and
 scoped finger stable/grace times. Synthetic tests cover all five geometry-to-command
 paths on both anatomical sides; human accuracy remains a separate measurement.
 

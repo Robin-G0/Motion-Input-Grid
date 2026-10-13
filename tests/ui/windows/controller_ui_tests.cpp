@@ -9,6 +9,16 @@ int App::controller_ui_test() {
     };
     check(!GetDlgItem(window, NewMotion) && !GetDlgItem(window, EditMenu),
           "Controller must not expose authoring controls.");
+    check(!(GetWindowLongW(GetDlgItem(window, ProfileName), GWL_STYLE) & WS_VISIBLE),
+          "Profile management must be collapsed while running movements.");
+    SendMessageW(window, WM_COMMAND, ProfileManagement, 0);
+    check(profile_management &&
+              (GetWindowLongW(GetDlgItem(window, ProfileName), GWL_STYLE) & WS_VISIBLE),
+          "Profile management did not open.");
+    SendMessageW(window, WM_COMMAND, ProfileManagement, 0);
+    check(!profile_management &&
+              !(GetWindowLongW(GetDlgItem(window, ProfileName), GWL_STYLE) & WS_VISIBLE),
+          "Profile management did not close.");
     const auto temporary = std::filesystem::temp_directory_path() /
                            ("mig-controller-ui-" + std::to_string(GetCurrentProcessId()));
     std::filesystem::create_directories(temporary);

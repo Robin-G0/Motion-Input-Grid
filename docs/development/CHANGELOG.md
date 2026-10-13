@@ -2,6 +2,13 @@
 
 [English](CHANGELOG.md) | [Français](CHANGELOG.fr.md)
 
+## Unreleased
+
+- MIG Studio and MIG Input adopt the website's light/dark palette and clearer
+  session, movement and zone controls on Windows and Linux. Advanced precision
+  and native keyboard consent remain available; executable names stay compatible.
+- MIG Studio Web is documented as a browser alternative sharing JSON profiles.
+
 ## 1.0.2
 
 - Each native, browser and engine tutorial has its own standalone download, with

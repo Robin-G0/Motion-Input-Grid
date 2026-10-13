@@ -148,10 +148,10 @@ void App::open_editor(bool creating, bool test) {
     RECT work{};
     SystemParametersInfoW(SPI_GETWORKAREA, 0, &work, 0);
     const int height = std::min(800, int(work.bottom - work.top) - 40);
-    edit_window =
-        CreateWindowExW(WS_EX_CONTROLPARENT, klass.lpszClassName, L"MIG - Input editor / Test",
-                        WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, work.left + 40, work.top + 20, 1080,
-                        height, window, nullptr, klass.hInstance, nullptr);
+    edit_window = CreateWindowExW(
+        WS_EX_CONTROLPARENT, klass.lpszClassName, L"MIG Studio — Edit movement / Test",
+        WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, work.left + 40, work.top + 20, 1080, height, window,
+        nullptr, klass.hInstance, nullptr);
     if (!edit_window) {
         throw std::runtime_error("Cannot open input editor");
     }
@@ -216,8 +216,11 @@ void App::refresh_editor() {
     SetDlgItemTextW(edit_window, Key, wide(ui::binding_label(draft.keyboard)).c_str());
     SendDlgItemMessageW(edit_window, ActionModeId, CB_SETCURSEL, int(draft.action_mode), 0);
     SetDlgItemInt(edit_window, RepeatInterval, draft.repeat_interval_ms, FALSE);
+    const auto counts = ui::binding_counts(draft);
     SetDlgItemTextW(edit_window, BindingSummary,
-                    wide(ui::binding_summary(draft) + " / Details").c_str());
+                    wide(std::to_string(counts.input + counts.steps + counts.cells) +
+                         " fingers / " + std::to_string(counts.interactions) + " signs / Details")
+                        .c_str());
     if (details_window) {
         SetDlgItemTextW(details_window, 1,
                         wide(ui::binding_description(draft) +
@@ -252,7 +255,6 @@ void App::refresh_editor() {
         selected_constraint = -1;
     }
     const int finger_scope = selection(edit_window, FingerScope);
-    const auto counts = ui::binding_counts(draft);
     const auto scope_label = [&](const wchar_t* label, std::size_t count) {
         const auto text = std::wstring(label) + L" (" + std::to_wstring(count) + L")";
         SendDlgItemMessageW(edit_window, FingerScope, CB_ADDSTRING, 0,
@@ -566,7 +568,7 @@ void App::editor_click(int x, int y, bool begin) {
     brush.type = ConstraintType(selection(edit_window, ConstraintTypeId));
     if (brush.type == ConstraintType::Interaction) {
         if (!pro_mode) {
-            throw std::runtime_error("Use Pro mode to draw Interaction cells");
+            throw std::runtime_error("Enable Advanced to draw Interaction cells");
         }
         if (scope == 0) {
             throw std::runtime_error("Interaction cells belong to a step");

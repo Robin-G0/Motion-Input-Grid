@@ -24,6 +24,11 @@ leurs commandes.
 
 ## Essayer MIG maintenant
 
+Ouvrez [**MIG Studio Web**](https://robin-g0.github.io/Motion-Input-Grid/studio/)
+pour créer, importer et tester un profil JSON sans installer l’éditeur de bureau.
+Exportez ensuite le profil vers **MIG Input** pour envoyer des raccourcis à une
+autre application. [Guide Studio Web](../guides/studio-web.fr.md).
+
 Chaque téléchargement contient un seul tutoriel, ses sources et ses dépendances.
 Extrayez toute l'archive et suivez son README. Comptez environ 30–60 secondes avec
 les prérequis installés ; le chargement des modèles dépend du matériel.
@@ -54,16 +59,16 @@ Choisissez votre usage, puis un exemple et votre plateforme dans le tableau de l
 ## Utiliser MIG sur votre ordinateur
 
 > [!NOTE]
-> Sur Debian, le configurateur, le contrôleur et certains exemples natifs sont
+> Sur Debian, MIG Studio, MIG Input et certains exemples natifs sont
 > encore en cours de développement et de test. Ils peuvent ne pas fonctionner
 > entièrement pour le moment.
 
 Aucun code n'est nécessaire pour créer et utiliser un profil de mouvements.
 
 1. Téléchargez [**desktop applications archive**](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.0.2#user-content-desktop-applications) pour Windows x64 ou Linux x64 et extrayez-la entièrement.
-2. Ouvrez le [**configurateur**](../guides/configurator.fr.md), démarrez la caméra,
+2. Ouvrez le [**MIG Studio**](../guides/configurator.fr.md), démarrez la caméra,
    dessinez votre mouvement et enregistrez son profil.
-3. Ouvrez le [**contrôleur**](../guides/controller.fr.md), importez ce profil et
+3. Ouvrez le [**MIG Input**](../guides/controller.fr.md), importez ce profil et
    essayez le mouvement. Sa ligne s'allume lorsqu'il est reconnu. Activez
    **Keyboard output** pour envoyer des touches à l'application que vous utilisez.
 
@@ -88,7 +93,7 @@ et la résolution des problèmes.
 ## Intégrer MIG dans votre application
 
 Toutes les intégrations partagent le **moteur C++20**. Créez un profil JSON dans
-le configurateur, puis importez-le dans votre application. Fournissez les points
+MIG Studio, puis importez-le dans votre application. Fournissez les points
 du corps ou utilisez un adaptateur caméra disponible.
 
 Les gestionnaires de packages utilisent **`motion-input-grid`**. Les API gardent

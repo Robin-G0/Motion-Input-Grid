@@ -9,9 +9,9 @@ précise les prérequis et la maturité des intégrations.
 
 ## Applications desktop et exemples
 
-- Les archives `desktop applications` contiennent le configurateur, le contrôleur, le runtime
-  caméra et les modèles. Consultez le [configurateur](../guides/configurator.fr.md)
-  ou le [contrôleur](../guides/controller.fr.md).
+- Les archives `desktop applications` contiennent MIG Studio, MIG Input, le runtime
+  caméra et les modèles. Consultez le [MIG Studio](../guides/configurator.fr.md)
+  ou le [MIG Input](../guides/controller.fr.md).
 - Chaque exemple possède son téléchargement `*-standalone` ; choisissez la
   technologie et la plateforme dans le [guide des exemples](../../examples/README.fr.md).
 - Les archives `*-standalone` contiennent un tutoriel natif, navigateur ou moteur

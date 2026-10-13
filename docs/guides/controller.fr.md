@@ -1,4 +1,9 @@
-# Contrôleur
+# MIG Input
+
+MIG Input exécute les profils de MIG Studio ou [MIG Studio Web](studio-web.fr.md).
+Son exécutable reste `mig-controller` pour préserver les scripts existants.
+**Manage profile** regroupe import, export et renommage ; les commandes de session
+et le retour des mouvements restent visibles pendant l’utilisation.
 
 [English](controller.md) | [Français](controller.fr.md)
 
@@ -15,15 +20,15 @@
 
 </details>
 
-Le contrôleur exécute les profils créés dans le configurateur pendant que vous
+Le MIG Input exécute les profils créés dans MIG Studio pendant que vous
 utilisez une autre application ou jouez. Il permet de sélectionner un profil,
 de voir les actions reconnues et de vérifier les mouvements avec la caméra.
-Utilisez le [configurateur](configurator.fr.md) pour dessiner ou modifier les mouvements.
+Utilisez le [MIG Studio](configurator.fr.md) pour dessiner ou modifier les mouvements.
 
 ## Où trouver et lancer l'application
 
 > [!NOTE]
-> Sur Debian, le configurateur, le contrôleur et certains exemples natifs sont
+> Sur Debian, MIG Studio, MIG Input et certains exemples natifs sont
 > encore en cours de développement et de test. Ils peuvent ne pas fonctionner
 > entièrement pour le moment.
 
@@ -44,8 +49,9 @@ x64 ; les archives Linux nécessitent glibc 2.35+.
 
 ## Premier lancement
 
-1. Fermez la caméra du configurateur, puis ouvrez `mig-controller`.
-2. Cliquez sur **Import profile** et choisissez un JSON enregistré par le configurateur.
+1. Fermez la caméra du MIG Studio, puis ouvrez `mig-controller`.
+2. Ouvrez **Manage profile**, puis **Import profile** (Windows) ou **Import…** (Linux),
+   et choisissez un JSON enregistré par MIG Studio ou MIG Studio Web.
 3. Donnez un nom reconnaissable au profil. Sous Windows, modifiez le champ du nom
    puis cliquez sur **Save name**. Sous Linux, cliquez sur **Rename profile**.
 4. Cliquez sur **Start**, faites face à la caméra et gardez les épaules visibles
@@ -71,7 +77,7 @@ La caméra et la sortie clavier doivent toujours être activées explicitement.
 
 Les fichiers importés sont copiés dans le dossier de données de l'application.
 Déplacer le fichier d'origine ne casse pas le profil importé. **Export file**
-enregistre le profil sélectionné dans un JSON utilisable avec le configurateur
+enregistre le profil sélectionné dans un JSON utilisable avec MIG Studio
 ou les bibliothèques. Pour utiliser une configuration modifiée, importez à nouveau
 son fichier comme nouveau profil. Un import invalide conserve le profil en cours.
 Vous pouvez conserver jusqu'à 64 profils.
@@ -97,9 +103,9 @@ en miroir. **Grid**, **Hand detections** et **Body dots** règlent les calques
 indépendamment. Masquer les mains ne désactive pas la reconnaissance nécessaire
 au profil. **Dark mode** permet de choisir le thème clair ou sombre.
 Les barres de défilement des listes, menus déroulants et journaux suivent le thème
-choisi sous Windows et Linux, dans le contrôleur comme dans le configurateur.
+choisi sous Windows et Linux, dans MIG Input comme dans MIG Studio.
 
-**Compact background window** réduit le contrôleur à une petite fenêtre avec
+**Compact background window** réduit MIG Input à une petite fenêtre avec
 un bouton **Open**. Le suivi et la sortie clavier activée continuent. **Open**
 restaure la fenêtre précédente. La réduction dans la barre des tâches laisse
 également le suivi actif. Les copies/conversions d'aperçu et le rendu sont ignorés
@@ -132,7 +138,7 @@ le profil. La vérification ne modifie pas les régions et n'isole pas la reconn
 
 > [!NOTE]
 > **Verify bindings** suspend toute sortie clavier. Les exemples et les libraries
-> transmettent des événements logiques ; le contrôleur envoie des touches lorsque
+> transmettent des événements logiques ; MIG Input envoie des touches lorsque
 > vous activez cette option.
 
 ## Compilation et problèmes courants
@@ -154,10 +160,10 @@ Consultez les guides [Windows](../getting-started/windows.fr.md) et [Linux](../g
 pour les dépendances et commandes de compilation. Gardez les bibliothèques natives
 et les modèles à côté de l'exécutable distribué. Un profil qui suit les mains
 nécessite une version compilée avec leur prise en charge.
-Si un profil enregistré manque ou est invalide, le contrôleur signale le problème.
+Si un profil enregistré manque ou est invalide, MIG Input signale le problème.
 Importez un fichier valide ou choisissez un autre profil enregistré.
 
-Le contrôleur utilise le même moteur de reconnaissance et ordonnanceur clavier
-que le configurateur. Les tests automatisés couvrent la persistance des profils,
+Le MIG Input utilise le même moteur de reconnaissance et ordonnanceur clavier
+que MIG Studio. Les tests automatisés couvrent la persistance des profils,
 les vues, la vérification et l'annulation des sorties. La précision de la caméra
 et l'envoi des touches à un jeu donné se vérifient sur votre machine.

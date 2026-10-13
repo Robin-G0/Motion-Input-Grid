@@ -9,8 +9,8 @@ for platform requirements and integration maturity.
 
 ## Desktop applications and examples
 
-- `desktop applications` archives contain the configurator, controller, camera runtime and models.
-  Follow the [configurator](../guides/configurator.md) or [controller](../guides/controller.md) guide.
+- `desktop applications` archives contain the MIG Studio, MIG Input, camera runtime and models.
+  Follow the [MIG Studio](../guides/configurator.md) or [MIG Input](../guides/controller.md) guide.
 - Each example is a separate `*-standalone` download; choose your technology and
   platform in the [examples guide](../../examples/README.md).
 - `*-standalone` archives contain one native, browser or editor tutorial.

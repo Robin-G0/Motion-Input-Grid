@@ -5,7 +5,7 @@
 ## Ce que démontre cet exemple
 
 Montez un poignet du vert vers le jaune pour obtenir **Left/Right hand raised!**.
-La page de profil importe un JSON du configurateur et affiche les actions/identifiants.
+La page de profil importe un JSON du MIG Studio et affiche les actions/identifiants.
 Les actions restent dans l'application.
 
 ## Démarrage rapide

@@ -5,7 +5,7 @@
 ## What this example demonstrates
 
 Raise either wrist through the green region into yellow to receive
-**Left/Right hand raised!**. The profile page imports configurator JSON and
+**Left/Right hand raised!**. The profile page imports MIG Studio JSON and
 displays logical action/input IDs. Actions stay in your application.
 
 ## Quick Start

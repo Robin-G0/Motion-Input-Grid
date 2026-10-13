@@ -33,7 +33,7 @@ est une responsabilité de l'interface desktop. MIG n'exécute pas directement d
 - [Enregistrement et validation](#enregistrement-et-validation)
 - [Présentation et layers](#présentation-et-layers)
 - [Exemples JSON de la référence](#exemples-json-de-la-référence)
-- [Liste des profils du contrôleur](#liste-des-profils-du-contrôleur)
+- [Liste des profils du MIG Input](#liste-des-profils-du-mig-input)
 
 </details>
 
@@ -192,7 +192,7 @@ Plusieurs jaunes numérotées peuvent constituer un seul groupe Trigger.
 Une voie entièrement sans numéro suit l'ordre du tableau. Mélanger High positifs
 numérotés/non numérotés dans une voie est rejeté. L'éditeur numérote la voie lors
 du premier numéro manuel. Passer à Visited/Simultaneous retire explicitement les
-numéros, avec undo. Basic/Pro conserve la définition. Peignez une ligne Order1,
+numéros, avec undo. Basic/Advanced conserve la définition. Peignez une ligne Order1,
 puis une ligne Order2 : une case de chaque ligne suffit. Repeindre du même type
 change son numéro sans superposition. Auto continue les numéros ; Forbidden = X.
 
@@ -262,7 +262,7 @@ Paume/contact absent ou dégénéré rejette. Open palm exige cinq extensions>=0
 Fist cinq<=0.3 ; confiance>=0.6 pour chaque doigt. Ces classifieurs servent
 commandes, statut et cellules Interaction.
 
-En Pro, choisissez le pinceau violet, main/signe/durée puis dessinez. Select et
+En Advanced, choisissez le pinceau violet, main/signe/durée puis dessinez. Select et
 Update interaction modifient une zone. Fingers règle scopes/stable/grace.
 Basic conserve les règles avancées. Apply/Test active Hands en ON. Auto violet
 groupe les cases d'un landmark sous un numéro : l'une peut déclencher sans
@@ -302,7 +302,7 @@ du snapshot. Cellules suivent les épaules ; pointage utilise le transform inver
 Un trait fige la vue. Full grid montre tout27x27, également avant calibrage ;
 axeX, dots, traces et pointage sont reflétés une fois, sans changer JSON/anatomie.
 La caméra principale a des overlays View facultatifs, discrets et périmés effacés.
-Thème, Basic/Pro, onglets, viewport et logs sont des états UI.
+Thème, Basic/Advanced, onglets, viewport et logs sont des états UI.
 
 Nouveau Basic : une étape Ordered, Pencil actif, aucun délai de mouvement.
 Pencil, Fill, Tolerance, Eraser, Select dans le volet ; vert Required, rouge
@@ -312,25 +312,25 @@ la précédente. Supprimer une région retire aussi ses entrées Low liées.
 Pencil/Eraser interpolent, un trait=un undo. Trigger unique movable, nouveaux
 Required avant. Full grid affiche numéros centrés par voie (step.order si
 plusieurs étapes), X Forbidden, R Required non ordonné. Low n'ajoute pas une visite.
-Layer choisi rempli, autres contours. Pro expose étapes, ordre/hold, High/Low,
+Layer choisi rempli, autres contours. Advanced expose étapes, ordre/hold, High/Low,
 doigts, enregistrement, espace/durées ; clavier disponible dans les deux.
 Changer mode préserve tout.
 
 La stack groupe les contraintes par landmark à travers scopes/étapes, sans
 tableau layer JSON ni second modèle. Sélection choisit le corps ; cacher n'affecte
 que le dessin ; supprimer retire toutes ses contraintes avec un undo.
-Basic Clear tout, Pro Clear scope. Aide facultative ferme au premier dessin.
+Basic Clear tout, Advanced Clear scope. Aide facultative ferme au premier dessin.
 Sélection/visibilité/aide ne sont pas persistées.
 
 Layer body part puis Save layer réaffecte toutes les contraintes de ce landmark,
 gardant IDs/cases/ordres/tolérances/doigts/Interaction. Les mains explicites des
-signes/doigts et identités des traces capturées ne changent pas : vérifiez en Pro.
+signes/doigts et identités des traces capturées ne changent pas : vérifiez en Advanced.
 Une destination déjà utilisée est rejetée atomiquement. Réaffectation pending :
 sauver ou rétablir l'origine avant changement de layer/dessin/apply/Test.
 Les autres dessins du brouillon survivent aux changements. Une réaffectation=un
 undo. Save layer modifie le brouillon, Apply input publie, File Save persiste.
 Aucun champ de layer/pending ajouté. Basic Eraser enlève toutes couleurs/priorités
-du landmark dans tous scopes ; Pro garde type/priorité/scope choisis.
+du landmark dans tous scopes ; Advanced garde type/priorité/scope choisis.
 
 Démarrage normal vide avec Right V Recalibrate, Hands désactivé jusqu'à demande.
 configs/default.json est ouvert explicitement ou via --config, jamais imposé aux
@@ -341,7 +341,7 @@ Profile importeurs commencent inputs vide, rapportent action/ID textuels.
 Succès remplace/recalibre ; échec conserve. Python importe/redémarre capture sur
 son propriétaire ; C++ garde caméra et remplace moteur. Tous respectent
 tracking.hands ; démos l'activent pour dessiner. Fenêtres/chemins ne sont pas JSON.
-Capture contrôleur/ABI rejette observations âgées>250 ms via horloge actuelle ;
+Capture MIG Input/ABI rejette observations âgées>250 ms via horloge actuelle ;
 hôtes positions possèdent leur horloge.
 
 React/Vue/Next partagent schéma 2/session ; import valide efface retour et
@@ -424,13 +424,13 @@ s'insèrent dans leur scope décrit ci-dessus ; seul le document Jump est comple
 }
 ```
 
-## Liste des profils du contrôleur
+## Liste des profils du MIG Input
 
-Le contrôleur conserve les noms dans un `profiles.json` séparé, avec `version: 1`,
+Le MIG Input conserve les noms dans un `profiles.json` séparé, avec `version: 1`,
 `selected` (indice à partir de zéro, ou -1) et un tableau `profiles` contenant
 des objets `{ "id": "1", "name": "Jeu" }`. Les identifiants numériques désignent
 les fichiers gérés `1.json`, `2.json`, etc., qui restent des configurations du schéma v2.
 La liste est limitée à 64 entrées et 64 Kio ; les noms à 256 octets UTF-8.
 Les imports et modifications de liste utilisent un remplacement atomique.
 L’aperçu, la vérification et l’activation du clavier sont des réglages de session
-et ne changent pas le JSON des mouvements. Voir le [contrôleur](../guides/controller.fr.md).
+et ne changent pas le JSON des mouvements. Voir le [MIG Input](../guides/controller.fr.md).

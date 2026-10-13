@@ -1,4 +1,4 @@
-# Configurateur et contrôleur Windows
+# MIG Studio et MIG Input Windows
 
 [English](windows.md) | [Français](windows.fr.md)
 
@@ -13,7 +13,7 @@
 </details>
 
 Pour utiliser les applications précompilées, suivez les guides du
-[configurateur](../guides/configurator.fr.md) et du [contrôleur](../guides/controller.fr.md).
+[MIG Studio](../guides/configurator.fr.md) et du [MIG Input](../guides/controller.fr.md).
 Cette page décrit la compilation et les contrôles propres à la plateforme.
 Pour une bibliothèque seule, consultez le [SDK C++ / CMake](cpp.fr.md),
 [Python](../../bindings/python/README.fr.md) ou [JavaScript](../../bindings/javascript/README.fr.md).
@@ -22,10 +22,10 @@ Les deux apps C++20 Win32/GDI partagent capture Media Foundation, MediaPipe nati
 moteur et schéma 2. Pas d'interpréteur ni pont UDP. L'UI reste anglaise ; les guides
 sont bilingues.
 
-Le contrôleur dispose d’une interface dédiée aux profils et actions. Consultez
-le [guide du contrôleur](../guides/controller.fr.md) pour l’import, la sélection mémorisée,
+Le MIG Input dispose d’une interface dédiée aux profils et actions. Consultez
+le [guide du MIG Input](../guides/controller.fr.md) pour l’import, la sélection mémorisée,
 le mode compact et la vérification. Les outils de dessin ci-dessous concernent
-le configurateur.
+MIG Studio.
 
 ## Compiler et lancer
 
@@ -57,8 +57,8 @@ Choisissez `sdk-release` pour les bibliothèques seules, sans applications camé
 
 Arrêtez une caméra avant l'autre app. Gardez DLL/modèles/configs près du binaire,
 ressources relatives à l'exécutable. --config et --camera N choisissent profil et
-caméra. Le configurateur démarre vide, Right V Recalibrate inactive sans Hands. Le profil fourni
-est ouvert explicitement et n'impose aucun dessin. Le contrôleur restaure son dernier
+caméra. Le MIG Studio démarre vide, Right V Recalibrate inactive sans Hands. Le profil fourni
+est ouvert explicitement et n'impose aucun dessin. Le MIG Input restaure son dernier
 profil sélectionné, avec la caméra et la sortie clavier désactivées.
 
 ```powershell
@@ -74,7 +74,7 @@ jambes. Comparez temps/âge/précision avec même éclairage et réglage Hands.
 
 ## Dessiner
 
-File/Edit/View, toolbar, INPUTS et statut entourent la caméra reflétée. View
+File/Edit/View, commandes de session, MOVEMENTS et statut entourent la caméra reflétée. View
 choisit thème, grille, os des mains, dots et logs séparément. Cacher Hands ne
 supprime pas l'inférence ; overlays périmés disparaissent. Logs ferment avec
 l'app. Boutons remplis/arrondis, états hover/focus/activé. Action verte900 ms
@@ -98,7 +98,7 @@ ou rétablir avant changement/dessin/Test. IDs/régions/règles conservés, mais
 explicites et identité des traces inchangées. Save layer=brouillon, Apply=publication
 dans document, File Save=fichier.
 
-Pro expose étapes/modes/hold, High/Low, doigts, Interaction, traces, espace/durée.
+Advanced expose étapes/modes/hold, High/Low, doigts, Interaction, traces, espace/durée.
 Basic préserve les règles. Violet : main/signe/hold 0..60000 ms avant dessin,
 Select/Update pour modifier. Fonctionne sans vert/jaune, réserve la main des
 commandes globales. Details montre tous scopes/doigts/signes/délais/touches.

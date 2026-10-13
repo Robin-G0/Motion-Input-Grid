@@ -171,8 +171,19 @@ void App::paint(HDC dc) {
                               : L"No profile";
         RECT label{16, 12, client.right - 112, 44};
         DrawTextW(dc, name.c_str(), -1, &label, DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
-    } else if (controller_camera) {
-        paint_controller_preview(dc, {16, 200, client.right - 332, client.bottom - 50});
+    } else {
+        SelectObject(dc, heading_font ? heading_font : font);
+        TextOutW(dc, 16, 16, L"MIG Input", 9);
+        SelectObject(dc, font);
+        SetTextColor(dc, palette().muted);
+        TextOutW(dc, 16, 56, L"Your movements, ready to run.", 29);
+        const int session_y = profile_management ? 212 : 128;
+        TextOutW(dc, 16, session_y, L"SESSION", 7);
+        TextOutW(dc, 16, session_y + 64, L"MOVEMENTS / LIVE FEEDBACK", 25);
+        if (controller_camera) {
+            paint_controller_preview(dc,
+                                     {16, session_y + 92, client.right - 332, client.bottom - 50});
+        }
     }
     std::string value;
     {

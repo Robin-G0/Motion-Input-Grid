@@ -1,13 +1,15 @@
 #include "app.hpp"
+#include "design_tokens.hpp"
 #include "scrollbars.hpp"
 #include <dwmapi.h>
 #include <uxtheme.h>
 namespace mig::app {
 Palette App::palette() const noexcept {
-    return dark ? Palette{RGB(31, 31, 31),    RGB(37, 37, 38),  RGB(204, 204, 204),
-                          RGB(157, 157, 157), RGB(0, 122, 204), RGB(100, 105, 112)}
-                : Palette{RGB(250, 250, 250), RGB(243, 243, 243), RGB(51, 51, 51),
-                          RGB(102, 102, 102), RGB(0, 102, 184),   RGB(170, 175, 182)};
+    const auto colors = ui::design::palette(dark);
+    const auto rgb = [](std::uint32_t value) { return RGB(value >> 16, value >> 8, value); };
+    return {rgb(colors.paper),   rgb(colors.surface), rgb(colors.ink),
+            rgb(colors.muted),   rgb(colors.accent),  rgb(colors.border),
+            rgb(colors.primary), rgb(colors.hover),   rgb(colors.selected)};
 }
 void App::update_theme() {
     if (background_brush) {
@@ -114,7 +116,7 @@ void App::draw_control(const DRAWITEMSTRUCT& item) {
         }
     } else if (item.CtlType == ODT_MENU) {
         const auto brush =
-            CreateSolidBrush((item.itemState & ODS_SELECTED) ? colors.accent : colors.surface);
+            CreateSolidBrush((item.itemState & ODS_SELECTED) ? colors.primary : colors.surface);
         FillRect(dc, &item.rcItem, brush);
         DeleteObject(brush);
         auto rect = item.rcItem;
@@ -124,7 +126,7 @@ void App::draw_control(const DRAWITEMSTRUCT& item) {
                   DT_SINGLELINE | DT_VCENTER);
     } else if (item.CtlType == ODT_COMBOBOX) {
         const auto brush =
-            CreateSolidBrush((item.itemState & ODS_SELECTED) ? colors.accent : colors.surface);
+            CreateSolidBrush((item.itemState & ODS_SELECTED) ? colors.primary : colors.surface);
         FillRect(dc, &item.rcItem, brush);
         DeleteObject(brush);
         SetTextColor(dc, (item.itemState & ODS_SELECTED) ? RGB(255, 255, 255) : colors.text);
@@ -144,9 +146,8 @@ void App::draw_control(const DRAWITEMSTRUCT& item) {
         const auto layers = ui::layers(draft);
         if (item.itemID < layers.size()) {
             const auto& layer = layers[item.itemID];
-            const auto brush = CreateSolidBrush((item.itemState & ODS_SELECTED)
-                                                    ? (dark ? RGB(48, 48, 52) : RGB(225, 232, 240))
-                                                    : colors.surface);
+            const auto brush = CreateSolidBrush((item.itemState & ODS_SELECTED) ? colors.selected
+                                                                                : colors.surface);
             FillRect(dc, &item.rcItem, brush);
             DeleteObject(brush);
             border(item.rcItem);
@@ -183,10 +184,10 @@ void App::draw_control(const DRAWITEMSTRUCT& item) {
                          snapshot->actions_active[item.itemID] &&
                          input.action_mode != ActionMode::SinglePress;
         }
-        const auto brush = CreateSolidBrush(
-            triggered || sustaining           ? (dark ? RGB(25, 90, 65) : RGB(200, 245, 218))
-            : (item.itemState & ODS_SELECTED) ? (dark ? RGB(48, 48, 52) : RGB(225, 232, 240))
-                                              : colors.surface);
+        const auto brush =
+            CreateSolidBrush(triggered || sustaining ? (dark ? RGB(25, 90, 65) : RGB(200, 245, 218))
+                             : (item.itemState & ODS_SELECTED) ? colors.selected
+                                                               : colors.surface);
         FillRect(dc, &item.rcItem, brush);
         DeleteObject(brush);
         border(item.rcItem);
@@ -227,6 +228,8 @@ void App::draw_control(const DRAWITEMSTRUCT& item) {
         if constexpr (editor) {
             int button_index = 0;
             for (const auto label : {L"Edit", L"Test", L"Delete"}) {
+                SetTextColor(dc, button_index == 2 ? (dark ? RGB(255, 170, 166) : RGB(163, 39, 38))
+                                                   : colors.accent);
                 RECT action = motion_button_rect(item.rcItem, button_index++);
                 const auto pen = CreatePen(PS_SOLID, 1, colors.border);
                 SelectObject(dc, pen);
@@ -286,8 +289,8 @@ void App::draw_control(const DRAWITEMSTRUCT& item) {
         const bool hover = GetPropW(item.hwndItem, L"MIGHover") != nullptr;
         const auto brush =
             CreateSolidBrush(paint_active                               ? paint_color
-                             : primary || checked                       ? colors.accent
-                             : hover || (item.itemState & ODS_SELECTED) ? colors.border
+                             : primary || checked                       ? colors.primary
+                             : hover || (item.itemState & ODS_SELECTED) ? colors.hover
                                                                         : colors.surface);
         const auto pen = CreatePen(PS_SOLID, (item.itemState & ODS_FOCUS) ? 2 : 1,
                                    paint_button                   ? paint_color
@@ -301,6 +304,11 @@ void App::draw_control(const DRAWITEMSTRUCT& item) {
         }
         if (paint_button) {
             SetTextColor(dc, paint_active || !dark ? RGB(20, 20, 20) : paint_color);
+        }
+        if (item.CtlID == DeleteInput || item.CtlID == DeleteLayer ||
+            item.CtlID == DeleteConstraint || item.CtlID == DeleteStep ||
+            item.CtlID == DeleteFinger) {
+            SetTextColor(dc, dark ? RGB(255, 170, 166) : RGB(163, 39, 38));
         }
         if (item.itemState & ODS_DISABLED) {
             SetTextColor(dc, colors.muted);
@@ -318,7 +326,7 @@ void App::draw_control(const DRAWITEMSTRUCT& item) {
             DeleteObject(track);
             rect.left += 32;
         }
-        DrawTextW(dc, label, -1, &rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+        DrawTextW(dc, label, -1, &rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS);
         SelectObject(dc, GetStockObject(NULL_BRUSH));
         SelectObject(dc, GetStockObject(BLACK_PEN));
         DeleteObject(brush);

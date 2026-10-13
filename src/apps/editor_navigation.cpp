@@ -123,7 +123,7 @@ bool App::editor_views(int id, int notification) {
         selected_constraint = selected_finger = -1;
         SendDlgItemMessageW(edit_window, FingerScope, CB_SETCURSEL, 0, 0);
         pro_mode = !pro_mode;
-        SetDlgItemTextW(edit_window, ProMode, pro_mode ? L"Pro mode: On" : L"Pro mode: Off");
+        SetDlgItemTextW(edit_window, ProMode, pro_mode ? L"Advanced: On" : L"Advanced: Off");
         if (!pro_mode) {
             if (selection(edit_window, ConstraintTypeId) == int(ConstraintType::Interaction)) {
                 SendDlgItemMessageW(edit_window, ConstraintTypeId, CB_SETCURSEL, 0, 0);

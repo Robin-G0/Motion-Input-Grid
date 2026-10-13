@@ -1,4 +1,9 @@
-# Configurator
+# MIG Studio
+
+MIG Studio is the desktop editor. Its executable remains `mig-configurator` for
+compatibility with existing releases and scripts. Prefer
+[MIG Studio Web](studio-web.md) for browser-based drawing, import and camera tests.
+Use the desktop editor for native recording and operating-system keyboard tests.
 
 [English](configurator.md) | [Français](configurator.fr.md)
 
@@ -13,14 +18,14 @@
 
 </details>
 
-The Motion Input Grid (MIG) configurator turns drawn body movements into JSON
+The Motion Input Grid (MIG) MIG Studio turns drawn body movements into JSON
 profiles. Choose a tracked body part, draw its route and set the action to emit.
-Run the saved profile in the [controller](controller.md) or an application using MIG.
+Run the saved profile in the [MIG Input](controller.md) or an application using MIG.
 
 ## Find and launch the application
 
 > [!NOTE]
-> On Debian, the configurator, controller and some native examples are still
+> On Debian, the MIG Studio, MIG Input and some native examples are still
 > being developed and tested. They may not yet work fully.
 
 In [Releases](https://github.com/Robin-G0/Motion-Input-Grid/releases), choose a matching native
@@ -52,7 +57,7 @@ part. An input can have several layers.
    Match the key to your presentation application's shortcut.
 4. On Windows, use **Save layer**, then **Apply** and **File → Save**.
    On Linux, save the profile from the main interface.
-5. Stop the configurator's camera, import the file in the [controller](controller.md)
+5. Stop the MIG Studio's camera, import the file in the [MIG Input](controller.md)
    and check the visual feedback before enabling **Keyboard output**.
    Then focus your presentation.
 
@@ -77,12 +82,12 @@ explains sequence behavior and limits.
 
 ## Create your first profile
 
-1. Open the configurator and start the camera. Keep both shoulders visible during calibration.
+1. Open the MIG Studio and start the camera. Keep both shoulders visible during calibration.
 2. Add an input. On Windows, **Add/Edit** opens its drawing editor; Linux uses the sidebar.
 3. Choose the tracked body part, such as a wrist, and draw its regions on the grid.
 4. Set the input name, action and optional keyboard binding.
 5. Save the profile as JSON. On Windows, apply the input to the document before **File → Save**.
-6. Stop the camera, open the controller and import the saved profile.
+6. Stop the camera, open the MIG Input and import the saved profile.
 
 Region colors describe their conditions:
 
@@ -95,8 +100,11 @@ Region colors describe their conditions:
 
 On Windows, use **Save layer** after changing a layer's body part; **Apply** saves
 that input into the open document, and **File → Save** writes the JSON file.
-Pro mode exposes hand signs, finger rules and advanced constraints. Linux provides
-advanced fields through its Pro JSON editor; its drawing tools differ from Windows.
+**Advanced** exposes hand signs, finger rules and advanced constraints. Linux separates
+**Movements** from **Draw zones**; sign and hold settings appear with Interaction,
+and ordered-route settings appear for Required zones in an ordered movement.
+Complete fields remain available through **File → Advanced: complete JSON profile…**;
+its drawing tools differ from Windows.
 The [Windows controls](../getting-started/windows.md#workspace-and-drawing) and
 [Linux controls](../getting-started/linux.md) describe the available tools.
 
@@ -108,12 +116,12 @@ to remove the selected regions and their linked tolerances. On Linux, use the
 full-grid view for selection. On Windows, **Tolerance** targets the region you
 click, including its existing tolerance; no prior selection is needed.
 
-Basic/Pro switches preserve the input's conditions. Removing a purple region
+Basic/Advanced switches preserve the input's conditions. Removing a purple region
 removes its own sign and finger rules, but independent whole-input and step
 finger rules still apply. The binding summary shows these rules. Use
 **Clear fingers** on Windows or **Clear all finger rules** on Linux to remove
 finger conditions across all scopes;
-this leaves the regions and purple hand signs in place. On Windows, the Pro
+this leaves the regions and purple hand signs in place. On Windows, the Advanced
 finger scope selector also shows each scope's rule count. After editing, apply
 the input again before testing and save the document to persist it.
 
@@ -121,7 +129,7 @@ Keep your shoulders visible so the grid can follow your body. Try the movement
 and watch for action feedback. Use the [hand tracking guide](hands.md) for signs
 and finger conditions. Close one application's camera before opening the other's.
 
-Keyboard output starts disabled. The controller guide explains how to enable it
+Keyboard output starts disabled. The MIG Input guide explains how to enable it
 and use Single press, Hold and Repeat. **View** controls the theme, preview overlays
 and logs. The [configuration reference](../reference/configuration.md) describes
 all saved fields and action modes.

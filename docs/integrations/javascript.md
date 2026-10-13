@@ -14,7 +14,7 @@
 
 Motion Input Grid (MIG) browser integrations share the native recognition engine compiled to WASM.
 Each framework example has two pages: raised hands with immediate feedback, and
-a configurator JSON importer showing each accepted action and input identifier.
+a MIG Studio JSON importer showing each accepted action and input identifier.
 No new configuration schema or framework-specific recognition logic is added.
 
 ## Run an example
@@ -36,7 +36,7 @@ Press Start, keep shoulders visible for calibration, lower your hands and raise
 either wrist. The shared sample follows four full-width green rows toward a
 yellow trigger row. Left/right refer to anatomical hands. The mirrored camera
 and moving paper-plane props help you follow the wrists; feedback text stays
-unmirrored. The profile variant starts empty: import a saved configurator JSON
+unmirrored. The profile variant starts empty: import a saved MIG Studio JSON
 and perform its motion. Successful imports clear old feedback and recalibrate;
 invalid imports show an error while preserving the previous configuration.
 

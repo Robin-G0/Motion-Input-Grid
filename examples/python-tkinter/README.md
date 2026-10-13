@@ -6,7 +6,7 @@
 
 A mirrored camera preview, finger outlines and wrist-following props show two
 logical actions: **Left hand raised!** and **Right hand raised!**. The second
-executable imports your own configurator JSON and displays its action names.
+executable imports your own MIG Studio JSON and displays its action names.
 
 ## Quick Start — prebuilt package
 

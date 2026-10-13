@@ -14,6 +14,9 @@ void create_controller(App& app, HWND window) {
     app.mono_font = CreateFontW(-14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
                                 OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
                                 DEFAULT_PITCH, L"Consolas");
+    app.heading_font = CreateFontW(-28, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                                   OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+                                   DEFAULT_PITCH, L"Georgia");
     if (!app.profiles) {
         app.profiles = std::make_unique<controller::Profiles>(
             std::filesystem::temp_directory_path() / "mig-controller-ui-unused");
@@ -28,6 +31,7 @@ void create_controller(App& app, HWND window) {
                                   {Calibrate, L"Recalibrate"},
                                   {Keys, L"Keyboard: Off"},
                                   {ViewMenu, L"View"},
+                                  {ProfileManagement, L"Manage profile"},
                                   {OpenView, L"Open"}}) {
         button(window, id, name);
     }
@@ -122,6 +126,12 @@ void command(App& app, int id, int notification) {
         case ViewMenu:
             view_menu(app);
             break;
+        case ProfileManagement:
+            app.profile_management = !app.profile_management;
+            SetDlgItemTextW(app.window, ProfileManagement,
+                            app.profile_management ? L"Done" : L"Manage profile");
+            app.layout();
+            break;
         case OpenView:
             app.controller_view(CompactView);
             break;
@@ -150,26 +160,32 @@ void App::layout() {
         MoveWindow(GetDlgItem(window, id), x, y, width, id == ProfileList ? 280 : height, TRUE);
     };
     for (int id : {ProfileList, ProfileName, RenameProfile, Load, Save, Start, Stop, Calibrate,
-                   Keys, ViewMenu, MotionList}) {
+                   Keys, ViewMenu, MotionList, ProfileManagement}) {
         ShowWindow(GetDlgItem(window, id), controller_compact ? SW_HIDE : SW_SHOW);
     }
     ShowWindow(GetDlgItem(window, OpenView), controller_compact ? SW_SHOW : SW_HIDE);
     if (controller_compact) {
         place(OpenView, rect.right - 100, 12, 84);
     } else {
-        place(ProfileList, 16, 16, rect.right - 112);
-        place(ViewMenu, rect.right - 88, 16, 72);
-        place(ProfileName, 16, 60, rect.right - 134);
-        place(RenameProfile, rect.right - 110, 60, 94);
-        place(Load, 16, 104, 124);
-        place(Save, 150, 104, 108);
-        place(Start, 16, 148, 76);
-        place(Stop, 102, 148, 70);
-        place(Calibrate, 182, 148, 112);
-        place(Keys, rect.right - 168, 148, 152);
+        place(ViewMenu, rect.right - 88, 20, 72);
+        place(ProfileList, 16, 88, rect.right - 186);
+        place(ProfileManagement, rect.right - 156, 88, 140);
+        for (int id : {ProfileName, RenameProfile, Load, Save}) {
+            ShowWindow(GetDlgItem(window, id), profile_management ? SW_SHOW : SW_HIDE);
+        }
+        place(ProfileName, 16, 132, rect.right - 134);
+        place(RenameProfile, rect.right - 110, 132, 94);
+        place(Load, 16, 174, 124);
+        place(Save, 150, 174, 108);
+        const int session_y = profile_management ? 236 : 152;
+        place(Start, 16, session_y, 76);
+        place(Stop, 102, session_y, 70);
+        place(Calibrate, 182, session_y, 112);
+        place(Keys, rect.right - 168, session_y, 152);
         const int list_width = controller_camera ? 300 : rect.right - 32;
-        place(MotionList, rect.right - list_width - 16, 200, list_width,
-              std::max(80, int(rect.bottom) - 250));
+        const int content_y = profile_management ? 304 : 220;
+        place(MotionList, rect.right - list_width - 16, content_y, list_width,
+              std::max(80, int(rect.bottom) - content_y - 50));
     }
     InvalidateRect(window, nullptr, FALSE);
 }

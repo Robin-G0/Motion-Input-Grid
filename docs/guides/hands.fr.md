@@ -14,7 +14,7 @@ powershell -ExecutionPolicy Bypass -File tools/build/build-windows.ps1
 ```
 
 Arrêtez la première caméra. Hands ON/OFF et tracking.hands sont persistés,
-chargement/undo restaurent. --hands initialise le configurateur ; contrôleur
+chargement/undo restaurent. --hands initialise MIG Studio ; MIG Input
 ne l'accepte que pour diagnostics. Apply de règle/signe active Hands en ON,
 absence de demande=corps seul, aucune tâche main créée/inférée.
 Hands n'a pas besoin de calibrage épaules, le chemin body oui. Os jaunes, statut
@@ -50,7 +50,7 @@ Thumb/V/OK/Open palm/Fist partagent le core. OK exige contact 3D pouce/index<=25
 largeur paume, autres trois étendus. Frame.hand_contacts est publié avec doigts
 par association anatomique ; hôtes doivent fournir cette preuve pour OK.
 Contact inconnu ne compte ni OK ni relâchement volontaire. Open palm/Fist demandent
-cinq doigts connus étendus/fermés. Pro édite signe/hold et stabilité/grâce.
+cinq doigts connus étendus/fermés. Advanced édite signe/hold et stabilité/grâce.
 
 ```powershell
 ctest --test-dir build/windows -C Release --output-on-failure

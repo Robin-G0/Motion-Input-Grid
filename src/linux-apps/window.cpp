@@ -3,25 +3,32 @@
 #include "import_review.hpp"
 #include "theme.hpp"
 #include <QAction>
+#include <QButtonGroup>
 #include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QDockWidget>
 #include <QFileDialog>
 #include <QFormLayout>
+#include <QGridLayout>
+#include <QGroupBox>
 #include <QInputDialog>
+#include <QLabel>
 #include <QLineEdit>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QSpinBox>
 #include <QStatusBar>
+#include <QTabWidget>
+#include <QToolBar>
 #include <QVBoxLayout>
 #include <mig/format/configuration.hpp>
 namespace mig::linux_ui {
 Window::Window(std::string runtime, unsigned camera)
     : runtime_(std::move(runtime)), camera_(camera) {
-    setWindowTitle(QString("Motion Input Grid — %1").arg(MIG_APP_NAME));
+    setWindowTitle("MIG Studio — Motion Input Grid");
     resize(1200, 850);
     canvas_ = new Canvas(this);
     canvas_->failed = [this](const std::string& message) {
@@ -74,7 +81,8 @@ void Window::build_menus() {
             report(error.what());
         }
     });
-    file->addAction("Pro: edit complete profile", this, [this] { edit_json(); });
+    file->addSeparator();
+    file->addAction("Advanced: complete JSON profile…", this, [this] { edit_json(); });
     auto* view = menuBar()->addMenu("View");
     const auto toggle = [&](const char* name, bool& value) {
         auto* action = view->addAction(name);
@@ -95,26 +103,68 @@ void Window::build_menus() {
     connect(theme, &QAction::toggled, this, [this](bool checked) { apply_theme(checked); });
 }
 void Window::build_sidebar() {
-    auto* dock = new QDockWidget("Inputs and drawing", this);
+    auto* dock = new QDockWidget("MIG Studio", this);
+    dock->setFeatures(QDockWidget::NoDockWidgetFeatures);
+    auto* dock_title = new QWidget(dock);
+    dock_title->setFixedHeight(0);
+    dock->setTitleBarWidget(dock_title);
+    dock->setMinimumWidth(320);
     auto* panel = new QWidget(dock);
     auto* layout = new QVBoxLayout(panel);
-    const auto button = [&](const char* name, auto callback) {
-        auto* control = new QPushButton(name, panel);
-        layout->addWidget(control);
+    layout->setContentsMargins(16, 16, 16, 16);
+    layout->setSpacing(10);
+    auto* title = new QLabel("MIG Studio", panel);
+    title->setProperty("role", "heading");
+    layout->addWidget(title);
+    auto* tabs = new QTabWidget(panel);
+    tabs->setObjectName("studio-sections");
+    layout->addWidget(tabs);
+    auto* movements = new QWidget(tabs);
+    tabs->addTab(movements, "Movements");
+    auto* scroll = new QScrollArea(tabs);
+    scroll->setWidgetResizable(true);
+    scroll->setFrameShape(QFrame::NoFrame);
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    drawing_panel_ = new QWidget(scroll);
+    drawing_panel_->setEnabled(false);
+    scroll->setWidget(drawing_panel_);
+    tabs->addTab(scroll, "Draw zones");
+    auto* session = new QToolBar("Session", this);
+    session->setMovable(false);
+    addToolBar(Qt::TopToolBarArea, session);
+    const auto command = [&](const char* name, auto callback) {
+        auto* control = new QPushButton(name, session);
+        session->addWidget(control);
         connect(control, &QPushButton::clicked, this, callback);
+        return control;
     };
-    button("Start camera", [this] { start(); });
-    button("Stop / release keys", [this] { stop(); });
-    button("Recalibrate", [this] {
+    command("Start camera", [this] { start(); })->setProperty("role", "primary");
+    command("Stop / release keys", [this] { stop(); });
+    command("Recalibrate", [this] {
         if (running_) {
             start();
         }
     });
-    keyboard_switch_ = new QCheckBox("Keyboard output (X11)", panel);
+    keyboard_switch_ = new QCheckBox("Keyboard output (X11)", session);
+    session->addWidget(keyboard_switch_);
+    layout = new QVBoxLayout(movements);
+    layout->setContentsMargins(0, 12, 0, 0);
+    layout->setSpacing(10);
+    auto* hint = new QLabel(
+        "Choose a movement, then draw its zones.\nProfile files are shared with MIG Studio Web.",
+        movements);
+    hint->setWordWrap(true);
+    hint->setProperty("role", "hint");
+    layout->addWidget(hint);
+    const auto button = [&](const char* name, auto callback) {
+        auto* control = new QPushButton(name, panel);
+        layout->addWidget(control);
+        connect(control, &QPushButton::clicked, this, callback);
+        return control;
+    };
     keyboard_switch_->setEnabled(keyboard_.available());
     keyboard_switch_->setToolTip(
         "Opt-in XTest output. Requires X11; native Wayland is unsupported.");
-    layout->addWidget(keyboard_switch_);
     connect(keyboard_switch_, &QCheckBox::toggled, this, [this](bool enabled) {
         if (!enabled) {
             output_.cancel([this](int key, bool release) { return keyboard_.key(key, release); },
@@ -122,9 +172,9 @@ void Window::build_sidebar() {
         }
     });
     inputs_ = new QListWidget(panel);
-    layout->addWidget(inputs_);
+    layout->addWidget(inputs_, 1);
     connect(inputs_, &QListWidget::currentRowChanged, this, [this](int row) { select_input(row); });
-    button("Add input", [this] {
+    button("New movement", [this] {
         stop();
         if (config_.motions.size() >= 64) {
             report("Maximum 64 inputs.");
@@ -141,16 +191,28 @@ void Window::build_sidebar() {
         config_.motions.push_back(input);
         refresh_inputs();
         inputs_->setCurrentRow(int(config_.motions.size() - 1));
-    });
-    button("Input settings / bindings", [this] { edit_settings(); });
-    button("Delete input", [this] {
+    })->setProperty("role", "primary");
+    button("Edit movement / bindings…", [this] { edit_settings(); });
+    button("Draw selected movement", [this, tabs] { tabs->setCurrentIndex(1); });
+    button("Delete movement", [this] {
         stop();
         const int row = inputs_->currentRow();
         if (row >= 0) {
             config_.motions.erase(config_.motions.begin() + row);
             refresh_inputs();
         }
-    });
+    })->setProperty("role", "danger");
+    auto* drawing = new QVBoxLayout(drawing_panel_);
+    drawing->setContentsMargins(0, 12, 0, 0);
+    drawing->setSpacing(12);
+    const auto section = [&](const char* name) {
+        auto* group = new QGroupBox(name, drawing_panel_);
+        drawing->addWidget(group);
+        layout = new QVBoxLayout(group);
+        layout->setSpacing(8);
+        return group;
+    };
+    section("1. Tracked body part");
     auto* body = new QComboBox(panel);
     for (const auto& part : landmarks) {
         body->addItem(QString::fromUtf8(part.name.data(), int(part.name.size())), part.index);
@@ -186,23 +248,47 @@ void Window::build_sidebar() {
             report(error.what());
         }
     });
-    const char* labels[]{"Required (green)", "Forbidden (red)", "Trigger (yellow)",
-                         "Interaction (purple)"};
+    section("2. Zone and drawing tool");
+    auto* tools = new QGridLayout;
+    layout->addLayout(tools);
+    auto* tool_group = new QButtonGroup(this);
+    const auto tool = [&](const char* name, int index, auto callback) {
+        auto* control = new QPushButton(name, panel);
+        control->setCheckable(true);
+        tool_group->addButton(control);
+        tools->addWidget(control, index / 2, index % 2);
+        connect(control, &QPushButton::clicked, this, callback);
+        return control;
+    };
+    const char* labels[]{"Required", "Forbidden", "Trigger", "Interaction"};
+    const char* roles[]{"required", "forbidden", "trigger", "interaction"};
+    const char* hints[]{"Green: pass through this zone.", "Red: avoid this zone.",
+                        "Yellow: finish the movement here.",
+                        "Purple: perform a hand sign, with an optional hold."};
     for (int type = 0; type < 4; ++type) {
-        button(labels[type], [this, type] {
+        auto* brush = tool(labels[type], type, [this, type] {
             stop();
             canvas_->type = ConstraintType(type);
             canvas_->erase = false;
             canvas_->select = false;
             canvas_->selection.clear();
+            interaction_controls_->setVisible(type == int(ConstraintType::Interaction));
+            order_controls_->setVisible(type == int(ConstraintType::Required) && canvas_->motion &&
+                                        !canvas_->motion->steps.empty() &&
+                                        canvas_->motion->steps.front().mode == StepMode::Ordered);
         });
+        brush->setChecked(type == int(ConstraintType::Required));
+        brush->setProperty("zone", roles[type]);
+        brush->setToolTip(hints[type]);
     }
-    button("Select: drag / Ctrl to add", [this] {
+    tool("Select", 4, [this] {
         stop();
         canvas_->select = true;
         canvas_->erase = false;
-    });
-    button("Clear all finger rules", [this] {
+        interaction_controls_->hide();
+        order_controls_->hide();
+    })->setToolTip("Drag to select zones; Ctrl keeps the previous selection.");
+    auto* fingers = button("Clear all finger rules", [this] {
         stop();
         if (canvas_->motion) {
             const int index = inputs_->currentRow();
@@ -211,17 +297,22 @@ void Window::build_sidebar() {
             inputs_->setCurrentRow(index);
         }
     });
-    button("Eraser", [this] {
+    tool("Eraser", 5, [this] {
         stop();
         canvas_->erase = true;
         canvas_->select = false;
         canvas_->selection.clear();
+        interaction_controls_->hide();
+        order_controls_->hide();
     });
+    order_controls_ = section("3. Ordered route");
     auto* order = new QSpinBox(panel);
     order->setRange(0, 1024);
     order->setSpecialValueText("Order: automatic");
     layout->addWidget(order);
     connect(order, &QSpinBox::valueChanged, this, [this](int value) { canvas_->order = value; });
+    interaction_controls_ = section("3. Hand sign condition");
+    interaction_controls_->hide();
     auto* gesture = new QComboBox(panel);
     for (const auto name : gesture_names) {
         gesture->addItem(QString::fromUtf8(name.data(), int(name.size())));
@@ -236,6 +327,9 @@ void Window::build_sidebar() {
     layout->addWidget(hold);
     connect(hold, &QSpinBox::valueChanged, this,
             [this](int value) { canvas_->interaction.hold_ms = value; });
+    // Destructive finger editing belongs with movement settings, away from drawing tools.
+    movements->layout()->addWidget(fingers);
+    drawing->addStretch();
     canvas_->changed = [this] {
         if (running_) {
             stop();
@@ -261,6 +355,11 @@ void Window::select_input(int index) {
     canvas_->selection.clear();
     canvas_->motion =
         index >= 0 && index < int(config_.motions.size()) ? &config_.motions[index] : nullptr;
+    drawing_panel_->setEnabled(canvas_->motion != nullptr);
+    order_controls_->setVisible(canvas_->motion && !canvas_->motion->steps.empty() &&
+                                canvas_->motion->steps.front().mode == StepMode::Ordered &&
+                                canvas_->type == ConstraintType::Required && !canvas_->select &&
+                                !canvas_->erase);
     canvas_->update();
 }
 void Window::load(const std::string& path) {
@@ -283,9 +382,10 @@ void Window::edit_settings() {
     if (!canvas_->motion) {
         return;
     }
+    const int selected_input = inputs_->currentRow();
     auto draft = *canvas_->motion;
     QDialog dialog(this);
-    dialog.setWindowTitle("Input settings");
+    dialog.setWindowTitle("Edit movement / bindings");
     QFormLayout form(&dialog);
     QLineEdit name(QString::fromStdString(draft.name)),
         action(QString::fromStdString(draft.action));
@@ -309,6 +409,13 @@ void Window::edit_settings() {
     form.addRow("Mirror", &mirror);
     form.addRow("Action mode", &mode);
     form.addRow("Repeat interval ms", &repeat);
+    const auto show_repeat = [&] {
+        const bool visible = mode.currentIndex() == int(ActionMode::Repeat);
+        repeat.setVisible(visible);
+        form.labelForField(&repeat)->setVisible(visible);
+    };
+    connect(&mode, &QComboBox::currentIndexChanged, &dialog, show_repeat);
+    show_repeat();
     form.addRow("Cooldown ms", &cooldown);
     QDialogButtonBox buttons(QDialogButtonBox::Save | QDialogButtonBox::Cancel);
     form.addRow(&buttons);
@@ -333,12 +440,13 @@ void Window::edit_settings() {
     });
     dialog.exec();
     refresh_inputs();
+    inputs_->setCurrentRow(selected_input);
 }
 void Window::edit_json() {
     stop();
     QDialog dialog(this);
     dialog.resize(850, 700);
-    dialog.setWindowTitle("Pro profile editor: all schema-v2 fields");
+    dialog.setWindowTitle("Advanced profile / complete JSON");
     QVBoxLayout layout(&dialog);
     QPlainTextEdit json(QString::fromStdString(serialize_configuration(config_)));
     layout.addWidget(&json);

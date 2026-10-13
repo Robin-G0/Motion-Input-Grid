@@ -2,6 +2,7 @@
 #include "theme.hpp"
 #include <QAction>
 #include <QEvent>
+#include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMenuBar>
@@ -14,7 +15,7 @@ ControllerWindow::ControllerWindow(std::string runtime, unsigned camera, bool di
     : profiles_(diagnostic ? std::filesystem::temp_directory_path() / "mig-controller-ui-unused"
                            : controller::user_directory()),
       runtime_(std::move(runtime)), camera_(camera) {
-    setWindowTitle("MIG Controller");
+    setWindowTitle("MIG Input — Motion Input Grid");
     resize(560, 680);
     auto* center = new QWidget(this);
     auto* layout = new QHBoxLayout(center);
@@ -60,6 +61,15 @@ void ControllerWindow::report(const QString& message) {
 }
 void ControllerWindow::build_controls() {
     auto* layout = new QVBoxLayout(panel_);
+    layout->setContentsMargins(16, 16, 16, 16);
+    layout->setSpacing(12);
+    auto* heading = new QLabel("MIG Input", panel_);
+    heading->setProperty("role", "heading");
+    layout->addWidget(heading);
+    auto* hint = new QLabel("Run your movements. Keep the controls close.", panel_);
+    hint->setProperty("role", "hint");
+    hint->setWordWrap(true);
+    layout->addWidget(hint);
     layout->addWidget(new QLabel("Profile", panel_));
     profile_list_ = new QComboBox(panel_);
     layout->addWidget(profile_list_);
@@ -74,22 +84,35 @@ void ControllerWindow::build_controls() {
             report(error.what());
         }
     });
+    auto* manage = new QPushButton("Manage profile", panel_);
+    manage->setCheckable(true);
+    layout->addWidget(manage);
+    auto* profile_tools = new QGroupBox("Profile files", panel_);
+    profile_tools->setObjectName("profile-tools");
+    auto* profile_layout = new QHBoxLayout(profile_tools);
+    layout->addWidget(profile_tools);
+    profile_tools->hide();
+    connect(manage, &QPushButton::toggled, profile_tools, &QWidget::setVisible);
     const auto button = [&](const char* name, auto callback) {
         auto* item = new QPushButton(name, panel_);
-        layout->addWidget(item);
+        profile_layout->addWidget(item);
         connect(item, &QPushButton::clicked, this, callback);
     };
-    button("Import profile", [this] { import_file(); });
-    button("Export file", [this] { export_file(); });
-    button("Rename profile", [this] { rename_profile(); });
+    button("Import…", [this] { import_file(); });
+    button("Export…", [this] { export_file(); });
+    button("Rename…", [this] { rename_profile(); });
+    auto* session = new QGroupBox("Session", panel_);
+    layout->addWidget(session);
+    auto* session_layout = new QVBoxLayout(session);
     auto* controls = new QHBoxLayout;
-    layout->addLayout(controls);
+    session_layout->addLayout(controls);
     const auto command = [&](const char* name, auto callback) {
         auto* item = new QPushButton(name, panel_);
         controls->addWidget(item);
         connect(item, &QPushButton::clicked, this, callback);
+        return item;
     };
-    command("Start", [this] { start(); });
+    command("Start", [this] { start(); })->setProperty("role", "primary");
     command("Stop", [this] { stop(); });
     command("Recalibrate", [this] {
         if (running_) {
@@ -99,9 +122,13 @@ void ControllerWindow::build_controls() {
     keyboard_switch_ = new QCheckBox("Keyboard output (X11)", panel_);
     keyboard_switch_->setEnabled(keyboard_.available());
     keyboard_switch_->setToolTip("Sends bindings to the focused application. Requires X11.");
-    layout->addWidget(keyboard_switch_);
+    session_layout->addWidget(keyboard_switch_);
     connect(keyboard_switch_, &QCheckBox::toggled, this, [this] { release_keys(); });
-    layout->addWidget(new QLabel("Bindings — select one in Verification", panel_));
+    auto* bindings_hint = new QLabel(
+        "Movements / live feedback\nUse View → Verify bindings to inspect a movement.", panel_);
+    bindings_hint->setWordWrap(true);
+    bindings_hint->setProperty("role", "hint");
+    layout->addWidget(bindings_hint);
     bindings_ = new QListWidget(panel_);
     bindings_->setWordWrap(true);
     bindings_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);

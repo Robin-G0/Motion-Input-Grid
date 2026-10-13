@@ -10,8 +10,9 @@ engine in your own project. Choose a starting point below.
 
 | I want to… | Guide |
 | --- | --- |
-| Draw a movement and assign a shortcut | [Configurator](guides/configurator.md) |
-| Run my profile while using another application | [Controller](guides/controller.md) |
+| Create or test a profile in the browser | [MIG Studio Web](guides/studio-web.md) |
+| Draw a movement and assign a shortcut | [MIG Studio](guides/configurator.md) |
+| Run my profile while using another application | [MIG Input](guides/controller.md) |
 | Try a camera demo without setting up a profile | [Standalone examples](../examples/README.md) |
 | Add a hand sign or finger condition | [Hand tracking](guides/hands.md) |
 

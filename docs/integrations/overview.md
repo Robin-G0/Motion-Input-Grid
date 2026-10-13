@@ -107,7 +107,7 @@ use logical callbacks, and do not inject desktop keyboard shortcuts.
 
 ## SDL2 and SFML examples
 
-Both examples in `examples` load a configurator JSON profile, draw body/hand
+Both examples in `examples` load a MIG Studio JSON profile, draw body/hand
 coordinates, use wrist XYZ to move a marker, and route recognized actions into game
 logic. They support SDL2 >=2.0.10 and SFML 2.5/2.6. The sample's SFML API is version 2;
 SFML 3 applications can use the same MIG SDK with their own version-3 drawing calls.

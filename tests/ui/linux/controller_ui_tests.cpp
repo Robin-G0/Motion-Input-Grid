@@ -11,6 +11,29 @@
 
 namespace mig::linux_ui {
 bool ControllerWindow::ui_test() {
+    auto* profile_tools = findChild<QWidget*>("profile-tools");
+    if (!profile_tools || !profile_tools->isHidden()) {
+        return false;
+    }
+    for (auto* button : panel_->findChildren<QPushButton*>()) {
+        if (button->text() == "Manage profile") {
+            button->click();
+            if (profile_tools->isHidden()) {
+                return false;
+            }
+            button->click();
+        }
+    }
+    if (!profile_tools->isHidden()) {
+        return false;
+    }
+    if (qEnvironmentVariableIsSet("MIG_UI_SCREENSHOTS")) {
+        QApplication::processEvents();
+        grab().save("input-dark.png");
+        apply_theme(false);
+        grab().save("input-light.png");
+        apply_theme(true);
+    }
     QTemporaryDir temporary;
     if (!temporary.isValid()) {
         return false;

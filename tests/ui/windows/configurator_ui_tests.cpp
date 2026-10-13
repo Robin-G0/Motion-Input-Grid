@@ -244,7 +244,7 @@ int run_ui_test(App& app, HWND window) {
     app.editor_command(RecordingTab, BN_CLICKED);
     app.dark = false;
     app.update_theme();
-    check(app.palette().background == RGB(250, 250, 250), "Light theme failed");
+    check(app.palette().background == RGB(247, 244, 237), "Light theme failed");
     app.dark = true;
     app.update_theme();
     app.toggle_logs();

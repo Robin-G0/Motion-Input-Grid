@@ -89,16 +89,16 @@ void App::layout() {
         GetClassNameW(child, type, 32);
         MoveWindow(child, x, y, width, _wcsicmp(type, L"COMBOBOX") == 0 ? 280 : height, TRUE);
     };
-    place(FileMenu, 64, 6, 62, 28);
-    place(EditMenu, 132, 6, 62, 28);
-    place(ViewMenu, 200, 6, 62, 28);
+    place(FileMenu, 230, 10, 62, 28);
+    place(EditMenu, 298, 10, 62, 28);
+    place(ViewMenu, 366, 10, 62, 28);
     place(Theme, client.right - 156, 6, 136, 28);
-    place(Start, 72, 72, 122);
-    place(Stop, 202, 72, 70);
-    place(Calibrate, 280, 72, 112);
-    place(RestartTest, 400, 72, 88);
-    place(StopTest, 496, 72, 100);
-    place(MotionList, sidebar + 16, 94, 300, std::max(100, int(client.bottom) - 356));
+    place(Start, 24, 88, 122);
+    place(Stop, 154, 88, 70);
+    place(Calibrate, 232, 88, 112);
+    place(RestartTest, 352, 88, 88);
+    place(StopTest, 448, 88, 100);
+    place(MotionList, sidebar + 16, 104, 300, std::max(100, int(client.bottom) - 366));
     place(NewMotion, sidebar + 16, client.bottom - 242, 300);
     place(RemoteControls, sidebar + 16, client.bottom - 200, 300);
     place(TrackHands, sidebar + 16, client.bottom - 148, 140);
@@ -146,6 +146,7 @@ void App::layout_editor() {
     place(BindingSummary, 580, 66, 300, 28);
     place(ClearFingers, 890, 66, 130, 28);
     show(ConstraintTypeId, false);
+    show(ClearFingers, pro_mode && inspector_tab == 1 && !editor_help);
     show(Space, pro_mode);
     show(Cooldown, !pro_mode || inspector_tab == 0);
     show(CooldownCaption, !pro_mode || inspector_tab == 0);
@@ -167,6 +168,7 @@ void App::layout_editor() {
                  scope > 0 && draft.steps[scope - 1].mode == StepMode::Ordered &&
                      selection(edit_window, ConstraintTypeId) != int(ConstraintType::Forbidden) &&
                      selection(edit_window, PriorityId) == int(Priority::High));
+    show(BrushOrder, IsWindowEnabled(GetDlgItem(edit_window, BrushOrder)) != FALSE);
     place(PaintRequired, 580, 142, pro_mode ? 104 : 140);
     place(PaintForbidden, pro_mode ? 692 : 730, 142, pro_mode ? 104 : 140);
     place(PaintTrigger, pro_mode ? 804 : 880, 142, pro_mode ? 104 : 140);
@@ -281,6 +283,9 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM wp, LPARAM lp) {
             app.mono_font = CreateFontW(-14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
                                         DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
                                         CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Consolas");
+            app.heading_font = CreateFontW(-28, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+                                           DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+                                           CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Georgia");
             app.update_theme();
             button(window, FileMenu, L"File", 64, 6, 62);
             button(window, EditMenu, L"Edit", 132, 6, 62);
@@ -302,7 +307,7 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM wp, LPARAM lp) {
             SendMessageW(list, LB_SETITEMHEIGHT, 0, 142);
             list_original = reinterpret_cast<WNDPROC>(
                 SetWindowLongPtrW(list, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(list_procedure)));
-            button(window, NewMotion, L"+ Add input", 950, 650, 300);
+            button(window, NewMotion, L"+ New movement", 950, 650, 300);
             button(window, RemoteControls, L"Remote hand controls", 950, 690, 300);
             app.update_theme();
             app.refresh_list();
@@ -580,11 +585,11 @@ LRESULT CALLBACK editor_procedure(HWND window, UINT message, WPARAM wp, LPARAM l
             edit(window, Duration, L"0", 450, 32, 100);
             label(window, L"Cooldown ms (0 = off)", 380, 10, 170, CooldownCaption);
             edit(window, Cooldown, L"0", 380, 32, 170);
-            button(window, ProMode, L"Pro mode: Off", 690, 30, 165);
+            button(window, ProMode, L"Advanced: Off", 690, 30, 165);
             button(window, Mirror, L"Mirror: Off", 570, 30, 110);
             combo(window, Space, 690, 32, 165);
             choices(window, Space, {L"Body relative", L"Calibration anchor"});
-            button(window, Commit, L"Apply input", 870, 30, 150);
+            button(window, Commit, L"Apply movement", 870, 30, 150);
             combo(window, StepList, 20, 82, 235);
             button(window, AddStep, L"+ Step", 270, 80, 85);
             button(window, DeleteStep, L"- Step", 365, 80, 85);
@@ -715,7 +720,7 @@ LRESULT CALLBACK editor_procedure(HWND window, UINT message, WPARAM wp, LPARAM l
             edit(window, TrimBegin, L"0", 580, 690, 75);
             edit(window, TrimEnd, L"0", 665, 690, 75);
             button(window, TrimRecording, L"Trim [start,end)", 750, 688, 90);
-            button(window, TestInput, L"Test input", 20, 716, 110);
+            button(window, TestInput, L"Test", 20, 716, 110);
             button(window, RestartTest, L"Restart", 140, 716, 100);
             button(window, Calibrate, L"Recalibrate", 250, 716, 120);
             button(window, Clear, L"Clear scope", 380, 716, 180);
@@ -736,8 +741,12 @@ LRESULT CALLBACK editor_procedure(HWND window, UINT message, WPARAM wp, LPARAM l
                 : reinterpret_cast<MEASUREITEMSTRUCT*>(lp)->CtlType == ODT_LISTBOX ? 36
                                                                                    : 24;
             return TRUE;
-        case WM_CTLCOLORSTATIC:
-            return color_control(wp, true);
+        case WM_CTLCOLORSTATIC: {
+            RECT bounds{};
+            GetWindowRect(reinterpret_cast<HWND>(lp), &bounds);
+            MapWindowPoints(nullptr, window, reinterpret_cast<POINT*>(&bounds), 2);
+            return color_control(wp, bounds.left >= 570);
+        }
         case WM_CTLCOLOREDIT:
         case WM_CTLCOLORLISTBOX:
             return color_control(wp, true);

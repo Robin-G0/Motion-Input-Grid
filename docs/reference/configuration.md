@@ -13,7 +13,7 @@
 - [Recording, limits and validation](#recording-limits-and-validation)
 - [Example: generic Jump](#example-generic-jump)
 - [Editor presentation and live scaling](#editor-presentation-and-live-scaling)
-- [Controller profile list](#controller-profile-list)
+- [MIG Input profile list](#mig-input-profile-list)
 
 </details>
 
@@ -33,14 +33,14 @@ validator and 1 MiB / 32-level limits. `serialize_configuration(config)` exports
 same v2 document without filesystem access; `save_configuration` uses it for atomic
 file replacement. On Windows, temporary sharing/locking conflicts are retried for
 up to 500 ms. Persistent failures preserve the saved profile and report the OS error.
-Native and WebAssembly consumers import configurator profiles
+Native and WebAssembly consumers import MIG Studio profiles
 without migration or a separate JavaScript schema. Failed web imports retain the
 current engine. See [integration examples](../integrations/overview.md).
 
 Linux Qt applications, Python ctypes and Unity/Godot/Unreal C ABI consumers use
 this same schema-v2 parser/engine. No language-specific JSON format was added.
 Runtime packets/handles and keyboard/window consent are not serialized. Successful
-C ABI imports stop capture; invalid imports preserve it. Linux Pro edits all fields
+C ABI imports stop capture; invalid imports preserve it. Linux Advanced edits all fields
 through its complete-profile editor. See [C ABI](c-abi.md) and [Linux UI limits](../getting-started/linux.md).
 
 ## Import review
@@ -90,7 +90,7 @@ variants until the deadline. It does not replace the release/rearm latch: holdin
 a completed movement still cannot emit additional recognition events. Repeat mode
 replays keyboard output from the accepted live activation independently of cooldown.
 Restart clears this runtime
-deadline. An explicit positive time limit remains available in Pro mode and starts
+deadline. An explicit positive time limit remains available in Advanced mode and starts
 when an attempt begins. Newly authored inputs have no movement time limit.
 The global hand-command recovery delay remains separate and fixed at 1000 ms.
 
@@ -138,7 +138,7 @@ reader. Schema v1 remains unsupported.
 
 ## Action output modes
 
-The editor's **Action mode** selector is available in Basic and Pro. **Repeat ms**
+The editor's **Action mode** selector is available in Basic and Advanced. **Repeat ms**
 appears for Repeat. These settings apply to the entire input and are persisted:
 
 ```json
@@ -234,7 +234,7 @@ An entirely unnumbered lane (`order` omitted or 0) retains independent visits in
 array order. Mixing numbered and unnumbered High positive constraints in one lane
 is rejected. The editor numbers the existing lane when a manual number is chosen.
 Switching the step to Visited/Simultaneous explicitly removes its order numbers;
-the operation is undoable. Changing Basic/Pro presentation preserves the definition.
+the operation is undoable. Changing Basic/Advanced presentation preserves the definition.
 
 For example, a general right-hand raise can use these Required alternatives in
 one Ordered step (with unique IDs and High priority on each constraint):
@@ -348,7 +348,7 @@ palm/contact observations reject OK. Open palm requires all five extensions >=0.
 Fist requires all five <=0.3. All five fingers must have confidence >=0.6.
 These classifiers serve global commands, status and Interaction cells.
 
-In Pro mode, choose the purple **Interaction** brush, then set hand, sign and hold
+In Advanced mode, choose the purple **Interaction** brush, then set hand, sign and hold
 time in its tab before drawing. Select an existing purple cell and **Update
 interaction** to edit it. The **Fingers** tab edits scoped poses and stable/grace
 times. Basic mode preserves these definitions while hiding advanced authoring.
@@ -441,7 +441,7 @@ Full grid reflects the horizontal axis exactly once, just like the camera view;
 cells, dots, traces and pointer hit testing use the same projection. This does not
 alter saved anatomical coordinates or the input's optional recognition Mirror.
 The main camera remains unobstructed; body/grid diagnostics belong to the editor.
-Theme, Basic/Pro mode, inspector tabs and viewport selection are UI state, not JSON recognition
+Theme, Basic/Advanced mode, inspector tabs and viewport selection are UI state, not JSON recognition
 parameters. Dark/light menus, combo fields, buttons and linked logs use one palette.
 
 The default Basic editor uses one ordered step for a new input. Visible Pencil,
@@ -457,9 +457,9 @@ that finish. Full grid shows centered order numbers per landmark for ordered
 steps (step.order for multiple steps), X for Forbidden and R for unordered
 Required; Low contours do not introduce additional required visits. The selected
 landmark is filled; other landmark layers remain outlined and independently editable.
-Pro mode exposes steps, ordering/hold controls, High/Low properties, finger scopes,
+Advanced mode exposes steps, ordering/hold controls, High/Low properties, finger scopes,
 recording, coordinate space and optional timing limits. The keyboard shortcut
-field is available in both Basic and Pro. Switching
+field is available in both Basic and Advanced. Switching
 modes preserves the definition, including existing advanced rules.
 
 All drawing tools and paint types now live in the editor sidebar. Its layer stack
@@ -468,13 +468,13 @@ Layers are a view of existing independent constraints; no second recognition mod
 or JSON layer array is introduced. Selecting a layer selects the body part; hiding
 it changes only presentation. Deleting it removes that landmark's constraints in
 all scopes, with one Undo operation. Basic Clear removes the complete drawing;
-Pro Clear retains its current-scope behaviour. Help is optional and closes when
+Advanced Clear retains its current-scope behaviour. Help is optional and closes when
 drawing begins. Visibility/help/selection never enter the JSON file.
-In Basic and Pro, select a stack row, change **Layer body part**, then click
+In Basic and Advanced, select a stack row, change **Layer body part**, then click
 **Save layer**. This changes `landmark` on that layer's spatial constraints in
 every scope, preserving IDs, cells, order, tolerance links, finger rules and
 Interaction settings. Explicit anatomical finger/sign hands remain unchanged;
-review them in Pro when changing hands. Recorded traces retain their original
+review them in Advanced when changing hands. Recorded traces retain their original
 capture identity and are not reassigned. A body part already used by another layer
 is rejected without changing either drawing. The body-part selector is a pending
 edit: save it or restore its original value before switching layers, drawing,
@@ -483,7 +483,7 @@ layers. Reassignment is one Undo/Redo operation. **Save layer** saves into the d
 **Apply input** publishes it, and File > Save persists the configuration. No JSON
 field is added for the layer editor or its pending selection.
 Basic Eraser removes all colours/priorities of the selected body part at the pointer,
-across all scopes. Pro Eraser retains the chosen type/priority/current scope.
+across all scopes. Advanced Eraser retains the chosen type/priority/current scope.
 
 Normal application startup is an empty configuration, with Right V assigned to
 Recalibrate (Hands remains off until enabled). Bundled `configs/default.json` is
@@ -504,7 +504,7 @@ The C++ examples keep their camera source while replacing the recognition engine
 All camera profile importers follow `tracking.hands` when deciding whether to run
 their hand model; raised-hands demos enable it for visualization. Text feedback, profile
 file paths and demo/import mode are presentation state, not JSON schema fields.
-Native controller/C-ABI capture rejects recognition older than 250 ms using the
+Native MIG Input/C-ABI capture rejects recognition older than 250 ms using the
 current monotonic clock; hosts submitting their own packets own their time source.
 
 React, Vue and Next.js use the same schema-v2 profile through the browser session.
@@ -517,12 +517,12 @@ Repeat scheduler. See [JavaScript integration](../integrations/javascript.md).
 
 MIG 1.0.2 uses schema version 2. See [bootstrap](../getting-started/bootstrap.md) and [example code](../getting-started/examples.md).
 
-## Controller profile list
+## MIG Input profile list
 
-The controller keeps its named profile list in a separate `profiles.json`, with
+The MIG Input keeps its named profile list in a separate `profiles.json`, with
 `version: 1`, `selected` (zero-based index, or -1) and a `profiles` array of
 `{ "id": "1", "name": "Game" }` entries. Numeric IDs identify managed files
 `1.json`, `2.json`, etc.; these remain normal schema-v2 configurations. The list
 is bounded to 64 entries and 64 KiB, names to 256 UTF-8 bytes. Imports and list
 updates use atomic replacement. Camera visibility, verification and keyboard consent
-are session settings and do not change motion JSON. See [controller](../guides/controller.md).
+are session settings and do not change motion JSON. See [MIG Input](../guides/controller.md).

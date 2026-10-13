@@ -1,4 +1,4 @@
-# Windows configurator and controller
+# Windows MIG Studio and MIG Input
 
 [English](windows.md) | [Français](windows.fr.md)
 
@@ -12,8 +12,8 @@
 
 </details>
 
-To use prebuilt applications, follow the [configurator](../guides/configurator.md)
-and [controller](../guides/controller.md) guides. This page covers source builds
+To use prebuilt applications, follow the [MIG Studio](../guides/configurator.md)
+and [MIG Input](../guides/controller.md) guides. This page covers source builds
 and platform-specific controls. For just a library, see the [C++ SDK / CMake](cpp.md),
 [Python](../../bindings/python/README.md) or [JavaScript](../../bindings/javascript/README.md) guide.
 
@@ -21,9 +21,9 @@ Both C++20 Win32/GDI applications use Media Foundation capture, native MediaPipe
 and the same engine/schema-v2 reader. No interpreter, UDP bridge or separate
 inference process is used. The interface is English; documentation is bilingual.
 
-The controller has a dedicated profile/bindings interface. See the
-[controller guide](../guides/controller.md) for import, remembered selection, compact mode
-and verification. The drawing tools described below belong to the configurator.
+The MIG Input has a dedicated profile/bindings interface. See the
+[MIG Input guide](../guides/controller.md) for import, remembered selection, compact mode
+and verification. The drawing tools described below belong to the MIG Studio.
 
 ## Build and launch
 
@@ -55,9 +55,9 @@ PATH, use VS Code's CMake commands or the build script above. Choose
 
 Stop the first camera before starting another. Keep libmediapipe.dll, models and
 configs with the executables. Paths resolve relative to the executable, not cwd.
---config path.json loads a profile; --camera N selects a device. Configurator startup
+--config path.json loads a profile; --camera N selects a device. MIG Studio startup
 is empty with Right V Recalibrate, inactive until Hands is enabled. The bundled
-default profile must be opened explicitly and is not a forced drawing. The controller
+default profile must be opened explicitly and is not a forced drawing. The MIG Input
 restores its last selected profile and starts with camera and keyboard output off.
 
 ```powershell
@@ -75,7 +75,7 @@ seated/standing speedup is assumed.
 
 ## Workspace and drawing
 
-File/Edit/View menus, toolbar, INPUTS sidebar and status bar surround the mirrored
+File/Edit/View menus, session toolbar, MOVEMENTS sidebar and status bar surround the mirrored
 camera. View selects light/dark and toggles grid, hand bones, body dots and linked
 logs independently. Hiding hands does not disable inference. Stale overlays vanish.
 Logs close with the app. Rounded filled controls expose enabled/hover/focus state.
@@ -103,7 +103,7 @@ must be saved or restored before switching/drawing/testing. IDs, cells and rules
 remain intact, but explicit sign/finger hands and recorded trace identity do not
 change. Save layer edits the draft, Apply input publishes, File Save persists.
 
-Pro exposes stages/modes/hold, High/Low geometry/tolerance, scoped fingers,
+Advanced exposes stages/modes/hold, High/Low geometry/tolerance, scoped fingers,
 Interaction, recordings, coordinate space and optional duration. Switching modes
 preserves definitions. Purple Interaction needs a hand/sign and continuous hold
 0..60000ms; choose settings before painting, Select/Update interaction to edit.
@@ -118,7 +118,7 @@ cannot infer hands. See [hand contract](../guides/hands.md).
 
 ## Output, test and recording
 
-Set name/action and keyboard in Basic/Pro. Keys/Ctrl+K and Edit keys recognize
+Set name/action and keyboard in Basic/Advanced. Keys/Ctrl+K and Edit keys recognize
 `"Hello world" _ Enter _ Ctrl + C`, repeated actions and simultaneous + chords.
 Outlined boxes confirm parsing. None gives a logical event only.
 Action mode offers Single press, Hold or Repeat with interval20..60000ms.

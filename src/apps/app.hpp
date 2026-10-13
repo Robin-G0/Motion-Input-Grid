@@ -29,10 +29,10 @@ namespace mig::app {
 using namespace mig::native;
 #ifdef MIG_CONFIGURATOR
 constexpr bool editor = true;
-constexpr wchar_t title[] = L"Motion Input Grid — Configurator";
+constexpr wchar_t title[] = L"MIG Studio — Motion Input Grid";
 #else
 constexpr bool editor = false;
-constexpr wchar_t title[] = L"Motion Input Grid — Controller";
+constexpr wchar_t title[] = L"MIG Input — Motion Input Grid";
 #endif
 enum {
     Start = 101,
@@ -172,6 +172,7 @@ enum {
     VerifyView,
     CompactView,
     OpenView,
+    ProfileManagement,
     ClearFingers
 };
 struct Snapshot {
@@ -188,7 +189,7 @@ struct Snapshot {
     bool hands_active{}, waiting{}, recording{};
 };
 struct Palette {
-    COLORREF background, surface, text, muted, accent, border;
+    COLORREF background, surface, text, muted, accent, border, primary, hover, selected;
 };
 struct EditorDocument {
     Motion input;
@@ -197,7 +198,7 @@ struct EditorDocument {
 struct App {
     bool review_import(const Configuration& proposed);
     std::unique_ptr<controller::Profiles> profiles;
-    bool controller_camera{}, controller_compact{}, controller_verify{};
+    bool controller_camera{}, controller_compact{}, controller_verify{}, profile_management{};
     std::atomic<bool> preview_enabled{true};
     RECT expanded_bounds{};
     int verification{-1};
@@ -212,7 +213,7 @@ struct App {
 #endif
     PaintBuffer preview_buffer, editor_buffer;
     HWND window{}, edit_window{}, log_window{}, control_window{}, key_window{}, details_window{};
-    HFONT font{}, mono_font{};
+    HFONT font{}, mono_font{}, heading_font{};
     HBRUSH background_brush{}, surface_brush{};
     bool dark{true}, logs_visible{}, keyboard_enabled{}, updating_controls{};
     bool diagnostic_mode{};

@@ -76,6 +76,9 @@ App::~App() {
     if (mono_font) {
         DeleteObject(mono_font);
     }
+    if (heading_font) {
+        DeleteObject(heading_font);
+    }
     if (background_brush) {
         DeleteObject(background_brush);
     }

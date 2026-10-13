@@ -13,29 +13,26 @@ void App::paint(HDC dc) {
     const auto write = [&](int x, int y, const std::wstring& text) {
         TextOutW(dc, x, y, text.c_str(), int(text.size()));
     };
-    const RECT title_bar{0, 0, client.right, 40},
-        sidebar{client.right - 332, 40, client.right, client.bottom - 32};
-    const RECT rail{0, 40, 48, client.bottom - 32};
+    const RECT title_bar{0, 0, client.right, 48},
+        sidebar{client.right - 332, 48, client.right, client.bottom - 32};
     FillRect(dc, &title_bar, surface_brush);
     FillRect(dc, &sidebar, surface_brush);
-    FillRect(dc, &rail, surface_brush);
-    SetTextColor(dc, palette().accent);
-    write(12, 11, L"MIG");
-    write(15, 62, L"[]");
+    SetTextColor(dc, palette().text);
+    SelectObject(dc, heading_font ? heading_font : font);
+    write(24, 6, L"MIG Studio");
+    SelectObject(dc, font);
     SetTextColor(dc, palette().muted);
-    write(286, 11,
-          editor ? L"Motion Input Grid / Configurator" : L"Motion Input Grid / Controller");
-    write(72, 48, L"CAMERA WORKSPACE");
-    write(client.right - 316, 57, L"INPUTS");
+    write(24, 60, L"SESSION / CAMERA WORKSPACE");
+    write(client.right - 316, 68, L"MOVEMENTS");
     if (config.motions.empty()) {
-        write(client.right - 316, 112, L"No inputs yet.");
-        write(client.right - 316, 138, L"Add an input to define an action.");
+        write(client.right - 316, 112, L"No movements yet.");
+        write(client.right - 316, 138, L"Create a movement to get started.");
     }
     const auto divider = CreatePen(PS_SOLID, 1, palette().border);
     const auto old_pen = SelectObject(dc, divider);
-    MoveToEx(dc, 0, 39, nullptr);
-    LineTo(dc, client.right, 39);
-    MoveToEx(dc, client.right - 333, 40, nullptr);
+    MoveToEx(dc, 0, 47, nullptr);
+    LineTo(dc, client.right, 47);
+    MoveToEx(dc, client.right - 333, 48, nullptr);
     LineTo(dc, client.right - 333, client.bottom - 32);
     SelectObject(dc, old_pen);
     DeleteObject(divider);
@@ -51,8 +48,8 @@ void App::paint(HDC dc) {
         result = snapshot;
         message = status;
     }
-    const RECT area{72, 116, client.right - 356, client.bottom - 92};
-    FillRect(dc, &area, reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
+    const RECT area{24, 132, client.right - 356, client.bottom - 92};
+    FillRect(dc, &area, surface_brush);
     video_rect = area;
     if (video && video->width > 0 && video->height > 0) {
         const float fit = std::min(float(area.right - area.left) / video->width,
@@ -137,10 +134,12 @@ void App::paint(HDC dc) {
     }
     SetTextColor(dc, palette().muted);
     if (!video) {
-        SetTextColor(dc, RGB(160, 160, 160));
         RECT placeholder = area;
-        DrawTextW(dc, L"Camera preview\nStart the camera to calibrate your body", -1, &placeholder,
-                  DT_CENTER | DT_VCENTER | DT_WORDBREAK);
+        placeholder.top = (area.top + area.bottom) / 2 - 24;
+        DrawTextW(
+            dc,
+            L"Start the camera when you are ready.\nKeep both shoulders visible for calibration.",
+            -1, &placeholder, DT_CENTER | DT_WORDBREAK);
     }
     if (result) {
         std::wstring hand_status =
@@ -168,18 +167,18 @@ void App::paint(HDC dc) {
         }
 #endif
         write(client.right - 316, client.bottom - 62, hand_status);
-        write(72, client.bottom - 66,
+        write(24, client.bottom - 66,
               std::wstring(pose_model == PoseModel::Lite ? L"Pose Lite" : L"Pose Full") +
                   L"  |  inference " + std::to_wstring(int(result->inference_ms)) +
                   L" ms  |  result age " + std::to_wstring(now_ms() - result->pose.timestamp_ms) +
                   L" ms" + (result->recording ? L"  |  RECORDING" : L"") +
                   (result->waiting ? L"  |  Waiting to resume" : L""));
     }
-    const auto status_brush = CreateSolidBrush(palette().accent);
+    const auto status_brush = CreateSolidBrush(palette().surface);
     RECT status_bar{0, client.bottom - 32, client.right, client.bottom};
     FillRect(dc, &status_bar, status_brush);
     DeleteObject(status_brush);
-    SetTextColor(dc, RGB(255, 255, 255));
+    SetTextColor(dc, palette().text);
     RECT status_text{16, client.bottom - 32, client.right - 16, client.bottom};
     const auto status_label = wide(message);
     DrawTextW(dc, status_label.c_str(), -1, &status_text,

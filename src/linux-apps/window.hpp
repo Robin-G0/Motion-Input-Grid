@@ -35,6 +35,9 @@ private:
     QPlainTextEdit* logs_{};
     QDockWidget* log_dock_{};
     QCheckBox* keyboard_switch_{};
+    QWidget* drawing_panel_{};
+    QWidget* interaction_controls_{};
+    QWidget* order_controls_{};
     Capture capture_;
     Keyboard keyboard_;
     ui::ActionOutput output_;

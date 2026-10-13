@@ -136,7 +136,7 @@ configure le projet ; cela ne lance pas le programme.
 machine, comme les chemins des outils locaux, dans `CMakeUserPresets.json`, ignoré
 par Git.
 
-- `release` : configurateur, contrôleur et moteur optimisés. Préparez d'abord les
+- `release` : MIG Studio, MIG Input et moteur optimisés. Préparez d'abord les
   dépendances natives ; voir [Windows](windows.fr.md) ou [Linux](linux.fr.md).
 - `debug` : les mêmes applications avec les informations de débogage.
 - `sdk-release` / `sdk-debug` : moteur et bindings seuls, sans applications caméra

@@ -1,22 +1,22 @@
-# Linux configurator and controller
+# Linux MIG Studio and MIG Input
 
 [English](linux.md) | [Français](linux.fr.md)
 
 > [!NOTE]
-> On Debian, the configurator, controller and some native examples are still
+> On Debian, the MIG Studio, MIG Input and some native examples are still
 > being developed and tested. They may not yet work fully.
 
-To use prebuilt applications, follow the [configurator](../guides/configurator.md)
-and [controller](../guides/controller.md) guides. This page covers source builds
+To use prebuilt applications, follow the [MIG Studio](../guides/configurator.md)
+and [MIG Input](../guides/controller.md) guides. This page covers source builds
 and platform-specific controls. For just a library, see the [C++ SDK / CMake](cpp.md),
 [Python](../../bindings/python/README.md) or [JavaScript](../../bindings/javascript/README.md) guide.
 
 Both `mig-configurator` and `mig-controller` build as native Qt6 applications,
 sharing the existing engine, estimator and schema-v2 profiles with Windows.
 
-The controller has a dedicated profile/bindings interface. See the
-[controller guide](../guides/controller.md) for import, remembered selection, compact mode
-and verification. The drawing tools described below belong to the configurator.
+The MIG Input has a dedicated profile/bindings interface. See the
+[MIG Input guide](../guides/controller.md) for import, remembered selection, compact mode
+and verification. The drawing tools described below belong to the MIG Studio.
 
 ```sh
 sudo apt-get install cmake ninja-build g++ python3 qt6-base-dev libxtst-dev libegl1 libgles2
@@ -39,11 +39,13 @@ Use `--camera N` for `/dev/videoN`;
 single-plane YUYV V4L2 and camera permissions are required. Start explicitly opens
 capture; stop one application before starting the other.
 
-The sidebar has input settings, colored drawing, body selection, order,
-Interaction sign/0..60000 ms hold and explicit layer reassignment. Draw in Full grid;
+The session toolbar stays outside the camera canvas. The sidebar separates
+**Movements** from **Draw zones**, with compact drawing tools, body selection and
+explicit layer reassignment. Ordered-route options appear for Required zones in
+an ordered movement; Interaction reveals sign/0..60000 ms hold settings. Draw in Full grid;
 Body view fits the complete mirrored image. View toggles grid, dots/hands, logs and
 light/dark themes. Input settings edit keys/sequences, Mirror, Single/Hold/Repeat,
-repeat interval and cooldown. Save validates atomically. Pro edits all schema-v2
+repeat interval and cooldown. Save validates atomically. Advanced edits all schema-v2
 fields through a complete-profile JSON editor, preserving scoped fingers, stages,
 tolerance, controls and recordings.
 

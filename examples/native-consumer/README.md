@@ -58,7 +58,7 @@ build/mig-native-example runtime
 Visual Studio puts the binary under `build/Release/` and appends `.exe`.
 Source-only folders require an installed SDK and runtime/models from its native release.
 For source-only positions setup, obtain `default.json` from the configuration
-release or create a profile in the configurator. Compilation exceeds the prebuilt trial time.
+release or create a profile in the MIG Studio. Compilation exceeds the prebuilt trial time.
 
 ## Reuse and troubleshooting
 

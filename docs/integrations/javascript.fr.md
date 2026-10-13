@@ -14,7 +14,7 @@
 
 Les intégrations navigateur utilisent le moteur C++ compilé en WASM. Chaque
 framework propose une démo de levage des mains et un importateur de profils du
-configurateur, affichant chaque action acceptée avec son identifiant.
+MIG Studio, affichant chaque action acceptée avec son identifiant.
 
 ## Lancer les exemples
 
