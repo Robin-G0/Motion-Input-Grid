@@ -20,7 +20,7 @@ createServer(async (request, response) => {
     if (!pathname.startsWith(basePath)) {
         response.writeHead(404); response.end("Not found"); return;
     }
-    const relative = decodeURIComponent(pathname.slice(basePath.length)) || "index.html";
+    const relative = decodeURIComponent(pathname.slice(basePath.length)) + (pathname.endsWith("/") ? "index.html" : "");
     const filename = resolve(root, relative);
     if (!filename.startsWith(root + sep)) {
         response.writeHead(403); response.end("Forbidden"); return;

@@ -1,0 +1,565 @@
+import { ThemeToggle } from "../../src/ui/theme.mjs";
+import { cameraError } from "../../src/camera/camera.mjs";
+import { copy } from "./copy.mjs";
+import { MAX_BYTES, landmarks, clone, id, newInput, starter, parseProfile, regions, scopedRegions, cellRect, rectangle, addRegion, ProfileHistory } from "./profile.mjs";
+import { createStudioSession, validateProfile, disposeValidator, PreviewGrid, trackedPoint } from "./camera.mjs";
+import { GridEditor, drawPreview } from "./grid.mjs";
+import { Journal } from "./journal.mjs";
+import { NoteLayer, LiveNoteBrush, previewCell } from "./notes.mjs";
+import { FingerEditor, setFingerRule } from "./fingers.mjs";
+
+const $ = id => document.getElementById(id);
+const storageKey = "mig-studio-profile-v2";
+let language = navigator.language.toLowerCase().startsWith("fr") ? "fr" : "en";
+const t = key => copy[language][key] ?? key;
+const initialProfile = starter();
+if (language === "en") initialProfile.inputs[0].name = "Raise the left hand";
+let history = new ProfileHistory(initialProfile);
+let inputIndex = 0, scope = "0", selectedRegion = null, tool = "select";
+let view = "home", detail = "position", hasDraft = false, noteMode = null;
+const notes = new NoteLayer();
+const notesKey = "mig-studio-notes-v1";
+let busy = false, session = null, operation = 0, storageAvailable = true;
+let lastPaint = -Infinity, lastDebug = -Infinity, trackingState = null;
+const geometry = new PreviewGrid();
+const input = () => history.value.inputs[inputIndex];
+const currentRegion = () => regions(input()).find(region => region.id === selectedRegion);
+const theme = new ThemeToggle($("theme-toggle"), () => copy[language], { iconBase: "../" });
+const journal = new Journal($("log-list"), $("log-empty"), $("action-count"), $("journal-announcement"), t);
+const editor = new GridEditor($("editor-grid"), $("grid-regions"), $("drawing-selection"), drawRegion, t);
+const fingerEditor = new FingerEditor($("finger-list"), $("finger-hand"), t, (hand, finger, pose, timing) => {
+    edit((movement, profile) => {
+        const region = regions(movement).find(region => region.id === selectedRegion);
+        setFingerRule(region, hand, finger, pose, timing);
+        if (pose) profile.tracking = { ...profile.tracking, hands: true };
+    });
+});
+let feedbackKey = null, feedbackDetail = "", feedbackError = false, cameraMessageKey = "cameraReady", cameraMessageError = false;
+let noteSnapshot = null, noteInputId = null;
+const brush = new LiveNoteBrush($("camera-overlay"), {
+    enabled: () => !!noteMode && view === "test" && !!session?.state.running,
+    cellAt: event => previewCell(event, $("camera-overlay"), geometry,
+        session.video.videoWidth / session.video.videoHeight, input()?.space ?? "calibrated", $("mirror-preview").checked),
+    begin: () => { noteInputId = input()?.id; noteSnapshot = notes.cells(noteInputId); },
+    paint: cells => { notes.paint(noteInputId, cells, noteMode === "erase"); renderNotes(); repaintPreview(); },
+    finish: () => { noteSnapshot = null; saveNotes(); },
+    cancel: () => { if (noteSnapshot) notes.restore(noteInputId, noteSnapshot); noteSnapshot = null; renderNotes(); repaintPreview(); },
+    unavailable: () => { $("note-feedback").textContent = t("notesUnavailable"); }
+});
+
+function saveNotes() {
+    try { localStorage.setItem(notesKey, notes.serialize()); }
+    catch { feedback("storageUnavailable"); }
+}
+function repaintPreview() {
+    if (!session?.state.running || view !== "test") return;
+    drawPreview($("camera-overlay"), session, history.value, inputIndex, geometry, {
+        grid: $("show-grid").checked, points: $("show-points").checked, full: $("full-grid").checked, notes: notes.cells(input()?.id)
+    });
+}
+function renderNotes() {
+    const cells = notes.cells(input()?.id);
+    editor.renderNotes($("grid-notes"), cells);
+    for (const prefix of ["editor", "test"]) {
+        $(`${prefix}-note-toggle`).setAttribute("aria-pressed", String(noteMode === "draw"));
+        $(`${prefix}-note-erase`).setAttribute("aria-pressed", String(noteMode === "erase"));
+        $(`${prefix}-note-count`).textContent = cells.length ? `${cells.length} ${t("noteCells")}` : "";
+        $(`clear-${prefix}-notes`).disabled = !cells.length || busy;
+        for (const control of ["toggle", "erase"]) $(`${prefix}-note-${control}`).disabled = busy || !input();
+    }
+    $("test-stage").dataset.noteMode = String(!!noteMode);
+}
+
+function feedback(key, error = false, detail = "") {
+    feedbackKey = key; feedbackDetail = detail.slice(0, 500); feedbackError = error;
+    $("feedback").hidden = !key;
+    $("feedback").dataset.error = String(error);
+    $("feedback").textContent = key ? `${t(key)}${detail ? ` ${feedbackDetail}` : ""}` : "";
+    $("region-error").hidden = !key || !error || !$("region-dialog").open;
+    $("region-error").textContent = $("feedback").textContent;
+}
+function cameraMessage(key, error = false) {
+    cameraMessageKey = key; cameraMessageError = error;
+    $("camera-message").textContent = t(key); $("camera-message").dataset.error = String(error);
+}
+function errorDetails(error) {
+    const known = ["size", "json", "schema", "bounds", "oneTrigger", "globalTrigger", "noInputs", "emptyField", "emptyPath"];
+    return known.includes(error.message) ? { key: error.message, detail: "" } : { key: "invalid", detail: error.message };
+}
+function save() {
+    hasDraft = true;
+    try {
+        const text = JSON.stringify(history.value);
+        if (new TextEncoder().encode(text).length > MAX_BYTES) throw new Error("size");
+        localStorage.setItem(storageKey, text); storageAvailable = true;
+        hasDraft = true;
+    } catch { storageAvailable = false; }
+    $("draft-status").textContent = t(storageAvailable ? "saved" : "storageUnavailable");
+}
+function selectOptions(node, options, selected) {
+    node.replaceChildren(...options.map(([value, label]) => {
+        const option = document.createElement("option"); option.value = value; option.textContent = label; return option;
+    }));
+    node.value = selected;
+}
+function setBusy(value) {
+    busy = value;
+    for (const name of ["new-profile", "import-profile", "export-profile", "open-json", "add-input", "add-step", "apply-json", "input-select"]) $(name).disabled = busy;
+    render();
+}
+function setView(next, focus = true) {
+    brush.cancel(); editor.cancel();
+    if ((next === "edit" || next === "test") && !input()) next = "moves";
+    view = next;
+    document.body.dataset.view = view;
+    $("start-menu").hidden = view !== "home";
+    $("workspace").hidden = view === "home";
+    for (const screen of ["moves", "edit", "test"]) {
+        const panel = $(screen === "edit" ? "editor-panel" : screen === "test" ? "test-panel" : "moves-panel");
+        panel.hidden = view !== screen;
+        $(`tab-${screen}`).setAttribute("aria-selected", String(view === screen));
+        $(`tab-${screen}`).tabIndex = view === screen ? 0 : -1;
+    }
+    render();
+    if (focus) {
+        window.scrollTo({ top: 0, behavior: "instant" });
+        $(view === "home" ? "studio-title" : view === "moves" ? "moves-title" : view === "edit" ? "editor-title" : "test-title").focus({ preventScroll: true });
+    }
+}
+function setDetail(next) {
+    if (next === "sign" && currentRegion()?.type !== "interaction") next = "position";
+    detail = next;
+    for (const name of ["position", "sign", "fingers"]) {
+        $(`detail-${name}`).hidden = detail !== name;
+        $(`detail-${name}-tab`).setAttribute("aria-selected", String(detail === name));
+        $(`detail-${name}-tab`).tabIndex = detail === name ? 0 : -1;
+    }
+}
+function openRegion(regionId) {
+    selectedRegion = regionId;
+    const region = currentRegion();
+    if (!region) return;
+    $("finger-hand").value = region.landmark.startsWith("right_") ? "right" : "left";
+    setDetail(region.type === "interaction" ? "sign" : "position");
+    render();
+    $("region-error").hidden = true;
+    if (!$("region-dialog").open) $("region-dialog").showModal();
+    $(`detail-${detail}-tab`).focus();
+}
+function render() {
+    const profile = history.value;
+    inputIndex = Math.max(0, Math.min(inputIndex, profile.inputs.length - 1));
+    const movement = input();
+    if (scope !== "global" && !movement?.steps?.[Number(scope)]) scope = movement?.steps?.length ? "0" : "global";
+    $("input-fields").disabled = busy || !movement;
+    $("empty-editor").hidden = !!movement;
+    $("input-fields").hidden = !movement;
+    $("region-fields").disabled = busy;
+    $("resume-profile").hidden = !hasDraft;
+    $("resume-profile").disabled = busy;
+    $("delete-input").disabled = busy || !movement;
+    $("undo").disabled = busy || !history.past.length; $("redo").disabled = busy || !history.future.length;
+    $("start-test").disabled = busy || !profile.inputs.length;
+    $("quick-test").disabled = busy;
+    $("start-test").hidden = !!session?.state.running;
+    $("stop-test").hidden = !session && !busy;
+    $("header-stop").hidden = !session?.state.running || view === "test";
+    $("recalibrate").disabled = busy || !session?.state.running;
+    $("live-badge").textContent = t(session?.state.running ? "online" : "offline");
+    $("live-badge").dataset.live = String(!!session?.state.running);
+    $("camera-placeholder").hidden = !!session?.state.running;
+    $("test-stage").dataset.running = String(!!session?.state.running);
+    $("test-stage").dataset.mirror = String($("mirror-preview").checked);
+    $("movement-list").replaceChildren(...profile.inputs.map((item, index) => {
+        const card = document.createElement("article"); card.className = "movement-card";
+        const title = document.createElement("h3"); title.textContent = item.name;
+        const summary = document.createElement("p"); summary.textContent = `${item.action} · ${regions(item).length} ${t("zoneCount")}`;
+        const actions = document.createElement("div"); actions.className = "card-actions";
+        for (const target of ["edit", "test"]) {
+            const button = document.createElement("button"); button.type = "button"; button.className = "text-button";
+            button.disabled = busy; button.textContent = t(target === "edit" ? "editCard" : "testCard");
+            button.addEventListener("click", () => { inputIndex = index; scope = "0"; selectedRegion = null; setView(target); }); actions.append(button);
+        }
+        card.append(title, summary, actions); return card;
+    }));
+    selectOptions($("input-select"), profile.inputs.map((item, i) => [String(i), item.name]), String(inputIndex));
+    const names = Object.keys(landmarks);
+    // Preserve and show imported landmark names, even outside the basic menu.
+    for (const name of regions(movement).map(region => region.landmark)) if (!names.includes(name)) names.push(name);
+    for (const name of ["landmark", "region-landmark"]) {
+        const selected = $(name).value || "left_wrist";
+        selectOptions($(name), names.map(point => [point, t(point)]), selected);
+    }
+    const scopes = [...(movement?.steps ?? []).map((step, index) => [String(index), `${t("step")} ${index + 1}`]), ["global", t("global")]];
+    selectOptions($("scope"), scopes, scope);
+    $("input-name").value = movement?.name ?? ""; $("input-action").value = movement?.action ?? "";
+    $("input-space").value = movement?.space ?? "calibrated";
+    $("input-cooldown").value = movement?.cooldown_ms ?? 0;
+    $("input-duration").value = movement?.max_duration_ms ?? 0;
+    $("track-hands").checked = !!profile.tracking?.hands;
+    $("step-mode").disabled = scope === "global";
+    $("step-mode").value = scope === "global" ? "simultaneous" : movement?.steps?.[Number(scope)]?.mode ?? "ordered";
+    $("tool-help").textContent = t(noteMode ? (noteMode === "erase" ? "noteEraseHelp" : "noteHelp") : `${tool}Help`);
+    for (const button of document.querySelectorAll("[data-tool]")) button.setAttribute("aria-pressed", String(!noteMode && button.dataset.tool === tool));
+    editor.render(movement, scope, selectedRegion, $("full-grid").checked, !busy);
+    $("editor-grid").dataset.pan = String(!noteMode && tool === "select");
+    renderNotes();
+    $("grid-range").textContent = $("full-grid").checked ? "[−9, −9] → [17, 17]" : "[−4, −4] → [13, 13]";
+    const constraints = scopedRegions(movement, scope);
+    $("region-count").textContent = String(constraints.length);
+    const focusedRegion = document.activeElement?.dataset.region;
+    $("region-list").replaceChildren(...constraints.map(region => {
+        const button = document.createElement("button"); button.type = "button"; button.dataset.region = region.id;
+        button.disabled = busy; button.setAttribute("aria-pressed", String(selectedRegion === region.id));
+        const color = document.createElement("i"); color.className = `swatch ${region.type}`;
+        const label = document.createElement("span"); label.textContent = `${t(region.type)}${region.order ? ` ${region.order}` : ""} · ${t(region.landmark)}`;
+        const position = document.createElement("span"); position.className = "region-coordinate";
+        position.textContent = `[${region.cell.join(", ")}]`;
+        button.append(color, label, position);
+        button.addEventListener("click", () => openRegion(region.id)); return button;
+    }));
+    if (focusedRegion) [...$("region-list").children].find(button => button.dataset.region === focusedRegion)?.focus();
+    const region = currentRegion();
+    $("region-fields").hidden = !region;
+    if (region) {
+        $("region-description").textContent = `${t(region.type)} · ${t(region.landmark)} · [${region.cell.join(", ")}]`;
+        $("detail-sign-tab").disabled = region.type !== "interaction";
+        setDetail(detail);
+        fingerEditor.render(region);
+        const rect = cellRect(region.cell);
+        $("region-landmark").value = region.landmark;
+        for (const property of ["x", "y", "w", "h"]) $(`region-${property}`).value = rect[property];
+        $("region-order").value = region.order ?? 0;
+        $("region-order").disabled = region.type === "forbidden" || region.priority === "low" || scope === "global" || $("step-mode").value !== "ordered";
+        $("interaction-fields").hidden = region.type !== "interaction";
+        if (region.interaction) {
+            $("region-sign").value = region.interaction.gesture; $("region-hand").value = region.interaction.hand;
+            $("region-hold").value = region.interaction.hold_ms ?? 0;
+        }
+    }
+    if (!region && $("region-dialog").open) $("region-dialog").close();
+    $("draft-status").textContent = t(storageAvailable ? "saved" : "storageUnavailable");
+}
+function renderLanguage() {
+    document.title = `Studio — Motion Input Grid`;
+    document.documentElement.lang = language;
+    for (const node of document.querySelectorAll("[data-i18n]")) node.textContent = t(node.dataset.i18n);
+    for (const node of document.querySelectorAll("[data-label]")) { node.setAttribute("aria-label", t(node.dataset.label)); node.title = t(node.dataset.label); }
+    for (const node of document.querySelectorAll("[data-language]")) node.setAttribute("aria-pressed", String(node.dataset.language === language));
+    theme.render(); render(); journal.render();
+    feedback(feedbackKey, feedbackError, feedbackDetail); cameraMessage(cameraMessageKey, cameraMessageError);
+}
+function stopTest(message = "stopped") {
+    brush.cancel();
+    operation++;
+    const current = session; session = null;
+    current?.dispose();
+    geometry.reset(); trackingState = null;
+    $("action-flash").hidden = true;
+    if (current) journal.add("info", t("stopped"));
+    cameraMessage(message); setBusy(false);
+}
+function changed(profile, message = null) {
+    if (!history.commit(profile)) { render(); return; }
+    if (session) stopTest("changed");
+    save(); render();
+    if (message) feedback(message);
+}
+function edit(mutator) {
+    if (busy) return;
+    try { const profile = clone(history.value); mutator(profile.inputs[inputIndex], profile); changed(profile); feedback(null); }
+    catch (error) { const { key, detail } = errorDetails(error); feedback(key, true, detail); render(); }
+}
+function removeRegions(movement, ids) {
+    // Tolerances cannot survive the deletion of their referenced High region.
+    for (const list of [movement.constraints, ...(movement.steps ?? []).map(step => step.constraints)]) {
+        if (!list) continue;
+        for (let i = list.length - 1; i >= 0; i--) if (ids.has(list[i].id) || ids.has(list[i].tolerance_for)) list.splice(i, 1);
+    }
+}
+function drawRegion(from, to) {
+    if (noteMode) {
+        const [x, y, w, h] = rectangle(from, to), cells = [];
+        for (let row = y; row < y + h; row++) for (let column = x; column < x + w; column++) cells.push({ x: column, y: row });
+        notes.paint(input()?.id, cells, noteMode === "erase"); saveNotes(); renderNotes(); return;
+    }
+    if (tool === "select") {
+        const candidates = scopedRegions(input(), scope).filter(region => {
+            const r = cellRect(region.cell); return to.x >= r.x && to.x < r.x + r.w && to.y >= r.y && to.y < r.y + r.h;
+        }).sort((a, b) => { const x = cellRect(a.cell), y = cellRect(b.cell); return x.w * x.h - y.w * y.h; });
+        if (candidates.length) openRegion(candidates[0].id);
+        return;
+    }
+    edit((movement, profile) => {
+        const rect = rectangle(from, to);
+        if (tool === "erase") {
+            const [x, y, w, h] = rect;
+            const removed = new Set(scopedRegions(movement, scope).filter(region => {
+                const r = cellRect(region.cell); return x < r.x + r.w && x + w > r.x && y < r.y + r.h && y + h > r.y;
+            }).map(region => region.id));
+            removeRegions(movement, removed); selectedRegion = null;
+        } else {
+            selectedRegion = addRegion(movement, scope, rect, { type: tool, landmark: $("landmark").value });
+            if (tool === "interaction") { profile.tracking = { ...profile.tracking, hands: true }; $("region-details").open = true; }
+        }
+    });
+    if (tool === "interaction" && currentRegion()) openRegion(selectedRegion);
+}
+function selectImported(profile) {
+    inputIndex = 0; scope = profile.inputs[0]?.steps?.length ? "0" : "global"; selectedRegion = null;
+    $("full-grid").checked = profile.inputs.some(movement => regions(movement).some(region => {
+        const r = cellRect(region.cell); return r.x < -4 || r.y < -4 || r.x + r.w > 14 || r.y + r.h > 14;
+    }));
+}
+async function acceptJSON(text, target = "feedback") {
+    const token = ++operation;
+    setBusy(true);
+    if (target === "feedback") feedback("validating"); else $("json-error").hidden = true;
+    try {
+        const profile = parseProfile(text);
+        await validateProfile(text);
+        if (token !== operation) return false;
+        changed(profile);
+        selectImported(profile); render(); feedback("imported");
+        if (target === "feedback") setView("moves");
+        return true;
+    } catch (error) {
+        if (token !== operation) return false;
+        const { key, detail } = errorDetails(error);
+        if (target === "feedback") feedback(key, true, detail);
+        else { $("json-error").textContent = `${t(key)} ${detail.slice(0, 500)}`; $("json-error").hidden = false; $("json-error").dataset.error = "true"; }
+        return false;
+    } finally { if (token === operation) setBusy(false); }
+}
+function onAction(event) {
+    journal.add("action", `${event.action} · ${event.id}`);
+    const flash = $("action-flash");
+    for (const animation of flash.getAnimations()) animation.cancel();
+    clearTimeout(flash.hideTimer);
+    flash.textContent = event.action; flash.hidden = false;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) flash.hideTimer = setTimeout(() => { flash.hidden = true; }, 2400);
+    else flash.animate([{ opacity: 0 }, { opacity: 1, offset: .1 }, { opacity: 1, offset: .85 }, { opacity: 0 }], { duration: 2400, easing: "ease-out" }).finished
+        .then(() => { flash.hidden = true; }).catch(() => {});
+}
+function onFrame(current) {
+    if (current !== session || !current.state.running) return;
+    const now = performance.now(), video = current.video;
+    if (!video?.videoWidth || !video.videoHeight) return;
+    const state = geometry.observe(current.coordinate(11), current.coordinate(12), video.videoWidth / video.videoHeight, now);
+    if (state !== trackingState) {
+        trackingState = state; cameraMessage(state); journal.add("info", t(state));
+    }
+    if (now - lastPaint >= 50) {
+        lastPaint = now;
+        $("test-stage").style.aspectRatio = String(video.videoWidth / video.videoHeight);
+        $("test-stage").style.setProperty("--preview-ratio", video.videoWidth / video.videoHeight);
+        repaintPreview();
+    }
+    if (journal.level === "debug" && now - lastDebug >= 500) {
+        lastDebug = now;
+        const tracked = new Set(regions(input()).map(region => region.landmark));
+        const values = [...tracked].map(name => {
+            const point = trackedPoint(current, name);
+            return point ? `${name}: x=${point.x.toFixed(3)} y=${point.y.toFixed(3)} confidence=${(point.confidence ?? 0).toFixed(2)}` : `${name}: —`;
+        });
+        journal.add("debug", values.slice(0, 12).join(" | ") || state);
+    }
+}
+async function startTest() {
+    if (busy || session?.state.running) return;
+    if (!history.value.inputs.length) { feedback("noInputs", true); return; }
+    const token = ++operation;
+    setBusy(true); cameraMessage("loading"); feedback(null);
+    let candidate;
+    try {
+        const json = JSON.stringify(history.value);
+        if (history.value.inputs.some(movement => !regions(movement).length && !(movement.fingers?.length))) throw new Error("emptyPath");
+        await validateProfile(json);
+        if (token !== operation) return;
+        candidate = await createStudioSession(onAction, onFrame, () => view === "test");
+        if (token !== operation) { candidate.dispose(); return; }
+        session = candidate;
+        geometry.reset(); lastPaint = lastDebug = -Infinity; trackingState = null;
+        await candidate.importJSON(json);
+        if (token !== operation) return;
+        let previousRunning, previousBusy;
+        candidate.subscribe(state => {
+            if (candidate !== session) return;
+            if (state.running !== previousRunning || state.busy !== previousBusy) render();
+            previousRunning = state.running; previousBusy = state.busy;
+            if (!state.running && !state.busy && !busy) cameraMessage(state.status === "Camera stopped." ? "stopped" : cameraError(state.status), state.status !== "Camera stopped.");
+        });
+        await candidate.start($("camera-video"), $("camera-overlay"));
+        if (token !== operation) return;
+        if (!candidate.state.running) throw new Error(candidate.state.status);
+        cameraMessage("running"); journal.add("info", t("running"));
+        for (const track of candidate.stream?.getTracks() ?? []) track.addEventListener("ended", () => {
+            if (candidate !== session) return;
+            stopTest(); cameraMessage("unavailable", true); journal.add("error", t("unavailable"));
+        }, { once: true });
+    } catch (error) {
+        if (token !== operation) return;
+        candidate?.dispose(); if (session === candidate) session = null;
+        const configFailure = !candidate;
+        const { key, detail } = configFailure ? errorDetails(error) : { key: cameraError(error.message), detail: "" };
+        const resolved = key === "error" ? "cameraError" : key;
+        cameraMessage(resolved, true); feedback(resolved, true, detail); journal.add("error", `${t(resolved)} ${detail}`);
+    } finally { if (token === operation) setBusy(false); }
+}
+
+$("input-select").addEventListener("change", () => { brush.cancel(); inputIndex = Number($("input-select").value); scope = "0"; selectedRegion = null; render(); repaintPreview(); });
+$("scope").addEventListener("change", () => { scope = $("scope").value; selectedRegion = null; render(); });
+$("full-grid").addEventListener("change", () => render());
+for (const button of document.querySelectorAll("[data-tool]")) button.addEventListener("click", () => { noteMode = null; tool = button.dataset.tool; render(); });
+for (const button of document.querySelectorAll("[data-language]")) button.addEventListener("click", () => { language = button.dataset.language; renderLanguage(); });
+$("add-input").addEventListener("click", () => {
+    if (history.value.inputs.length >= 64) { feedback("invalid", true, "inputs: maximum 64"); return; }
+    const profile = clone(history.value), movement = newInput(profile.inputs.length + 1);
+    movement.name = `${t("movement")} ${profile.inputs.length + 1}`;
+    profile.inputs.push(movement);
+    inputIndex = profile.inputs.length - 1; scope = "0"; selectedRegion = null; changed(profile);
+    tool = "required"; noteMode = null; setView("edit");
+    $("input-name").focus(); $("input-name").select();
+});
+$("delete-input").addEventListener("click", () => { const profile = clone(history.value); profile.inputs.splice(inputIndex, 1); selectedRegion = null; changed(profile); if (!input()) setView("moves"); });
+$("add-step").addEventListener("click", () => edit(movement => {
+    const steps = movement.steps ??= [];
+    steps.push({ id: id("step"), mode: "ordered", constraints: [] }); scope = String(steps.length - 1); selectedRegion = null;
+}));
+for (const [name, property] of [["input-name", "name"], ["input-action", "action"]]) $(name).addEventListener("change", () => {
+    const value = $(name).value.trim(); edit(movement => { if (!value) throw new Error("emptyField"); movement[property] = value; });
+});
+$("input-space").addEventListener("change", () => edit(movement => { movement.space = $("input-space").value; }));
+for (const [name, property] of [["input-cooldown", "cooldown_ms"], ["input-duration", "max_duration_ms"]]) $(name).addEventListener("change", () => {
+    if (!$(name).checkValidity() || $(name).value === "") { render(); return; }
+    const value = Number($(name).value); edit(movement => { movement[property] = value; });
+});
+$("step-mode").addEventListener("change", () => {
+    const mode = $("step-mode").value;
+    edit(movement => {
+        const step = movement.steps[Number(scope)]; step.mode = mode;
+        const lanes = new Map();
+        for (const region of step.constraints) {
+            if (mode !== "ordered" || region.type === "forbidden" || region.priority === "low") { region.order = 0; continue; }
+            const order = (lanes.get(region.landmark) ?? 0) + 1; lanes.set(region.landmark, order); region.order = order;
+        }
+    });
+});
+$("track-hands").addEventListener("change", () => edit((movement, profile) => { profile.tracking = { ...profile.tracking, hands: $("track-hands").checked }; }));
+for (const property of ["x", "y", "w", "h"]) $(`region-${property}`).addEventListener("change", () => {
+    const values = ["x", "y", "w", "h"].map(p => Number($(`region-${p}`).value));
+    edit(movement => {
+        const [x, y, w, h] = values;
+        if (values.some(v => !Number.isInteger(v)) || x < -9 || y < -9 || w < 1 || h < 1 || x + w > 18 || y + h > 18) throw new Error("bounds");
+        regions(movement).find(region => region.id === selectedRegion).cell = values;
+    });
+});
+$("region-landmark").addEventListener("change", () => { const value = $("region-landmark").value; edit(movement => { regions(movement).find(region => region.id === selectedRegion).landmark = value; }); });
+$("region-order").addEventListener("change", () => {
+    if (!$("region-order").checkValidity() || $("region-order").value === "") { render(); return; }
+    const value = Number($("region-order").value); edit(movement => { regions(movement).find(region => region.id === selectedRegion).order = value; });
+});
+for (const [name, property] of [["region-sign", "gesture"], ["region-hand", "hand"], ["region-hold", "hold_ms"]]) $(name).addEventListener("change", () => {
+    if (!$(name).checkValidity() || $(name).value === "") { render(); return; }
+    const value = property === "hold_ms" ? Number($(name).value) : $(name).value;
+    edit(movement => { regions(movement).find(region => region.id === selectedRegion).interaction[property] = value; });
+});
+$("delete-region").addEventListener("click", () => edit(movement => { removeRegions(movement, new Set([selectedRegion])); selectedRegion = null; }));
+for (const direction of ["undo", "redo"]) $(direction).addEventListener("click", () => {
+    if (history[direction]()) { if (session) stopTest("changed"); selectedRegion = null; save(); render(); feedback(null); }
+});
+$("new-profile").addEventListener("click", () => {
+    const movement = newInput(); movement.name = `${t("movement")} 1`;
+    inputIndex = 0; scope = "0"; selectedRegion = null; tool = "required"; noteMode = null;
+    changed({ schema_version: 2, tracking: { hands: false }, inputs: [movement] });
+    feedback(null); setView("edit"); $("input-name").focus(); $("input-name").select();
+});
+$("import-profile").addEventListener("click", () => $("import-file").click());
+$("import-file").addEventListener("change", async () => {
+    const file = $("import-file").files[0];
+    $("import-file").value = "";
+    if (!file) return;
+    if (file.size > MAX_BYTES) { feedback("size", true); return; }
+    try { await acceptJSON(await file.text()); } catch (error) { feedback("invalid", true, error.message); }
+});
+$("export-profile").addEventListener("click", async () => {
+    const token = ++operation; setBusy(true);
+    try {
+        const json = JSON.stringify(history.value, null, 2);
+        await validateProfile(json);
+        if (token !== operation) return;
+        const url = URL.createObjectURL(new Blob([json + "\n"], { type: "application/json" }));
+        const link = document.createElement("a"); link.href = url; link.download = "mig-profile.json"; link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000); feedback("exported");
+    } catch (error) { if (token === operation) { const { key, detail } = errorDetails(error); feedback(key, true, detail); } }
+    finally { if (token === operation) setBusy(false); }
+});
+$("open-json").addEventListener("click", () => { $("json-source").value = JSON.stringify(history.value, null, 2); $("json-error").hidden = true; $("json-dialog").showModal(); $("json-source").focus(); });
+for (const name of ["close-json", "cancel-json"]) $(name).addEventListener("click", () => { if (!busy) $("json-dialog").close(); });
+$("json-dialog").addEventListener("cancel", event => { if (busy) event.preventDefault(); });
+$("apply-json").addEventListener("click", async () => { if (await acceptJSON($("json-source").value, "json-error")) $("json-dialog").close(); });
+$("start-test").addEventListener("click", startTest);
+$("quick-test").addEventListener("click", () => {
+    const profile = starter(); if (language === "en") profile.inputs[0].name = "Raise the left hand";
+    inputIndex = 0; scope = "0"; selectedRegion = null; tool = "select"; noteMode = null;
+    changed(profile); $("full-grid").checked = false; feedback(null); setView("test");
+});
+$("stop-test").addEventListener("click", () => stopTest());
+$("recalibrate").addEventListener("click", () => { brush.cancel(); session?.recalibrate(); geometry.reset(); trackingState = null; cameraMessage("recalibrating"); journal.add("info", t("recalibrating")); });
+$("mirror-preview").addEventListener("change", () => { brush.cancel(); $("test-stage").dataset.mirror = String($("mirror-preview").checked); });
+$("log-level").addEventListener("change", () => { journal.level = $("log-level").value; journal.render(); });
+$("clear-logs").addEventListener("click", () => journal.clear());
+$("header-stop").addEventListener("click", () => stopTest());
+$("back-menu").addEventListener("click", () => { if (session || busy) stopTest(); feedback(null); setView("home"); });
+$("resume-profile").addEventListener("click", () => { feedback(null); setView("moves"); });
+$("edit-test").addEventListener("click", () => setView("test"));
+$("test-edit").addEventListener("click", () => setView("edit"));
+for (const button of document.querySelectorAll(".view-tabs [data-view]")) button.addEventListener("click", () => setView(button.dataset.view));
+for (const button of document.querySelectorAll("[data-detail]")) button.addEventListener("click", () => setDetail(button.dataset.detail));
+for (const name of ["close-region", "done-region"]) $(name).addEventListener("click", () => $("region-dialog").close());
+$("clear-fingers").addEventListener("click", () => edit(movement => {
+    const region = regions(movement).find(region => region.id === selectedRegion);
+    const retained = (region.fingers ?? []).filter(rule => rule.hand !== $("finger-hand").value);
+    if (retained.length) region.fingers = retained; else delete region.fingers;
+}));
+for (const prefix of ["editor", "test"]) {
+    for (const [name, mode] of [["toggle", "draw"], ["erase", "erase"]]) $(`${prefix}-note-${name}`).addEventListener("click", () => {
+        brush.cancel(); noteMode = noteMode === mode ? null : mode; render();
+        $("note-feedback").textContent = t(noteMode ? "notesReady" : "notesHint");
+    });
+    $(`clear-${prefix}-notes`).addEventListener("click", () => {
+        brush.cancel(); notes.clear(input()?.id); saveNotes(); renderNotes(); repaintPreview();
+        $("note-feedback").textContent = t("notesCleared");
+    });
+}
+function tabKeys(group, selector, activate) {
+    group.addEventListener("keydown", event => {
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+        const buttons = [...group.querySelectorAll(selector)].filter(button => !button.disabled);
+        const index = buttons.indexOf(document.activeElement);
+        if (index < 0) return;
+        event.preventDefault();
+        const next = event.key === "Home" ? 0 : event.key === "End" ? buttons.length - 1
+            : (index + (event.key === "ArrowRight" ? 1 : -1) + buttons.length) % buttons.length;
+        activate(buttons[next]); buttons[next].focus();
+    });
+}
+tabKeys(document.querySelector(".view-tabs"), "button", button => setView(button.dataset.view, false));
+tabKeys(document.querySelector(".detail-tabs"), "button", button => setDetail(button.dataset.detail));
+window.addEventListener("pagehide", () => { stopTest(); disposeValidator(); });
+
+renderLanguage();
+try { notes.load(localStorage.getItem(notesKey)); } catch { /* Invalid notes never block a profile. */ }
+// Restore only after the same native validation used by file imports.
+try {
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+        setBusy(true);
+        try {
+            const profile = parseProfile(saved); await validateProfile(saved);
+            history = new ProfileHistory(profile); selectImported(profile); hasDraft = true;
+        } catch (error) { const { key, detail } = errorDetails(error); feedback(key, true, detail); }
+        finally { setBusy(false); }
+    }
+} catch { storageAvailable = false; }
+setView("home", false);

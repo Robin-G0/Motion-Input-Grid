@@ -1,8 +1,9 @@
 // Follow the system until the visitor chooses a palette; remember that choice.
 export class ThemeToggle {
-    constructor(button, text) {
+    constructor(button, text, { iconBase = "./" } = {}) {
         this.button = button;
         this.text = text;
+        this.iconBase = iconBase;
         this.system = matchMedia("(prefers-color-scheme: dark)");
         this.choice = null;
         try {
@@ -28,7 +29,7 @@ export class ThemeToggle {
         this.button.setAttribute("aria-label", this.text()[this.dark ? "lightTheme" : "darkTheme"]);
         this.button.title = this.button.getAttribute("aria-label");
         this.button.setAttribute("aria-pressed", String(this.dark));
-        const icon = this.dark ? "./favicon-dark.svg" : "./favicon.svg";
+        const icon = `${this.iconBase}${this.dark ? "favicon-dark.svg" : "favicon.svg"}`;
         for (const node of document.querySelectorAll('link[rel="icon"], img.brand-mark')) {
             const attribute = node.tagName === "LINK" ? "href" : "src";
             if (node.getAttribute(attribute) !== icon) node.setAttribute(attribute, icon);

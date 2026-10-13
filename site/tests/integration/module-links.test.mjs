@@ -18,7 +18,7 @@ function verifyReference(reference, parent) {
 }
 
 test("built site imports and module-relative asset URLs resolve after module moves", () => {
-    for (const url of modules(new URL("src/", output))) {
+    for (const url of [...modules(new URL("src/", output)), ...modules(new URL("studio/src/", output))]) {
         const source = readFileSync(url, "utf8");
         const imports = /(?:from\s+|import\s*\(\s*|import\s+)["'](\.{1,2}\/[^"']+)["']/g;
         const assets = /new URL\(["'](\.{1,2}\/[^"']+)["'],\s*import\.meta\.url\)/g;
@@ -29,9 +29,11 @@ test("built site imports and module-relative asset URLs resolve after module mov
 });
 
 test("built homepage local links and scripts point to existing files", () => {
-    const index = new URL("index.html", output);
-    const html = readFileSync(index, "utf8");
-    for (const match of html.matchAll(/(?:href|src)=["'](\.\.?\/[^"']+)["']/g)) {
-        verifyReference(match[1], index);
+    for (const path of ["index.html", "studio/index.html"]) {
+        const index = new URL(path, output);
+        const html = readFileSync(index, "utf8");
+        for (const match of html.matchAll(/(?:href|src)=["'](\.\.?\/[^"']+)["']/g)) {
+            verifyReference(match[1], index);
+        }
     }
 });

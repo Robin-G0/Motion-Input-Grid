@@ -7,7 +7,7 @@ const destination = resolve(root, "dist");
 if (destination !== join(root, "dist")) throw new Error("Unexpected output directory");
 await rm(destination, { recursive: true, force: true });
 await mkdir(destination, { recursive: true });
-for (const name of ["index.html", "styles.css", "favicon.svg", "favicon-dark.svg", "src"]) {
+for (const name of ["index.html", "styles.css", "favicon.svg", "favicon-dark.svg", "src", "studio"]) {
     await cp(join(root, name), join(destination, name), { recursive: true });
 }
 // Copy the pinned published package, never compile the repository's C++ sources.

@@ -1,0 +1,329 @@
+import { test, expect } from "@playwright/test";
+
+async function openStudio(page, screen = "edit") {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("./studio/");
+    await page.getByRole("button", { name: "FR", exact: true }).click();
+    await expect(page.locator("#start-menu")).toBeVisible();
+    await expect(page.locator("#workspace")).toBeHidden();
+    if (screen === "home") return;
+    await page.locator("#quick-test").click();
+    if (screen === "edit") await page.locator("#test-edit").click();
+    await expect(page.locator("#editor-grid button")).toHaveCount(324);
+}
+async function fakeObservations(page, failure = "") {
+    await page.addInitScript(failure => {
+        window.cameraFailure = failure;
+        window.studioWristY = .61;
+        const canvas = document.createElement("canvas"); canvas.width = 960; canvas.height = 720;
+        const context = canvas.getContext("2d");
+        window.studioVideoTimer = setInterval(() => { context.fillStyle = "#17232a"; context.fillRect(0, 0, 960, 720); }, 40);
+        navigator.mediaDevices.getUserMedia = async () => {
+            if (window.cameraFailure) throw new Error(window.cameraFailure);
+            window.studioStream = canvas.captureStream(25); return window.studioStream;
+        };
+    }, failure);
+    // Keep the real published MIGSession and WASM engine, replace only inference.
+    await page.route("**/mig/models.mjs", route => route.fulfill({ contentType: "text/javascript", body: `
+        export async function loadModels() {
+            return { pose: { close() {}, setOptions() {}, detectForVideo() {
+                window.studioInferenceCount = (window.studioInferenceCount || 0) + 1;
+                const points = Array.from({length:33}, () => ({x:.5,y:.45,z:0,visibility:0}));
+                points[11] = {x:.65,y:.45,z:0,visibility:1};
+                points[12] = {x:.35,y:.45,z:0,visibility:1};
+                points[15] = {x:.5,y:window.studioWristY,z:0,visibility:1};
+                return {landmarks:[points], worldLandmarks:[]};
+            } }, hands: { close() {}, detectForVideo() { return {landmarks:[],handedness:[],worldLandmarks:[]}; } } };
+        }
+    ` }));
+}
+
+test("Studio draws with pointer and keyboard, supports undo, restores drafts and exports real MIG JSON", async ({ page }) => {
+    const errors = []; page.on("pageerror", error => errors.push(error.message));
+    await openStudio(page);
+    await page.locator("#back-menu").click();
+    await page.locator("#new-profile").click();
+    await expect(page.locator(".grid-region")).toHaveCount(0);
+    await page.locator("#input-name").fill("Mon parcours"); await page.locator("#input-name").press("Tab");
+    const first = page.locator('#editor-grid button[data-x="2"][data-y="4"]');
+    const second = page.locator('#editor-grid button[data-x="3"][data-y="4"]');
+    await first.scrollIntoViewIfNeeded();
+    const a = await first.boundingBox(), b = await second.boundingBox();
+    await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2); await page.mouse.down();
+    await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.up();
+    await expect(page.locator(".grid-region.required")).toHaveCount(1);
+    await expect(page.locator("#region-count")).toHaveText("1");
+    await page.locator('[data-tool="trigger"]').click();
+    const trigger = page.locator('#editor-grid button[data-x="2"][data-y="2"]');
+    await trigger.focus(); await trigger.press("Enter");
+    await expect(page.locator(".grid-region.trigger")).toHaveCount(1);
+    await page.locator("#undo").click(); await expect(page.locator(".grid-region.trigger")).toHaveCount(0);
+    await page.locator("#redo").click(); await expect(page.locator(".grid-region.trigger")).toHaveCount(1);
+    const downloading = page.waitForEvent("download");
+    await page.locator("#export-profile").click(); const download = await downloading;
+    expect(download.suggestedFilename()).toBe("mig-profile.json");
+    await expect(page.locator("#feedback")).toContainText("validée et exportée");
+    await page.reload(); await expect(page.locator("#resume-profile")).toBeVisible();
+    await page.locator("#resume-profile").click(); await page.locator(".movement-card button").first().click();
+    await expect(page.locator("#input-name")).toHaveValue("Mon parcours");
+    await expect(page.locator(".grid-region")).toHaveCount(2);
+    expect(errors).toEqual([]);
+});
+
+test("invalid imports and JSON edits preserve the current profile; advanced imports keep all options", async ({ page }) => {
+    await openStudio(page);
+    const original = await page.locator("#input-name").inputValue();
+    for (const data of ["{", '{"schema_version":1,"inputs":[]}', '{"schema_version":2,"inputs":[],"unknown":true}']) {
+        await page.locator("#import-file").setInputFiles({ name: "profile.json", mimeType: "application/json", buffer: Buffer.from(data) });
+        await expect(page.locator("#feedback")).toHaveAttribute("data-error", "true");
+        await expect(page.locator("#input-name")).toHaveValue(original);
+    }
+    const advanced = { schema_version: 2, tracking: { hands: false }, inputs: [{ id: "custom", name: "Profil avancé", action: "custom_action", space: "calibrated", keyboard: [{ text: "Text preserved" }], steps: [{ id: "s", mode: "ordered", constraints: [
+        { id: "start", landmark: "right_wrist", cell: [-5, 4, 3, 1], type: "required", priority: "high", order: 1 },
+        { id: "finish", landmark: "right_wrist", cell: [-5, 2, 3, 1], type: "trigger", priority: "high", order: 2 }
+    ] }] }] };
+    await page.locator("#import-file").setInputFiles({ name: "advanced.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(advanced)) });
+    await expect(page.locator("#input-name")).toHaveValue("Profil avancé");
+    await expect(page.locator("#full-grid")).toBeChecked();
+    await expect(page.locator("#editor-grid button")).toHaveCount(729);
+    await page.locator(".movement-card button").first().click();
+    await page.locator("#input-name").fill("Renamed"); await page.locator("#input-name").press("Tab");
+    await page.locator("#open-json").click();
+    let edited = JSON.parse(await page.locator("#json-source").inputValue());
+    expect(edited.inputs[0].keyboard).toEqual(advanced.inputs[0].keyboard);
+    await page.locator("#json-source").fill('{"schema_version":2,"inputs":[],"unknown":true}');
+    await page.locator("#apply-json").click(); await expect(page.locator("#json-error")).toBeVisible();
+    await expect(page.locator("#json-dialog")).toBeVisible();
+    await page.locator("#cancel-json").click(); await expect(page.locator("#input-name")).toHaveValue("Renamed");
+    await page.locator("#undo").click(); await expect(page.locator("#input-name")).toHaveValue("Profil avancé");
+    await page.locator("#undo").click(); await expect(page.locator("#input-name")).toHaveValue(original);
+});
+
+test("the live Studio uses native recognition, filters logs, stops capture on edits and releases the camera", async ({ page }) => {
+    await fakeObservations(page);
+    await openStudio(page, "test");
+    await page.locator("#start-test").click();
+    await expect(page.locator("#live-badge")).toHaveAttribute("data-live", "true");
+    await expect(page.locator("#camera-message")).toContainText("Suivi actif", { timeout: 15000 });
+    await page.evaluate(() => { window.studioWristY = .45; });
+    // Allow the selected pose to reach the actual session before the next one.
+    await expect.poll(() => page.locator("#camera-overlay").evaluate(canvas => canvas.width)).toBe(960);
+    await page.waitForTimeout(150);
+    await page.evaluate(() => { window.studioWristY = .29; });
+    await expect(page.locator('#log-list [data-level="action"]')).toContainText("hand_raised");
+    await expect(page.locator("#action-count")).toHaveText("1 Action émise");
+    await expect(page.locator("#log-list li")).toHaveCount(1);
+    await page.locator("#log-level").selectOption("info");
+    await expect(page.locator('#log-list [data-level="info"]')).not.toHaveCount(0);
+    await page.locator("#log-level").selectOption("debug");
+    await expect(page.locator('#log-list [data-level="debug"]').first()).toContainText("left_wrist");
+    await page.locator("#log-level").selectOption("actions");
+    await expect(page.locator("#log-list li")).toHaveCount(1);
+    await page.locator("#test-edit").click();
+    await page.locator("#input-name").fill("Edited live"); await page.locator("#input-name").press("Tab");
+    await expect(page.locator("#live-badge")).toHaveAttribute("data-live", "false");
+    expect(await page.evaluate(() => window.studioStream.getTracks().every(track => track.readyState === "ended"))).toBe(true);
+    await expect(page.locator("#camera-message")).toContainText("Relancez le test");
+    await page.locator("#tab-test").click();
+    await page.locator("#clear-logs").click(); await expect(page.locator("#log-empty")).toBeVisible();
+    await page.locator("#start-test").click(); await expect(page.locator("#live-badge")).toHaveAttribute("data-live", "true");
+    await page.locator("#stop-test").click();
+    expect(await page.evaluate(() => window.studioStream.getTracks().every(track => track.readyState === "ended"))).toBe(true);
+});
+
+test("the welcome menu and screen tabs reveal only the current task without requesting a camera", async ({ page }) => {
+    await fakeObservations(page);
+    await openStudio(page, "home");
+    for (const id of ["import-profile", "new-profile", "quick-test"]) await expect(page.locator(`#${id}`)).toBeVisible();
+    expect(await page.evaluate(() => !!window.studioStream)).toBe(false);
+    await page.locator("#quick-test").click();
+    await expect(page.locator("#test-panel")).toBeVisible();
+    await expect(page.locator("#editor-panel")).toBeHidden();
+    expect(await page.evaluate(() => !!window.studioStream)).toBe(false);
+    await page.locator("#tab-test").focus(); await page.keyboard.press("Home");
+    await expect(page.locator("#tab-moves")).toBeFocused();
+    await expect(page.locator("#moves-panel")).toBeVisible();
+    await expect(page.locator("#test-panel")).toBeHidden();
+    await page.keyboard.press("ArrowRight");
+    await expect(page.locator("#editor-panel")).toBeVisible();
+    await expect(page.locator("#moves-panel")).toBeHidden();
+    await page.locator("#back-menu").click();
+    await expect(page.locator("#resume-profile")).toBeVisible();
+});
+
+test("zone details focus finger conditions and retain both hands and timing in valid exported JSON", async ({ page }) => {
+    await openStudio(page);
+    await page.locator("#region-list button").first().click();
+    await expect(page.locator("#region-dialog")).toBeVisible();
+    await expect(page.locator("#detail-position-tab")).toBeFocused();
+    await page.locator("#region-w").fill("27");
+    await page.locator("#region-x").fill("17"); await page.locator("#region-x").press("Tab");
+    await expect(page.locator("#region-error")).toContainText("doit rester dans la grille");
+    await expect(page.locator("#region-x")).toHaveValue("-9");
+    await page.locator("#detail-fingers-tab").click();
+    await expect(page.locator("#detail-position")).toBeHidden();
+    const thumb = page.locator('select[data-finger="thumb"]');
+    await thumb.selectOption("extended");
+    await expect(page.locator("#region-error")).toBeHidden();
+    await page.locator(".finger-row").first().locator("summary").click();
+    const stable = page.locator('input[data-finger="thumb"][data-timing="stable_ms"]');
+    await stable.fill("200"); await stable.press("Tab");
+    await page.locator("#finger-hand").selectOption("right");
+    await thumb.selectOption("closed");
+    await page.locator("#finger-hand").selectOption("left");
+    await expect(thumb).toHaveValue("extended");
+    await expect(stable).toHaveValue("200");
+    await page.locator("#done-region").click();
+    await expect(page.locator("#region-dialog")).toBeHidden();
+    await expect(page.locator("#track-hands")).toBeChecked();
+    await page.locator("#open-json").click();
+    const profile = JSON.parse(await page.locator("#json-source").inputValue());
+    expect(profile.inputs[0].steps[0].constraints[0].fingers).toEqual(expect.arrayContaining([
+        expect.objectContaining({hand:"left", finger:"thumb", pose:"extended", stable_ms:200}),
+        expect.objectContaining({hand:"right", finger:"thumb", pose:"closed"})
+    ]));
+    await page.locator("#cancel-json").click();
+    const downloading = page.waitForEvent("download");
+    await page.locator("#export-profile").click(); await downloading;
+    await expect(page.locator("#feedback")).toContainText("validée et exportée");
+});
+
+test("live grid notes survive editing and reload without changing the profile and can be erased", async ({ page }) => {
+    await fakeObservations(page);
+    await openStudio(page, "test");
+    const original = await page.evaluate(() => localStorage.getItem("mig-studio-profile-v2"));
+    await page.locator("#start-test").click();
+    await expect(page.locator("#camera-message")).toContainText("Suivi actif", {timeout:15000});
+    await page.locator("#test-note-toggle").click();
+    const bounds = await page.locator("#camera-overlay").boundingBox();
+    // The mirrored body grid is anchored on the shoulders: [4,4] to [6,4].
+    await page.mouse.move(bounds.x + bounds.width * .5, bounds.y + bounds.height * .53);
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + bounds.width * .38, bounds.y + bounds.height * .53, {steps:6});
+    await page.mouse.up();
+    await expect(page.locator("#test-note-count")).toContainText("3");
+    await page.locator("#test-edit").click();
+    await expect(page.locator("#grid-notes .grid-note")).toHaveCount(3);
+    await expect(page.locator('#editor-grid button[data-x="4"][data-y="4"]')).toHaveAttribute("aria-label", /Case annotée/);
+    await expect(page.locator("#header-stop")).toBeVisible();
+    await page.waitForTimeout(150);
+    const pausedCount = await page.evaluate(() => window.studioInferenceCount);
+    await page.waitForTimeout(180);
+    expect(await page.evaluate(() => window.studioInferenceCount)).toBe(pausedCount);
+    expect(await page.evaluate(() => localStorage.getItem("mig-studio-profile-v2"))).toBe(original);
+    await page.locator("#editor-note-erase").click();
+    await page.locator('#editor-grid button[data-x="4"][data-y="4"]').click();
+    await expect(page.locator("#grid-notes .grid-note")).toHaveCount(2);
+    await page.locator("#back-menu").click();
+    expect(await page.evaluate(() => window.studioStream.getTracks().every(track => track.readyState === "ended"))).toBe(true);
+    await page.reload(); await page.locator("#resume-profile").click();
+    await page.locator(".movement-card button").first().click();
+    await expect(page.locator("#grid-notes .grid-note")).toHaveCount(2);
+    await page.locator("#clear-editor-notes").click();
+    await expect(page.locator("#grid-notes .grid-note")).toHaveCount(0);
+    expect(await page.evaluate(() => localStorage.getItem("mig-studio-profile-v2"))).toBe(original);
+});
+
+test("camera refusal offers recovery and leaves editing available", async ({ page }) => {
+    await fakeObservations(page, "Permission denied");
+    await openStudio(page, "test");
+    await page.locator("#start-test").click();
+    await expect(page.locator("#camera-message")).toContainText("Autorisez-le");
+    await expect(page.locator("#start-test")).toBeEnabled();
+    await expect(page.locator("#input-name")).toBeEnabled();
+    await page.evaluate(() => { window.cameraFailure = ""; });
+    await page.locator("#start-test").click(); await expect(page.locator("#live-badge")).toHaveAttribute("data-live", "true");
+    await page.locator("#stop-test").click();
+});
+
+test("a cancelled model load cannot reopen the camera or lock the editor", async ({ page }) => {
+    await fakeObservations(page);
+    let release;
+    const pending = new Promise(resolve => { release = resolve; });
+    await page.route("**/mig/models.mjs", async route => { await pending; await route.fallback(); });
+    await openStudio(page, "test");
+    await page.locator("#start-test").click();
+    await expect(page.locator("#stop-test")).toBeVisible();
+    await page.locator("#stop-test").click();
+    release();
+    await expect(page.locator("#start-test")).toBeEnabled();
+    await expect(page.locator("#input-name")).toBeEnabled();
+    await expect(page.locator("#live-badge")).toHaveAttribute("data-live", "false");
+    await page.locator("#start-test").click();
+    await expect(page.locator("#live-badge")).toHaveAttribute("data-live", "true");
+    await page.locator("#stop-test").click();
+    expect(await page.evaluate(() => window.studioStream.getTracks().every(track => track.readyState === "ended"))).toBe(true);
+});
+
+for (const [width, height] of [[1920, 1080], [1080, 1920]]) {
+    test(`Studio loads real models and preserves ${width}x${height} camera framing`, async ({ page }) => {
+        const errors = []; page.on("pageerror", error => errors.push(error.message));
+        await page.addInitScript(({ width, height }) => {
+            const canvas = document.createElement("canvas"); canvas.width = width; canvas.height = height;
+            const context = canvas.getContext("2d");
+            window.studioVideoTimer = setInterval(() => context.fillRect(0, 0, width, height), 100);
+            navigator.mediaDevices.getUserMedia = async () => {
+                window.studioStream = canvas.captureStream(10); return window.studioStream;
+            };
+        }, { width, height });
+        await openStudio(page, "test");
+        await page.locator("#start-test").click();
+        await expect(page.locator("#live-badge")).toHaveAttribute("data-live", "true", { timeout: 30000 });
+        await expect.poll(() => page.locator("#camera-overlay").evaluate(canvas => canvas.height)).not.toBe(150);
+        const bounds = await page.locator("#test-stage").boundingBox();
+        expect(bounds.width / bounds.height).toBeCloseTo(width / height, 1);
+        const size = await page.locator("#camera-overlay").evaluate(canvas => ({ width: canvas.width, height: canvas.height }));
+        expect(Math.max(size.width, size.height)).toBeLessThanOrEqual(960);
+        expect(size.width / size.height).toBeCloseTo(width / height, 2);
+        await page.locator("#stop-test").click();
+        expect(await page.evaluate(() => window.studioStream.getTracks().every(track => track.readyState === "ended"))).toBe(true);
+        await page.evaluate(() => clearInterval(window.studioVideoTimer));
+        expect(errors).toEqual([]);
+    });
+}
+
+test("the expanded grid preserves square size and keeps drawing and scrolling inside the page", async ({ page }) => {
+    await openStudio(page);
+    for (const viewport of [{width:1440,height:1100}, {width:390,height:844}]) {
+        await page.setViewportSize(viewport);
+        await page.locator("#full-grid").uncheck();
+        const column = await page.locator(".drawing-column").boundingBox();
+        if (viewport.width > 660) {
+            const sidebar = await page.locator(".edit-sidebar").boundingBox();
+            expect(sidebar.x).toBeGreaterThan(column.x + column.width);
+        }
+        const expected = viewport.width <= 660 ? column.width / 9 : Math.min(column.width, Math.max(280, viewport.height - 500)) / 9;
+        const square = await page.locator("#editor-grid button").first().boundingBox();
+        const area = await page.locator(".drawing-area").boundingBox();
+        expect(square.width).toBeCloseTo(expected, 0);
+        expect(square.height).toBeCloseTo(expected, 0);
+        expect(area.width).toBeCloseTo(square.width * 18, 0);
+        expect(area.height).toBeCloseTo(square.height * 18, 0);
+        await page.locator("#full-grid").check();
+        const fullSquare = await page.locator("#editor-grid button").first().boundingBox();
+        expect(fullSquare.width).toBeCloseTo(square.width, 0);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    }
+});
+
+test("Studio fits phone and desktop screens, changes language and shares theme and icon", async ({ page }) => {
+    await openStudio(page);
+    for (const theme of ["light", "dark"]) {
+        await page.evaluate(theme => localStorage.setItem("mig-theme", theme), theme);
+        await page.reload(); await expect(page.locator("#input-name")).toBeEnabled();
+        await page.locator("#resume-profile").click(); await page.locator(".movement-card button").first().click();
+        await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+        await expect(page.locator(".brand-mark")).toHaveAttribute("src", `../favicon${theme === "dark" ? "-dark" : ""}.svg`);
+        for (const viewport of [{ width: 360, height: 800 }, { width: 768, height: 1024 }, { width: 1440, height: 1000 }]) {
+            await page.setViewportSize(viewport);
+            expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+            await page.locator("#full-grid").check();
+            expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+            await page.locator("#full-grid").uncheck();
+        }
+    }
+    await page.getByRole("button", { name: "EN", exact: true }).click();
+    await expect(page.locator("#studio-title")).toHaveText("MIG Studio");
+    await page.locator("#open-json").click(); await page.keyboard.press("Escape");
+    await expect(page.locator("#open-json")).toBeFocused();
+});
