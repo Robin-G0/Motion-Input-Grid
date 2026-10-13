@@ -326,6 +326,7 @@ export class GridEditor {
             marker.textContent = this.text(side === "left" ? "shoulderLeftShort" : "shoulderRightShort");
             marker.setAttribute("aria-label", `${this.text(`${side}_shoulder`)} [${point.x.toFixed(1)}, ${point.y.toFixed(1)}]`);
             marker.title = marker.getAttribute("aria-label");
+            if (points && !points[side]) marker.title += ` · ${this.text("shoulderReference")}`;
         }
     }
 }

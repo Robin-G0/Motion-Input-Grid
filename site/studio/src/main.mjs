@@ -273,7 +273,7 @@ function render() {
     $("creation-settings").hidden = cameraEditing || !!noteMode || !["required", "trigger", "forbidden", "interaction"].includes(tool);
     $("step-mode-field").hidden = scope === "global";
     $("step-settings-title").textContent = t(scope === "global" ? "globalGuardSettings" : "stepSettings");
-    $("scope-help").textContent = t(scope === "global" ? "globalGuardHint" : "stepSettingsHint");
+    $("scope-help").textContent = t(scope === "global" ? "globalGuardHint" : `${movement?.steps?.[Number(scope)]?.mode ?? "visited"}StepHelp`);
     $("step-mode").disabled = busy || scope === "global";
     $("step-mode").value = scope === "global" ? "simultaneous" : movement?.steps?.[Number(scope)]?.mode ?? "ordered";
     $("tool-help").textContent = t(editorPreview === "camera" ? "cameraEditHelp" : noteMode ? (noteMode === "erase" ? "noteEraseHelp" : "noteHelp") : `${tool}Help`);

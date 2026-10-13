@@ -379,6 +379,12 @@ test("horizontal scrollbar reaches distant cells and both shoulder markers follo
     await page.locator(".grid-viewport").focus();
     for (let i = 0; i < 4; i++) await page.keyboard.press("ArrowRight");
     await expect.poll(() => page.locator(".grid-viewport").evaluate(node => Math.round(node.scrollLeft))).toBeGreaterThan(100);
+    // Wait for the browser's keyboard scroll animation before resetting its position.
+    await expect.poll(async () => {
+        const before = await page.locator(".grid-viewport").evaluate(node => node.scrollLeft);
+        await page.waitForTimeout(100);
+        return await page.locator(".grid-viewport").evaluate(node => node.scrollLeft) === before;
+    }).toBe(true);
     await page.locator(".grid-viewport").evaluate(node => node.scrollTo({left:0,behavior:"instant"}));
     await expect.poll(() => page.locator(".grid-viewport").evaluate(node => node.scrollLeft)).toBe(0);
 });
