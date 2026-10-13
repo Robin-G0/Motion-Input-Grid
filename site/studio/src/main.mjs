@@ -1,9 +1,9 @@
 import { ThemeToggle } from "../../src/ui/theme.mjs";
 import { cameraError } from "../../src/camera/camera.mjs";
 import { copy } from "./copy.mjs";
-import { MAX_BYTES, landmarks, clone, id, newInput, starter, parseProfile, regions, scopedRegions, cellRect, rectangle, addRegion, ProfileHistory } from "./profile.mjs";
+import { MAX_BYTES, landmarks, clone, id, newInput, starter, parseProfile, regions, scopedRegions, cellRect, rectangle, addRegion, pasteRegions, ProfileHistory } from "./profile.mjs";
 import { createStudioSession, validateProfile, disposeValidator, PreviewGrid, trackedPoint } from "./camera.mjs";
-import { GridEditor, drawPreview } from "./grid.mjs";
+import { GridEditor, drawPreview, selectionRect, transformSelection } from "./grid.mjs";
 import { Journal } from "./journal.mjs";
 import { NoteLayer, LiveNoteBrush, previewCell } from "./notes.mjs";
 import { FingerEditor, setFingerRule } from "./fingers.mjs";
@@ -16,7 +16,17 @@ const initialProfile = starter();
 if (language === "en") initialProfile.inputs[0].name = "Raise the left hand";
 let history = new ProfileHistory(initialProfile);
 let inputIndex = 0, scope = "0", selectedRegion = null, tool = "select";
+let selectedRegions = [];
+const selectionIds = () => selectedRegions.length ? selectedRegions : selectedRegion ? [selectedRegion] : [];
 let view = "home", detail = "position", hasDraft = false, noteMode = null;
+let editorPreview = "grid";
+let regionClipboard = null;
+let previewOnly = false;
+const cameraVisible = () => view === "test" || (view === "edit" && editorPreview === "camera");
+const draftHint = document.createElement("p"); draftHint.id = "camera-draft-hint"; draftHint.className = "hint"; draftHint.setAttribute("role", "status"); draftHint.hidden = true; $("camera-message").after(draftHint);
+const cameraParts = [$("test-stage"), $("camera-message"), draftHint, document.querySelector(".test-actions"), $("note-feedback"), document.querySelector(".preview-settings")].map(node => {
+    const marker = document.createComment("camera control home"); node.before(marker); return { node, marker };
+});
 const notes = new NoteLayer();
 const notesKey = "mig-studio-notes-v1";
 let busy = false, session = null, operation = 0, storageAvailable = true;
@@ -26,7 +36,14 @@ const input = () => history.value.inputs[inputIndex];
 const currentRegion = () => regions(input()).find(region => region.id === selectedRegion);
 const theme = new ThemeToggle($("theme-toggle"), () => copy[language], { iconBase: "../" });
 const journal = new Journal($("log-list"), $("log-empty"), $("action-count"), $("journal-announcement"), t);
-const editor = new GridEditor($("editor-grid"), $("grid-regions"), $("drawing-selection"), drawRegion, t);
+const editor = new GridEditor($("editor-grid"), $("grid-regions"), $("drawing-selection"), drawRegion, t, (regionId, rect) => {
+    edit(movement => {
+        if (regionId === "__selection__") {
+            const group = regions(movement).filter(region => selectedRegions.includes(region.id));
+            transformSelection(group, selectionRect(group), rect);
+        } else { const region = regions(movement).find(item => item.id === regionId); if (region) region.cell = [rect.x, rect.y, rect.w, rect.h]; }
+    });
+});
 const fingerEditor = new FingerEditor($("finger-list"), $("finger-hand"), t, (hand, finger, pose, timing) => {
     edit((movement, profile) => {
         const region = regions(movement).find(region => region.id === selectedRegion);
@@ -37,7 +54,7 @@ const fingerEditor = new FingerEditor($("finger-list"), $("finger-hand"), t, (ha
 let feedbackKey = null, feedbackDetail = "", feedbackError = false, cameraMessageKey = "cameraReady", cameraMessageError = false;
 let noteSnapshot = null, noteInputId = null;
 const brush = new LiveNoteBrush($("camera-overlay"), {
-    enabled: () => !!noteMode && view === "test" && !!session?.state.running,
+    enabled: () => !!noteMode && cameraVisible() && !!session?.state.running,
     cellAt: event => previewCell(event, $("camera-overlay"), geometry,
         session.video.videoWidth / session.video.videoHeight, input()?.space ?? "calibrated", $("mirror-preview").checked),
     begin: () => { noteInputId = input()?.id; noteSnapshot = notes.cells(noteInputId); },
@@ -46,15 +63,45 @@ const brush = new LiveNoteBrush($("camera-overlay"), {
     cancel: () => { if (noteSnapshot) notes.restore(noteInputId, noteSnapshot); noteSnapshot = null; renderNotes(); repaintPreview(); },
     unavailable: () => { $("note-feedback").textContent = t("notesUnavailable"); }
 });
+const gridBrush = new LiveNoteBrush($("editor-grid"), {
+    enabled: () => !!noteMode && view === "edit" && editorPreview === "grid" && !busy,
+    cellAt: event => editor.cellAt(event),
+    begin: () => { noteInputId = input()?.id; noteSnapshot = notes.cells(noteInputId); },
+    paint: cells => { notes.paint(noteInputId, cells, noteMode === "erase"); renderNotes(); },
+    finish: () => { noteSnapshot = null; saveNotes(); },
+    cancel: () => { if (noteSnapshot) notes.restore(noteInputId, noteSnapshot); noteSnapshot = null; renderNotes(); },
+    unavailable: () => {}
+});
+function renderShoulders() {
+    if (!session?.state.running) { editor.renderShoulders(); return; }
+    const points = {}, space = input()?.space ?? "calibrated";
+    for (const [side, landmark] of [["left",11],["right",12]]) {
+        const point = session.coordinate(landmark);
+        if (!point || (point.confidence ?? 1) < .6 || !geometry.transform(space)) continue;
+        points[side] = geometry.local(point.x, point.y, session.video.videoWidth / session.video.videoHeight, space);
+    }
+    editor.renderShoulders(points);
+}
+function syncGridScroll() {
+    const viewport = document.querySelector(".grid-viewport"), slider = $("grid-scroll-x");
+    if (!viewport.clientWidth) return;
+    const max = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+    slider.max = String(max); slider.value = String(viewport.scrollLeft); slider.disabled = busy || !max;
+}
+$("grid-scroll-x").addEventListener("input", () => { document.querySelector(".grid-viewport").scrollLeft = Number($("grid-scroll-x").value); });
+document.querySelector(".grid-viewport").addEventListener("scroll", syncGridScroll, {passive:true});
+const gridSizeObserver = new ResizeObserver(syncGridScroll);
+gridSizeObserver.observe(document.querySelector(".grid-viewport")); gridSizeObserver.observe($("editor-grid"));
+$("editor-grid").addEventListener("dblclick", () => { if (tool === "select" && !noteMode && selectedRegion) openRegion(selectedRegion); });
 
 function saveNotes() {
     try { localStorage.setItem(notesKey, notes.serialize()); }
     catch { feedback("storageUnavailable"); }
 }
 function repaintPreview() {
-    if (!session?.state.running || view !== "test") return;
+    if (!session?.state.running || !cameraVisible()) return;
     drawPreview($("camera-overlay"), session, history.value, inputIndex, geometry, {
-        grid: $("show-grid").checked, points: $("show-points").checked, full: $("full-grid").checked, notes: notes.cells(input()?.id)
+        grid: $("show-grid").checked, points: $("show-points").checked, full: $("full-grid").checked, notes: notes.cells(input()?.id), shoulderLabels: {left:t("shoulderLeftShort"),right:t("shoulderRightShort")}
     });
 }
 function renderNotes() {
@@ -83,7 +130,7 @@ function cameraMessage(key, error = false) {
     $("camera-message").textContent = t(key); $("camera-message").dataset.error = String(error);
 }
 function errorDetails(error) {
-    const known = ["size", "json", "schema", "bounds", "oneTrigger", "globalTrigger", "noInputs", "emptyField", "emptyPath"];
+    const known = ["size", "json", "schema", "bounds", "oneTrigger", "globalTrigger", "noInputs", "emptyField", "emptyPath", "copyReference"];
     return known.includes(error.message) ? { key: error.message, detail: "" } : { key: "invalid", detail: error.message };
 }
 function save() {
@@ -108,7 +155,7 @@ function setBusy(value) {
     render();
 }
 function setView(next, focus = true) {
-    brush.cancel(); editor.cancel();
+    brush.cancel(); gridBrush.cancel(); editor.cancel();
     if ((next === "edit" || next === "test") && !input()) next = "moves";
     view = next;
     document.body.dataset.view = view;
@@ -126,6 +173,21 @@ function setView(next, focus = true) {
         $(view === "home" ? "studio-title" : view === "moves" ? "moves-title" : view === "edit" ? "editor-title" : "test-title").focus({ preventScroll: true });
     }
 }
+function renderEditorPreview() {
+    const camera = view === "edit" && editorPreview === "camera";
+    $("editor-camera").hidden = !camera;
+    document.querySelector(".grid-viewport").hidden = camera;
+    document.querySelector(".grid-footnote").hidden = camera;
+    document.querySelector(".grid-scroll-controls").hidden = camera;
+    document.querySelector(".tool-group").hidden = camera;
+    $("editor-grid-view").setAttribute("aria-pressed", String(editorPreview === "grid"));
+    $("editor-camera-view").setAttribute("aria-pressed", String(editorPreview === "camera"));
+    for (const {node, marker} of cameraParts) {
+        if (camera) { if (node.parentElement !== $("editor-camera")) $("editor-camera").append(node); }
+        else if (node.parentNode !== marker.parentNode) marker.after(node);
+    }
+    repaintPreview();
+}
 function setDetail(next) {
     if (next === "sign" && currentRegion()?.type !== "interaction") next = "position";
     detail = next;
@@ -136,6 +198,7 @@ function setDetail(next) {
     }
 }
 function openRegion(regionId) {
+    selectedRegions = [];
     selectedRegion = regionId;
     const region = currentRegion();
     if (!region) return;
@@ -147,11 +210,17 @@ function openRegion(regionId) {
     $(`detail-${detail}-tab`).focus();
 }
 function render() {
+    renderEditorPreview();
+    draftHint.hidden = !previewOnly || !session?.state.running;
+    draftHint.textContent = t("cameraDraft");
     const profile = history.value;
     inputIndex = Math.max(0, Math.min(inputIndex, profile.inputs.length - 1));
     const movement = input();
     if (scope !== "global" && !movement?.steps?.[Number(scope)]) scope = movement?.steps?.length ? "0" : "global";
-    $("input-fields").disabled = busy || !movement;
+    for (const control of $("input-fields").querySelectorAll("input, select, button")) {
+        if (["stop-test", "editor-grid-view", "editor-camera-view"].includes(control.id)) continue;
+        control.disabled = busy || !movement;
+    }
     $("empty-editor").hidden = !!movement;
     $("input-fields").hidden = !movement;
     $("region-fields").disabled = busy;
@@ -163,7 +232,8 @@ function render() {
     $("quick-test").disabled = busy;
     $("start-test").hidden = !!session?.state.running;
     $("stop-test").hidden = !session && !busy;
-    $("header-stop").hidden = !session?.state.running || view === "test";
+    $("header-stop").hidden = (!session?.state.running && !busy) || cameraVisible();
+    $("header-stop").textContent = t(busy ? "cancelCamera" : "activeCamera");
     $("recalibrate").disabled = busy || !session?.state.running;
     $("live-badge").textContent = t(session?.state.running ? "online" : "offline");
     $("live-badge").dataset.live = String(!!session?.state.running);
@@ -178,7 +248,7 @@ function render() {
         for (const target of ["edit", "test"]) {
             const button = document.createElement("button"); button.type = "button"; button.className = "text-button";
             button.disabled = busy; button.textContent = t(target === "edit" ? "editCard" : "testCard");
-            button.addEventListener("click", () => { inputIndex = index; scope = "0"; selectedRegion = null; setView(target); }); actions.append(button);
+            button.addEventListener("click", () => { inputIndex = index; scope = "0"; selectedRegion = null; selectedRegions = []; setView(target); }); actions.append(button);
         }
         card.append(title, summary, actions); return card;
     }));
@@ -197,11 +267,14 @@ function render() {
     $("input-cooldown").value = movement?.cooldown_ms ?? 0;
     $("input-duration").value = movement?.max_duration_ms ?? 0;
     $("track-hands").checked = !!profile.tracking?.hands;
-    $("step-mode").disabled = scope === "global";
+    $("step-mode").disabled = busy || scope === "global";
     $("step-mode").value = scope === "global" ? "simultaneous" : movement?.steps?.[Number(scope)]?.mode ?? "ordered";
-    $("tool-help").textContent = t(noteMode ? (noteMode === "erase" ? "noteEraseHelp" : "noteHelp") : `${tool}Help`);
+    $("tool-help").textContent = t(editorPreview === "camera" ? "cameraEditHelp" : noteMode ? (noteMode === "erase" ? "noteEraseHelp" : "noteHelp") : `${tool}Help`);
     for (const button of document.querySelectorAll("[data-tool]")) button.setAttribute("aria-pressed", String(!noteMode && button.dataset.tool === tool));
-    editor.render(movement, scope, selectedRegion, $("full-grid").checked, !busy);
+    editor.noteMode = !!noteMode; editor.selectionEnabled = !noteMode && tool === "select";
+    selectedRegions = selectedRegions.filter(regionId => regions(movement).some(region => region.id === regionId));
+    editor.render(movement, scope, selectionIds(), $("full-grid").checked, !busy, $("mirror-preview").checked);
+    renderShoulders(); syncGridScroll();
     $("editor-grid").dataset.pan = String(!noteMode && tool === "select");
     renderNotes();
     $("grid-range").textContent = $("full-grid").checked ? "[−9, −9] → [17, 17]" : "[−4, −4] → [13, 13]";
@@ -210,7 +283,7 @@ function render() {
     const focusedRegion = document.activeElement?.dataset.region;
     $("region-list").replaceChildren(...constraints.map(region => {
         const button = document.createElement("button"); button.type = "button"; button.dataset.region = region.id;
-        button.disabled = busy; button.setAttribute("aria-pressed", String(selectedRegion === region.id));
+        button.disabled = busy; button.setAttribute("aria-pressed", String(selectionIds().includes(region.id)));
         const color = document.createElement("i"); color.className = `swatch ${region.type}`;
         const label = document.createElement("span"); label.textContent = `${t(region.type)}${region.order ? ` ${region.order}` : ""} · ${t(region.landmark)}`;
         const position = document.createElement("span"); position.className = "region-coordinate";
@@ -250,7 +323,7 @@ function renderLanguage() {
     feedback(feedbackKey, feedbackError, feedbackDetail); cameraMessage(cameraMessageKey, cameraMessageError);
 }
 function stopTest(message = "stopped") {
-    brush.cancel();
+    brush.cancel(); gridBrush.cancel();
     operation++;
     const current = session; session = null;
     current?.dispose();
@@ -261,9 +334,33 @@ function stopTest(message = "stopped") {
 }
 function changed(profile, message = null) {
     if (!history.commit(profile)) { render(); return; }
-    if (session) stopTest("changed");
+    if (session) { if (view === "edit") updateLiveProfile(); else stopTest("changed"); }
     save(); render();
     if (message) feedback(message);
+}
+async function updateLiveProfile() {
+    const current = session, json = JSON.stringify(history.value);
+    try {
+        const configuration = await cameraConfiguration(json, true);
+        if (current !== session || json !== JSON.stringify(history.value)) return;
+        await current.importJSON(configuration.json);
+        if (current !== session || json !== JSON.stringify(history.value)) return;
+        previewOnly = configuration.previewOnly;
+        geometry.reset(); trackingState = null; cameraMessage("liveEdit"); render(); repaintPreview();
+    } catch (error) {
+        if (current !== session || json !== JSON.stringify(history.value)) return;
+        stopTest("changed"); const {key, detail} = errorDetails(error); feedback(key, true, detail);
+    }
+}
+async function cameraConfiguration(json, allowDraft) {
+    try { await validateProfile(json); return { json, previewOnly: false }; }
+    catch (error) {
+        if (!allowDraft) throw error;
+        // A draft can still use the camera to position its zones. An empty native
+        // profile supplies tracking without recognising obsolete or invalid actions.
+        const profile = JSON.parse(json);
+        return { json: JSON.stringify({ schema_version: 2, tracking: profile.tracking ?? {hands:false}, inputs: [] }), previewOnly: true };
+    }
 }
 function edit(mutator) {
     if (busy) return;
@@ -284,12 +381,15 @@ function drawRegion(from, to) {
         notes.paint(input()?.id, cells, noteMode === "erase"); saveNotes(); renderNotes(); return;
     }
     if (tool === "select") {
+        selectedRegions = [];
         const candidates = scopedRegions(input(), scope).filter(region => {
             const r = cellRect(region.cell); return to.x >= r.x && to.x < r.x + r.w && to.y >= r.y && to.y < r.y + r.h;
         }).sort((a, b) => { const x = cellRect(a.cell), y = cellRect(b.cell); return x.w * x.h - y.w * y.h; });
-        if (candidates.length) openRegion(candidates[0].id);
+        if (candidates.length) { selectedRegion = candidates[0].id; render(); }
+        else { selectedRegion = null; selectedRegions = []; render(); }
         return;
     }
+    selectedRegions = [];
     edit((movement, profile) => {
         const rect = rectangle(from, to);
         if (tool === "erase") {
@@ -297,7 +397,7 @@ function drawRegion(from, to) {
             const removed = new Set(scopedRegions(movement, scope).filter(region => {
                 const r = cellRect(region.cell); return x < r.x + r.w && x + w > r.x && y < r.y + r.h && y + h > r.y;
             }).map(region => region.id));
-            removeRegions(movement, removed); selectedRegion = null;
+            removeRegions(movement, removed); selectedRegion = null; selectedRegions = [];
         } else {
             selectedRegion = addRegion(movement, scope, rect, { type: tool, landmark: $("landmark").value });
             if (tool === "interaction") { profile.tracking = { ...profile.tracking, hands: true }; $("region-details").open = true; }
@@ -306,7 +406,7 @@ function drawRegion(from, to) {
     if (tool === "interaction" && currentRegion()) openRegion(selectedRegion);
 }
 function selectImported(profile) {
-    inputIndex = 0; scope = profile.inputs[0]?.steps?.length ? "0" : "global"; selectedRegion = null;
+    inputIndex = 0; scope = profile.inputs[0]?.steps?.length ? "0" : "global"; selectedRegion = null; selectedRegions = [];
     $("full-grid").checked = profile.inputs.some(movement => regions(movement).some(region => {
         const r = cellRect(region.cell); return r.x < -4 || r.y < -4 || r.x + r.w > 14 || r.y + r.h > 14;
     }));
@@ -351,6 +451,7 @@ function onFrame(current) {
     }
     if (now - lastPaint >= 50) {
         lastPaint = now;
+        renderShoulders();
         $("test-stage").style.aspectRatio = String(video.videoWidth / video.videoHeight);
         $("test-stage").style.setProperty("--preview-ratio", video.videoWidth / video.videoHeight);
         repaintPreview();
@@ -372,11 +473,12 @@ async function startTest() {
     setBusy(true); cameraMessage("loading"); feedback(null);
     let candidate;
     try {
-        const json = JSON.stringify(history.value);
-        if (history.value.inputs.some(movement => !regions(movement).length && !(movement.fingers?.length))) throw new Error("emptyPath");
-        await validateProfile(json);
+        let json = JSON.stringify(history.value);
+        if (view !== "edit" && history.value.inputs.some(movement => !regions(movement).length && !(movement.fingers?.length))) throw new Error("emptyPath");
+        const configuration = await cameraConfiguration(json, view === "edit");
         if (token !== operation) return;
-        candidate = await createStudioSession(onAction, onFrame, () => view === "test");
+        json = configuration.json; previewOnly = configuration.previewOnly;
+        candidate = await createStudioSession(onAction, onFrame, cameraVisible);
         if (token !== operation) { candidate.dispose(); return; }
         session = candidate;
         geometry.reset(); lastPaint = lastDebug = -Infinity; trackingState = null;
@@ -407,24 +509,24 @@ async function startTest() {
     } finally { if (token === operation) setBusy(false); }
 }
 
-$("input-select").addEventListener("change", () => { brush.cancel(); inputIndex = Number($("input-select").value); scope = "0"; selectedRegion = null; render(); repaintPreview(); });
-$("scope").addEventListener("change", () => { scope = $("scope").value; selectedRegion = null; render(); });
-$("full-grid").addEventListener("change", () => render());
-for (const button of document.querySelectorAll("[data-tool]")) button.addEventListener("click", () => { noteMode = null; tool = button.dataset.tool; render(); });
+$("input-select").addEventListener("change", () => { brush.cancel(); gridBrush.cancel(); inputIndex = Number($("input-select").value); scope = "0"; selectedRegion = null; selectedRegions = []; render(); repaintPreview(); });
+$("scope").addEventListener("change", () => { brush.cancel(); gridBrush.cancel(); editor.cancel(); scope = $("scope").value; selectedRegion = null; selectedRegions = []; render(); });
+$("full-grid").addEventListener("change", () => { brush.cancel(); gridBrush.cancel(); editor.cancel(); render(); repaintPreview(); });
+for (const button of document.querySelectorAll("[data-tool]")) button.addEventListener("click", () => { brush.cancel(); gridBrush.cancel(); editor.cancel(); noteMode = null; tool = button.dataset.tool; render(); });
 for (const button of document.querySelectorAll("[data-language]")) button.addEventListener("click", () => { language = button.dataset.language; renderLanguage(); });
 $("add-input").addEventListener("click", () => {
     if (history.value.inputs.length >= 64) { feedback("invalid", true, "inputs: maximum 64"); return; }
     const profile = clone(history.value), movement = newInput(profile.inputs.length + 1);
     movement.name = `${t("movement")} ${profile.inputs.length + 1}`;
     profile.inputs.push(movement);
-    inputIndex = profile.inputs.length - 1; scope = "0"; selectedRegion = null; changed(profile);
+    inputIndex = profile.inputs.length - 1; scope = "0"; selectedRegion = null; selectedRegions = []; changed(profile);
     tool = "required"; noteMode = null; setView("edit");
     $("input-name").focus(); $("input-name").select();
 });
-$("delete-input").addEventListener("click", () => { const profile = clone(history.value); profile.inputs.splice(inputIndex, 1); selectedRegion = null; changed(profile); if (!input()) setView("moves"); });
+$("delete-input").addEventListener("click", () => { const profile = clone(history.value); profile.inputs.splice(inputIndex, 1); selectedRegion = null; selectedRegions = []; changed(profile); if (!input()) setView("moves"); });
 $("add-step").addEventListener("click", () => edit(movement => {
     const steps = movement.steps ??= [];
-    steps.push({ id: id("step"), mode: "ordered", constraints: [] }); scope = String(steps.length - 1); selectedRegion = null;
+    steps.push({ id: id("step"), mode: "ordered", constraints: [] }); scope = String(steps.length - 1); selectedRegion = null; selectedRegions = [];
 }));
 for (const [name, property] of [["input-name", "name"], ["input-action", "action"]]) $(name).addEventListener("change", () => {
     const value = $(name).value.trim(); edit(movement => { if (!value) throw new Error("emptyField"); movement[property] = value; });
@@ -464,13 +566,67 @@ for (const [name, property] of [["region-sign", "gesture"], ["region-hand", "han
     const value = property === "hold_ms" ? Number($(name).value) : $(name).value;
     edit(movement => { regions(movement).find(region => region.id === selectedRegion).interaction[property] = value; });
 });
-$("delete-region").addEventListener("click", () => edit(movement => { removeRegions(movement, new Set([selectedRegion])); selectedRegion = null; }));
-for (const direction of ["undo", "redo"]) $(direction).addEventListener("click", () => {
-    if (history[direction]()) { if (session) stopTest("changed"); selectedRegion = null; save(); render(); feedback(null); }
+$("delete-region").addEventListener("click", () => edit(movement => { removeRegions(movement, new Set([selectedRegion])); selectedRegion = null; selectedRegions = []; }));
+function historyAction(direction) {
+    if (busy) return;
+    brush.cancel(); gridBrush.cancel(); editor.cancel();
+    const previous = new Set(regions(input()).map(region => region.id));
+    if (!history[direction]()) return;
+    if (session) { if (view === "edit") updateLiveProfile(); else stopTest("changed"); }
+    const current = regions(input());
+    selectedRegions = selectedRegions.filter(regionId => current.some(region => region.id === regionId));
+    const added = current.filter(region => !previous.has(region.id));
+    if (direction === "redo" && added.length > 1) selectedRegions = added.map(region => region.id);
+    selectedRegion = current.find(region => region.id === selectedRegion)?.id
+        ?? (direction === "redo" ? current.find(region => !previous.has(region.id))?.id : null);
+    if (selectedRegion && view === "edit") { tool = "select"; noteMode = null; }
+    save(); render(); feedback(null);
+}
+for (const direction of ["undo", "redo"]) $(direction).addEventListener("click", () => historyAction(direction));
+function copySelectedRegion() {
+    const group = regions(input()).filter(region => selectionIds().includes(region.id));
+    if (!group.length) { feedback("selectToCopy"); return; }
+    regionClipboard = clone(group); feedback("regionCopied");
+}
+function pasteSelectedRegion() {
+    if (!regionClipboard) { feedback("selectToCopy"); return; }
+    brush.cancel(); gridBrush.cancel(); editor.cancel();
+    let pastedId;
+    edit((movement, profile) => {
+        const pasted = pasteRegions(movement, scope, regionClipboard, $("mirror-preview").checked ? -1 : 1);
+        pastedId = selectedRegion = pasted[0]; selectedRegions = pasted.length > 1 ? pasted : [];
+        if (regionClipboard.some(region => region.fingers?.length || region.interaction)) profile.tracking = {...profile.tracking, hands:true};
+        tool = "select"; noteMode = null; editorPreview = "grid";
+    });
+    if (!pastedId || selectedRegion !== pastedId || !currentRegion()) return;
+    const handle = editor.handles.querySelector(".handle-edge");
+    if (!editor.handles.hidden) { handle?.focus({preventScroll:true}); handle?.scrollIntoView({block:"nearest",inline:"nearest"}); }
+}
+document.addEventListener("keydown", event => {
+    if (!(event.ctrlKey || event.metaKey) || event.altKey || event.isComposing || busy || view === "home") return;
+    if (document.querySelector("dialog[open]") || event.target.closest('input:not([type="range"]):not([type="checkbox"]), textarea, select, [contenteditable]:not([contenteditable="false"])')) return;
+    const key = event.key.toLowerCase();
+    if (key === "a" && view === "edit" && input() && !event.shiftKey) {
+        event.preventDefault(); brush.cancel(); gridBrush.cancel(); editor.cancel();
+        selectedRegions = scopedRegions(input(), scope).map(region => region.id); selectedRegion = null;
+        tool = "select"; noteMode = null; editorPreview = "grid"; render();
+        feedback("allSelected", false, String(selectedRegions.length));
+        return;
+    }
+    if (key === "z" || key === "y") {
+        event.preventDefault(); historyAction(key === "y" || event.shiftKey ? "redo" : "undo"); return;
+    }
+    if (view !== "edit" || !input() || event.shiftKey || !["c", "v"].includes(key)) return;
+    if (key === "c" && window.getSelection()?.toString() && !event.target.closest("button, .grid-viewport, #camera-overlay")) return;
+    event.preventDefault();
+    if (event.repeat) return;
+    if (key === "c") copySelectedRegion(); else pasteSelectedRegion();
 });
+$("undo").setAttribute("aria-keyshortcuts", "Control+Z Meta+Z");
+$("redo").setAttribute("aria-keyshortcuts", "Control+Y Meta+Shift+Z Control+Shift+Z");
 $("new-profile").addEventListener("click", () => {
     const movement = newInput(); movement.name = `${t("movement")} 1`;
-    inputIndex = 0; scope = "0"; selectedRegion = null; tool = "required"; noteMode = null;
+    inputIndex = 0; scope = "0"; selectedRegion = null; selectedRegions = []; tool = "required"; noteMode = null;
     changed({ schema_version: 2, tracking: { hands: false }, inputs: [movement] });
     feedback(null); setView("edit"); $("input-name").focus(); $("input-name").select();
 });
@@ -501,12 +657,12 @@ $("apply-json").addEventListener("click", async () => { if (await acceptJSON($("
 $("start-test").addEventListener("click", startTest);
 $("quick-test").addEventListener("click", () => {
     const profile = starter(); if (language === "en") profile.inputs[0].name = "Raise the left hand";
-    inputIndex = 0; scope = "0"; selectedRegion = null; tool = "select"; noteMode = null;
+    inputIndex = 0; scope = "0"; selectedRegion = null; selectedRegions = []; tool = "select"; noteMode = null;
     changed(profile); $("full-grid").checked = false; feedback(null); setView("test");
 });
 $("stop-test").addEventListener("click", () => stopTest());
-$("recalibrate").addEventListener("click", () => { brush.cancel(); session?.recalibrate(); geometry.reset(); trackingState = null; cameraMessage("recalibrating"); journal.add("info", t("recalibrating")); });
-$("mirror-preview").addEventListener("change", () => { brush.cancel(); $("test-stage").dataset.mirror = String($("mirror-preview").checked); });
+$("recalibrate").addEventListener("click", () => { brush.cancel(); gridBrush.cancel(); session?.recalibrate(); geometry.reset(); trackingState = null; cameraMessage("recalibrating"); journal.add("info", t("recalibrating")); });
+$("mirror-preview").addEventListener("change", () => { brush.cancel(); gridBrush.cancel(); editor.cancel(); render(); repaintPreview(); });
 $("log-level").addEventListener("change", () => { journal.level = $("log-level").value; journal.render(); });
 $("clear-logs").addEventListener("click", () => journal.clear());
 $("header-stop").addEventListener("click", () => stopTest());
@@ -514,6 +670,9 @@ $("back-menu").addEventListener("click", () => { if (session || busy) stopTest()
 $("resume-profile").addEventListener("click", () => { feedback(null); setView("moves"); });
 $("edit-test").addEventListener("click", () => setView("test"));
 $("test-edit").addEventListener("click", () => setView("edit"));
+for (const mode of ["grid", "camera"]) $(`editor-${mode}-view`).addEventListener("click", () => {
+    brush.cancel(); gridBrush.cancel(); editor.cancel(); editorPreview = mode; render();
+});
 for (const button of document.querySelectorAll(".view-tabs [data-view]")) button.addEventListener("click", () => setView(button.dataset.view));
 for (const button of document.querySelectorAll("[data-detail]")) button.addEventListener("click", () => setDetail(button.dataset.detail));
 for (const name of ["close-region", "done-region"]) $(name).addEventListener("click", () => $("region-dialog").close());
@@ -524,11 +683,11 @@ $("clear-fingers").addEventListener("click", () => edit(movement => {
 }));
 for (const prefix of ["editor", "test"]) {
     for (const [name, mode] of [["toggle", "draw"], ["erase", "erase"]]) $(`${prefix}-note-${name}`).addEventListener("click", () => {
-        brush.cancel(); noteMode = noteMode === mode ? null : mode; render();
+        brush.cancel(); gridBrush.cancel(); noteMode = noteMode === mode ? null : mode; render();
         $("note-feedback").textContent = t(noteMode ? "notesReady" : "notesHint");
     });
     $(`clear-${prefix}-notes`).addEventListener("click", () => {
-        brush.cancel(); notes.clear(input()?.id); saveNotes(); renderNotes(); repaintPreview();
+        brush.cancel(); gridBrush.cancel(); notes.clear(input()?.id); saveNotes(); renderNotes(); repaintPreview();
         $("note-feedback").textContent = t("notesCleared");
     });
 }

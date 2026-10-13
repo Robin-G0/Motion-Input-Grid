@@ -61,6 +61,36 @@ export function addRegion(input, scope, cell, { type, landmark }) {
     constraints.push(region);
     return region.id;
 }
+export function pasteRegion(input, scope, source, horizontalOffset = 1) {
+    if (source.tolerance_for && !regions(input).some(region => region.id === source.tolerance_for)) throw new Error("copyReference");
+    const rect = cellRect(source.cell);
+    const cell = [Math.max(-9, Math.min(18 - rect.w, rect.x + horizontalOffset)), Math.max(-9, Math.min(18 - rect.h, rect.y + 1)), rect.w, rect.h];
+    const regionId = addRegion(input, scope, cell, source);
+    const target = scopedRegions(input, scope).find(region => region.id === regionId);
+    let order = source.priority === "low" ? 0 : target.order;
+    const trigger = scopedRegions(input, scope).find(region => ["trigger", "interaction"].includes(region.type) && region.landmark === source.landmark && region.order > 0);
+    if (source.type === "required" && source.priority !== "low" && trigger && order > trigger.order) {
+        order = trigger.order; trigger.order++;
+    }
+    Object.assign(target, clone(source), {id:regionId, cell, order});
+    return regionId;
+}
+export function pasteRegions(input, scope, sources, horizontalOffset = 1) {
+    const rects = sources.map(source => cellRect(source.cell));
+    const left = Math.min(...rects.map(rect => rect.x)), top = Math.min(...rects.map(rect => rect.y));
+    const right = Math.max(...rects.map(rect => rect.x + rect.w)), bottom = Math.max(...rects.map(rect => rect.y + rect.h));
+    const dx = Math.max(-9 - left, Math.min(18 - right, horizontalOffset)), dy = Math.max(-9 - top, Math.min(18 - bottom, 1));
+    const mapping = new Map();
+    for (const source of [...sources].sort((a,b) => Number(a.priority === "low") - Number(b.priority === "low"))) {
+        const duplicate = clone(source);
+        if (mapping.has(duplicate.tolerance_for)) duplicate.tolerance_for = mapping.get(duplicate.tolerance_for);
+        const pasted = pasteRegion(input, scope, duplicate, 0);
+        const rect = cellRect(source.cell);
+        scopedRegions(input, scope).find(region => region.id === pasted).cell = [rect.x + dx, rect.y + dy, rect.w, rect.h];
+        mapping.set(source.id, pasted);
+    }
+    return sources.map(source => mapping.get(source.id));
+}
 export class ProfileHistory {
     constructor(profile) { this.value = clone(profile); this.past = []; this.future = []; }
     commit(profile) {

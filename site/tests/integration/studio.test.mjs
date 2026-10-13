@@ -1,11 +1,49 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import createMIG from "../../dist/mig/mig.mjs";
-import { starter, newInput, addRegion, parseProfile, ProfileHistory, MAX_BYTES } from "../../studio/src/profile.mjs";
+import { starter, newInput, addRegion, pasteRegion, parseProfile, ProfileHistory, MAX_BYTES } from "../../studio/src/profile.mjs";
 import { PreviewGrid, trackedPoint } from "../../studio/src/camera.mjs";
 import { copy } from "../../studio/src/copy.mjs";
 import { NoteLayer, lineCells, previewCell } from "../../studio/src/notes.mjs";
 import { setFingerRule } from "../../studio/src/fingers.mjs";
+import { transformRect, selectionRect, transformSelection } from "../../studio/src/grid.mjs";
+
+test("region moves and corner resizing preserve dimensions and stay within native grid bounds", () => {
+    const rect = {x:2,y:3,w:3,h:2};
+    assert.deepEqual(transformRect(rect, "move", 2, -1), {x:4,y:2,w:3,h:2});
+    assert.deepEqual(transformRect(rect, "move", -100, 100), {x:-9,y:16,w:3,h:2});
+    assert.deepEqual(transformRect(rect, "nw", -2, -1), {x:0,y:2,w:5,h:3});
+    assert.deepEqual(transformRect(rect, "se", 100, -100), {x:2,y:3,w:16,h:1});
+    assert.deepEqual(transformRect(rect, "nw", 100, 100), {x:4,y:4,w:1,h:1});
+    assert.deepEqual(rect, {x:2,y:3,w:3,h:2});
+});
+test("group transforms preserve relative positions when moved and stay aligned to whole cells when resized", () => {
+    const selected = [{cell:[2,3,1,1]},{cell:[4,3,1,1]}];
+    const original = selectionRect(selected);
+    assert.deepEqual(original,{x:2,y:3,w:3,h:1});
+    transformSelection(selected,original,{x:3,y:4,w:3,h:1});
+    assert.deepEqual(selected.map(region => region.cell),[[3,4,1,1],[5,4,1,1]]);
+    transformSelection(selected,selectionRect(selected),{x:3,y:4,w:1,h:1});
+    assert.deepEqual(selected.map(region => region.cell),[[3,4,1,1],[3,4,1,1]]);
+});
+test("pasting keeps detailed rules, gives a fresh identity and places required regions before the trigger", async () => {
+    const profile = starter(), movement = profile.inputs[0], source = movement.steps[0].constraints[0];
+    source.fingers = [{hand:"left",finger:"thumb",pose:"extended",stable_ms:150,grace_ms:100}];
+    profile.tracking.hands = true;
+    const before = structuredClone(source);
+    const pastedId = pasteRegion(movement, "0", source, -1);
+    const pasted = movement.steps[0].constraints.find(region => region.id === pastedId);
+    assert.notEqual(pasted.id, source.id);
+    assert.deepEqual(pasted.cell, [-9,5,27,4]);
+    assert.deepEqual(pasted.fingers, source.fingers);
+    assert.notEqual(pasted.fingers, source.fingers);
+    assert.equal(pasted.order, 2); assert.equal(movement.steps[0].constraints[1].order, 3);
+    assert.deepEqual(source, before);
+    const module = await createMIG(), tracker = new module.Tracker();
+    try { assert.equal(tracker.load(JSON.stringify(profile)), ""); } finally {tracker.delete();}
+    assert.throws(() => pasteRegion(movement,"0",movement.steps[0].constraints[1]), /oneTrigger/);
+    assert.throws(() => pasteRegion(newInput(),"0",{...source,priority:"low",tolerance_for:source.id}), /copyReference/);
+});
 
 test("the Studio starter really emits its action through published MIG on landscape and portrait cameras", async () => {
     const module = await createMIG();

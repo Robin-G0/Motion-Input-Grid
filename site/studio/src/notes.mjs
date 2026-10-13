@@ -56,19 +56,19 @@ export class LiveNoteBrush {
     constructor(canvas, { enabled, cellAt, begin, paint, finish, cancel, unavailable }) {
         this.stroke = null;
         canvas.addEventListener("pointerdown", event => {
-            if (event.button !== 0 || !enabled()) return;
+            if (event.button !== 0 || event.isPrimary === false || this.stroke || !enabled()) return;
             const cell = cellAt(event);
             if (!cell) { unavailable(); return; }
             event.preventDefault();
-            this.stroke = cell; this.gap = false; begin(); canvas.setPointerCapture(event.pointerId); paint([cell]);
+            this.stroke = cell; this.pointerId = event.pointerId; this.gap = false; begin(); canvas.setPointerCapture(event.pointerId); paint([cell]);
         });
         canvas.addEventListener("pointermove", event => {
-            if (!this.stroke) return;
+            if (!this.stroke || event.pointerId !== this.pointerId) return;
             const cell = cellAt(event);
             if (!cell) { this.gap = true; return; }
             paint(this.gap ? [cell] : lineCells(this.stroke, cell)); this.gap = false; this.stroke = cell;
         });
-        canvas.addEventListener("pointerup", () => { if (!this.stroke) return; this.stroke = this.previous = null; finish(); });
+        canvas.addEventListener("pointerup", event => { if (!this.stroke || event.pointerId !== this.pointerId) return; this.stroke = this.previous = null; finish(); });
         this.cancel = () => { if (!this.stroke) return; this.stroke = this.previous = null; cancel(); };
         canvas.addEventListener("pointercancel", this.cancel);
         canvas.addEventListener("lostpointercapture", this.cancel);

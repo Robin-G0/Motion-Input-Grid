@@ -53,7 +53,25 @@
 .square-button:hover { background: var(--button-hover); }
 .edit-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: start; }
 .drawing-column { min-width: 0; container-type: inline-size; --grid-cell-size: calc(min(100cqw, max(280px, calc(100svh - 500px))) / 9); }
-.grid-viewport { width: 100%; max-height: max(280px, 65svh); overflow: auto; overscroll-behavior: contain; border: 1px solid var(--border); }
+.grid-viewport { width: 100%; max-height: max(280px, 65svh); overflow: scroll; scrollbar-width: auto; scrollbar-color: var(--accent) var(--surface); scrollbar-gutter: stable; overscroll-behavior: contain; border: 1px solid var(--border); }
+.grid-scroll-controls { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 11px; color: var(--muted); }
+.grid-scroll-controls input { flex: 1; min-width: 0; accent-color: var(--accent-solid); height: 24px; }
+.shoulder-marker { position: absolute; transform: translate(-50%, -50%); background: var(--paper); color: var(--ink); border: 2px solid var(--accent); border-radius: 50%; width: 28px; height: 28px; display: grid; place-items: center; font: bold 11px Consolas, monospace; pointer-events: none; z-index: 5; }
+.region-handles { position: absolute; pointer-events: none; z-index: 6; border: 2px solid var(--ink); }
+.region-handles button { position: absolute; border: 0; padding: 0; pointer-events: auto; touch-action: none; background: transparent; color: var(--ink); }
+.handle-edge { cursor: grab; }.handle-edge:active { cursor: grabbing; }
+.handle-edge[data-corner="n"], .handle-edge[data-corner="s"] { left: 0; width: 100%; height: 20px; }
+.handle-edge[data-corner="n"] { top: -10px; }.handle-edge[data-corner="s"] { bottom: -10px; }
+.handle-edge[data-corner="w"], .handle-edge[data-corner="e"] { top: 0; height: 100%; width: 20px; }
+.handle-edge[data-corner="w"] { left: -10px; }.handle-edge[data-corner="e"] { right: -10px; }
+.handle-corner { width: 24px; height: 24px; z-index: 1; }
+.handle-corner::after { content: ""; position: absolute; inset: 7px; background: var(--paper); border: 2px solid var(--ink); }
+.handle-corner[data-corner="nw"], .handle-corner[data-corner="sw"] { left: -12px; }
+.handle-corner[data-corner="ne"], .handle-corner[data-corner="se"] { right: -12px; }
+.handle-corner[data-corner="nw"], .handle-corner[data-corner="ne"] { top: -12px; }
+.handle-corner[data-corner="sw"], .handle-corner[data-corner="se"] { bottom: -12px; }
+.handle-corner[data-corner="nw"], .handle-corner[data-corner="se"] { cursor: nwse-resize; }
+.handle-corner[data-corner="ne"], .handle-corner[data-corner="sw"] { cursor: nesw-resize; }
 .edit-sidebar { border-left: 1px solid var(--border); padding-left: 24px; min-width: 0; }
 .tool-group { display: flex; flex-wrap: wrap; gap: 3px; border-block: 1px solid var(--border); padding-block: 5px; }
 .tool-group button { border: 1px solid transparent; color: var(--muted); background: transparent; padding: 8px; min-height: 40px; display: flex; gap: 6px; align-items: center; font-size: 11px; border-radius: 3px; }
@@ -80,6 +98,9 @@
 .grid-region.selected { outline: 2px solid var(--ink); outline-offset: -4px; }
 .grid-region span { background: var(--surface); padding: 2px 5px; line-height: 1; border-radius: 2px; }
 .grid-region.wide span { position: absolute; left: var(--label-left, 5%); top: var(--label-top, 50%); transform: translateY(-50%); }
+.drawing-area[data-mirror="true"] .grid-region.wide span { left: auto; right: var(--label-left, 5%); }
+.editor-preview-switch { display: flex; gap: 6px; margin-bottom: 10px; }
+.editor-preview-switch [aria-pressed="true"] { background: var(--surface); box-shadow: inset 0 -2px var(--accent); color: var(--ink); }
 .grid-note { position: absolute; background: color-mix(in srgb, var(--notes) 22%, transparent); border: 1px dashed var(--notes); }
 .drawing-selection { position: absolute; border: 2px dashed var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); pointer-events: none; z-index: 4; }
 .shoulder-anchor { pointer-events: none; position: absolute; left: var(--anchor-x, 50%); top: var(--anchor-y, 38.8889%); transform: translate(-50%, -50%); color: var(--muted); border: 1px solid var(--border); width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; background: var(--surface); font-size: 14px; }
