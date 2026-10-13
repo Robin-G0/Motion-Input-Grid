@@ -2,7 +2,7 @@
 
 [English](readme.md) | [Français](docs/fr/readme.fr.md)
 
-# [<img src="site/favicon.svg" width="32" height="32" alt=""> Explore the presentation website](https://robin-g0.github.io/Motion-Input-Grid/)
+# [<img src="site/favicon-dark.svg" width="32" height="32" alt=""> Explore the presentation website](https://robin-g0.github.io/Motion-Input-Grid/)
 
 Start here for a **quick introduction and an interactive demo of the concept**, directly in your browser.
 
