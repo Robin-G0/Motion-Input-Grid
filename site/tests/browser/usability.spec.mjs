@@ -1,6 +1,27 @@
 import { test, expect } from "@playwright/test";
 import { mockCamera } from "./support/camera.mjs";
 
+test("reloading returns to the top after scrolling or following a section link", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto("./?lang=fr");
+    await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" }));
+    expect(await page.evaluate(() => scrollY)).toBeGreaterThan(0);
+    await page.reload();
+    expect(await page.evaluate(() => scrollY)).toBe(0);
+    await page.locator(".manual-link").click();
+    await expect(page.locator("#slideshow-title")).toBeInViewport();
+    expect(new URL(page.url()).hash).toBe("#presentation");
+    await page.reload();
+    expect(await page.evaluate(() => scrollY)).toBe(0);
+    expect(new URL(page.url()).hash).toBe("");
+    expect(new URL(page.url()).search).toBe("?lang=fr");
+    await page.locator(".manual-link").click();
+    await expect(page.locator("#slideshow-title")).toBeInViewport();
+    // A section URL opened as a new visit still works as a deep link.
+    await page.goto("./?lang=en#presence-demo");
+    await expect(page.locator("#presence-title")).toBeInViewport();
+});
+
 test("visitors can explore every section and reach downloads without a camera", async ({ page }) => {
     let cameraRequested = false;
     await page.route("**/mig/session.mjs", route => { cameraRequested = true; return route.abort(); });
