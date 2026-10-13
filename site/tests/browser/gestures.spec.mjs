@@ -167,7 +167,7 @@ test("navigation pauses when either hand disappears and resumes with both hands"
     await expect(page.locator(".hero .privacy")).toBeHidden();
     await expect(page.locator("#camera-placement")).toContainText("place both hands");
     await holdHandsInFrame(page);
-    await expect(page.locator(".camera-preview")).toHaveCSS("outline-color", "rgb(56, 245, 129)");
+    await expect(page.locator(".camera-preview")).toHaveCSS("outline-color", "rgb(103, 188, 148)");
     await swipeHand(page, "scroll_presentation");
     await expect(page.locator("#slide-gesture-tip")).toBeVisible();
     await page.evaluate(() => { window.demoCamera.coordinate = () => ({ x: .5, y: .5 }); window.demoCamera.frame(true); });

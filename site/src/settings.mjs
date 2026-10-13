@@ -3,6 +3,7 @@ export const settings = {
     links: {
         repository: "https://github.com/Robin-G0/Motion-Input-Grid",
         downloads: "https://github.com/Robin-G0/Motion-Input-Grid/releases/latest",
+        documentation: "https://github.com/Robin-G0/Motion-Input-Grid/blob/main/docs/index.md",
         linkedin: "https://www.linkedin.com/in/robin-g0/",
         github: "https://github.com/Robin-G0",
         source: "https://github.com/Robin-G0/Motion-Input-Grid/tree/main/site"

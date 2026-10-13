@@ -88,7 +88,7 @@ test("real MIG session starts with local models, processes video and releases th
     expect(errors).toEqual([]);
 });
 
-test("camera onboarding repeats its nudge while a hand is visible and stops after navigation", async ({ page }) => {
+test("camera onboarding shows a written cue without unsolicited page scrolling", async ({ page }) => {
     await mockCamera(page);
     await page.clock.install();
     await page.goto("./");
@@ -97,12 +97,13 @@ test("camera onboarding repeats its nudge while a hand is visible and stops afte
     await holdHandsInFrame(page);
     const origin = await page.evaluate(() => scrollY);
     await page.clock.runFor(650);
-    expect(await page.evaluate(() => scrollY)).toBeGreaterThan(origin);
+    expect(await page.evaluate(() => scrollY)).toBe(origin);
     await page.clock.runFor(500);
     expect(await page.evaluate(() => scrollY)).toBeCloseTo(origin, 0);
     await page.evaluate(() => window.demoCamera.frame(true));
     await page.clock.runFor(4450);
-    expect(await page.evaluate(() => scrollY)).toBeGreaterThan(origin);
+    expect(await page.evaluate(() => scrollY)).toBe(origin);
+    await expect(page.locator('#scroll-gesture-tip [data-text="scrollShort"]')).toBeVisible();
     await page.clock.runFor(650);
     await page.emulateMedia({ reducedMotion: "reduce" });
     await swipeHand(page, "scroll_presentation");
@@ -192,7 +193,7 @@ test("phone visitors get one-hand guidance and can finish and stop the demo", as
         await page.clock.runFor(300);
         await page.evaluate(() => window.demoCamera.frame(true));
         await expect(page.locator("#finale")).toBeVisible();
-        await expect(page.locator("#finale-stop-camera")).toHaveCSS("background-color", "rgb(99, 35, 45)");
+        await expect(page.locator("#finale-stop-camera")).toBeEnabled();
         expect(await page.evaluate(() => window.demoCamera.state.running)).toBe(true);
         await page.locator("#finale-stop-camera").click();
         expect(await page.evaluate(() => window.demoCamera.stopped)).toBe(true);
@@ -200,7 +201,7 @@ test("phone visitors get one-hand guidance and can finish and stop the demo", as
     } finally { await page.close(); }
 });
 
-test("golden loading bar fills continuously and unlocks hand navigation after two seconds", async ({ page }) => {
+test("loading bar fills continuously and unlocks hand navigation after two seconds", async ({ page }) => {
     await mockCamera(page);
     await page.clock.install();
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -215,7 +216,7 @@ test("golden loading bar fills continuously and unlocks hand navigation after tw
     const fill = bar.locator("[data-cooldown-progress]");
     await expect(bar).toBeVisible();
     await expect(bar).toHaveAttribute("role", "progressbar");
-    await expect(bar).toHaveCSS("height", "6px");
+    await expect(bar).toHaveCSS("height", "3px");
     await page.clock.runFor(1000);
     const filled = await fill.boundingBox();
     expect(filled.width / page.viewportSize().width).toBeCloseTo(.5, 1);

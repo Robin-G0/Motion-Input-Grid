@@ -48,14 +48,17 @@ export class SlideInputs {
     pointerDown(event) {
         if (this.options.locked() || event.pointerType !== "touch") return;
         if (event.target.closest(".history-illustration")) return;
-        this.swipeStart = { id: event.pointerId, x: event.clientX };
+        this.swipeStart = { id: event.pointerId, x: event.clientX, y: event.clientY };
     }
 
     pointerUp(event) {
         if (!this.swipeStart || event.pointerId !== this.swipeStart.id) return;
         if (this.options.locked()) { this.swipeStart = null; return; }
         const distance = event.clientX - this.swipeStart.x;
-        if (Math.abs(distance) > 60) this.options.move(distance < 0 ? 1 : -1);
+        const verticalDistance = event.clientY - this.swipeStart.y;
+        if (Math.abs(distance) > 60 && Math.abs(distance) > Math.abs(verticalDistance) * 1.3) {
+            this.options.move(distance < 0 ? 1 : -1);
+        }
         this.swipeStart = null;
     }
 }

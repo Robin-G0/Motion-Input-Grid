@@ -1,4 +1,4 @@
-// Camera onboarding uses small, cancellable hints. It never starts the camera.
+// Written camera hints follow the viewport without moving the page.
 export class GestureGuide {
     constructor(scrollTip, slideTip, slide, sections, onDirection = () => {}) {
         this.scrollTip = scrollTip;
@@ -13,16 +13,6 @@ export class GestureGuide {
         this.handsVisible = false;
         this.active = false;
         this.entered = false;
-        this.frame = null;
-        this.timer = null;
-        this.animation = null;
-        this.motionPreference.addEventListener("change", () => {
-            this.cancelNudge(true);
-            this.animation?.cancel();
-        });
-        for (const event of ["wheel", "touchstart", "pointerdown", "keydown"]) {
-            window.addEventListener(event, () => this.cancelNudge(), { passive: true });
-        }
         window.addEventListener("scroll", () => this.updateFocus(), { passive: true });
         window.addEventListener("resize", () => this.updateFocus(), { passive: true });
     }
@@ -40,8 +30,6 @@ export class GestureGuide {
         const focus = this.focusedSection();
         if (focus !== this.focus) {
             this.focus = focus;
-            if (focus !== 0) this.cancelNudge();
-            if (focus !== 1) this.animation?.cancel();
         }
         if (focus === 1 && !this.hintsPaused) this.showSlides();
         this.scrollTip.hidden = this.hintsPaused || focus !== 0;
@@ -58,44 +46,10 @@ export class GestureGuide {
         this.hintsPaused = false;
         this.focus = null;
         this.updateFocus();
-        if (this.focus === 0) {
-            this.timer = setTimeout(() => this.nudgeScroll(), 350);
-        }
     }
 
     setHandsVisible(visible) {
         this.handsVisible = visible;
-        if (!visible) this.cancelNudge(true);
-        else if (this.active && !this.hintsPaused && this.focus === 0
-            && !this.entered && this.timer === null && this.frame === null) {
-            this.timer = setTimeout(() => this.nudgeScroll(), 5000);
-        }
-    }
-
-    cancelNudge(restore = false) {
-        clearTimeout(this.timer);
-        this.timer = null;
-        if (this.frame !== null) {
-            cancelAnimationFrame(this.frame);
-            this.frame = null;
-            if (restore) window.scrollTo({ top: this.origin, behavior: "instant" });
-        }
-    }
-
-    nudgeScroll() {
-        this.timer = null;
-        if (!this.active || this.hintsPaused || this.focusedSection() !== 0
-            || this.entered || !this.handsVisible || this.motionPreference.matches || document.hidden) return;
-        this.timer = setTimeout(() => this.nudgeScroll(), 5000);
-        this.origin = window.scrollY;
-        const start = performance.now();
-        const draw = time => {
-            const progress = Math.min((time - start) / 650, 1);
-            window.scrollTo({ top: this.origin + Math.sin(progress * Math.PI) * 24, behavior: "instant" });
-            if (progress < 1) this.frame = requestAnimationFrame(draw);
-            else this.frame = null;
-        };
-        this.frame = requestAnimationFrame(draw);
     }
 
     sectionTop(section) {
@@ -106,7 +60,6 @@ export class GestureGuide {
 
     navigate(direction) {
         if (!this.active) return false;
-        this.cancelNudge(true);
         // Find the closest section so manual scrolling and hand navigation agree.
         const sections = this.sections.filter(section => !section.hidden);
         // The last section cannot always reach the top of the viewport.
@@ -131,8 +84,6 @@ export class GestureGuide {
 
     pauseHints() {
         this.hintsPaused = true;
-        this.cancelNudge(true);
-        this.animation?.cancel();
         this.entered = true;
         this.scrollTip.hidden = true;
         this.slideTip.hidden = true;
@@ -141,29 +92,18 @@ export class GestureGuide {
     showSlides() {
         if (!this.active || this.entered) return;
         this.entered = true;
-        this.cancelNudge(true);
         this.scrollTip.hidden = true;
         this.slideTip.hidden = false;
-        if (!this.motionPreference.matches) {
-            this.animation = this.slide.animate([
-                { transform: "translateX(0)" },
-                { transform: "translateX(-12px)", offset: .5 },
-                { transform: "translateX(0)" }
-            ], { duration: 650, easing: "ease-in-out" });
-        }
     }
 
     completeSwipe() {
         this.swipeCompleted = true;
         this.slideTip.hidden = true;
-        this.animation?.cancel();
     }
 
     stop() {
         this.handsVisible = false;
         this.active = false;
-        this.cancelNudge(true);
-        this.animation?.cancel();
         this.scrollTip.hidden = true;
         this.slideTip.hidden = true;
     }

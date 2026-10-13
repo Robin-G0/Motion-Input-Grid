@@ -69,7 +69,18 @@ export class HistoryIllustration {
             });
         });
         this.frame = this.frame.bind(this);
-        if (this.animated) requestAnimationFrame(this.frame);
+        this.visible = false;
+        this.frameRequest = null;
+        this.lastPaint = -Infinity;
+        if (this.animated) {
+            this.observer = new IntersectionObserver(entries => {
+                this.visible = entries[0].isIntersecting;
+                this.lastFrame = null;
+                this.schedule();
+            });
+            this.observer.observe(root);
+            document.addEventListener("visibilitychange", () => { this.lastFrame = null; this.schedule(); });
+        }
     }
 
     show(index, text) {
@@ -109,6 +120,16 @@ export class HistoryIllustration {
         for (const button of this.grid.querySelectorAll("button")) {
             button.setAttribute("aria-label", this.text[button.dataset.labelKey]);
         }
+        this.schedule();
+    }
+
+    schedule() {
+        if (!this.animated || !this.playing || !this.visible || document.hidden) {
+            cancelAnimationFrame(this.frameRequest);
+            this.frameRequest = null;
+            return;
+        }
+        if (this.frameRequest === null) this.frameRequest = requestAnimationFrame(this.frame);
     }
 
     movePointer(event) {
@@ -119,16 +140,19 @@ export class HistoryIllustration {
     }
 
     frame(time) {
-        const visible = !document.hidden && this.root.getClientRects().length > 0;
-        if (this.playing && visible && this.text) {
+        this.frameRequest = null;
+        const visible = !document.hidden && this.visible;
+        if (this.playing && visible && this.text && time - this.lastPaint >= 1000 / 30) {
             const elapsed = this.lastFrame === null ? 0 : Math.min(time - this.lastFrame, 100);
             const cycleSpeed = this.index === 2 ? 200 : 120;
             this.position = (this.position + elapsed / cycleSpeed) % 100;
             this.slider.value = this.position;
             this.draw();
+            this.lastFrame = time;
+            this.lastPaint = time;
         }
-        this.lastFrame = visible ? time : null;
-        if (this.animated) requestAnimationFrame(this.frame);
+        if (!visible) this.lastFrame = null;
+        this.schedule();
     }
 
     draw() {

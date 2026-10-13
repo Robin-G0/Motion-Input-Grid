@@ -77,20 +77,19 @@ test("gift contents stay hidden until entering; leaving removes the temporary sl
     await holdHandsInFrame(page);
     await focusPresentation(page);
     await swipeHand(page, "next_slide");
-    await expect(page.locator('.slide-neighbour[data-position="left"]')).toHaveAttribute("data-wrapped", "true");
-    await expect(page.locator('.slide-neighbour[data-position="left"] .slide-copy')).toHaveText("");
-    await expect(page.locator(".carousel-track")).not.toContainText("Alors, chouette non ?");
+    await expect(page.locator(".carousel-track .slide")).toHaveCount(1);
+    await expect(page.locator(".carousel-track")).not.toContainText("Un geste, une action.");
     await page.clock.runFor(900);
     await swipeHand(page, "previous_slide");
-    await expect(page.locator("#slide-title")).toHaveText("Alors, chouette non ?");
-    await expect(page.locator("#slide-description")).toContainText("easter egg");
+    await expect(page.locator("#slide-title")).toHaveText("Un geste, une action.");
+    await expect(page.locator("#slide-description")).toContainText("La reconnaissance");
     await expect(page.locator("#history-illustration")).toBeHidden();
-    await expect(page.locator("#slide")).toHaveCSS("animation-name", "prism-colours");
+    await expect(page.locator("#slide")).toHaveCSS("animation-name", "none");
     await page.emulateMedia({ reducedMotion: "reduce" });
     await expect(page.locator("#slide")).toHaveCSS("animation-name", "none");
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.getByRole("button", { name: "EN", exact: true }).click();
-    await expect(page.locator("#slide-title")).toHaveText("Pretty neat, right?");
+    await expect(page.locator("#slide-title")).toHaveText("One gesture, one action.");
     await finishRibbonAnimation(page);
     await page.clock.runFor(3000);
     for (const theme of ["light", "dark"]) {
@@ -99,9 +98,8 @@ test("gift contents stay hidden until entering; leaving removes the temporary sl
             background: getComputedStyle(node).backgroundImage,
             ink: getComputedStyle(node).color
         }));
-        expect(colors.background).toContain("rgb(255, 129, 164)");
-        expect(colors.background).toContain("rgb(131, 202, 250)");
-        expect(colors.ink).toBe("rgb(25, 35, 50)");
+        expect(colors.background).toBe("none");
+        expect(colors.ink).toBe(theme === "light" ? "rgb(25, 35, 50)" : "rgb(242, 240, 247)");
     }
     await page.locator("#slide").dispatchEvent("wheel", { deltaX: 0, deltaY: 150 });
     await expect(page.locator("#slide-counter")).toHaveText("Slide \u{1f381} / 3");
@@ -124,6 +122,10 @@ test("the evolving grid presents detection, cancellation, then a one-second thum
     await page.locator("#next-slide").click();
     await page.locator("#next-slide").click();
     await finishRibbonAnimation(page);
+    await page.locator("#presentation").scrollIntoViewIfNeeded();
+    // Playback advances only while the illustration is in the viewport.
+    await expect(page.locator("#history-illustration")).toBeInViewport();
+    await page.clock.runFor(50);
     const grid = page.locator("#slide [data-history-grid]");
     const cell = name => grid.locator(`[data-cell=${name}]`);
     const outcome = page.locator("#slide [data-history-outcome]");
@@ -191,13 +193,15 @@ test("the evolving grid presents detection, cancellation, then a one-second thum
     await expect(cell("cancel")).toBeHidden();
     await expect(cell("condition")).toBeHidden();
     await expect(outcome).toBeEmpty();
-    await expect(page.locator(".prismatic-text")).toHaveText("Movement becomes an interface.");
+    await expect(page.locator(".hero [data-text=tagline]")).toHaveText("Movement becomes an interface.");
     await page.getByRole("button", { name: "FR", exact: true }).click();
+    await page.locator("#presentation").scrollIntoViewIfNeeded();
+    await page.clock.runFor(50);
     await page.clock.runFor(3300);
     await expect(outcome).toHaveText("Entr\u00e9e d\u00e9tect\u00e9e");
 });
 
-test("either hand can advance and reverse slides, with continuous tooltip motion", async ({ page }) => {
+test("either hand can advance and reverse slides, with finite tooltip motion", async ({ page }) => {
     await mockCamera(page);
     await page.clock.install();
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -212,11 +216,12 @@ test("either hand can advance and reverse slides, with continuous tooltip motion
         await expect(page.locator("#slide-counter")).toHaveText("Slide \u{1f381} / 3");
     }
     await page.emulateMedia({ reducedMotion: "no-preference" });
-    await expect(page.locator(".hand-left svg")).toHaveCSS("animation-duration", "6.4s");
+    await expect(page.locator(".hand-left svg")).toHaveCSS("animation-duration", "1.8s");
     await expect(page.locator(".hand-left svg")).toHaveCSS("animation-timing-function", "ease-in-out");
+    await expect(page.locator(".hand-left svg")).toHaveCSS("animation-iteration-count", "2");
 });
 
-test("carousel boundaries hide nonexistent previews for keyboard, wheel and hand navigation", async ({ page }) => {
+test("presentation boundaries work with keyboard, wheel and hand navigation", async ({ page }) => {
     await mockCamera(page);
     await page.clock.install();
     await page.goto("./");
@@ -226,14 +231,14 @@ test("carousel boundaries hide nonexistent previews for keyboard, wheel and hand
     const left = page.locator('.slide-neighbour[data-position="left"]');
     const right = page.locator('.slide-neighbour[data-position="right"]');
     await expect(left).toBeHidden();
-    await expect(right).toBeVisible();
+    await expect(right).toBeHidden();
+    await expect(page.locator(".carousel-track .slide")).toHaveCount(1);
     await expect(page.locator("#previous-slide")).toBeDisabled();
     await page.locator("#slide").focus();
     await page.keyboard.press("ArrowLeft");
     await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
     await page.locator("#next-slide").click();
-    await expect(left).toBeVisible();
-    await expect(right).toBeVisible();
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 2 / 3");
     await page.locator("#next-slide").click();
     await expect(right).toBeHidden();
     await expect(page.locator("#next-slide")).toBeDisabled();
@@ -243,8 +248,8 @@ test("carousel boundaries hide nonexistent previews for keyboard, wheel and hand
     await expect(page.locator("#slide-counter")).toHaveText("Slide 3 / 3");
     await swipeHand(page, "previous_slide", 16);
     await expect(page.locator("#slide-counter")).toHaveText("Slide 2 / 3");
-    await expect(left).toBeInViewport();
-    await expect(right).toBeInViewport();
+    await expect(left).toBeHidden();
+    await expect(right).toBeHidden();
     await expect(page.locator(".hand-left use")).toHaveAttribute("transform", "translate(100 0) scale(-1 1)");
     await expect(page.locator(".hand-right use")).not.toHaveAttribute("transform");
 
@@ -296,14 +301,14 @@ test("the two-second recovery starts after the ribbon animation finishes", async
     await expect(bar).toBeHidden();
 });
 
-test("trackpad momentum produces one elastic return until the wheel stream stops", async ({ page }) => {
+test("trackpad momentum produces one edge cue until the wheel stream stops", async ({ page }) => {
     await page.clock.install();
     await page.goto("./");
     await page.getByRole("button", { name: "EN", exact: true }).click();
     await page.clock.pauseAt(new Date(await page.evaluate(() => Date.now() + 1000)));
     await page.evaluate(() => {
         window.elasticReturns = 0;
-        const content = document.querySelector("#page-content");
+        const content = document.querySelector("#navigation-edge");
         const animate = content.animate.bind(content);
         content.animate = (...args) => { window.elasticReturns++; return animate(...args); };
     });
@@ -379,6 +384,7 @@ test("brief missing camera observations keep the outline steady; a closed guide 
     await expect(page.locator("#assistance")).toBeHidden();
     await page.evaluate(() => { window.demoCamera.coordinate = index => ({ x: index === 15 ? .65 : index === 16 ? .35 : .5, y: .5 }); window.demoCamera.frame(true); });
     await page.clock.runFor(700);
+    await page.clock.runFor(400);
     await page.evaluate(() => window.demoCamera.frame(true));
     await expect(page.locator("#assistance")).toBeHidden();
     await page.locator("#presentation").evaluate(node => node.scrollIntoView({ behavior: "instant" }));

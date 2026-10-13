@@ -121,6 +121,7 @@ const assistance = new Assistance(element("assistance"), {
     language: () => language,
     locked: () => cooldown.locked,
     running: () => Boolean(session?.state.running),
+    errorMessage: () => pageText()[status],
     startCamera,
     focusCamera: frameCameraPreview,
     resetGestures: () => { cameraSwipes.reset(); session?.tracker?.restart?.(); },
@@ -148,7 +149,7 @@ function renderSlide() {
     element("slide-title").textContent = slide.title;
     element("slide-description").textContent = slide.description;
     illustration.show(returned ? 0 : slides.index, text);
-    ribbon.show(slides, text);
+    ribbon.show(slides);
     element("previous-slide").disabled = cooldown.locked || !slides.canMove(-1);
     element("next-slide").disabled = cooldown.locked || !slides.canMove(1);
     element("slide-number").textContent = slide.number;
@@ -162,6 +163,11 @@ function setStatus(nextStatus) {
     element("camera-status").textContent = ["searching", "tracking"].includes(status)
         ? (demoStarted ? text.frameHands : text.cameraHint) : text[status];
     element("camera-status").hidden = !element("camera-status").textContent;
+    const feedback = element("camera-feedback");
+    feedback.hidden = !["loading", "denied", "unavailable", "error", "busyCamera", "insecureCamera", "interruptedCamera"].includes(status);
+    element("camera-feedback-message").textContent = feedback.hidden ? "" : text[status];
+    element("camera-status").setAttribute("aria-live", feedback.hidden ? "polite" : "off");
+    element("welcome").setAttribute("aria-busy", String(status === "loading"));
 }
 
 function renderLanguage() {
@@ -184,14 +190,6 @@ function renderLanguage() {
     element("phone-note").textContent = text.phoneNote;
     renderHandInstructions();
     guide.updateFocus();
-    const title = document.querySelector(".hero h1");
-    if (language === "fr") {
-        const ending = document.createElement("span");
-        ending.className = "title-ending";
-        const words = text.invitation.split(" ");
-        ending.textContent = words.splice(-2).join(" ");
-        title.replaceChildren(document.createTextNode(words.join(" ") + " "), ending);
-    }
     renderSlide();
     setStatus(status);
 }
@@ -406,6 +404,11 @@ function handleAction(event) {
 function stopCamera() {
     assistance.close();
     releaseCamera();
+    const hero = element("welcome");
+    hero.classList.remove("camera-open");
+    cameraCard.hidden = true;
+    for (const selector of ["h1", ".lead", ".privacy"]) hero.querySelector(selector).hidden = false;
+    if (document.activeElement === document.body) element("start-assisted").focus({ preventScroll: true });
 }
 
 function failCamera(message) {
@@ -413,6 +416,7 @@ function failCamera(message) {
     releaseCamera();
     setStatus(cameraError(message));
     if (guided) assistance.go("cameraError");
+    else element("start-camera").focus({ preventScroll: true });
 }
 
 function releaseCamera() {
@@ -469,14 +473,17 @@ function revealCamera() {
         copy.animate([
             { transform: `translate(${before.left - after.left}px, ${before.top - after.top}px)` },
             { transform: "translate(0, 0)" }
-        ], { duration: 600, easing: "ease-out" });
+        ], { duration: 240, easing: "cubic-bezier(.2,.8,.2,1)" });
     }
 }
 
 function frameCameraPreview() {
     const preview = document.querySelector(".camera-preview");
     const video = element("camera-video");
-    if (video.videoWidth && video.videoHeight) preview.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
+    if (video.videoWidth && video.videoHeight) {
+        preview.style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
+        cameraCard.style.setProperty("--camera-ratio", String(video.videoWidth / video.videoHeight));
+    }
     const bounds = preview.getBoundingClientRect();
     // Browsers can retain the old button's scroll position after the layout opens.
     if (bounds.top < 16 || bounds.bottom > innerHeight - 16) {
@@ -491,7 +498,7 @@ async function startCamera() {
     if (starting || session?.state.running) return;
     revealCamera();
     if (!navigator.mediaDevices?.getUserMedia) {
-        setStatus("unavailable");
+        setStatus(window.isSecureContext ? "unavailable" : "insecureCamera");
         return;
     }
     element("finale").hidden = true;
@@ -526,6 +533,11 @@ async function startCamera() {
         setStatus("searching");
         element("camera-placement").hidden = false;
         frameCameraPreview();
+        for (const track of element("camera-video").srcObject?.getVideoTracks() ?? []) {
+            track.addEventListener("ended", () => {
+                if (session === candidate) failCamera("interrupted");
+            }, { once: true });
+        }
         renderCameraTargets();
         session.subscribe(state => {
             if (!state.running && !state.busy && session === candidate) {
@@ -557,6 +569,13 @@ document.querySelectorAll("[data-language]").forEach(button => {
 element("start-camera").addEventListener("click", startCamera);
 element("start-assisted").addEventListener("click", () => { revealCamera(); assistance.open(); });
 element("assistance-toggle").addEventListener("click", () => assistance.open());
+element("camera-video").addEventListener("resize", () => {
+    const video = element("camera-video");
+    if (!video.videoWidth || !video.videoHeight) return;
+    document.querySelector(".camera-preview").style.aspectRatio = `${video.videoWidth} / ${video.videoHeight}`;
+    cameraCard.style.setProperty("--camera-ratio", String(video.videoWidth / video.videoHeight));
+    assistance.positionTarget();
+});
 window.addEventListener("scroll", renderCameraTargets, { passive: true });
 window.addEventListener("resize", renderCameraTargets, { passive: true });
 // Avoid painting an off-screen camera preview while inference keeps running.
@@ -566,6 +585,21 @@ const previewObserver = new IntersectionObserver(entries => {
 previewObserver.observe(document.querySelector(".camera-preview"));
 element("stop-camera").addEventListener("click", stopCamera);
 element("finale-stop-camera").addEventListener("click", stopCamera);
+element("away-stop-camera").addEventListener("click", stopCamera);
+element("camera-feedback").querySelector("a").addEventListener("click", () => {
+    // Choosing the camera-free path must also cancel a pending permission or
+    // model load; a late session must not start after the visitor moves on.
+    stopCamera();
+});
+element("skip-presence").addEventListener("click", event => {
+    event.preventDefault();
+    element("finale").hidden = false;
+    element("finale-stop-camera").hidden = !session?.state.running;
+    element("finale").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+    element("finale-title").tabIndex = -1;
+    element("finale-title").focus({ preventScroll: true });
+    assistance.followViewport();
+});
 function moveSlide(direction) {
     if (cooldown.locked) return;
     slides.move(direction);
@@ -577,7 +611,7 @@ slideInputs = new SlideInputs(element("slide"), element("previous-slide"), eleme
     move: moveSlide,
     delay: settings.slideDelay,
     wheelComplete: () => {
-        cooldown.start(false, ribbon.animation);
+        if (session?.state.running) cooldown.start(false, ribbon.animation);
         guide.completeSwipe();
     }
 });
@@ -596,7 +630,6 @@ document.addEventListener("visibilitychange", () => {
     cooldown.reset();
     greenSince = null;
     cameraSwipes.reset();
-    if (document.hidden) guide.cancelNudge(true);
     resetHandRecovery();
     departureStartedAt = null;
     element("cover-camera-tip").hidden = true;

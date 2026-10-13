@@ -38,10 +38,10 @@ test("gestures advance and reverse the presentation; departure and return reveal
     expect(finale.y + finale.height).toBeLessThanOrEqual(await page.evaluate(() => innerHeight));
     await expect(page.locator('[data-text="finaleStar"]')).toHaveText("Si le projet vous a plu, n’hésitez pas à lui laisser une ⭐ sur GitHub !");
     await page.getByRole("button", { name: "EN", exact: true }).click();
-    await expect(page).toHaveTitle("Motion Input Grid : your move");
+    await expect(page).toHaveTitle("Motion Input Grid — an interface through movement");
     await expect(page.locator('[data-text="finaleStar"]')).toHaveText("If you enjoyed the project, feel free to leave a ⭐ on GitHub!");
     await page.getByRole("button", { name: "FR", exact: true }).click();
-    await expect(page).toHaveTitle("Motion Input Grid : \u00e0 vous de jouer");
+    await expect(page).toHaveTitle("Motion Input Grid — une interface par le mouvement");
     await expect(page.locator('[data-text="finaleStar"]')).toHaveText("Si le projet vous a plu, n’hésitez pas à lui laisser une ⭐ sur GitHub !");
     expect(await page.evaluate(() => window.demoCamera.state.running)).toBe(true);
     await expect(page.locator("#hands-tip")).toBeHidden();
@@ -126,7 +126,7 @@ test("departure and return fade progressively while Escape restores the page imm
     await page.clock.runFor(650);
     await page.evaluate(() => window.demoCamera.frame(false));
     await expect(page.locator("#away-screen")).toBeVisible();
-    await expect(page.locator("#away-screen")).toHaveCSS("transition-duration", "0.65s");
+    await expect(page.locator("#away-screen")).toHaveCSS("transition-duration", "0.3s");
     await expect(page.locator("#page-content")).toBeVisible();
     expect(await page.locator("#page-content").evaluate(node => node.inert)).toBe(true);
     await page.clock.runFor(650);

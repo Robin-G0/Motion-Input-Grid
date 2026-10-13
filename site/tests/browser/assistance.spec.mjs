@@ -108,9 +108,9 @@ test("assistance positions both hands, teaches gestures, then guides slides and 
     await expect(assistant).toHaveAttribute("data-step", "ribbonBack");
     await swipeHand(page, "previous_slide");
     await expect(assistant).toHaveAttribute("data-step", "gift");
-    await expect(page.locator("#slide-title")).toHaveText("Pretty neat, right?");
+    await expect(page.locator("#slide-title")).toHaveText("One gesture, one action.");
     expect(await page.locator("#slide").evaluate(node => getComputedStyle(node).backgroundImage))
-        .toContain("linear-gradient");
+        .toBe("none");
     await finishRibbonAnimation(page);
     await page.clock.runFor(2200);
     await page.locator("#previous-slide").click();
@@ -194,7 +194,7 @@ test("an active guide allows manual scrolling, theme changes and gesture navigat
     await holdHandsInFrame(page);
     await page.locator("#assistance-toggle").click();
     const assistant = page.locator("#assistance");
-    await expect(assistant.locator(".assistance-bulb")).toHaveText("💡");
+    await expect(assistant.locator(".assistance-bulb")).toHaveText("i");
     await page.locator("#theme-toggle").click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
     await page.mouse.move(40, 120);
@@ -336,7 +336,7 @@ test("both target hands are required and a low second wrist cannot complete posi
     await page.locator("#start-assisted").click();
     await page.locator("[data-assistance-next]").click();
     await expect(page.locator("#assistance")).toHaveAttribute("data-step", "aim");
-    await expect(page.locator(".aim-circle")).toHaveCSS("width", "150px");
+    await expect(page.locator(".aim-circle")).toBeHidden();
     await expect(page.locator(".aim-hand").first()).toHaveCSS("width", "76px");
     await page.evaluate(() => {
         window.demoCamera.coordinate = index => index === 15 ? { x: .68, y: .5 }

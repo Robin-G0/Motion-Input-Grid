@@ -6,16 +6,19 @@
     <meta name="description" content="Essayez Motion Input Grid : pilotez une présentation avec vos gestes, directement dans votre navigateur.">
     <meta name="theme-color" content="#0b101a" media="(prefers-color-scheme: dark)">
     <meta name="theme-color" content="#f7f8fc" media="(prefers-color-scheme: light)">
-    <title>Motion Input Grid : à vous de jouer</title>
+    <title>Motion Input Grid — une interface par le mouvement</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="./styles.css">
     <script type="module" src="./src/main.mjs"></script>
 </head>
 <body>
+    <a class="skip-link" href="#presentation" data-text="skipLink">Aller à la présentation</a>
     <svg class="visually-hidden" aria-hidden="true"><defs><symbol id="gesture-hand" viewBox="0 0 100 100"><path d="M30 82 L18 57 Q14 49 20 45 Q25 42 31 51 L34 55 V25 Q34 17 40 17 Q46 17 46 25 V45 V12 Q46 5 52 5 Q58 5 58 12 V44 V18 Q58 11 64 11 Q70 11 70 18 V47 V29 Q70 22 76 22 Q82 22 82 29 V64 Q82 83 68 91 H43 Q35 91 30 82Z"/></symbol></defs></svg>
     <div id="page-content">
         <header class="header">
+            <a class="brand" href="#welcome" aria-label="Motion Input Grid"><span class="brand-mark" aria-hidden="true">M</span><span>Motion Input Grid<span class="brand-caption" data-text="brandCaption">Librairie de reconnaissance de mouvements</span></span></a>
             <nav data-label="navigation">
+                <a href="#presentation" data-text="explore">Découvrir</a>
                 <a data-link="repository" data-text="repository">Repository</a>
                 <button class="theme-toggle" id="theme-toggle" type="button"></button>
                 <div class="languages" aria-label="Language / Langue">
@@ -27,18 +30,24 @@
         <main>
             <section class="hero section" id="welcome">
                 <div class="hero-copy">
-                    <p class="eyebrow"><span class="prismatic-text" data-text="tagline">Le mouvement devient une interface.</span></p>
-                    <h1 data-text="invitation">Alors, on teste tout ça ?</h1>
+                    <p class="eyebrow"><span data-text="tagline">Le mouvement devient une interface.</span></p>
+                    <h1 data-text="invitation">Une interface qui suit votre mouvement.</h1>
                     <p class="lead" data-text="introduction"></p>
+                    <ul class="hero-facts" aria-label="Motion Input Grid"><li data-text="factBrowser"></li><li data-text="factSource"></li><li data-text="factEngine"></li></ul>
                     <p id="phone-note" class="manual-hint" hidden></p>
                     <div class="camera-actions">
-                        <button class="button primary" id="start-camera" type="button" data-text="start">Oui, on essaie !</button>
+                        <button class="button secondary" id="start-camera" type="button" data-text="start">Activer la caméra</button>
                         <div class="guided-start">
-                            <button class="button gold" id="start-assisted" type="button" data-text="startAssisted" aria-describedby="start-assisted-hint"></button>
+                            <button class="button primary" id="start-assisted" type="button" data-text="startAssisted" aria-describedby="start-assisted-hint"></button>
                             <span id="start-assisted-hint" data-text="startAssistedHint"></span>
                         </div>
                         <button class="button secondary" id="assistance-toggle" type="button" data-text="assistance" hidden></button>
                         <button class="button secondary" id="stop-camera" type="button" data-text="stop" hidden></button>
+                    </div>
+                    <a class="manual-link" href="#presentation" data-text="exploreManual"></a>
+                    <div class="camera-feedback" id="camera-feedback" hidden>
+                        <p id="camera-feedback-message" role="status" aria-live="polite" aria-atomic="true"></p>
+                        <a href="#presentation" data-text="continueManual"></a>
                     </div>
                     <p class="camera-placement" id="camera-placement" data-text="cameraPlacement" hidden></p>
                     <p class="privacy"><span data-text="privacy"></span> <a data-link="source" data-text="source"></a></p>
@@ -66,9 +75,10 @@
                 </aside>
             </section>
 
-            <section class="section slideshow-section" id="presentation" aria-labelledby="slideshow-title">
+            <section class="section slideshow-section" id="presentation" tabindex="-1" aria-labelledby="slideshow-title">
                 <p class="eyebrow" data-text="slideshowEyebrow"></p>
                 <h2 id="slideshow-title" data-text="slideshowTitle"></h2>
+                <p class="manual-hint" data-text="manualNavigation"></p>
                 <div class="slide" id="slide" tabindex="0" role="region" aria-labelledby="slideshow-title" aria-roledescription="carousel">
                     <div class="slide-copy">
                         <p class="slide-tag" id="slide-tag"></p>
@@ -89,8 +99,8 @@
                                 </div>
                             </div>
                             <p class="grid-outcome" data-history-outcome role="status" aria-live="polite"></p>
-                            <label class="motion-control visually-hidden"><span data-history-motion-label></span><input type="range" min="0" max="100" value="0" step="1"></label>
-                            <button class="animation-button visually-hidden" type="button" data-history-play></button>
+                            <label class="motion-control"><span data-history-motion-label></span><input type="range" min="0" max="100" value="0" step="1"></label>
+                            <button class="animation-button" type="button" data-history-play></button>
                             <p class="illustration-status visually-hidden" data-history-status role="status" aria-live="polite"></p>
                         </div>
                         <span class="slide-number" id="slide-number" aria-hidden="true"></span>
@@ -108,14 +118,18 @@
                 <h2 id="presence-title" data-text="presenceTitle"></h2>
                 <p class="lead" data-text="presenceDescription"></p>
                 <p class="manual-hint" data-text="presenceNote"></p>
+                <a class="button secondary" href="#finale" id="skip-presence" data-text="skipPresence"></a>
                 <div class="departure-art" aria-hidden="true"><span>○</span><span>→</span><span>◎</span></div>
             </section>
 
             <section class="section finale" id="finale" hidden aria-labelledby="finale-title">
                 <p class="eyebrow" data-text="finaleEyebrow"></p>
                 <h2 id="finale-title" data-text="finaleTitle"></h2>
+                <p data-text="finaleDescription"></p>
                 <p data-text="finaleStar"></p>
                 <a class="button secondary" data-link="repository" data-text="finaleLink"></a>
+                <a class="button primary" data-link="downloads" data-text="downloads"></a>
+                <a class="button secondary" data-link="documentation" data-text="documentation"></a>
                 <button class="button danger" id="finale-stop-camera" type="button" data-text="stop" hidden></button>
             </section>
             <div class="gesture-tip" id="scroll-gesture-tip" role="status" hidden><span class="gesture-arrow" aria-hidden="true">↑</span><span class="gesture-pictogram hand-up hand-up-left" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#gesture-hand" transform="translate(100 0) scale(-1 1)"/></svg></span><span class="visually-hidden" data-text="scrollShort"></span><span class="gesture-pictogram hand-up hand-up-right" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#gesture-hand"/></svg></span><p class="visually-hidden" data-text="scrollTip"></p></div>
@@ -150,7 +164,7 @@
         </div>
         <div class="assistance-gesture" data-assistance-gesture aria-hidden="true" hidden><svg viewBox="0 0 100 100"><use href="#gesture-hand"/></svg><span>→</span></div>
         <div class="assistance-bubble">
-            <span class="assistance-bulb" aria-hidden="true">💡</span>
+            <span class="assistance-bulb" aria-hidden="true">i</span>
             <h2 id="assistance-title" data-assistance-title></h2>
             <p data-assistance-message aria-live="polite"></p>
             <p class="assistance-hint" data-assistance-hint hidden></p>
@@ -162,6 +176,7 @@
     <div id="navigation-edge" aria-hidden="true" hidden></div>
     <div id="away-screen" hidden>
         <p class="visually-hidden" data-text="away" role="status"></p>
+        <button class="away-exit" id="away-stop-camera" type="button" data-text="stop"></button>
         <!-- Well, you found it! But please try the regular way.
              This animation took a while to implement. Give it its two minutes of fame :) -->
         <div id="away-easter-egg" hidden>

@@ -10,7 +10,7 @@ test("bilingual page, footer and controls work under the repository subpath", as
         navigator.mediaDevices.getUserMedia = (...args) => { ++window.cameraRequests; return original(...args); };
     });
     await page.goto("./");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Alors, on teste ça ?");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Une interface qui suit votre mouvement.");
     await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
     await expect(page.locator("#finale")).toBeHidden();
     await expect(page.locator("#away-screen")).toBeHidden();
@@ -21,7 +21,7 @@ test("bilingual page, footer and controls work under the repository subpath", as
     await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
     await page.getByRole("button", { name: "EN", exact: true }).click();
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ready to give it a go?");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("An interface that follows your movement.");
     await expect(page.locator("footer a[data-link=linkedin]")).toHaveAttribute("href", "https://www.linkedin.com/in/robin-g0/");
     await expect(page.locator("footer a[data-link=downloads]")).toHaveAttribute("href", /Motion-Input-Grid\/releases\/latest$/);
     expect(await page.evaluate(() => window.cameraRequests)).toBe(0);
@@ -38,7 +38,7 @@ test("system language takes priority over links and visitors can change it with 
             const otherLanguage = language === "fr" ? "en" : "fr";
             await page.goto(`./?lang=${otherLanguage}`);
             await expect(page.locator("html")).toHaveAttribute("lang", language);
-            const title = language === "fr" ? "Alors, on teste \u00e7a ?" : "Ready to give it a go?";
+            const title = language === "fr" ? "Une interface qui suit votre mouvement." : "An interface that follows your movement.";
             await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
             await page.getByRole("button", { name: otherLanguage.toUpperCase(), exact: true }).click();
             await expect(page.locator("html")).toHaveAttribute("lang", otherLanguage);
@@ -56,6 +56,9 @@ test("small screens remain readable and touch navigation works", async ({ page }
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("./");
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.locator("#slide").dispatchEvent("pointerdown", { pointerType: "touch", pointerId: 1, clientX: 250, clientY: 100 });
+    await page.locator("#slide").dispatchEvent("pointerup", { pointerType: "touch", pointerId: 1, clientX: 170, clientY: 350 });
+    await expect(page.locator("#slide-counter")).toHaveText("Slide 1 / 3");
     await page.locator("#slide").dispatchEvent("pointerdown", { pointerType: "touch", pointerId: 1, clientX: 250 });
     await page.locator("#slide").dispatchEvent("pointerup", { pointerType: "touch", pointerId: 1, clientX: 80 });
     await expect(page.locator("#slide-counter")).toHaveText("Slide 2 / 3");
@@ -132,23 +135,21 @@ test("the welcome fills a large screen and introduces the camera only after the 
     const bounds = await tip.boundingBox();
     expect(bounds.x + bounds.width / 2).toBeCloseTo(1280, 0);
     await expect(tip.locator('[data-text="scrollShort"]')).toHaveText("Raise your hand");
-    expect(await tip.evaluate(node => getComputedStyle(node).animationName)).toBe("prism-colours");
+    expect(await tip.evaluate(node => getComputedStyle(node).animationName)).toBe("none");
     await page.emulateMedia({ reducedMotion: "reduce" });
     expect(await tip.evaluate(node => getComputedStyle(node).animationName)).toBe("none");
 });
 
-test("French welcome punctuation stays with its preceding word at phone and desktop widths", async ({ page }) => {
+test("the welcome remains readable without horizontal overflow at phone and desktop widths", async ({ page }) => {
     await page.goto("./");
     for (const width of [320, 390, 800, 1280]) {
         await page.setViewportSize({ width, height: 844 });
-        const ending = page.locator(".hero h1 .title-ending");
-        await expect(ending).toHaveText("\u00e7a ?");
-        expect(await ending.evaluate(node => node.getClientRects().length)).toBe(1);
-        await expect(ending).toHaveCSS("white-space", "nowrap");
+        await expect(page.locator(".hero h1")).toHaveText("Une interface qui suit votre mouvement.");
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     }
 });
 
-test("system palettes, square cells and all three carousel panels remain usable", async ({ page }) => {
+test("system palettes, square cells and the presentation remain usable", async ({ page }) => {
     await mockCamera(page);
     await page.clock.install();
     await page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" });
@@ -163,7 +164,7 @@ test("system palettes, square cells and all three carousel panels remain usable"
     await expect(page.locator("#navigation-edge")).toBeHidden();
     await page.locator("#next-slide").click();
     await page.locator("#next-slide").click();
-    await expect(page.locator(".slide-neighbour")).toHaveCount(2);
+    await expect(page.locator(".carousel-track .slide")).toHaveCount(1);
     const grid = await page.locator("#slide .history-grid").boundingBox();
     expect(grid.width).toBeCloseTo(grid.height, 0);
     const cell = await page.locator('#slide [data-cell="first"]').boundingBox();
@@ -175,7 +176,7 @@ test("system palettes, square cells and all three carousel panels remain usable"
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
-test("theme touch interactions stay available during recovery and larger hands replace slide instructions", async ({ page }) => {
+test("theme touch interactions stay available during recovery and written gesture instructions remain visible", async ({ page }) => {
     await mockCamera(page);
     await page.clock.install();
     await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "dark" });
@@ -183,7 +184,8 @@ test("theme touch interactions stay available during recovery and larger hands r
     await page.locator("#start-camera").click();
     await holdHandsInFrame(page);
     await swipeHand(page, "scroll_presentation");
-    await expect(page.locator("#slide-gesture-tip .hand-left svg")).toHaveCSS("width", "72px");
+    await expect(page.locator("#slide-gesture-tip .hand-left svg")).toHaveCSS("width", "28px");
+    await expect(page.locator('#slide-gesture-tip [data-text="slideShort"]')).toBeVisible();
     const allowed = await page.locator("#theme-toggle").evaluate(button => {
         button.dispatchEvent(new Event("touchstart", { bubbles: true, cancelable: true }));
         const allowed = button.dispatchEvent(new Event("touchmove", { bubbles: true, cancelable: true }));

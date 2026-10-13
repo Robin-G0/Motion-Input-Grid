@@ -104,7 +104,7 @@ export class Assistance {
         gesture.dataset.direction = direction ?? "";
         this.root.querySelector("[data-assistance-source]").hidden = this.step !== "privacy";
         this.root.querySelector("[data-assistance-title]").textContent = this.text.title;
-        this.setMessage(this.text[this.step] ?? "");
+        this.setMessage(this.step === "cameraError" ? (this.options.errorMessage?.() ?? this.text.cameraError) : this.text[this.step] ?? "");
         this.renderHint(performance.now());
         const close = this.root.querySelector("[data-assistance-close]");
         close.textContent = this.text.close;

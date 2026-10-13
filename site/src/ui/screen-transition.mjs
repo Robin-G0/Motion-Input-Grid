@@ -21,7 +21,7 @@ export class ScreenTransition {
         document.body.classList.add("is-away");
         const finish = () => { this.content.hidden = true; };
         if (this.motionPreference.matches) finish();
-        else this.timer = setTimeout(finish, 650);
+        else this.timer = setTimeout(finish, 300);
     }
 
     reveal() {
@@ -32,7 +32,7 @@ export class ScreenTransition {
         this.screen.classList.remove("is-dark");
         const finish = () => { this.screen.hidden = true; };
         if (this.motionPreference.matches) finish();
-        else this.timer = setTimeout(finish, 650);
+        else this.timer = setTimeout(finish, 300);
     }
 
     reset() {
