@@ -2,7 +2,7 @@
 
 [English](README.md) | [Français](README.fr.md)
 
-[**Télécharger cet exemple**](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-react-examples) (tar.gz).
+[**Télécharger cet exemple**](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-react-examples) (tar.gz).
 
 ## Ce que démontre cet exemple
 

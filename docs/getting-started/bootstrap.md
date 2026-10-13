@@ -27,7 +27,7 @@ Desktop applications and the Python camera runtime remain separate native
 archives; prebuilt examples include their dependencies.
 
 Download the individual `*-standalone` tutorial for your technology from the
-[release downloads](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-downloads). Extract the whole archive. Individual tutorials
+[release downloads](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-downloads). Extract the whole archive. Individual tutorials
 keep runtime assets beside their own source; combined archives share runtime,
 binding and license folders. Source files sit beside executables or compiled pages. [Standalone instructions](../../examples/README.md)
 list runtime and operating-system requirements.

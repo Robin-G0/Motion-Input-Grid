@@ -26,7 +26,7 @@ navigateur, React, Vue et Next.js. Consultez les guides
 [Python](../../bindings/python/README.fr.md) · [JavaScript](../../bindings/javascript/README.fr.md).
 
 Les applications de bureau et leur runtime caméra se téléchargent séparément :
-[Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications).
+[Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications).
 
 Le dossier `distribution/` regroupe les applications, le SDK CMake et les ressources
 préparées pour chaque plateforme ; `build/releases/` contient les archives compressées.

@@ -13,7 +13,7 @@ actions dans votre projet ou envoyez des raccourcis à une application de bureau
 | Commencer ici | Ce que vous pouvez faire |
 | --- | --- |
 | **[Studio web / éditeur de configuration](https://robin-g0.github.io/Motion-Input-Grid/studio/)** | Créer, importer et tester un profil, puis exporter le JSON. Sans installation. |
-| **Motion Input Grid Controller (bureau)** | [Télécharger pour Windows x64 (ZIP)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) · [Télécharger pour Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) — Studio inclus pour éditer les profils. |
+| **Motion Input Grid Controller (bureau)** | [Télécharger pour Windows x64 (ZIP)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) · [Télécharger pour Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) — Studio inclus pour éditer les profils. |
 
 MIG débute son développement. Les applications Linux et les intégrations aux
 moteurs de jeu nécessitent encore davantage de tests ; consultez les
@@ -121,7 +121,7 @@ pas des applications de bureau et ils n'envoient pas de raccourcis aux autres ap
 
 | Paquet | Point de départ |
 | --- | --- |
-| SDK C++, paquets Debian et intégrations aux moteurs | [Catalogue de la release](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-downloads) |
+| SDK C++, paquets Debian et intégrations aux moteurs | [Catalogue de la release](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-downloads) |
 | Exemples natifs autonomes et tutoriels sources | [Catalogue des exemples](../../examples/README.fr.md) |
 | Exemples HTML / React / Vue / Next.js téléchargeables | [Paquets navigateur](../integrations/javascript.fr.md#archive-compilée) |
 

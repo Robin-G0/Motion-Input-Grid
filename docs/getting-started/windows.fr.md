@@ -2,7 +2,7 @@
 
 [English](windows.md) | [Français](windows.fr.md)
 
-**Sans compilation :** [Télécharger Studio + Controller](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications).
+**Sans compilation :** [Télécharger Studio + Controller](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications).
 
 <details>
 <summary>Dans cette page</summary>

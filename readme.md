@@ -13,7 +13,7 @@ keyboard shortcuts to a desktop application.
 | Start here | What you can do |
 | --- | --- |
 | **[Browser Studio / configuration editor](https://robin-g0.github.io/Motion-Input-Grid/studio/)** | Create, import and test a profile, then export JSON. No installation. |
-| **Motion Input Grid Controller (desktop)** | [Download for Windows x64 (ZIP)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) · [Download for Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) — includes Studio for profile editing. |
+| **Motion Input Grid Controller (desktop)** | [Download for Windows x64 (ZIP)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) · [Download for Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) — includes Studio for profile editing. |
 
 MIG is in early development. Desktop Linux applications and game-engine
 integrations still need wider testing; check the [support matrix](docs/reference/support.md).
@@ -117,7 +117,7 @@ applications and cannot send keyboard shortcuts to another application.
 
 | Package | Where to start |
 | --- | --- |
-| C++ SDK, Debian packages and engine integrations | [Release package catalogue](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-downloads) |
+| C++ SDK, Debian packages and engine integrations | [Release package catalogue](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-downloads) |
 | Standalone native examples and source tutorials | [Example catalogue](examples/README.md) |
 | Downloadable HTML / React / Vue / Next.js examples | [Browser example packages](docs/integrations/javascript.md#built-examples-archive) |
 

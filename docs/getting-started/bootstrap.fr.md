@@ -27,7 +27,7 @@ Les applications de bureau et le runtime caméra Python restent des
 archives natives séparées ; les exemples précompilés incluent leurs dépendances.
 
 Téléchargez le tutoriel individuel `*-standalone` de votre technologie depuis les
-[téléchargements de la release](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-downloads). Extrayez tout le contenu : le tutoriel individuel possède
+[téléchargements de la release](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-downloads). Extrayez tout le contenu : le tutoriel individuel possède
 ses ressources ; l’archive commune partage runtime, bindings et licences. Le
 code accompagne les exécutables ou pages compilées. Les [instructions autonomes](../../examples/README.fr.md)
 précisent les exigences du système.

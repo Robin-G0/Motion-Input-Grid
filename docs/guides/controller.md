@@ -33,8 +33,8 @@ Download for your system. The same package includes Studio and Controller:
 
 | System | Download v1.1.0 | Open after extraction |
 | --- | --- | --- |
-| Windows x64 | [Download ZIP](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) | `windows/motion-input-grid-controller.exe` |
-| Linux x64 | [Download tar.gz](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-desktop-applications) | `./motion-input-grid-controller` |
+| Windows x64 | [Download ZIP](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) | `windows/motion-input-grid-controller.exe` |
+| Linux x64 | [Download tar.gz](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) | `./motion-input-grid-controller` |
 
 Paths start at the extracted archive's main folder. On Windows, open the executable.
 On Linux, open a terminal in that folder and run `./motion-input-grid-controller`; this launcher
