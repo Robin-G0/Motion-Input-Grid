@@ -486,7 +486,7 @@ test("Ctrl+A selects and moves the step's regions together, supports copying the
     await page.keyboard.press("Control+z");
     await expect(page.locator(".region-coordinate").first()).toHaveText("[3, 3, 1, 1]");
     await expect(page.locator(".grid-region.selected")).toHaveCount(2);
-    await page.locator('.handle-corner[data-corner="se"]').focus();
+    await page.locator('.handle-corner[data-corner="sw"]').focus();
     await page.keyboard.press("ArrowRight"); await page.keyboard.press("ArrowRight");
     await expect(page.locator(".region-coordinate").first()).toHaveText("[3, 3, 1, 1]");
     await expect(page.locator(".region-coordinate").last()).toHaveText("[3, 3, 1, 1]");
