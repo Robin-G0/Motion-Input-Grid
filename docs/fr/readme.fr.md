@@ -6,6 +6,11 @@
 
 Commencez ici pour une **introduction rapide et une démonstration interactive du concept**, directement dans votre navigateur.
 
+Les images de la caméra sont traitées sur votre appareil. Le démarrage télécharge
+d’abord les modules caméra, les modèles de suivi et le moteur depuis le site.
+Si le chargement échoue, rétablissez votre connexion puis réessayez ; la
+démonstration n’est pas installée pour fonctionner hors ligne.
+
 **Transformez un mouvement en action.** Dessinez un parcours pour un poignet ou
 une autre partie du corps, puis reconnaissez-le avec une caméra. Utilisez les
 actions dans votre projet ou envoyez des raccourcis à une application de bureau.
