@@ -152,7 +152,7 @@ export const translations = {
         documentation: "Lire la documentation",
         finaleStar: "Si le projet vous a plu, n’hésitez pas à lui laisser une ⭐ sur GitHub !",
         finaleLink: "Voir sur GitHub",
-        footerDescription: "Motion Input Grid, un projet de Robin.",
+        footerDescription: "Motion Input Grid, un projet de",
         repository: "GitHub",
         downloads: "Téléchargements"
     },
@@ -285,7 +285,7 @@ export const translations = {
         documentation: "Read the documentation",
         finaleStar: "If you enjoyed the project, feel free to leave a ⭐ on GitHub!",
         finaleLink: "View on GitHub",
-        footerDescription: "Motion Input Grid, a project by Robin.",
+        footerDescription: "Motion Input Grid, a project by",
         repository: "GitHub",
         downloads: "Downloads"
     }

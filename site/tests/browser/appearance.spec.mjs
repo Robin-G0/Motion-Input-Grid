@@ -62,7 +62,9 @@ test("small screens remain readable and touch navigation works", async ({ page }
     await page.locator("#slide").dispatchEvent("pointerdown", { pointerType: "touch", pointerId: 1, clientX: 250 });
     await page.locator("#slide").dispatchEvent("pointerup", { pointerType: "touch", pointerId: 1, clientX: 80 });
     await expect(page.locator("#slide-counter")).toHaveText("Slide 2 / 3");
-    await expect(page.locator("footer a[data-link=github]")).toHaveAttribute("href", "https://github.com/Robin-G0");
+    await expect(page.locator("footer nav a[data-link=github]")).toHaveAttribute("href", "https://github.com/Robin-G0");
+    await expect(page.locator("footer p a")).toHaveText("Robin-G0");
+    await expect(page.locator("footer p a")).toHaveAttribute("href", "https://github.com/Robin-G0");
 });
 
 for (const viewport of [{ width: 844, height: 390 }, { width: 1440, height: 1080 }, { width: 1280, height: 720 }, { width: 390, height: 844 }, { width: 390, height: 700 }]) {
