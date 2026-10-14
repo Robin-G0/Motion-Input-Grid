@@ -164,7 +164,7 @@ function setStatus(nextStatus) {
         ? (demoStarted ? text.frameHands : text.cameraHint) : text[status];
     element("camera-status").hidden = !element("camera-status").textContent;
     const feedback = element("camera-feedback");
-    feedback.hidden = !["loading", "denied", "unavailable", "error", "busyCamera", "insecureCamera", "interruptedCamera"].includes(status);
+    feedback.hidden = !["loading", "denied", "unavailable", "error", "busyCamera", "insecureCamera", "networkCamera", "interruptedCamera"].includes(status);
     element("camera-feedback-message").textContent = feedback.hidden ? "" : text[status];
     element("camera-status").setAttribute("aria-live", feedback.hidden ? "polite" : "off");
     element("welcome").setAttribute("aria-busy", String(status === "loading"));

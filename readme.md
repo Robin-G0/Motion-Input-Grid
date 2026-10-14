@@ -6,6 +6,10 @@
 
 Start here for a **quick introduction and an interactive demo of the concept**, directly in your browser.
 
+Camera images are processed on your device. Starting the demo first downloads
+the camera modules, tracking models and engine from the site. If loading fails,
+restore your connection and retry; the demo is not installed for offline use.
+
 **Turn a movement into an action.** Draw a route for a wrist or another body part,
 then recognize it with a camera. Use the resulting actions in your project or send
 keyboard shortcuts to a desktop application.

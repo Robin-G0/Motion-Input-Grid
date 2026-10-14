@@ -3,7 +3,7 @@ import { expect } from "@playwright/test";
 // Feed simulated camera observations at the MIG boundary; never add a test mode
 // or fake actions to the deployed page itself.
 export async function mockCamera(page, failure = "") {
-    await page.route("**/mig/session.mjs", route => route.fulfill({
+    await page.route("**/mig/session.mjs*", route => route.fulfill({
         contentType: "text/javascript",
         body: `
             export class MIGSession {

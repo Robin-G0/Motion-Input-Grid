@@ -40,6 +40,21 @@ test("a denied camera leaves manual navigation usable and allows retry", async (
     await expect(page.locator("#start-camera")).toBeHidden();
 });
 
+test("a failed session download can be retried without reloading the page", async ({ page }) => {
+    await mockCamera(page);
+    const failDownload = route => route.abort("internetdisconnected");
+    await page.route("**/mig/session.mjs*", failDownload);
+    await page.goto("./");
+    await page.locator("#start-camera").click();
+    await expect(page.locator("#camera-status")).toContainText("connexion");
+    await expect(page.locator("#camera-status")).not.toContainText("HTTPS");
+    await expect(page.locator("#start-camera")).toBeEnabled();
+    await page.unroute("**/mig/session.mjs*", failDownload);
+    await page.locator("#start-camera").click();
+    await expect(page.locator("#start-camera")).toBeHidden();
+    await expect(page.locator("#stop-camera")).toBeVisible();
+});
+
 test("real MIG session starts with local models, processes video and releases the camera", async ({ page }) => {
     const externalRequests = [];
     const errors = [];
