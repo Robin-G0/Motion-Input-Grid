@@ -38,10 +38,10 @@ test("gestures advance and reverse the presentation; departure and return reveal
     expect(finale.y + finale.height).toBeLessThanOrEqual(await page.evaluate(() => innerHeight));
     await expect(page.locator('[data-text="finaleStar"]')).toHaveText("Si le projet vous a plu, n’hésitez pas à lui laisser une ⭐ sur GitHub !");
     await page.getByRole("button", { name: "EN", exact: true }).click();
-    await expect(page).toHaveTitle("Motion Input Grid — an interface through movement");
+    await expect(page).toHaveTitle("Motion Input Grid");
     await expect(page.locator('[data-text="finaleStar"]')).toHaveText("If you enjoyed the project, feel free to leave a ⭐ on GitHub!");
     await page.getByRole("button", { name: "FR", exact: true }).click();
-    await expect(page).toHaveTitle("Motion Input Grid — une interface par le mouvement");
+    await expect(page).toHaveTitle("Motion Input Grid");
     await expect(page.locator('[data-text="finaleStar"]')).toHaveText("Si le projet vous a plu, n’hésitez pas à lui laisser une ⭐ sur GitHub !");
     expect(await page.evaluate(() => window.demoCamera.state.running)).toBe(true);
     await expect(page.locator("#hands-tip")).toBeHidden();
