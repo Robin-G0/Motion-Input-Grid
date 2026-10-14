@@ -30,7 +30,7 @@ export class ThemeToggle {
         this.button.title = this.button.getAttribute("aria-label");
         this.button.setAttribute("aria-pressed", String(this.dark));
         const icon = `${this.iconBase}${this.dark ? "favicon-dark.svg" : "favicon.svg"}`;
-        for (const node of document.querySelectorAll('link[rel="icon"], img.brand-mark')) {
+        for (const node of document.querySelectorAll('link[rel="icon"][type="image/svg+xml"], img.brand-mark')) {
             const attribute = node.tagName === "LINK" ? "href" : "src";
             if (node.getAttribute(attribute) !== icon) node.setAttribute(attribute, icon);
         }

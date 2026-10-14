@@ -210,16 +210,16 @@ test("theme choice is remembered, works against the system palette and follows l
     await page.emulateMedia({ colorScheme: "light" });
     await page.goto("./");
     await expect(page.locator(".brand-mark")).toHaveAttribute("src", "./favicon.svg");
-    await expect(page.locator('link[rel="icon"]')).toHaveAttribute("href", "./favicon.svg");
+    await expect(page.locator('link[rel="icon"][type="image/svg+xml"]')).toHaveAttribute("href", "./favicon.svg");
     await page.emulateMedia({ colorScheme: "dark" });
     await expect(page.locator(".brand-mark")).toHaveAttribute("src", "./favicon-dark.svg");
-    await expect(page.locator('link[rel="icon"]')).toHaveAttribute("href", "./favicon-dark.svg");
+    await expect(page.locator('link[rel="icon"][type="image/svg+xml"]')).toHaveAttribute("href", "./favicon-dark.svg");
     await page.emulateMedia({ colorScheme: "light" });
     await page.getByRole("button", { name: "EN", exact: true }).click();
     await page.getByRole("button", { name: "Switch to dark theme" }).click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     await expect(page.locator(".brand-mark")).toHaveAttribute("src", "./favicon-dark.svg");
-    await expect(page.locator('link[rel="icon"]')).toHaveAttribute("href", "./favicon-dark.svg");
+    await expect(page.locator('link[rel="icon"][type="image/svg+xml"]')).toHaveAttribute("href", "./favicon-dark.svg");
     expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--paper").trim())).toBe("#0b101a");
     await page.reload();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
@@ -232,7 +232,7 @@ test("theme choice is remembered, works against the system palette and follows l
     await page.emulateMedia({ colorScheme: "dark" });
     expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--paper").trim())).toBe("#f7f4ed");
     await expect(page.locator(".brand-mark")).toHaveAttribute("src", "./favicon.svg");
-    await expect(page.locator('link[rel="icon"]')).toHaveAttribute("href", "./favicon.svg");
+    await expect(page.locator('link[rel="icon"][type="image/svg+xml"]')).toHaveAttribute("href", "./favicon.svg");
     for (const name of ["favicon.svg", "favicon-dark.svg"]) {
         const response = await page.request.get(`./${name}`);
         expect(response.ok()).toBe(true);
