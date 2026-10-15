@@ -24,11 +24,11 @@ directement des mouvements dans un jeu que vous développez.
    [Studio de bureau](configurator.fr.md). Dessinez des régions 🟩 **Required**
    puis une 🟨 **Trigger**. Une 🟥 **Forbidden** annule un parcours indésirable ;
    une 🟪 **Interaction** ajoute une condition de signe de main.
-3. Associez la touche dans les réglages du mouvement du Studio de bureau ou
-   ajoutez `keyboard` avec l'éditeur JSON du Studio web. Le
-   [guide des présentations](presentations.fr.md) montre cette modification ;
-   remplacez la touche par celle du jeu en suivant la
-   [référence clavier](../reference/configuration.fr.md).
+3. Dans le Studio web, choisissez **Associer des touches** et sélectionnez la
+   touche du jeu, ou capturez un raccourci. Les touches d’une même ligne sont
+   simultanées ; des lignes distinctes produisent des pressions successives.
+   Enregistrez le mouvement, puis testez toute la configuration. Le
+   [guide du Studio](studio-web.fr.md) présente les commandes.
 4. Exportez le JSON, arrêtez la caméra de l'éditeur et importez le profil dans le
    [Controller](controller.fr.md). Calibrez et vérifiez le suivi sans sortie clavier.
 5. Activez la sortie et donnez le focus au jeu. Testez une action avant d'en

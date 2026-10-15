@@ -1,0 +1,14 @@
+{
+  "application": "Motion Input Grid Controller",
+  "version": "1.1.0",
+  "executable_sha256": "0662425e7dde00f2b2c3bcd0b429f9646fd8bff65ee8cdc51882bcaa49e176d4",
+  "method": "Win32 PrintWindow capture of real application windows; no image compositing",
+  "states": {
+    "open.png": "Empty profile library; keyboard off",
+    "import.png": "Actual HI profile import review",
+    "activate.png": "HI profile imported; keyboard consent on; capture not started"
+  },
+  "profile": "configs/studio-hi.json",
+  "platform": "Windows x64",
+  "regenerate": "python tools/dev/capture-controller.py <diagnostic Controller.exe> <website image directory>"
+}

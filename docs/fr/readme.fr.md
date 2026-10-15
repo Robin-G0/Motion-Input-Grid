@@ -36,7 +36,7 @@ moteurs de jeu nécessitent encore davantage de tests ; consultez les
 1. Créez ou importez un profil dans le Studio web ci-dessus ou dans le
    [Studio de bureau](../guides/configurator.fr.md). Choisissez la partie du corps,
    dessinez les conditions et associez une action. Ajoutez les raccourcis dans
-   l’éditeur JSON du Studio web ou dans le Studio de bureau.
+   **Associer des touches** dans le Studio web ou dans le Studio de bureau.
 2. Testez avec la caméra, puis exportez ou enregistrez le profil JSON. Le
    [guide du Studio web](../guides/studio-web.fr.md) explique l'édition et le retour visuel.
 3. Téléchargez le Controller ci-dessus et extrayez **toute l'archive**. Arrêtez la

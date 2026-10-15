@@ -68,4 +68,64 @@ Object.assign(en, {
 });
 fr.draftUnreadable = "Le brouillon enregistré est endommagé et ne peut pas être ouvert. Il a été conservé sur cet appareil ; vous pouvez importer une configuration ou créer un nouveau profil.";
 en.draftUnreadable = "The saved draft is damaged and cannot be opened. It has been kept on this device; you can import a configuration or create a new profile.";
+Object.assign(fr, {
+    exampleChoice: "Me guider pas à pas", exampleHint: "Du premier mouvement à son utilisation dans le Controller.",
+    keyboardTitle: "Que doit faire ce mouvement ?", keyboardHint: "Dans une ligne, les touches sont pressées ensemble. Les lignes sont exécutées de haut en bas. Le site affiche une simulation ; seul le Controller envoie les touches.",
+    assignKeyboard: "Associer des touches", saveMovement: "Enregistrer et revenir aux mouvements", testConfiguration: "Tester toute la configuration", selectedTest: "Test du mouvement sélectionné", wholeTest: "Test de toute la configuration", simulationHint: "Simulation : aucune touche n’est envoyée à vos applications.", noKeyboard: "Aucune touche associée", chord: "Touches ensemble", typeText: "Saisir du texte", chooseKey: "Choisir une touche", addKey: "Ajouter à ce raccourci", addChord: "Ajouter une pression / un raccourci", addText: "Ajouter du texte", recordChord: "Capturer un raccourci", pressChord: "Appuyez sur les touches (Échap pour annuler)", moveUp: "Monter", moveDown: "Descendre", keyboardMode: "Quand le mouvement est reconnu", single_press: "Une seule fois", hold: "Maintenir le dernier raccourci tant que la pose reste active", repeat: "Répéter tant que la pose reste active", repeatInterval: "Intervalle entre répétitions (ms)", keyboardPreview: "Ce qui serait envoyé", keyboardInvalid: "Vérifiez les touches de chaque ligne. Pour une touche seule, gardez une seule touche sur la ligne.", keyboardLimit: "La séquence est trop longue (256 lignes, 1 024 touches et 16 384 octets de texte maximum).", holdNeedsKeys: "Le mode maintien doit se terminer par une ligne de touches, pas du texte.", keyboardInterval: "Choisissez un intervalle entier entre 20 et 60 000 ms.", keysSaved: "Touches enregistrées dans ce mouvement.", movementSaved: "Mouvement enregistré. Ajoutez-en un autre, testez l’ensemble ou exportez.", confirmDelete: "Supprimer ce mouvement ? Cette action peut être annulée avec Annuler.",
+    guideTitle: "Votre premier mouvement", guideDraw: "1. Nommez le mouvement. 2. Choisissez le point du corps. 3. Dessinez une zone verte de départ, puis une zone jaune d’arrivée. Le geste doit passer de la verte à la jaune.", guideTest: "4. Activez la caméra et gardez vos épaules visibles. Suivez votre parcours. Le journal confirme le mouvement reconnu. Revenez à l’édition si nécessaire.", guideKeys: "5. Associez une touche ou un raccourci. Pour avancer une présentation, choisissez Right. Enregistrez pour retrouver vos mouvements.", guideManage: "6. Ajoutez ou modifiez vos mouvements. Testez toute la configuration pour voir les actions et les touches simulées, puis exportez.", guideExport: "7. Votre fichier JSON est téléchargé. Téléchargez le Controller ci-dessous pour utiliser vos gestes dans une autre application.", leaveGuide: "Quitter le guide", startGuide: "Commencer le guide", backMoves: "Retour aux mouvements", continueKeys: "Continuer : associer des touches", configurationReady: "Votre configuration est prête", controllerRequired: "Pour utiliser ces gestes dans vos applications, ouvrez ce fichier dans MIG Controller. Le site ne peut pas envoyer de touches aux autres applications.", controllerGuide: "Télécharger le Controller et voir les 3 étapes", closeExport: "Revenir à ma configuration", emptyExport: "Ajoutez au moins un mouvement avant d’exporter.", networkCamera: "Impossible de charger les fichiers de suivi. Vérifiez votre connexion, puis réessayez."
+});
+Object.assign(en, {
+    exampleChoice: "Guide me step by step", exampleHint: "From your first movement to using it in the Controller.",
+    keyboardTitle: "What should this movement do?", keyboardHint: "Keys on one row are pressed together. Rows run from top to bottom. The website shows a simulation; only the Controller sends keys.", assignKeyboard: "Assign keys", saveMovement: "Save and return to movements", testConfiguration: "Test the whole configuration", selectedTest: "Testing the selected movement", wholeTest: "Testing the whole configuration", simulationHint: "Simulation: no keys are sent to your applications.", noKeyboard: "No keys assigned", chord: "Keys together", typeText: "Type text", chooseKey: "Choose a key", addKey: "Add to this shortcut", addChord: "Add a key press / shortcut", addText: "Add text", recordChord: "Capture a shortcut", pressChord: "Press the keys (Escape to cancel)", moveUp: "Move up", moveDown: "Move down", keyboardMode: "When the movement is recognised", single_press: "Once", hold: "Hold the final shortcut while the pose stays active", repeat: "Repeat while the pose stays active", repeatInterval: "Repeat interval (ms)", keyboardPreview: "What would be sent", keyboardInvalid: "Check the keys on each row. For a single key press, keep just one key on that row.", keyboardLimit: "The sequence is too long (maximum 256 rows, 1,024 keys and 16,384 bytes of text).", holdNeedsKeys: "Hold mode must end with a row of keys, not text.", keyboardInterval: "Choose a whole-number interval between 20 and 60,000 ms.", keysSaved: "Keys saved in this movement.", movementSaved: "Movement saved. Add another, test the whole configuration or export.", confirmDelete: "Delete this movement? You can restore it with Undo.",
+    guideTitle: "Your first movement", guideDraw: "1. Name the movement. 2. Choose a body point. 3. Draw a green starting region, then a yellow finishing region. Your gesture must travel from green to yellow.", guideTest: "4. Start the camera and keep both shoulders visible. Follow your path. The journal confirms the recognised movement. Return to editing if needed.", guideKeys: "5. Assign a key or shortcut. To advance a presentation, choose Right. Save to return to your movements.", guideManage: "6. Add or edit movements. Test the whole configuration to see actions and simulated keys, then export.", guideExport: "7. Your JSON file is downloaded. Download the Controller below to use your gestures in another application.", leaveGuide: "Leave the guide", startGuide: "Start the guide", backMoves: "Back to movements", continueKeys: "Continue: assign keys", configurationReady: "Your configuration is ready", controllerRequired: "To use these gestures in your applications, open this file in MIG Controller. The website cannot send keys to other applications.", controllerGuide: "Download the Controller and see the 3 steps", closeExport: "Return to my configuration", emptyExport: "Add at least one movement before exporting.", networkCamera: "Could not load the tracking files. Check your connection, then try again."
+});
 export const copy = { fr, en };
+fr.bodyPointHint = "Le point du corps choisi s’applique aux nouvelles zones. Les zones existantes se modifient dans leurs détails.";
+en.bodyPointHint = "The selected body point applies to new regions. Change an existing region’s point in its details.";
+Object.assign(fr,{checkingDownloads:"Recherche des téléchargements Controller…",directDownloads:"Téléchargez le Controller pour votre système.",pendingDownloads:"Les fichiers Controller seuls ne sont pas encore publiés pour tous les systèmes. Consultez le guide pour accéder à la version disponible.",unverifiedDownloads:"Téléchargements non vérifiés. Le guide donne accès à la dernière version disponible."});
+Object.assign(en,{checkingDownloads:"Checking Controller downloads…",directDownloads:"Download the Controller for your system.",pendingDownloads:"Controller-only files are not yet published for every system. Open the guide to find the available release.",unverifiedDownloads:"Downloads could not be verified. The guide links to the latest available release."});
+
+Object.assign(en, {
+ addChord:"+ Add a key / next step", addKey:"Add a simultaneous key",
+ tour_choosePoint:"Choose a body point",
+ tour_name:"Name this movement HI, then leave the field.",
+ tour_point:"Choose Left wrist. We will recognise a wave using this point.",
+ tour_drawStart:"Drag across the marked lower band, from its top left to bottom right. This green region is the starting position.",
+ tour_toolFinish:"Choose the yellow finishing-region tool.",
+ tour_drawFinish:"Drag across the marked upper band. The wrist must travel from the green region to this yellow region.",
+ tour_try:"Test the movement you just drew.",
+ tour_camera:"Start the camera and allow access. Keep both shoulders and your left wrist visible.",
+ tour_recognise:"Lower your left wrist into green, then raise it into yellow. The guide continues when HI is recognised. You can stop and retry the camera, or leave the guide to edit your drawing.",
+ tour_keys:"HI was recognised. Continue to assign its keyboard action.",
+ tour_plus:"No keys are assigned yet. Click + to add the first key.",
+ tour_right:"Choose Right, or capture the Right Arrow key. If you chose another key, remove it and use + again.",
+ tour_save:"Right is ready. Save HI and return to your movements.",
+ tour_whole:"Now test the whole configuration, including its keyboard simulation.",
+ tour_cameraAgain:"Start the camera to test the saved configuration.",
+ tour_recogniseAgain:"Lower then raise your left wrist again. Look for HI and Right in the action journal. Studio simulates keys; the Controller sends them.",
+ tour_back:"Your configuration works. Return to your movements to export it.",
+ tour_export:"Export your profile. Keep this JSON file for the Controller.",
+ tour_controller:"Profile downloaded. Open this guide, download the Controller, import your JSON and enable keyboard output. Your HI gesture will send Right Arrow."
+});
+Object.assign(fr, {
+ addChord:"+ Ajouter une touche / étape suivante", addKey:"Ajouter une touche simultanée",
+ tour_choosePoint:"Choisir un point du corps",
+ tour_name:"Nommez ce mouvement HI, puis quittez le champ.",
+ tour_point:"Choisissez Poignet gauche. Ce point permettra de reconnaître votre geste.",
+ tour_drawStart:"Tracez toute la bande inférieure marquée, du coin supérieur gauche au coin inférieur droit. Cette zone verte est la position de départ.",
+ tour_toolFinish:"Choisissez l’outil jaune de zone d’arrivée.",
+ tour_drawFinish:"Tracez toute la bande supérieure marquée. Le poignet devra passer de la zone verte à cette zone jaune.",
+ tour_try:"Testez le mouvement que vous venez de dessiner.",
+ tour_camera:"Activez la caméra et autorisez son accès. Gardez vos deux épaules et votre poignet gauche visibles.",
+ tour_recognise:"Baissez le poignet gauche dans le vert, puis levez-le dans le jaune. Le guide continue lorsque HI est reconnu. Vous pouvez arrêter et relancer la caméra, ou quitter le guide pour modifier le dessin.",
+ tour_keys:"HI a été reconnu. Continuez pour lui associer une touche.",
+ tour_plus:"Aucune touche n’est encore associée. Cliquez sur + pour ajouter la première.",
+ tour_right:"Choisissez Right ou capturez la flèche droite. Si vous avez choisi une autre touche, retirez-la et réessayez avec +.",
+ tour_save:"Right est prêt. Enregistrez HI pour revenir aux mouvements.",
+ tour_whole:"Testez maintenant toute la configuration, avec la simulation des touches.",
+ tour_cameraAgain:"Activez la caméra pour tester la configuration enregistrée.",
+ tour_recogniseAgain:"Baissez puis levez à nouveau le poignet gauche. Le journal doit afficher HI et Right. Studio simule les touches ; le Controller les envoie.",
+ tour_back:"Votre configuration fonctionne. Revenez aux mouvements pour l’exporter.",
+ tour_export:"Exportez votre profil. Gardez ce fichier JSON pour le Controller.",
+ tour_controller:"Profil téléchargé. Ouvrez ce guide, téléchargez le Controller, importez votre JSON et activez les touches. Votre geste HI enverra la flèche droite."
+});

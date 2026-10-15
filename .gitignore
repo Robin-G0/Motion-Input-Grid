@@ -1,6 +1,7 @@
 # Local text files
 *.txt
 NEXT.md
+NEXT-report.md
 !requirements.txt
 !CMakeLists.txt
 !examples/common/licenses/LICENSE.*.txt

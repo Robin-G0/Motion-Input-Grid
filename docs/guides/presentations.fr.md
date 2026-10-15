@@ -14,19 +14,11 @@ Commencez par un mouvement volontaire et gardez le clavier comme solution de sec
    région 🟨 **Trigger** plus haut. Placez-les avec le retour caméra selon votre
    mouvement réel, en gardant les épaules visibles. Évitez les positions atteintes
    naturellement en parlant. Revenez au repos entre deux activations.
-3. Dans les réglages du mouvement du Studio de bureau, associez **Right** en
-   **Single press**. Dans le Studio web, ouvrez **JSON** et ajoutez ces champs
-   à l'objet du mouvement existant dans `inputs`, en conservant `steps` et les autres champs :
-
-   ```json
-   "keyboard": [{"keys": [39]}],
-   "action_mode": "single_press",
-   "cooldown_ms": 700
-   ```
-
-   Ce sont des champs à ajouter, pas un profil complet. Appliquez le JSON puis
-   exportez-le. Les codes clavier et modes de sortie figurent dans la
-   [référence de configuration](../reference/configuration.fr.md).
+3. Dans le Studio web, choisissez **Associer des touches**. Ajoutez une pression,
+   gardez **Right** (flèche droite) et **Une seule fois**, puis **Enregistrer et
+   revenir aux mouvements**. **Tester toute la configuration** montre les actions
+   et les opérations clavier simulées. Choisissez **Exporter** : le rappel donne
+   accès au Controller et au guide illustré. Aucune modification de JSON n’est nécessaire.
 4. Arrêtez la caméra de l'éditeur. Importez le fichier dans le
    [Controller](controller.fr.md), démarrez le suivi et calibrez à votre position
    de présentation. Gardez **Keyboard output** désactivé jusqu'à ce que seul

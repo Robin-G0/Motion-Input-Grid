@@ -11,6 +11,8 @@ test("unfinished drafts restore without execution validation while damaged draft
     const broken = structuredClone(draft); broken.inputs[0].steps = [null];
     assert.throws(() => parseDraft(JSON.stringify(broken)), /draftUnreadable/);
     assert.throws(() => parseDraft(JSON.stringify({...draft,inputs:[null]})), /draftUnreadable/);
+    const brokenKeys = structuredClone(draft); brokenKeys.inputs[0].keyboard = "broken";
+    assert.throws(() => parseDraft(JSON.stringify(brokenKeys)), /draftUnreadable/);
     const advanced = starter(); advanced.inputs[0].steps.push({id:"unfinished",mode:"simultaneous",constraints:[],hold_ms:100});
     advanced.inputs[0].mirror = true;
     assert.deepEqual(parseDraft(JSON.stringify(advanced)),advanced);
@@ -235,4 +237,20 @@ test("zone finger editing retains the other hand and native validation accepts i
     const module = await createMIG(), tracker = new module.Tracker();
     try { assert.equal(tracker.load(JSON.stringify(profile)), ""); }
     finally { tracker.delete(); }
+});
+
+
+test("documented complete profiles and HI tutorial example parse with the actual native schema",async()=>{
+    const {readFile}=await import("node:fs/promises");
+    const module=await createMIG(), tracker=new module.Tracker();
+    try {
+        for(const name of ["configuration.md","configuration.fr.md"]){
+            const markdown=await readFile(new URL(`../../../docs/reference/${name}`,import.meta.url),"utf8");
+            const examples=[...markdown.matchAll(/```json\s*([\s\S]*?)```/g)].map(match=>match[1]).filter(value=>value.trim().startsWith('{')&&value.includes('"schema_version"'));
+            assert.ok(examples.length>=2);
+            for(const example of examples)assert.equal(tracker.load(example),"");
+        }
+        const hi=await readFile(new URL("../../../configs/studio-hi.json",import.meta.url),"utf8");
+        assert.equal(tracker.load(hi),"");assert.deepEqual(JSON.parse(hi).inputs[0].keyboard,[{keys:[39]}]);
+    }finally{tracker.delete();}
 });

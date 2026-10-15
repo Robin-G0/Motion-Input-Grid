@@ -11,18 +11,10 @@ application. Start in a disposable document, with an action that is easy to undo
    [desktop Studio](configurator.md). Name it **Copy selection**, with logical
    action `copy_selection`. Draw 🟩 **Required** at the wrist's resting position
    and 🟨 **Trigger** somewhere your normal typing does not reach.
-2. In desktop Studio's movement settings, assign **Ctrl + C** and **Single press**.
-   Alternatively, open Studio Web's **JSON** editor and add these fields to that
-   existing movement inside `inputs`, preserving its other fields:
-
-   ```json
-   "keyboard": [{"keys": [17, 67]}],
-   "action_mode": "single_press",
-   "cooldown_ms": 700
-   ```
-
-   Apply and export the profile. See the
-   [keyboard reference](../reference/configuration.md) for other shortcuts.
+2. In web Studio, choose **Assign keys**, add a shortcut and capture **Ctrl+C**,
+   or add **Ctrl** and **C** to the same row. Keep **Once**, then **Save and return
+   to movements**. In desktop Studio, use the movement settings and **Single press**.
+   Test the configuration, then export it. No JSON editing is needed.
 3. Stop the editor camera and import JSON in the [Controller](controller.md).
    Start tracking, calibrate, and confirm the intended movement with output off.
 4. Enable output. In a text editor, select some sample text and perform the

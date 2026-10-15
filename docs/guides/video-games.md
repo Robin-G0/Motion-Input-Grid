@@ -23,11 +23,10 @@ game using the Controller, or integrate recognition into a game you develop.
    [desktop Studio](configurator.md). Draw 🟩 **Required** regions along the route
    and end with 🟨 **Trigger**. A 🟥 **Forbidden** region cancels an unwanted
    route; a 🟪 **Interaction** adds a hand-sign condition.
-3. Associate the game's key in desktop Studio's movement settings, or add a
-   `keyboard` field through Studio Web's JSON editor. The
-   [presentation guide](presentations.md) shows a complete field-editing example;
-   replace its key with the game's binding using the
-   [keyboard reference](../reference/configuration.md).
+3. In web Studio, choose **Assign keys** and select the game's key, or capture
+   a shortcut. Keep keys together on one row for a simultaneous shortcut and use
+   separate rows for successive presses. Save the movement, then test the whole
+   configuration. The [Studio guide](studio-web.md) explains the controls.
 4. Export JSON, stop the editor camera and import it in the
    [Controller](controller.md). Calibrate and verify recognition with output off.
 5. Enable output and focus the game. Test one action before adding others.

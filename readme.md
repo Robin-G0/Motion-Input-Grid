@@ -33,7 +33,7 @@ integrations still need wider testing; check the [support matrix](docs/reference
 1. Create or import a profile in the browser Studio above, or use the
    [desktop Studio](docs/guides/configurator.md). Choose a movement's body part,
    draw its conditions, and assign its action. For desktop shortcuts, add a
-   keyboard binding in the Studio JSON editor or desktop Studio.
+   keyboard binding with **Assign keys** in web Studio or desktop Studio.
 2. Test with the camera, then export or save the JSON profile. The
    [browser Studio guide](docs/guides/studio-web.md) explains editing and live feedback.
 3. Download the Controller above and extract the **whole archive**. Stop the

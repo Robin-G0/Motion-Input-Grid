@@ -1,4 +1,6 @@
 import { test, expect } from "@playwright/test";
+import { starter } from "../../studio/src/profile.mjs";
+import { readFile } from "node:fs/promises";
 
 async function openStudio(page, screen = "edit") {
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -7,8 +9,11 @@ async function openStudio(page, screen = "edit") {
     await expect(page.locator("#start-menu")).toBeVisible();
     await expect(page.locator("#workspace")).toBeHidden();
     if (screen === "home") return;
-    await page.locator("#quick-test").click();
-    if (screen === "edit") await page.locator("#test-edit").click();
+    await page.locator("#import-file").setInputFiles({name:"example.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(starter()))});
+    await expect(page.locator("#moves-panel")).toBeVisible();
+    await page.locator("#tab-edit").click();
+    await page.locator("#full-grid").uncheck();
+    if (screen === "test") await page.locator("#tab-test").click();
     await expect(page.locator("#editor-grid button")).toHaveCount(324);
 }
 async function fakeObservations(page, failure = "") {
@@ -172,10 +177,12 @@ test("the welcome menu and screen tabs reveal only the current task without requ
     for (const id of ["import-profile", "new-profile", "quick-test"]) await expect(page.locator(`#${id}`)).toBeVisible();
     expect(await page.evaluate(() => !!window.studioStream)).toBe(false);
     await page.locator("#quick-test").click();
-    await expect(page.locator("#test-panel")).toBeVisible();
-    await expect(page.locator("#editor-panel")).toBeHidden();
+    await expect(page.locator("#editor-panel")).toBeVisible();
+    await expect(page.locator("#pipeline-guide")).toBeVisible();
+    await expect(page.locator("#test-panel")).toBeHidden();
     expect(await page.evaluate(() => !!window.studioStream)).toBe(false);
-    await page.locator("#tab-test").focus(); await page.keyboard.press("Home");
+    await page.locator("#leave-guide").click();
+    await page.locator("#tab-edit").focus(); await page.keyboard.press("Home");
     await expect(page.locator("#tab-moves")).toBeFocused();
     await expect(page.locator("#moves-panel")).toBeVisible();
     await expect(page.locator("#test-panel")).toBeHidden();
@@ -676,4 +683,166 @@ test("Studio fits phone and desktop screens, changes language and shares theme a
     await expect(page.locator("#studio-title")).toHaveText("Motion Input Grid Studio");
     await page.locator("#open-json").click(); await page.keyboard.press("Escape");
     await expect(page.locator("#open-json")).toBeFocused();
+});
+
+
+test("authoring explicitly assigns simultaneous keys, text and sequential presses before exporting", async ({page})=>{
+    await openStudio(page,"home");
+    await page.locator("#new-profile").click();
+    await page.locator("#input-name").fill("Next slide"); await page.locator("#input-name").press("Tab");
+    await page.locator('#editor-grid button[data-x="2"][data-y="4"]').focus(); await page.keyboard.press("Enter");
+    await page.locator('[data-tool="trigger"]').click();
+    await page.locator('#editor-grid button[data-x="2"][data-y="2"]').focus(); await page.keyboard.press("Enter");
+    await page.locator("#edit-test").click();
+    await expect(page.locator("#test-scope")).toContainText("sélectionné");
+    await page.locator("#test-keyboard").click();
+    await page.locator("#add-chord").click();
+    await page.getByRole("button",{name:"Capturer un raccourci",exact:true}).click();
+    await page.keyboard.press("Control+Shift+k");
+    await page.locator("#add-text").click();
+    await page.locator("#keyboard-steps textarea").fill("Hello");
+    await page.locator("#add-chord").click();
+    await page.locator("#key-picker select").selectOption("39");
+    await page.locator("#add-chord").click();
+    await page.locator("#key-picker select").selectOption("39");
+    await page.screenshot({path:"test-results/keyboard-editor.png",fullPage:true});
+    await expect(page.locator("#keyboard-preview")).toContainText('Ctrl + Shift + K → "Hello" → Right → Right');
+    await page.locator("#keyboard-save").click();
+    await expect(page.locator("#moves-panel")).toBeVisible();
+    await expect(page.locator(".movement-card")).toContainText("Ctrl + Shift + K");
+    const downloading=page.waitForEvent("download");await page.locator("#export-profile").click();const download=await downloading;
+    const profile=JSON.parse(await readFile(await download.path(),"utf8"));
+    expect(profile.inputs[0].keyboard).toEqual([{keys:[17,16,75]},{text:"Hello"},{keys:[39]},{keys:[39]}]);
+    await expect(page.locator("#export-dialog")).toBeVisible();
+    await expect(page.locator("#controller-guide")).toHaveAttribute("href",/controller/);
+    await page.locator("#close-export").click();
+    await page.locator("#test-configuration").click();
+    await expect(page.locator("#test-scope")).toContainText("toute la configuration");
+    await expect(page.locator("#test-keyboard")).toBeHidden();
+});
+
+test("keyboard editor rejects invalid hold and preserves existing keys on cancel", async ({page})=>{
+    await openStudio(page);
+    await page.locator("#edit-keyboard").click();
+    await page.locator("#add-text").click();await page.locator("#keyboard-steps textarea").fill("Hello");
+    await page.locator("#keyboard-mode").selectOption("hold");await page.locator("#keyboard-save").click();
+    await expect(page.locator("#keyboard-error")).toContainText("maintien");
+    await page.locator("#keyboard-cancel").click();
+    await page.locator("#edit-keyboard").click();await expect(page.locator("#keyboard-steps li")).toHaveCount(0);
+    await page.locator("#add-chord").click();await page.locator("#key-picker select").selectOption("39");await page.locator("#keyboard-mode").selectOption("repeat");
+    await page.locator("#keyboard-interval").fill("375");await page.locator("#keyboard-interval").press("Tab");
+    await page.locator("#keyboard-save").click();await expect(page.locator("#moves-panel")).toBeVisible();
+    const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem("mig-studio-profile-v2")));
+    expect(saved.inputs[0].action_mode).toBe("repeat");expect(saved.inputs[0].repeat_interval_ms).toBe(375);
+});
+
+test("whole configuration test recognises actions and shows simulated keyboard output", async ({page})=>{
+    await fakeObservations(page);await openStudio(page,"home");
+    const profile=starter();profile.inputs[0].keyboard=[{keys:[17,67]},{keys:[39]}];
+    const second=structuredClone(profile.inputs[0]);second.id="another";second.name="Another movement";second.action="other_action";second.keyboard=[{text:"Next"}];
+    for(const step of second.steps){step.id+="_other";for(const region of step.constraints)region.id+="_other";}
+    profile.inputs.push(second);
+    await page.locator("#import-file").setInputFiles({name:"all.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(profile))});
+    await expect(page.locator("#moves-panel")).toBeVisible();await page.locator("#test-configuration").click();
+    await page.locator("#start-test").click();await expect(page.locator("#camera-message")).toContainText("Suivi actif",{timeout:15000});
+    await page.evaluate(()=>{window.studioWristY=.45;});await page.waitForTimeout(150);await page.evaluate(()=>{window.studioWristY=.29;});
+    await expect(page.locator('#log-list [data-level="action"]').filter({hasText:"hand_raised"})).toContainText("Ctrl + C → Right");
+    await expect(page.locator('#log-list [data-level="action"]').filter({hasText:"other_action"})).toContainText('"Next"');
+    const downloading=page.waitForEvent("download");
+    await page.locator("#export-profile").click();await downloading;
+    expect(await page.evaluate(()=>window.studioStream.getTracks().every(track=>track.readyState==="ended"))).toBe(true);
+});
+
+test("Controller handoff has direct latest downloads, three actual application screenshots and offline recovery", async ({page})=>{
+    const base="https://github.com/Robin-G0/Motion-Input-Grid/releases/download/v2/";
+    await page.route("https://api.github.com/repos/Robin-G0/Motion-Input-Grid/releases/latest",route=>route.fulfill({json:{assets:["motion-input-grid-controller-windows-x64.exe","motion-input-grid-controller-linux-x64.run"].map(name=>({name,browser_download_url:base+name}))}}));
+    await page.goto("./studio/controller/?lang=en");
+    await expect(page.locator("#windows-download")).toHaveAttribute("href",base+"motion-input-grid-controller-windows-x64.exe");
+    await expect(page.locator("#linux-download")).toBeVisible();await expect(page.locator(".controller-steps img")).toHaveCount(3);
+    await expect.poll(()=>page.locator(".controller-steps img").evaluateAll(images=>images.every(img=>img.complete&&img.naturalWidth>500&&img.src.endsWith(".png")))).toBe(true);
+    await page.getByRole("button",{name:"FR",exact:true}).click();await expect(page.locator("h1")).toContainText("gestes");
+    await page.unrouteAll();await page.route("https://api.github.com/**",route=>route.abort());
+    await page.reload();await expect(page.locator("#release-status")).toContainText("could not be verified");
+    await expect(page.locator("#release-link")).toBeVisible();
+});
+
+test("keyboard setup fits a phone and saves without horizontal scrolling", async ({page})=>{
+    await page.setViewportSize({width:390,height:844});
+    await openStudio(page);
+    await page.locator("#edit-keyboard").click();
+    await page.locator("#add-chord").click();
+    await page.locator("#key-picker select").selectOption("39");
+    await page.locator("#add-text").click();
+    await page.locator("#keyboard-steps textarea").fill("Bonjour");
+    expect(await page.locator("#keyboard-dialog").evaluate(node=>node.scrollWidth<=node.clientWidth)).toBe(true);
+    await page.locator("#keyboard-save").click();
+    await expect(page.locator("#moves-panel")).toBeVisible();
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+
+for(const width of [1280,390])test(`HI spotlight tutorial follows drawing, recognition, explicit keys and export at ${width}px`,async({page})=>{
+    await page.setViewportSize({width,height:900});
+    await fakeObservations(page);await openStudio(page,"home");
+    await page.locator("#quick-test").click();
+    const stage=id=>expect(page.locator("body")).toHaveAttribute("data-tour-step",id);
+    await stage("name");
+    expect(await page.locator("#export-profile").evaluate(node=>!!node.closest("[inert]"))).toBe(true);
+    await expect(page.locator("#input-name")).toHaveClass(/tour-target/);
+    await page.locator("#input-name").fill("Wrong");await page.locator("#input-name").press("Tab");await stage("name");
+    await page.locator("#input-name").fill("HI");await page.locator("#input-name").press("Tab");
+    await stage("point");await page.locator("#landmark").selectOption("left_wrist");await stage("drawStart");
+    const draw=async(y1,y2)=>{
+        const a=await page.locator(`#editor-grid button[data-x="-4"][data-y="${y1}"]`).boundingBox();
+        const b=await page.locator(`#editor-grid button[data-x="13"][data-y="${y2}"]`).boundingBox();
+        await page.mouse.move(a.x+a.width/2,a.y+a.height/2);await page.mouse.down();await page.mouse.move(b.x+b.width/2,b.y+b.height/2,{steps:8});await page.mouse.up();
+    };
+    await page.screenshot({path:`test-results/HI-draw-${width}.png`});
+    await draw(4,7);await stage("toolFinish");
+    await page.locator('[data-tool="trigger"]').focus();await page.keyboard.press("Control+z");
+    expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("mig-studio-profile-v2")).inputs[0].steps[0].constraints)).toHaveLength(1);
+    await page.locator('[data-tool="trigger"]').click();await draw(-3,2);
+    await stage("try");await page.locator("#edit-test").click();await stage("camera");
+    await page.locator("#start-test").click();await stage("recognise");
+    await expect(page.locator("#camera-message")).toContainText("Suivi actif",{timeout:15000});
+    await stage("recognise");
+    await page.evaluate(()=>window.studioWristY=.45);await page.waitForTimeout(150);await page.evaluate(()=>window.studioWristY=.29);
+    await stage("keys");await page.locator("#test-keyboard").click();await stage("plus");
+    await expect(page.locator("#keyboard-steps li")).toHaveCount(0);await expect(page.locator("#keyboard-preview")).not.toContainText("Right");
+    await page.locator("#add-chord").click();await stage("right");await expect(page.locator("#key-picker select")).toHaveValue("");
+    await page.locator("#key-picker select").selectOption("65");await stage("right");
+    await page.locator("#keyboard-steps .key-chips button").click();await page.locator("#add-chord").click();
+    await page.locator("#key-picker select").selectOption("39");await stage("save");await page.locator("#keyboard-save").click();
+    await stage("whole");await page.locator("#test-configuration").click();await stage("cameraAgain");
+    await page.evaluate(()=>window.studioWristY=.61);await page.locator("#start-test").click();await stage("recogniseAgain");
+    await expect(page.locator("#camera-message")).toContainText("Suivi actif",{timeout:15000});
+    await page.evaluate(()=>window.studioWristY=.45);await page.waitForTimeout(150);await page.evaluate(()=>window.studioWristY=.29);
+    await stage("back");await expect(page.locator("#log-list")).toContainText("Right");
+    await page.locator("#test-back-moves").click();await stage("export");
+    const downloading=page.waitForEvent("download");await page.locator("#export-profile").click();const downloaded=await downloading;
+    const profile=JSON.parse(await readFile(await downloaded.path(),"utf8"));
+    expect(profile.inputs[0].name).toBe("HI");expect(profile.inputs[0].keyboard).toEqual([{keys:[39]}]);
+    expect(profile.inputs[0].steps[0].constraints.every(r=>r.landmark==="left_wrist")).toBe(true);
+    await stage("controller");await page.screenshot({path:"test-results/HI-export.png"});
+    await page.locator("#leave-guide").click();await expect(page.locator("body")).not.toHaveAttribute("data-tour-step");
+    await page.locator("#close-export").click();expect(await page.locator("[inert]").count()).toBe(0);
+});
+
+test("leaving a tutorial restores normal editing and keyboard plus never adds an implicit key",async({page})=>{
+    await openStudio(page,"home");await page.locator("#quick-test").click();await page.locator("#leave-guide").click();
+    await page.locator("#back-menu").click();await page.locator("#quick-test").click();
+    await expect(page.locator("#input-name")).toBeInViewport();await page.locator("#input-name").press("Escape");
+    await expect(page.locator("#pipeline-guide")).toBeHidden();
+    await page.locator("#back-menu").click();await page.locator("#resume-profile").click();
+    await page.locator(".movement-card button").first().click();
+    await page.locator('#editor-grid button[data-x="2"][data-y="4"]').focus();await page.keyboard.press("Enter");
+    await page.locator("#edit-keyboard").click();await page.locator("#add-chord").click();
+    await expect(page.locator("#keyboard-preview")).not.toContainText("Right");
+    await page.locator("#key-picker select").selectOption("65");
+    await page.getByRole("button",{name:"Ajouter une touche simultanée",exact:true}).click();
+    await page.locator("#key-picker select").selectOption("17");
+    await expect(page.locator("#keyboard-preview")).toContainText("A + Ctrl");
+    await page.locator("#keyboard-save").click();
+    await expect(page.locator("#moves-panel")).toBeVisible();
+    expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("mig-studio-profile-v2")).inputs[0].keyboard)).toEqual([{keys:[65,17]}]);
 });
