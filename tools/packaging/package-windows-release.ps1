@@ -93,6 +93,19 @@ Utilisez windows/sdk comme CMAKE_PREFIX_PATH pour compiler un consommateur.
     $digest = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant()
     "$digest  $name.zip" | Set-Content -LiteralPath "$archive.sha256" -Encoding ASCII
     Write-Output $archive
+    if ($Architecture -eq 'x64') {
+        $vswhere = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
+        $vsDirectory = & $vswhere -latest -products '*' -property installationPath
+        $crt = Get-ChildItem -LiteralPath (Join-Path $vsDirectory 'VC/Redist/MSVC') -Directory |
+            Where-Object { $_.Name -match '^\d+\.\d+\.\d+$' } |
+            Sort-Object { [version]$_.Name } -Descending |
+            ForEach-Object { Get-ChildItem -Path (Join-Path $_.FullName 'x64/Microsoft.VC*.CRT') -Directory } |
+            Select-Object -First 1
+        if (-not $crt) { throw 'App-local Visual C++ runtime not found for standalone Controller packaging.' }
+        $portableCmake = Join-Path $vsDirectory 'Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe'
+        python (Join-Path $projectRoot 'tools/packaging/package-controller.py') --platform windows --source $source --redist $crt.FullName --cmake $portableCmake --output $output --version $Version
+        if ($LASTEXITCODE -ne 0) { throw 'Standalone Controller packaging failed.' }
+    }
 } finally {
     $resolvedStaging = [IO.Path]::GetFullPath($staging)
     if (-not $resolvedStaging.StartsWith($output + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {

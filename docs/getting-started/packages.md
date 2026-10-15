@@ -9,6 +9,10 @@ for platform requirements and integration maturity.
 
 ## Desktop applications and examples
 
+Controller-only single-file candidates are described in the
+[standalone Controller guide](controller-standalone.md). Publish them before
+offering them as downloads in web Studio.
+
 **Download Studio + Controller:** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications).
 
 Extract the whole package, then follow the application guide below.

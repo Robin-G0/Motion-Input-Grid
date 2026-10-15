@@ -64,6 +64,8 @@ build_native
 build_sdk x64
 build_sdk arm64
 python3 tools/packaging/package-linux.py --install build/release-linux-x64-install --native
+python3 tests/packaging/controller_package_tests.py
+python3 tests/packaging/controller_runtime_tests.py "build/releases/motion-input-grid-$(cat VERSION)-controller-linux-x64.run"
 build_python
 bash tools/build/build-examples.sh
 python3 tools/release/release-checksums.py
