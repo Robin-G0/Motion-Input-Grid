@@ -473,6 +473,10 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM wp, LPARAM lp) {
                     add(ViewDots, app.show_dots ? L"Hide body dots" : L"Show body dots");
                 }
                 RECT anchor{};
+                MENUINFO style{sizeof(style)};
+                style.fMask = MIM_BACKGROUND;
+                style.hbrBack = app.surface_brush;
+                SetMenuInfo(menu, &style);
                 GetWindowRect(GetDlgItem(window, id), &anchor);
                 const auto chosen = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_LEFTALIGN, anchor.left,
                                                    anchor.bottom, 0, window, nullptr);
@@ -618,7 +622,7 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM wp, LPARAM lp) {
         case WM_MEASUREITEM: {
             auto& item = *reinterpret_cast<MEASUREITEMSTRUCT*>(lp);
             item.itemHeight = item.CtlType == ODT_MENU ? 32 : 24;
-            item.itemWidth = 250;
+            item.itemWidth = 330;
             return TRUE;
         }
         case WM_CTLCOLORSTATIC:

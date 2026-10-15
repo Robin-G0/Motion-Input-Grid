@@ -180,7 +180,9 @@ FileHandle extraction_lock(const Path& path) {
 }
 } // namespace
 
-CachedRuntime prepare_runtime(HINSTANCE instance) {
+CachedRuntime
+prepare_runtime(HINSTANCE instance,
+                const std::function<void(const std::filesystem::path&)>& before_install) {
     std::array<wchar_t, 32768> local{};
     const auto length =
         GetEnvironmentVariableW(L"LOCALAPPDATA", local.data(), static_cast<DWORD>(local.size()));
@@ -203,6 +205,9 @@ CachedRuntime prepare_runtime(HINSTANCE instance) {
             result.guards.push_back(std::move(guard));
         }
         return result;
+    }
+    if (before_install) {
+        before_install(result.directory);
     }
     const auto staging = parent / unique_name(L".staging-");
     require(std::filesystem::create_directory(staging),

@@ -42,6 +42,9 @@ void create_controller(App& app, HWND window) {
     app.preview_enabled = false;
     app.update_theme();
     app.refresh_profiles();
+    app.profile_management = app.profiles->entries().empty();
+    SetDlgItemTextW(window, ProfileManagement,
+                    app.profile_management ? L"Done" : L"Manage profile");
     app.refresh_list();
     app.layout();
     SetTimer(window, 1, 16, nullptr);
@@ -49,7 +52,7 @@ void create_controller(App& app, HWND window) {
 void view_menu(App& app) {
     const auto menu = CreatePopupMenu();
     const auto add = [&](int id, const wchar_t* name, bool checked) {
-        AppendMenuW(menu, MF_STRING | (checked ? MF_CHECKED : 0), id, name);
+        AppendMenuW(menu, MF_OWNERDRAW | (checked ? MF_CHECKED : 0), id, name);
     };
     add(CameraView, L"Camera preview", app.controller_camera);
     add(ViewGrid, L"Grid", app.show_grid);
@@ -59,6 +62,10 @@ void view_menu(App& app) {
     add(CompactView, L"Compact background window", app.controller_compact);
     add(Theme, L"Dark mode", app.dark);
     RECT anchor{};
+    MENUINFO style{sizeof(style)};
+    style.fMask = MIM_BACKGROUND;
+    style.hbrBack = app.surface_brush;
+    SetMenuInfo(menu, &style);
     GetWindowRect(GetDlgItem(app.window, ViewMenu), &anchor);
     const auto chosen =
         TrackPopupMenu(menu, TPM_RETURNCMD, anchor.left, anchor.bottom, 0, app.window, nullptr);
@@ -255,10 +262,14 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM wp, LPARAM lp) {
         case WM_DRAWITEM:
             app.draw_control(*reinterpret_cast<DRAWITEMSTRUCT*>(lp));
             return TRUE;
-        case WM_MEASUREITEM:
-            reinterpret_cast<MEASUREITEMSTRUCT*>(lp)->itemHeight =
-                reinterpret_cast<MEASUREITEMSTRUCT*>(lp)->CtlType == ODT_LISTBOX ? 104 : 24;
+        case WM_MEASUREITEM: {
+            auto& item = *reinterpret_cast<MEASUREITEMSTRUCT*>(lp);
+            item.itemHeight = item.CtlType == ODT_LISTBOX ? 104
+                              : item.CtlType == ODT_MENU  ? 32
+                                                          : 30;
+            item.itemWidth = 330;
             return TRUE;
+        }
         case WM_CTLCOLORSTATIC:
         case WM_CTLCOLOREDIT:
         case WM_CTLCOLORLISTBOX:

@@ -91,3 +91,15 @@ avec manifeste falsifié, cache incomplet, DLL supplémentaire, marqueur incorre
 jonction injectée et premiers lancements concurrents. Son PATH contient seulement
 Windows. Il observe les DLL chargées et refuse celles hors cache validé ou Windows.
 Voir l’[inventaire des dépendances Windows](../reference/windows-runtime-dependencies.fr.md).
+
+## Premier lancement Windows et nettoyage
+
+Si le cache manque ou échoue à la validation, une fenêtre explique le runtime local avant extraction. Son champ non modifiable affiche le chemin exact `%LOCALAPPDATA%\MotionInputGrid\runtime\<payload-sha256>\`. **Copy path** le copie ; **Continue** prépare puis lance le Controller. Fermer la fenêtre annule l’installation. Un cache valide est réutilisé sans répéter ce message. Supprimer le runtime ou détecter une corruption fait réapparaître la fenêtre avant reconstruction. Fermez MIG avant de supprimer ces dossiers. Les profils sont conservés séparément.
+
+Les empreintes compilées, la validation, la publication atomique et les verrous restent inchangés. Aucun marqueur d’acceptation ne peut valider une installation incomplète. Les invocations de diagnostic seules (`--help`, `--ui-test`, `--infer-test`, `--hands-test`, `--session-test`) omettent cette fenêtre pour permettre les tests automatiques.
+
+```powershell
+python tests/packaging/runtime_notice_tests.py build/releases/motion-input-grid-1.1.0-controller-windows-x64.exe
+```
+
+Ce test utilise les vraies fenêtres et une bibliothèque de profils isolée : annulation, chemin réel non modifiable, copie, installation initiale, réutilisation sans réécriture et reconstruction. Les compilations avec diagnostics permettent seules `MIG_TEST_PROFILE_DIRECTORY` pour isoler les tests interactifs et les captures. Les compilations ordinaires conservent leur emplacement habituel.

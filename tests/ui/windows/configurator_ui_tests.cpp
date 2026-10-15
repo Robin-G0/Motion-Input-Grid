@@ -87,6 +87,12 @@ int run_ui_test(App& app, HWND window) {
           "Keyboard switch must be enabled in both configurator and controller");
     check(GetWindowLongW(GetDlgItem(app.edit_window, Key), GWL_STYLE) & WS_VISIBLE,
           "Shortcut binding must be visible in Unified mode");
+    const auto combo = GetDlgItem(app.edit_window, Members);
+    check((GetWindowLongW(combo, GWL_STYLE) & CBS_OWNERDRAWFIXED) &&
+              SendMessageW(combo, CB_GETITEMHEIGHT, 0, 0) == 30 &&
+              SendMessageW(combo, CB_GETEXTENDEDUI, 0, 0) &&
+              SendMessageW(combo, WM_GETFONT, 0, 0) == reinterpret_cast<LRESULT>(app.font),
+          "Studio dropdown must use the shared themed font and spacing.");
     SetDlgItemTextW(app.edit_window, Key, L"Ctrl+Shift+K");
     check(app.draft.keyboard == ui::parse_binding("Ctrl+Shift+K"),
           "Unified shortcut edit must update the input");
