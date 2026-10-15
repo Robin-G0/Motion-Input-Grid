@@ -15,10 +15,27 @@ Run the `.exe`. On Linux, allow execution in the file properties or run
 start tracking with keyboard output off, then enable output and focus your
 application. See the [Controller guide](../guides/controller.md).
 
-The file extracts its runtime into a fresh user temporary directory per launch
-and removes it on normal exit. A forced termination can leave temporary files.
+Windows extracts the embedded runtime once under
+`%LOCALAPPDATA%\MotionInputGrid\runtime\<payload-sha256>\`. Every launch validates
+all files and the completion marker before reuse. It does not normally use
+`%TEMP%`. Linux still extracts into a fresh temporary directory per launch and
+removes it on normal exit. A forced termination can leave temporary files.
 No installation, admin rights, Python or development toolchain is needed.
-The launcher never downloads models or dependencies.
+The launcher never downloads models or dependencies. Licenses remain included.
+
+Windows extraction is staged next to the cache and published by a same-volume
+rename only after file flushing and validation. A per-payload file lock prevents
+concurrent partial publication. An interrupted staging folder is never accepted
+as a completed runtime. Corrupted/incomplete caches are quarantined and rebuilt;
+old versions, `.invalid-*` and `.staging-*` folders are not automatically removed.
+Close all Controller instances before removing obsolete folders manually.
+
+The marker alone is insufficient: expected sizes and SHA-256 hashes for every
+file are compiled into the EXE, including the cached manifest and license files.
+Unexpected entries, reparse points and hard links are rejected. Validated files
+remain locked against writes/deletes while the Controller runs. This protects
+cache integrity; it is not a security boundary against an attacker who already
+controls the same Windows account or can replace the downloaded EXE.
 
 Windows includes app-local Visual C++ runtime DLLs; the launcher uses a static
 CRT. OS camera/display facilities remain required. Linux bundles Qt plugins,
@@ -52,3 +69,10 @@ Outputs are versioned with SHA-256 sidecars. Candidate workflows test the bundle
 and run built-in app diagnostics through its final file; native builds must use
 `MIG_BUILD_TESTS=ON`. Test real camera input and keyboard delivery on the target
 desktop before publication. Headless UI tests cannot verify those interactions.
+
+The Windows runtime test also checks first-launch creation, reuse without
+rewrites, corruption with forged manifest, incomplete cache, extra DLLs, marker
+corruption, injected junctions and concurrent first launches. Its child process
+PATH contains only Windows folders. It records the actual loaded DLLs and rejects
+modules outside the validated cache and Windows. See the
+[Windows dependency inventory](../reference/windows-runtime-dependencies.md).

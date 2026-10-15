@@ -120,6 +120,8 @@ jobs:
                   ./tools/packaging/package-windows-release.ps1
                   python tests/packaging/controller_package_tests.py
                   if ($LASTEXITCODE -ne 0) { throw 'Controller packaging tests failed.' }
+                  python tests/packaging/pe_dependency_tests.py
+                  if ($LASTEXITCODE -ne 0) { throw 'Windows DLL dependency checks failed.' }
                   $version = (Get-Content VERSION -Raw).Trim()
                   python tests/packaging/controller_runtime_tests.py "build/releases/motion-input-grid-$version-controller-windows-x64.exe"
                   if ($LASTEXITCODE -ne 0) { throw 'Standalone Controller diagnostics failed.' }

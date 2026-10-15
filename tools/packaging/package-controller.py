@@ -2,8 +2,8 @@
 """Build Controller-only single-file distributions from prepared native bundles.
 
 Windows embeds every payload in a statically linked native launcher. Linux wraps
-the dependency-bundled native release in a self-extracting POSIX launcher. Both
-unpack locally, keep the runtime alive while the app runs and clean up on exit.
+the dependency-bundled native release in a self-extracting POSIX launcher. Windows
+validates/reuses a persistent payload cache; Linux cleans temporary files on exit.
 Neither downloads dependencies at runtime nor changes the user's configuration.
 """
 import argparse
@@ -19,6 +19,14 @@ import tarfile
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "tools/lib"))
+from pe_dependencies import audit_windows
+
+
+def write_payload_manifest(destination):
+    manifest = {str(path.relative_to(destination)).replace("\\", "/"): hashlib.sha256(path.read_bytes()).hexdigest()
+                for path in sorted(destination.rglob("*")) if path.is_file() and path.name != "controller-manifest.json"}
+    (destination / "controller-manifest.json").write_text(json.dumps({"files": manifest}, indent=2)+"\n")
 
 
 def controller_payload(source, destination, platform, redist=None):
@@ -63,25 +71,29 @@ def controller_payload(source, destination, platform, redist=None):
         if not (destination / "models" / name).is_file():
             raise ValueError(f"Missing model: {name}")
     shutil.copy2(ROOT / "LICENSE", destination / "LICENSE")
-    manifest = {str(path.relative_to(destination)).replace("\\", "/"): hashlib.sha256(path.read_bytes()).hexdigest()
-                for path in sorted(destination.rglob("*")) if path.is_file()}
-    (destination / "controller-manifest.json").write_text(json.dumps({"files": manifest}, indent=2)+"\n")
+    write_payload_manifest(destination)
 
 
 def windows_resources(payload, generated):
     paths = sorted(Path(payload).rglob("*"))
-    resources, entries = [], []
+    resources, entries, inventory = [], [], []
     for index, path in enumerate((p for p in paths if p.is_file()), 101):
         name = path.relative_to(payload).as_posix()
         if any(c in name for c in ['"', "\n", "\r"]) or ".." in Path(name).parts:
             raise ValueError(f"Unsafe payload path: {name}")
         resources.append(f'{index} RCDATA "{path.resolve().as_posix()}"')
-        entries.append(f'    {{{index}, L"{name}"}},')
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        size = path.stat().st_size
+        entries.append(f'    {{{index}, L"{name}", {size}ULL, "{digest}"}},')
+        inventory.append({"name": name, "size": size, "sha256": digest})
+    payload_hash = hashlib.sha256(json.dumps({"schema": 1, "files": inventory}, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     generated.mkdir(parents=True, exist_ok=True)
     (generated / "payload.rc").write_text("#pragma code_page(65001)\n"+"\n".join(resources)+"\n", encoding="utf-8")
     (generated / "payload.hpp").write_text(
-        "#pragma once\nstruct PayloadFile { int id; const wchar_t* name; };\n"
+        "#pragma once\nstruct PayloadFile { int id; const wchar_t* name; unsigned long long size; const char* sha256; };\n"
+        f'inline constexpr char payload_hash[] = "{payload_hash}";\n'
         "inline constexpr PayloadFile payload_files[] = {\n"+"\n".join(entries)+"\n};\n", encoding="utf-8")
+    return payload_hash
 
 
 def linux_file(payload, output):
@@ -140,11 +152,19 @@ def main():
         if arguments.platform == "windows":
             if sys.platform != "win32":
                 raise ValueError("The Windows launcher must be compiled on Windows")
+            dependencies = payload / "windows-dll-dependencies.json"
+            dependencies.write_text(json.dumps(audit_windows(payload), indent=2)+"\n")
+            write_payload_manifest(payload)
             generated = work / "generated"
-            windows_resources(payload, generated)
+            payload_hash = windows_resources(payload, generated)
             subprocess.run([arguments.cmake, "-S", str(ROOT / "tools/packaging/controller-launcher"), "-B", str(work / "build"), "-A", "x64", f"-DPAYLOAD_DIRECTORY={generated}"], check=True)
             subprocess.run([arguments.cmake, "--build", str(work / "build"), "--config", "Release"], check=True)
+            # The static-CRT launcher must also resolve solely through Windows.
+            launcher_dependencies = audit_windows(work / "build/Release")
             shutil.copy2(work / "build/Release/mig-controller-portable.exe", output)
+            output.with_name(output.name + ".dependencies.json").write_text(json.dumps({
+                "payload_hash": payload_hash, "payload": json.loads(dependencies.read_text()), "launcher": launcher_dependencies
+            }, indent=2)+"\n")
         else:
             linux_file(payload, output)
     digest = hashlib.sha256(output.read_bytes()).hexdigest()

@@ -2,6 +2,7 @@
 import importlib.util
 import io
 import json
+import re
 from pathlib import Path
 import sys
 import tarfile
@@ -44,6 +45,16 @@ class ControllerPackageTests(unittest.TestCase):
         package.windows_resources(payload, generated)
         self.assertIn("RCDATA", (generated / "payload.rc").read_text())
         self.assertIn("models/pose_landmarker_lite.task", (generated / "payload.hpp").read_text())
+        original_header = (generated / "payload.hpp").read_text()
+        payload_hash = re.search(r'payload_hash\[\] = "([a-f0-9]{64})"', original_header)[1]
+        relocated = self.work / "other payload"
+        import shutil
+        shutil.copytree(payload, relocated)
+        package.windows_resources(relocated, generated)
+        self.assertIn(payload_hash, (generated / "payload.hpp").read_text(), "Directory address must not depend on the build location")
+        (relocated / "models/hand_landmarker.task").write_bytes(b"changed model")
+        package.windows_resources(relocated, generated)
+        self.assertNotIn(f'payload_hash[] = "{payload_hash}"', (generated / "payload.hpp").read_text())
 
     def test_missing_windows_crt_is_rejected(self):
         for name in ["motion-input-grid-controller.exe", "libmediapipe.dll"]:

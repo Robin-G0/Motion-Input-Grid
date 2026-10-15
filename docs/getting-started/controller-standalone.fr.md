@@ -15,10 +15,28 @@ Lancez le `.exe`. Sous Linux, autorisez l’exécution dans les propriétés ou 
 démarrez le suivi clavier désactivé, puis activez-le et donnez le focus à votre
 application. Voir le [guide du Controller](../guides/controller.fr.md).
 
-Le fichier extrait son moteur dans un nouveau dossier temporaire utilisateur
-à chaque lancement et le retire à la fermeture normale. Un arrêt forcé peut
-laisser des fichiers temporaires. Ni installation, ni droits administrateur,
-ni Python ou compilateur requis. Le lanceur ne télécharge pas les dépendances.
+Windows extrait les fichiers une fois dans
+`%LOCALAPPDATA%\MotionInputGrid\runtime\<sha256-du-payload>\`. Chaque lancement
+vérifie tous les fichiers et le marqueur de fin avant réutilisation, sans passer
+normalement par `%TEMP%`. Linux garde son extraction temporaire par lancement
+et son nettoyage à la fermeture normale. Un arrêt forcé peut laisser des fichiers.
+Ni installation, ni droits administrateur, ni Python ou compilateur requis.
+Le lanceur ne télécharge pas les dépendances. Les licences restent incluses.
+
+Windows prépare un dossier voisin, écrit et vérifie les fichiers, puis le publie
+par renommage sur le même volume. Un verrou par payload empêche deux premiers
+lancements de publier une extraction partielle. Un dossier de préparation
+interrompu n’est jamais accepté comme cache complet. Les caches invalides sont
+mis à l’écart puis reconstruits. Les anciennes versions et dossiers `.invalid-*`
+ou `.staging-*` ne sont pas supprimés automatiquement. Fermez les Controller
+avant de retirer manuellement les dossiers obsolètes.
+
+Le marqueur seul ne suffit pas : tailles et SHA-256 de tous les fichiers sont
+intégrés à l’EXE, y compris manifeste et licences. Les entrées imprévues, points
+de réanalyse et liens physiques sont refusés. Les fichiers vérifiés restent
+verrouillés contre l’écriture et la suppression pendant l’exécution. Cela
+protège le cache, sans constituer une frontière contre un attaquant contrôlant
+déjà le même compte Windows ou capable de remplacer l’EXE téléchargé.
 
 Windows inclut les DLL du runtime Visual C++ ; le lanceur utilise un CRT statique.
 Les fonctions caméra et affichage du système restent nécessaires. Linux inclut
@@ -55,3 +73,9 @@ le bundle et les diagnostics intégrés à travers le fichier final ; la compila
 native doit utiliser `MIG_BUILD_TESTS=ON`. Testez une vraie caméra et la sortie
 clavier sur le système cible avant publication : les tests sans écran ne les
 remplacent pas.
+
+Le test Windows vérifie aussi création, réutilisation sans réécriture, corruption
+avec manifeste falsifié, cache incomplet, DLL supplémentaire, marqueur incorrect,
+jonction injectée et premiers lancements concurrents. Son PATH contient seulement
+Windows. Il observe les DLL chargées et refuse celles hors cache validé ou Windows.
+Voir l’[inventaire des dépendances Windows](../reference/windows-runtime-dependencies.fr.md).
