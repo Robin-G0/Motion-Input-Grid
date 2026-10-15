@@ -1,4 +1,10 @@
 /* Shared paper, ink and typography come from the presentation's stylesheet. */
+.studio .button { min-height:40px; max-width:100%; padding:8px 14px; font-size:12px; font-weight:500; line-height:1.4; white-space:normal; }
+.card-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+#moves-panel > .card-actions { margin-bottom:16px; }
+@media (max-width:660px) {
+    .studio .button { min-height:44px; padding:10px 12px; }
+}
 .pipeline-guide { padding: 18px 22px; border: 1px solid var(--accent); border-radius: 12px; background: var(--surface); margin: 16px 0; }
 .pipeline-guide h2 { font-size: 17px; margin: 0; }
 .pipeline-guide p { max-width: 80ch; line-height: 1.7; }
