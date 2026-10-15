@@ -1,7 +1,55 @@
 import {latestControllerDownloads} from "../src/controller-downloads.mjs";
 const texts={
-    fr:{title:"Passez de vos gestes aux touches",intro:"Votre configuration est prête. Le Controller utilise votre caméra pour reconnaître les gestes et envoyer les touches à l’application au premier plan.",file:"Conservez le fichier mig-profile.json que vous venez d’exporter. Vous allez l’importer dans le Controller.",back:"Retour au Studio",download:"Télécharger le Controller",release:"Voir la dernière version disponible",loading:"Recherche des téléchargements de la dernière version…",ready:"Choisissez votre système : le téléchargement démarre au clic. Le Studio de bureau n’est pas nécessaire.",pending:"Le téléchargement Controller seul n’est pas encore publié pour tous les systèmes. La dernière version contient encore le pack complet : ouvrez uniquement le Controller et conservez les fichiers du pack ensemble.",unavailable:"Les téléchargements n’ont pas pu être vérifiés. Consultez la dernière version disponible ci-dessous.",linuxNote:"Linux : autorisez l’exécution du fichier dans ses propriétés, puis lancez-le. La sortie clavier nécessite une session X11 ; Wayland n’est pas pris en charge. Le système doit être compatible avec la version publiée.",openTitle:"1. Ouvrez le Controller",open:"Lancez motion-input-grid-controller. Avec l’ancien pack, extrayez d’abord toute l’archive et gardez le dossier entier. Avec le fichier autonome, placez-le où vous voulez et lancez-le.",smartTitle:"Windows affiche une alerte SmartScreen ?",smart:"Une application récente et non signée peut déclencher SmartScreen. Vérifiez que le fichier vient de la release officielle de Robin-G0/Motion-Input-Grid. Si vous choisissez de lui faire confiance, ouvrez « Informations complémentaires », puis « Exécuter quand même » si cette option est proposée. Ne désactivez pas la protection Windows. Sur un ordinateur géré, contactez votre administrateur si l’exécution est bloquée.",importTitle:"2. Importez votre configuration",import:"Cliquez sur « Import profile », sélectionnez mig-profile.json, puis vérifiez les mouvements et les touches indiqués avant d’accepter. L’import n’active pas le clavier.",activateTitle:"3. Testez, puis activez le clavier",activate:"Démarrez le suivi avec « Start tracking » et gardez les épaules visibles. Vérifiez que seul le mouvement voulu s’allume. Quand tout est bon, cliquez sur « Keyboard: Off » pour passer à « Keyboard: On », puis cliquez dans votre présentation ou votre application. Désactivez le clavier ou arrêtez le suivi pour faire une pause.",openAlt:"Illustration : lancer le fichier Controller téléchargé.",importAlt:"Illustration : Import profile puis choisir mig-profile.json.",activateAlt:"Illustration : Start tracking puis Keyboard: On et sélectionner l’application cible.",illustration:"Illustrations du parcours. Les boutons peuvent être placés différemment selon le système et la version."},
-    en:{title:"Turn your gestures into key presses",intro:"Your configuration is ready. The Controller uses your camera to recognise movements and send keys to the foreground application.",file:"Keep the mig-profile.json file you just exported. You will import it into the Controller.",back:"Back to Studio",download:"Download the Controller",release:"View the latest available release",loading:"Checking the latest release downloads…",ready:"Choose your system: clicking starts the download. You do not need the desktop Studio.",pending:"Controller-only downloads are not yet published for every system. The latest release still includes the full bundle: open just the Controller and keep the bundle files together.",unavailable:"Downloads could not be verified. Check the latest available release below.",linuxNote:"Linux: allow the file to run as a program in its properties, then launch it. Keyboard output needs an X11 session; Wayland is unsupported. Your system must meet the published release requirements.",openTitle:"1. Open the Controller",open:"Run motion-input-grid-controller. With the older bundle, extract the entire archive first and keep the folder together. With the standalone file, put it wherever you want and run it.",smartTitle:"Windows shows a SmartScreen warning?",smart:"A recent unsigned application may trigger SmartScreen. Check that the file came from the official Robin-G0/Motion-Input-Grid release. If you choose to trust it, select “More info”, then “Run anyway” if offered. Do not disable Windows protection. On a managed computer, contact your administrator if execution is blocked.",importTitle:"2. Import your configuration",import:"Click “Import profile”, choose mig-profile.json, then review the movements and keys before accepting. Importing does not enable keyboard output.",activateTitle:"3. Test, then enable the keyboard",activate:"Click “Start tracking” and keep your shoulders visible. Check that only the intended movement lights up. When ready, click “Keyboard: Off” to switch to “Keyboard: On”, then focus your presentation or target application. Disable keyboard output or stop tracking when you need a break.",openAlt:"Illustration: launch the downloaded Controller file.",importAlt:"Illustration: Import profile and select mig-profile.json.",activateAlt:"Illustration: Start tracking, enable Keyboard: On and focus your target application.",illustration:"Workflow illustrations. Button placement can vary by system and version."}
+    "en": {
+        "title": "Turn your gestures into key presses",
+        "intro": "Download the Controller, import your profile and use your gestures in your applications.",
+        "file": "Keep the mig-profile.json file exported from Studio.",
+        "back": "Back to Studio",
+        "download": "Download the Controller",
+        "release": "View the latest available release",
+        "loading": "Checking the latest release downloads...",
+        "ready": "Choose your system to start the download. The desktop Studio is not required.",
+        "pending": "Controller-only files are not yet published for every system. The available release includes a bundle: extract it and keep its files together.",
+        "unavailable": "Downloads could not be verified. Open the latest available release below.",
+        "linuxNote": "Linux: allow execution in the file properties. Keyboard output requires X11. Check the release system requirements.",
+        "openTitle": "1. Open the Controller",
+        "open": "Run the downloaded file. On Windows, the first launch explains where its local runtime will be stored. Choose Continue. Import profile is visible when no profiles are saved.",
+        "smartTitle": "SmartScreen warning on Windows?",
+        "smart": "For a file downloaded from the official MIG release, choose More info, then Run anyway if you trust it. On a managed computer, ask your administrator if this is blocked.",
+        "importTitle": "2. Import your profile",
+        "activateTitle": "3. Start, enable keys and minimize",
+        "activate": "Click Start, keep both shoulders visible and test HI. Switch Keyboard: Off to Keyboard: On, then minimize the window and focus your presentation. Raise your left wrist to send Right Arrow. Use Stop to pause.",
+        "openAlt": "Current Windows Controller with Import profile visible and keyboard output off.",
+        "importAlt": "Actual import review listing the HI movement and Right key.",
+        "activateAlt": "Current Controller after importing HI, with Keyboard: On. Capture has not started in this screenshot.",
+        "illustration": "Actual Windows application screenshots. The Linux layout differs. Enable output only after testing the gesture.",
+        "import": "Click Import profile, select mig-profile.json and check the listed keys. Choose Import reviewed profile. Later, find Import profile under Manage profile."
+    },
+    "fr": {
+        "title": "Passez de vos gestes aux touches",
+        "intro": "Téléchargez le Controller, importez votre profil et utilisez vos gestes dans vos applications.",
+        "file": "Gardez le fichier mig-profile.json exporté depuis Studio.",
+        "back": "Retour au Studio",
+        "download": "Télécharger le Controller",
+        "release": "Voir la dernière version disponible",
+        "loading": "Recherche des téléchargements de la dernière version...",
+        "ready": "Choisissez votre système pour démarrer le téléchargement. Le Studio de bureau n’est pas nécessaire.",
+        "pending": "Les fichiers Controller seuls ne sont pas encore publiés pour tous les systèmes. La version disponible contient un pack : extrayez-le et gardez ses fichiers ensemble.",
+        "unavailable": "Les téléchargements n’ont pas pu être vérifiés. Ouvrez la dernière version disponible ci-dessous.",
+        "linuxNote": "Linux : autorisez l’exécution dans les propriétés du fichier. La sortie clavier nécessite X11. Vérifiez les prérequis de la version.",
+        "openTitle": "1. Ouvrez le Controller",
+        "open": "Lancez le fichier téléchargé. Sur Windows, le premier lancement indique où sera stocké le runtime local. Cliquez sur Continue. Import profile est visible lorsqu’aucun profil n’est enregistré.",
+        "smartTitle": "Alerte SmartScreen sur Windows ?",
+        "smart": "Pour un fichier téléchargé depuis la release officielle MIG, choisissez Informations complémentaires puis Exécuter quand même si vous lui faites confiance. Sur un ordinateur géré, demandez à votre administrateur si cela est bloqué.",
+        "importTitle": "2. Importez votre profil",
+        "activateTitle": "3. Démarrez, activez les touches et réduisez",
+        "activate": "Cliquez sur Start, gardez les deux épaules visibles et testez HI. Passez de Keyboard: Off à Keyboard: On, puis réduisez la fenêtre et sélectionnez votre présentation. Levez le poignet gauche pour envoyer la flèche droite. Stop permet de faire une pause.",
+        "openAlt": "Controller Windows actuel avec Import profile visible et sortie clavier désactivée.",
+        "importAlt": "Véritable fenêtre de vérification de HI avec la touche Right.",
+        "activateAlt": "Controller actuel après import de HI, avec Keyboard: On. Le suivi n’est pas démarré dans cette capture.",
+        "illustration": "Captures réelles de l’application Windows. La disposition Linux diffère. Activez les touches après avoir testé le geste.",
+        "import": "Cliquez sur Import profile, choisissez mig-profile.json et vérifiez les touches. Validez avec Import reviewed profile. Par la suite, Import profile se trouve sous Manage profile."
+    }
 };
 let language=new URLSearchParams(location.search).get("lang") ?? (navigator.language.startsWith("fr")?"fr":"en");
 if(!texts[language])language="en";

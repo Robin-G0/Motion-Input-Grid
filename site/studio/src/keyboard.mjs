@@ -43,7 +43,7 @@ export class KeyboardEditor {
         this.dialog=dialog; this.t=text; this.apply=apply;
         this.list=dialog.querySelector("#keyboard-steps");
         const $=id=>dialog.querySelector(`#${id}`);
-        $("add-chord").onclick=()=>{this.draft.keyboard.push({keys:[39]});this.render();};
+        $("add-chord").onclick=()=>{this.pending=this.draft.keyboard.length;this.render();};
         $("add-text").onclick=()=>{this.draft.keyboard.push({text:""});this.render();};
         $("keyboard-mode").onchange=()=>{this.draft.action_mode=$("keyboard-mode").value;this.render();};
         $("keyboard-interval").onchange=()=>{this.draft.repeat_interval_ms=Number($("keyboard-interval").value);this.preview();};
@@ -56,7 +56,7 @@ export class KeyboardEditor {
         };
         $("keyboard-cancel").onclick=()=>dialog.close();
     }
-    open(movement) {this.draft=structuredClone(movement);this.draft.keyboard??=[];this.draft.action_mode??="single_press";this.draft.repeat_interval_ms??=200;this.render();this.dialog.showModal();}
+    open(movement) {this.pending=null;this.draft=structuredClone(movement);this.draft.keyboard??=[];this.draft.action_mode??="single_press";this.draft.repeat_interval_ms??=200;this.render();this.dialog.showModal();document.dispatchEvent(new Event("keyboard-editor-change"));}
     button(label, run) {const b=document.createElement("button");b.type="button";b.className="text-button";b.textContent=label;b.onclick=run;return b;}
     preview() {this.dialog.querySelector("#keyboard-preview").textContent=keyboardSummary(this.draft,this.t);this.dialog.querySelector("#keyboard-error").hidden=true;}
     render() {
@@ -66,17 +66,8 @@ export class KeyboardEditor {
             const title=document.createElement("strong");title.textContent=`${index+1}. ${t(step.keys?"chord":"typeText")}`;row.append(title);
             if (step.keys) {
                 const chips=document.createElement("div");chips.className="key-chips";
-                for (const key of step.keys) chips.append(this.button(`${keyName(key)} ×`,()=>{step.keys=step.keys.filter(k=>k!==key);this.render();}));
-                const select=document.createElement("select");select.setAttribute("aria-label",t("chooseKey"));
-                for (const [value,label] of keyChoices) {const option=new Option(label,String(value));option.selected=value===39;select.add(option);}
-                row.append(chips,select,this.button(t("addKey"),()=>{const value=Number(select.value);if(!step.keys.includes(value))step.keys.push(value);this.render();}));
-                const record=this.button(t("recordChord"),()=>{record.textContent=t("pressChord");record.dataset.recording="true";record.focus();});
-                record.addEventListener("keydown",event=>{
-                    if(record.dataset.recording!=="true")return;
-                    event.preventDefault();event.stopPropagation();
-                    if(event.key==="Escape"){record.dataset.recording="false";record.textContent=t("recordChord");return;}
-                    const keys=eventChord(event);if(keys){step.keys=keys;this.render();}
-                });row.append(record);
+                for (const key of step.keys) chips.append(this.button(`${keyName(key)} ×`,()=>{step.keys=step.keys.filter(k=>k!==key);if(!step.keys.length)this.draft.keyboard.splice(index,1);this.pending=null;this.render();}));
+                const plus=this.button("+",()=>{this.pending=index;this.render();});plus.setAttribute("aria-label",t("addKey"));row.append(chips,plus);
             } else {
                 const text=document.createElement("textarea");text.rows=2;text.value=step.text;text.maxLength=16384;text.setAttribute("aria-label",t("typeText"));
                 text.oninput=()=>{step.text=text.value;this.preview();};row.append(text);
@@ -85,10 +76,21 @@ export class KeyboardEditor {
             for(const [delta,label] of [[-1,"moveUp"],[1,"moveDown"]]){const b=this.button(t(label),()=>{const other=index+delta;[this.draft.keyboard[index],this.draft.keyboard[other]]=[this.draft.keyboard[other],this.draft.keyboard[index]];this.render();});b.disabled=index+delta<0||index+delta>=this.draft.keyboard.length;controls.append(b);}
             controls.append(this.button(t("deleteCard"),()=>{this.draft.keyboard.splice(index,1);this.render();}));row.append(controls);return row;
         }));
+        if(this.pending!==null){
+            const picker=document.createElement("li");picker.id="key-picker";picker.className="keyboard-step";
+            const select=document.createElement("select");select.setAttribute("aria-label",t("chooseKey"));select.add(new Option(t("chooseKey"),""));
+            for(const [value,label] of keyChoices)select.add(new Option(label,String(value)));
+            const accept=keys=>{const step=this.draft.keyboard[this.pending];if(step?.keys)step.keys=[...new Set([...step.keys,...keys])];else this.draft.keyboard.push({keys});this.pending=null;this.render();};
+            select.onchange=()=>{if(select.value)accept([Number(select.value)]);};
+            const record=this.button(t("recordChord"),()=>{record.textContent=t("pressChord");record.dataset.recording="true";record.focus();});
+            record.addEventListener("keydown",event=>{if(record.dataset.recording!=="true")return;event.preventDefault();event.stopPropagation();if(event.key==="Escape"){this.pending=null;this.render();return;}const keys=eventChord(event);if(keys)accept(keys);});
+            picker.append(select,record,this.button(t("cancel"),()=>{this.pending=null;this.render();}));this.list.append(picker);
+        }
         this.dialog.querySelector("#keyboard-mode").value=this.draft.action_mode;
         this.dialog.querySelector("#keyboard-interval").value=this.draft.repeat_interval_ms;
         this.dialog.querySelector("#repeat-field").hidden=this.draft.action_mode!=="repeat";
         this.dialog.querySelector("#add-chord").disabled=this.dialog.querySelector("#add-text").disabled=this.draft.keyboard.length>=256;
         this.preview();
+        document.dispatchEvent(new Event("keyboard-editor-change"));
     }
 }

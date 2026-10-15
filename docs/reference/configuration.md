@@ -526,3 +526,69 @@ The Motion Input Grid Controller keeps its named profile list in a separate `pro
 is bounded to 64 entries and 64 KiB, names to 256 UTF-8 bytes. Imports and list
 updates use atomic replacement. Camera visibility, verification and keyboard consent
 are session settings and do not change motion JSON. See [Motion Input Grid Controller](../guides/controller.md).
+
+## Complete Studio HI example
+
+The complete [studio-hi.json](../../configs/studio-hi.json) profile is the small example used by the interactive website tutorial. Import it directly into Studio or Controller. It tracks the anatomical left wrist in body space: visit the lower green band, then the upper yellow band to emit `next_slide` and press Right Arrow once. Region sizes are a starting point to test with your camera.
+
+```json
+{
+  "schema_version": 2,
+  "tracking": {
+    "hands": false
+  },
+  "inputs": [
+    {
+      "id": "hi",
+      "name": "HI",
+      "action": "next_slide",
+      "space": "body",
+      "cooldown_ms": 700,
+      "keyboard": [
+        {
+          "keys": [
+            39
+          ]
+        }
+      ],
+      "action_mode": "single_press",
+      "steps": [
+        {
+          "id": "wave",
+          "mode": "ordered",
+          "constraints": [
+            {
+              "id": "start",
+              "landmark": "left_wrist",
+              "cell": [
+                -4,
+                4,
+                18,
+                4
+              ],
+              "type": "required",
+              "priority": "high",
+              "order": 1
+            },
+            {
+              "id": "finish",
+              "landmark": "left_wrist",
+              "cell": [
+                -4,
+                -3,
+                18,
+                6
+              ],
+              "type": "trigger",
+              "priority": "high",
+              "order": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+Omitting `keyboard` or using `[]` sends no keys. `[{"keys":[17,39]}]` is one simultaneous Ctrl+Right shortcut. `[{"keys":[17]},{"keys":[39]}]` presses and releases Ctrl, then presses Right as a separate sequential action. There is no implicit key or custom delay field. In `hold` mode, only the final chord stays held; `repeat` repeats the sequence while the activation remains valid. See the limits, defaults and optional fields above. `blocking` is not a profile field: use `type: "forbidden"` constraints. Only `schema_version: 2` is supported.

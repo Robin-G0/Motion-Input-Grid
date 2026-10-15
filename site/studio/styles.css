@@ -18,7 +18,8 @@
 .controller-handoff { max-width: 1000px; }
 .controller-handoff > section { margin-block: 36px; padding: 24px; border: 1px solid var(--border); border-radius: 12px; }
 .controller-steps { list-style: none; padding: 0; display: grid; gap: 48px; }
-.controller-steps img { width: 100%; height: auto; border-radius: 12px; }
+.controller-steps img { display:block; width:100%; max-width:760px; height:auto; border-radius:8px; border:1px solid var(--border); }
+.controller-steps { margin-top:32px; }
 .controller-steps p { max-width: 75ch; line-height: 1.8; }
 .editor-frame { position: relative; height: clamp(280px, 55svh, 640px); border: 1px solid var(--border); background: var(--surface); overflow: hidden; }
 #editor-camera { position: absolute; inset: 0; }
@@ -223,4 +224,14 @@
     .edit-layout, .test-layout { grid-template-columns: 1fr; gap: 20px; }.edit-sidebar, .journal { border-left: 0; border-top: 1px solid var(--border); padding: 18px 0 0; }.drawing-column { --grid-cell-size: calc(100cqw / 9); }.grid-footnote { width: 100%; }.test-stage { width: 100%; max-width: 100%; }
     .panel-heading { gap: 8px; }.studio h2 { font-size: 24px; }.panel-heading .text-button { font-size: 11px; }.tool-group button { min-height: 40px; }.grid-caption { align-items: start; }.grid-caption .check { font-size: 10px; }
     .studio dialog { padding: 20px; }.dialog-heading h2 { font-size: 23px; }.movement-list { grid-template-columns: 1fr; }
+}
+
+.tour-hole { position:fixed; pointer-events:none; z-index:1000; border:2px solid var(--accent); border-radius:8px; box-shadow:0 0 0 9999px #050a14b8; }
+.tour-card { position:fixed; z-index:1001; box-sizing:border-box; padding:16px; border:1px solid var(--accent); border-radius:12px; background:var(--paper); color:var(--ink); box-shadow:0 8px 32px #0004; font-size:14px; }
+.tour-card p { margin:8px 0; line-height:1.5; }
+.tour-target { outline:2px solid var(--accent); outline-offset:3px; }
+.editor-grid .tour-draw-cell { background:#d9a74655; box-shadow:inset 0 0 0 1px #d9a74699; }
+#key-picker { border-style:dashed; }
+@media (max-width:660px) {
+    body[data-tour-step] .drawing-area { width:100%; }
 }

@@ -8,7 +8,7 @@ assign keys and export a configuration without editing JSON. No account is neede
 ## Your first movement
 
 1. Choose **Guide me step by step** for on-screen instructions, or **New profile**.
-   Name your first movement, for example “Next slide”.
+   The guide builds a movement named **HI**. A spotlight identifies the current control; the rest is dimmed and inactive. **Leave the guide** returns to normal editing. Steps advance after edits and successful recognition.
 2. Choose the body point to move, for example your left wrist.
 3. Select green **Required** and draw a starting region. Select yellow **Trigger**
    and draw the finishing region. The gesture travels from green to yellow.
@@ -18,7 +18,7 @@ assign keys and export a configuration without editing JSON. No account is neede
    follow the path. The journal confirms recognised actions. Return to editing
    if you need to adjust the regions. Nothing is typed into other applications.
 5. Choose **Continue: assign keys** (or **Assign keys** in the editor).
-6. For a presentation, add a key press and keep **Right**, with the mode **Once**.
+6. The keyboard editor starts empty. Click **+ Add a key / next step**, then select **Right** or capture Right Arrow, with mode **Once**. No default key is inserted. Use the + inside a row for another simultaneous key, or the bottom + for a sequential row.
    Choose **Save and return to movements**.
 
 ## Keys, shortcuts and sequences
@@ -52,7 +52,7 @@ Neither test sends real keys.
 ## Export and use the Controller
 
 Choose **Export** and keep `mig-profile.json`. The reminder links to the
-[Controller download and illustrated guide](https://robin-g0.github.io/Motion-Input-Grid/studio/controller/?lang=en).
+[Controller download and screenshot guide](https://robin-g0.github.io/Motion-Input-Grid/studio/controller/?lang=en).
 Direct Windows x64 and Linux x64 downloads appear when the latest public release
 contains Controller-only files. Until then, the page explains the situation and
 links to the available release. Older archives must be fully extracted and kept
@@ -62,7 +62,7 @@ together; open only the Controller, not desktop Studio.
    **More info**, then **Run anyway** may be offered if you choose to trust it.
    Do not disable Windows protection. On Linux, allow the `.run` file to run
    as a program in its properties. Keyboard output requires X11, not Wayland.
-2. Choose **Import profile**, select `mig-profile.json` and review the bindings.
+2. Choose **Import profile** (under **Manage profile** for an existing library), select `mig-profile.json` and review the bindings.
 3. Start tracking with keyboard output off. Check the correct movement lights up,
    then enable **Keyboard: On** and focus the presentation or target application.
 
@@ -86,3 +86,13 @@ optional advanced editor.
 Drafts belong to one browser and origin (scheme, hostname and port). Export a
 durable copy before clearing storage or moving devices. Drafts are not synced
 to an account.
+
+## The guided HI walkthrough
+
+The guide asks you to name HI, select Left wrist, draw the marked lower starting band and upper finishing band, then test the gesture. Keep your shoulders visible and move your left wrist from green into yellow. Recognition unlocks keyboard assignment. Explicitly add Right Arrow, save, then repeat the gesture in the complete-configuration test. Check HI and Right in the journal before exporting. The final guide links directly to the Controller download and import instructions.
+
+The download page shows three real Windows application screenshots directly below its buttons: an empty Controller with Import profile visible, the HI import review, and HI with keyboard consent enabled. The last screenshot has not started camera capture. Linux placement differs. Screenshot sources and the real executable hash are recorded in `site/studio/controller/images/capture.json`; regenerate with `tools/dev/capture-controller.py` from the binary branch after relevant native UI changes.
+
+On first Windows launch, the standalone file explains where it will extract its runtime. Copy the actual path if needed, then choose Continue. Later launches reuse the verified directory. Close MIG before deleting that directory for cleanup; the next launch recreates it. Your profiles are separate.
+
+For developers, the [complete JSON reference](../reference/configuration.md) describes supported fields and defaults. The complete [HI profile](../../configs/studio-hi.json) is tested through the actual schema parser.

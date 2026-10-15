@@ -238,3 +238,19 @@ test("zone finger editing retains the other hand and native validation accepts i
     try { assert.equal(tracker.load(JSON.stringify(profile)), ""); }
     finally { tracker.delete(); }
 });
+
+
+test("documented complete profiles and HI tutorial example parse with the actual native schema",async()=>{
+    const {readFile}=await import("node:fs/promises");
+    const module=await createMIG(), tracker=new module.Tracker();
+    try {
+        for(const name of ["configuration.md","configuration.fr.md"]){
+            const markdown=await readFile(new URL(`../../../docs/reference/${name}`,import.meta.url),"utf8");
+            const examples=[...markdown.matchAll(/```json\s*([\s\S]*?)```/g)].map(match=>match[1]).filter(value=>value.trim().startsWith('{')&&value.includes('"schema_version"'));
+            assert.ok(examples.length>=2);
+            for(const example of examples)assert.equal(tracker.load(example),"");
+        }
+        const hi=await readFile(new URL("../../../configs/studio-hi.json",import.meta.url),"utf8");
+        assert.equal(tracker.load(hi),"");assert.deepEqual(JSON.parse(hi).inputs[0].keyboard,[{keys:[39]}]);
+    }finally{tracker.delete();}
+});

@@ -1,3 +1,4 @@
+import { SpotlightTour } from "./tour.mjs";
 import { ThemeToggle } from "../../src/ui/theme.mjs";
 import { cameraError } from "../../src/camera/camera.mjs";
 import { copy } from "./copy.mjs";
@@ -22,6 +23,8 @@ let selectedRegions = [];
 const selectionIds = () => selectedRegions.length ? selectedRegions : selectedRegion ? [selectedRegion] : [];
 let view = "home", detail = "position", hasDraft = false, noteMode = null;
 let guided = false, testScope = "movement";
+let tourStage=0, tourPoint=false, tourRecognised=false;
+let tour;
 let editorPreview = "grid";
 let gridZoom = 1;
 let regionClipboard = null;
@@ -215,8 +218,6 @@ function openRegion(regionId) {
     $(`detail-${detail}-tab`).focus();
 }
 function render() {
-    $("pipeline-guide").hidden = !guided;
-    $("guide-instruction").textContent = t(view === "test" ? "guideTest" : view === "moves" ? "guideManage" : "guideDraw");
     $("test-scope").textContent = t(testScope === "configuration" ? "wholeTest" : "selectedTest");
     $("test-keyboard").hidden = testScope === "configuration";
     $("test-configuration").disabled = busy || !history.value.inputs.length;
@@ -344,6 +345,7 @@ function render() {
     }
     if (!region && $("region-dialog").open) $("region-dialog").close();
     $("draft-status").textContent = t(storageAvailable ? "saved" : "storageUnavailable");
+    tour?.schedule();
 }
 function renderLanguage() {
     document.title = "Motion Input Grid Studio";
@@ -424,6 +426,7 @@ function drawRegion(from, to) {
     selectedRegions = [];
     edit((movement, profile) => {
         const rect = rectangle(from, to);
+        if(guided && ["required","trigger"].includes(tool))removeRegions(movement,new Set(regions(movement).filter(r=>r.type===tool).map(r=>r.id)));
         if (tool === "erase") {
             const [x, y, w, h] = rect;
             const removed = new Set(scopedRegions(movement, scope).filter(region => {
@@ -464,6 +467,7 @@ async function acceptJSON(text, target = "feedback") {
     } finally { if (token === operation) setBusy(false); }
 }
 function onAction(event) {
+    if(guided && event.id===input()?.id){tourRecognised=true;tour.schedule();}
     const movement = history.value.inputs.find(item => item.id === event.id);
     journal.add("action", `${movement?.name ?? event.id} · ${event.action} · ${t("keyboardPreview")}: ${keyboardSummary(movement,t)}`);
     if (movement) highlights.confirm(movement, performance.now());
@@ -647,7 +651,7 @@ function pasteSelectedRegion() {
     if (!editor.handles.hidden) { handle?.focus({preventScroll:true}); handle?.scrollIntoView({block:"nearest",inline:"nearest"}); }
 }
 document.addEventListener("keydown", event => {
-    if (!(event.ctrlKey || event.metaKey) || event.altKey || event.isComposing || busy || view === "home") return;
+    if (!(event.ctrlKey || event.metaKey) || event.altKey || event.isComposing || busy || guided || view === "home") return;
     if (document.querySelector("dialog[open]") || event.target.closest('input:not([type="range"]):not([type="checkbox"]), textarea, select, [contenteditable]:not([contenteditable="false"])')) return;
     const key = event.key.toLowerCase();
     if (key === "a" && view === "edit" && input() && !event.shiftKey) {
@@ -679,9 +683,9 @@ for (const name of ["edit-keyboard", "test-keyboard", "save-movement"]) $(name).
     if (!regions(input()).length && !input().fingers?.length) { feedback("emptyPath", true); return; }
     stopTest();
     keyboardEditor.open(input());
-    if (guided) $("guide-instruction").textContent=t("guideKeys");
+
 });
-$("leave-guide").addEventListener("click",()=>{guided=false;render();});
+
 $("test-back-moves").addEventListener("click",()=>{stopTest();setView("moves");});
 $("test-configuration").addEventListener("click",()=>{stopTest();testScope="configuration";setView("test");});
 $("close-export").addEventListener("click",()=>$("export-dialog").close());
@@ -727,8 +731,11 @@ $("json-dialog").addEventListener("cancel", event => { if (busy) event.preventDe
 $("apply-json").addEventListener("click", async () => { if (await acceptJSON($("json-source").value, "json-error")) $("json-dialog").close(); });
 $("start-test").addEventListener("click", startTest);
 $("quick-test").addEventListener("click", () => {
-    guided = true;
+    guided = false;
     $("new-profile").click();
+    guided=true;tourStage=0;tourPoint=false;tourRecognised=false;
+    $("full-grid").checked=false;render();$("landmark").add(new Option(t("tour_choosePoint"),"",true,true),0);
+    tour.schedule();
 });
 $("stop-test").addEventListener("click", () => stopTest());
 $("recalibrate").addEventListener("click", () => { brush.cancel(); gridBrush.cancel(); session?.recalibrate(); geometry.reset(); trackingState = null; cameraMessage("recalibrating"); journal.add("info", t("recalibrating")); });
@@ -803,6 +810,40 @@ window.addEventListener("pagehide", () => {
     stopTest(); disposeValidator();
 });
 
+tour = new SpotlightTour(() => {
+    if(!guided)return null;
+    const list=regions(input());
+    const states=[
+        ["name","#input-name",()=>input()?.name==="HI"],
+        ["point","#landmark",()=>tourPoint&&$("landmark").value==="left_wrist"],
+        ["drawStart",".grid-viewport",()=>list.some(r=>r.type==="required"&&r.landmark==="left_wrist")],
+        ["toolFinish",'[data-tool="trigger"]',()=>tool==="trigger"],
+        ["drawFinish",".grid-viewport",()=>list.some(r=>r.type==="trigger"&&r.landmark==="left_wrist")],
+        ["try","#edit-test",()=>view==="test"],
+        ["camera","#start-test",()=>!!session?.state.running],
+        ["recognise","#test-stage",()=>tourRecognised,"#stop-test, #start-test, #camera-message, #log-list"],
+        ["keys","#test-keyboard",()=>$("keyboard-dialog").open],
+        ["plus","#add-chord",()=>keyboardEditor.pending!==null],
+        ["right",keyboardEditor.pending!==null?"#key-picker":keyboardEditor.draft?.keyboard?.length?"#keyboard-steps":"#add-chord",()=>keyboardEditor.draft?.keyboard?.length===1&&keyboardEditor.draft.keyboard[0].keys?.join() === "39","#add-chord"],
+        ["save","#keyboard-save",()=>view==="moves"&&!$("keyboard-dialog").open],
+        ["whole","#test-configuration",()=>view==="test"&&testScope==="configuration"],
+        ["cameraAgain","#start-test",()=>!!session?.state.running],
+        ["recogniseAgain","#test-stage",()=>tourRecognised,"#stop-test, #start-test, #camera-message, #log-list"],
+        ["back","#test-back-moves",()=>view==="moves"],
+        ["export","#export-profile",()=>$("export-dialog").open],
+        ["controller","#controller-guide",()=>false,"#export-dialog .dialog-actions, #close-export"]
+    ];
+    while(tourStage<states.length-1&&states[tourStage][2]()){
+        tourStage++;
+        if([7,14].includes(tourStage))tourRecognised=false;
+    }
+    const [id,target,,extra]=states[tourStage];
+    document.querySelectorAll(".tour-draw-cell").forEach(cell=>cell.classList.remove("tour-draw-cell"));
+    if([2,4].includes(tourStage))for(const cell of $("editor-grid").children){const y=Number(cell.dataset.y);if(tourStage===2?y>=4&&y<=7:y>=-3&&y<=2)cell.classList.add("tour-draw-cell");}
+    return {id,target,extra,message:t(`tour_${id}`)};
+},()=>{guided=false;document.querySelectorAll(".tour-draw-cell").forEach(cell=>cell.classList.remove("tour-draw-cell"));},t);
+$("landmark").addEventListener("change",()=>{tourPoint=true;});
+$("export-dialog").addEventListener("close",()=>{if(guided){guided=false;tour.schedule();}});
 renderLanguage();
 try { notes.load(localStorage.getItem(notesKey)); } catch { /* Invalid notes never block a profile. */ }
 // A saved draft may be unfinished. Validate its editable shape here, and keep

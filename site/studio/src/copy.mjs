@@ -84,3 +84,48 @@ fr.bodyPointHint = "Le point du corps choisi s’applique aux nouvelles zones. L
 en.bodyPointHint = "The selected body point applies to new regions. Change an existing region’s point in its details.";
 Object.assign(fr,{checkingDownloads:"Recherche des téléchargements Controller…",directDownloads:"Téléchargez le Controller pour votre système.",pendingDownloads:"Les fichiers Controller seuls ne sont pas encore publiés pour tous les systèmes. Consultez le guide pour accéder à la version disponible.",unverifiedDownloads:"Téléchargements non vérifiés. Le guide donne accès à la dernière version disponible."});
 Object.assign(en,{checkingDownloads:"Checking Controller downloads…",directDownloads:"Download the Controller for your system.",pendingDownloads:"Controller-only files are not yet published for every system. Open the guide to find the available release.",unverifiedDownloads:"Downloads could not be verified. The guide links to the latest available release."});
+
+Object.assign(en, {
+ addChord:"+ Add a key / next step", addKey:"Add a simultaneous key",
+ tour_choosePoint:"Choose a body point",
+ tour_name:"Name this movement HI, then leave the field.",
+ tour_point:"Choose Left wrist. We will recognise a wave using this point.",
+ tour_drawStart:"Drag across the marked lower band, from its top left to bottom right. This green region is the starting position.",
+ tour_toolFinish:"Choose the yellow finishing-region tool.",
+ tour_drawFinish:"Drag across the marked upper band. The wrist must travel from the green region to this yellow region.",
+ tour_try:"Test the movement you just drew.",
+ tour_camera:"Start the camera and allow access. Keep both shoulders and your left wrist visible.",
+ tour_recognise:"Lower your left wrist into green, then raise it into yellow. The guide continues when HI is recognised. You can stop and retry the camera, or leave the guide to edit your drawing.",
+ tour_keys:"HI was recognised. Continue to assign its keyboard action.",
+ tour_plus:"No keys are assigned yet. Click + to add the first key.",
+ tour_right:"Choose Right, or capture the Right Arrow key. If you chose another key, remove it and use + again.",
+ tour_save:"Right is ready. Save HI and return to your movements.",
+ tour_whole:"Now test the whole configuration, including its keyboard simulation.",
+ tour_cameraAgain:"Start the camera to test the saved configuration.",
+ tour_recogniseAgain:"Lower then raise your left wrist again. Look for HI and Right in the action journal. Studio simulates keys; the Controller sends them.",
+ tour_back:"Your configuration works. Return to your movements to export it.",
+ tour_export:"Export your profile. Keep this JSON file for the Controller.",
+ tour_controller:"Profile downloaded. Open this guide, download the Controller, import your JSON and enable keyboard output. Your HI gesture will send Right Arrow."
+});
+Object.assign(fr, {
+ addChord:"+ Ajouter une touche / étape suivante", addKey:"Ajouter une touche simultanée",
+ tour_choosePoint:"Choisir un point du corps",
+ tour_name:"Nommez ce mouvement HI, puis quittez le champ.",
+ tour_point:"Choisissez Poignet gauche. Ce point permettra de reconnaître votre geste.",
+ tour_drawStart:"Tracez toute la bande inférieure marquée, du coin supérieur gauche au coin inférieur droit. Cette zone verte est la position de départ.",
+ tour_toolFinish:"Choisissez l’outil jaune de zone d’arrivée.",
+ tour_drawFinish:"Tracez toute la bande supérieure marquée. Le poignet devra passer de la zone verte à cette zone jaune.",
+ tour_try:"Testez le mouvement que vous venez de dessiner.",
+ tour_camera:"Activez la caméra et autorisez son accès. Gardez vos deux épaules et votre poignet gauche visibles.",
+ tour_recognise:"Baissez le poignet gauche dans le vert, puis levez-le dans le jaune. Le guide continue lorsque HI est reconnu. Vous pouvez arrêter et relancer la caméra, ou quitter le guide pour modifier le dessin.",
+ tour_keys:"HI a été reconnu. Continuez pour lui associer une touche.",
+ tour_plus:"Aucune touche n’est encore associée. Cliquez sur + pour ajouter la première.",
+ tour_right:"Choisissez Right ou capturez la flèche droite. Si vous avez choisi une autre touche, retirez-la et réessayez avec +.",
+ tour_save:"Right est prêt. Enregistrez HI pour revenir aux mouvements.",
+ tour_whole:"Testez maintenant toute la configuration, avec la simulation des touches.",
+ tour_cameraAgain:"Activez la caméra pour tester la configuration enregistrée.",
+ tour_recogniseAgain:"Baissez puis levez à nouveau le poignet gauche. Le journal doit afficher HI et Right. Studio simule les touches ; le Controller les envoie.",
+ tour_back:"Votre configuration fonctionne. Revenez aux mouvements pour l’exporter.",
+ tour_export:"Exportez votre profil. Gardez ce fichier JSON pour le Controller.",
+ tour_controller:"Profil téléchargé. Ouvrez ce guide, téléchargez le Controller, importez votre JSON et activez les touches. Votre geste HI enverra la flèche droite."
+});

@@ -1,0 +1,57 @@
+{
+  "schema_version": 2,
+  "tracking": {
+    "hands": false
+  },
+  "inputs": [
+    {
+      "id": "hi",
+      "name": "HI",
+      "action": "next_slide",
+      "space": "body",
+      "cooldown_ms": 700,
+      "keyboard": [
+        {
+          "keys": [
+            39
+          ]
+        }
+      ],
+      "action_mode": "single_press",
+      "steps": [
+        {
+          "id": "wave",
+          "mode": "ordered",
+          "constraints": [
+            {
+              "id": "start",
+              "landmark": "left_wrist",
+              "cell": [
+                -4,
+                4,
+                18,
+                4
+              ],
+              "type": "required",
+              "priority": "high",
+              "order": 1
+            },
+            {
+              "id": "finish",
+              "landmark": "left_wrist",
+              "cell": [
+                -4,
+                -3,
+                18,
+                6
+              ],
+              "type": "trigger",
+              "priority": "high",
+              "order": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

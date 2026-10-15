@@ -434,3 +434,69 @@ La liste est limitée à 64 entrées et 64 Kio ; les noms à 256 octets UTF-8.
 Les imports et modifications de liste utilisent un remplacement atomique.
 L’aperçu, la vérification et l’activation du clavier sont des réglages de session
 et ne changent pas le JSON des mouvements. Voir le [Motion Input Grid Controller](../guides/controller.fr.md).
+
+## Exemple complet HI du Studio
+
+Le profil complet [studio-hi.json](../../configs/studio-hi.json) est l’exemple du tutoriel interactif du site. Importez-le directement dans Studio ou Controller. Il suit le poignet gauche anatomique dans le repère du corps : passez dans la bande verte inférieure puis dans la bande jaune supérieure pour émettre `next_slide` et appuyer une fois sur la flèche droite. Testez les dimensions avec votre caméra.
+
+```json
+{
+  "schema_version": 2,
+  "tracking": {
+    "hands": false
+  },
+  "inputs": [
+    {
+      "id": "hi",
+      "name": "HI",
+      "action": "next_slide",
+      "space": "body",
+      "cooldown_ms": 700,
+      "keyboard": [
+        {
+          "keys": [
+            39
+          ]
+        }
+      ],
+      "action_mode": "single_press",
+      "steps": [
+        {
+          "id": "wave",
+          "mode": "ordered",
+          "constraints": [
+            {
+              "id": "start",
+              "landmark": "left_wrist",
+              "cell": [
+                -4,
+                4,
+                18,
+                4
+              ],
+              "type": "required",
+              "priority": "high",
+              "order": 1
+            },
+            {
+              "id": "finish",
+              "landmark": "left_wrist",
+              "cell": [
+                -4,
+                -3,
+                18,
+                6
+              ],
+              "type": "trigger",
+              "priority": "high",
+              "order": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+Omettre `keyboard` ou utiliser `[]` n’envoie aucune touche. `[{"keys":[17,39]}]` est un raccourci simultané Ctrl+Droite. `[{"keys":[17]},{"keys":[39]}]` appuie puis relâche Ctrl, puis appuie sur Droite séparément. Il n’existe aucune touche implicite ni champ de délai personnalisé. En mode `hold`, seul le dernier raccourci reste maintenu ; `repeat` répète la séquence tant que l’activation reste valide. Les limites, valeurs par défaut et champs optionnels sont détaillés plus haut. `blocking` n’est pas un champ du profil : utilisez `type: "forbidden"`. Seule la version `schema_version: 2` est acceptée.

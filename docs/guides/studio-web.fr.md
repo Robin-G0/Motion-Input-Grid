@@ -8,7 +8,7 @@ gestes, associez leurs touches et exportez sans modifier de JSON. Aucun compte r
 ## Votre premier mouvement
 
 1. Choisissez **Me guider pas à pas** pour les explications à l’écran, ou
-   **Créer un profil**. Nommez le premier mouvement, par exemple « Diapositive suivante ».
+   **Créer un profil**. Le guide vous fait créer le mouvement **HI**.
 2. Choisissez le point du corps à déplacer, par exemple votre poignet gauche.
 3. Choisissez **Required** en vert et dessinez une zone de départ, puis **Trigger**
    en jaune et dessinez l’arrivée. Le geste passe de la verte à la jaune.
@@ -18,7 +18,7 @@ gestes, associez leurs touches et exportez sans modifier de JSON. Aucun compte r
    et suivez le parcours. Le journal confirme les actions reconnues. Revenez à
    l’édition pour ajuster les zones. Aucune touche n’est envoyée aux applications.
 5. Choisissez **Continuer : associer des touches** (ou **Associer des touches**).
-6. Pour une présentation, ajoutez une pression et gardez **Right** (flèche droite)
+6. Le clavier est vide au départ. Cliquez sur **+**, puis choisissez **Right** (flèche droite)
    avec le mode **Une seule fois**. Choisissez **Enregistrer et revenir aux mouvements**.
 
 ## Touches, raccourcis et séquences
@@ -90,3 +90,15 @@ et durées. L’éditeur JSON reste facultatif.
 Le brouillon appartient à un navigateur et une origine (protocole, hôte et port).
 Exportez une copie durable avant de vider le stockage ou changer d’appareil.
 Les brouillons ne sont pas synchronisés avec un compte.
+
+## Le parcours guidé HI
+
+Le guide construit un mouvement nommé **HI**. Un projecteur désigne le contrôle à utiliser, et le reste de l’interface est grisé et inactif. **Quitter le guide** rétablit l’édition normale. Les étapes avancent après les vraies actions et reconnaissances, sans temporisation.
+
+Nommez HI, choisissez Poignet gauche, tracez la bande inférieure de départ puis la bande supérieure d’arrivée. Gardez les épaules visibles et passez le poignet gauche du vert au jaune. Après reconnaissance, l’éditeur clavier est vide : cliquez sur **+**, puis sélectionnez **Right** ou capturez la flèche droite. Aucune touche n’est préremplie. Le + dans une ligne ajoute une touche simultanée ; le + du bas ajoute une étape suivante. Enregistrez, testez toute la configuration et vérifiez HI et Right dans le journal avant l’export.
+
+La page de téléchargement présente directement sous les boutons trois captures réelles de Windows : Controller vide avec Import profile visible, vérification de l’import HI, puis HI avec Keyboard: On. Le suivi caméra n’est pas démarré dans cette dernière capture. La disposition Linux diffère. Pour les profils suivants, Import profile se trouve sous Manage profile. L’origine des images est consignée dans `site/studio/controller/images/capture.json`. Le script `tools/dev/capture-controller.py` de la branche binaire permet de les refaire après modification de l’interface.
+
+Au premier lancement Windows, le fichier autonome explique où son runtime sera extrait. Copiez le chemin si nécessaire, puis choisissez Continue. Les lancements suivants réutilisent ce dossier vérifié. Fermez MIG avant de le supprimer pour nettoyer ; il sera recréé au prochain lancement. Vos profils sont stockés séparément.
+
+La [référence JSON complète](../reference/configuration.fr.md) détaille les champs et valeurs par défaut. Le [profil HI complet](../../configs/studio-hi.json) est vérifié avec le véritable parseur du format.
