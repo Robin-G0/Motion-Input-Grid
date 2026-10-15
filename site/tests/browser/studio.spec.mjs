@@ -13,6 +13,7 @@ async function openStudio(page, screen = "edit") {
     await expect(page.locator("#moves-panel")).toBeVisible();
     await page.locator("#tab-edit").click();
     await page.locator("#full-grid").uncheck();
+    await page.locator("#landmark").selectOption("left_wrist");
     if (screen === "test") await page.locator("#tab-test").click();
     await expect(page.locator("#editor-grid button")).toHaveCount(324);
 }
@@ -47,7 +48,7 @@ test("Studio draws with pointer and keyboard, supports undo, restores drafts and
     const errors = []; page.on("pageerror", error => errors.push(error.message));
     await openStudio(page);
     await page.locator("#back-menu").click();
-    await page.locator("#new-profile").click();
+    await page.locator("#new-profile").click(); await page.locator("#landmark").selectOption("left_wrist");
     await expect(page.locator(".grid-region")).toHaveCount(0);
     await page.locator("#input-name").fill("Mon parcours"); await page.locator("#input-name").press("Tab");
     const first = page.locator('#editor-grid button[data-x="2"][data-y="4"]');
@@ -76,7 +77,7 @@ test("Studio draws with pointer and keyboard, supports undo, restores drafts and
 });
 
 test("unfinished local drafts and pending names survive reload and reopening without fetching the native validator", async ({ page }) => {
-    await openStudio(page,"home"); await page.locator("#new-profile").click();
+    await openStudio(page,"home"); await page.locator("#new-profile").click(); await page.locator("#landmark").selectOption("left_wrist");
     await page.locator("#editor-note-toggle").click();
     await page.locator('#editor-grid button[data-x="3"][data-y="3"]').click();
     await page.locator("#input-name").fill("Brouillon incomplet");
@@ -294,7 +295,7 @@ test("editor mirrors coordinates, drawing and arrow navigation to match the came
 test("camera starts in an empty editor, stays active across views and applies edits without reopening capture", async ({ page }) => {
     await fakeObservations(page);
     await openStudio(page, "home");
-    await page.locator("#new-profile").click();
+    await page.locator("#new-profile").click(); await page.locator("#landmark").selectOption("left_wrist");
     await page.locator("#editor-camera-toggle").check();
     await expect(page.locator("#editor-camera #test-stage")).toBeVisible();
     await expect(page.locator(".grid-viewport")).toBeHidden();
@@ -429,7 +430,7 @@ test("horizontal scrollbar reaches distant cells and both shoulder markers follo
 
 test("selection moves by an edge, resizes by a mirrored corner, cancels and supports undo", async ({ page }) => {
     await openStudio(page, "home");
-    await page.locator("#new-profile").click();
+    await page.locator("#new-profile").click(); await page.locator("#landmark").selectOption("left_wrist");
     const cell = (x,y) => page.locator(`#editor-grid button[data-x="${x}"][data-y="${y}"]`);
     await cell(3,3).scrollIntoViewIfNeeded();
     let a = await cell(3,3).boundingBox(), b = await cell(4,4).boundingBox();
@@ -479,7 +480,7 @@ test("cell pencil draws a diagonal stroke and eraser removes cells without chang
 });
 
 test("copy and paste select the new region for immediate resizing and keyboard undo/redo", async ({ page }) => {
-    await openStudio(page, "home"); await page.locator("#new-profile").click();
+    await openStudio(page, "home"); await page.locator("#new-profile").click(); await page.locator("#landmark").selectOption("left_wrist");
     const cell = page.locator('#editor-grid button[data-x="3"][data-y="3"]');
     await cell.click(); await cell.focus();
     await page.keyboard.press("Control+c");
@@ -523,7 +524,7 @@ test("pasting from camera editing returns to the grid with handles, while invali
 });
 
 test("Ctrl+A selects and moves the step's regions together, supports copying the group and leaves text selection native", async ({ page }) => {
-    await openStudio(page,"home"); await page.locator("#new-profile").click();
+    await openStudio(page,"home"); await page.locator("#new-profile").click(); await page.locator("#landmark").selectOption("left_wrist");
     for (const x of [3,5]) await page.locator(`#editor-grid button[data-x="${x}"][data-y="3"]`).click();
     await page.keyboard.press("Control+a");
     await expect(page.locator(".grid-region.selected")).toHaveCount(2);
@@ -542,7 +543,7 @@ test("Ctrl+A selects and moves the step's regions together, supports copying the
     await page.keyboard.press("Control+z"); await page.keyboard.press("Control+z");
     await expect(page.locator(".region-coordinate").last()).toHaveText("[5, 3, 1, 1]");
     await page.keyboard.press("Control+c");
-    await page.locator("#tab-moves").click(); await page.locator("#add-input").click();
+    await page.locator("#tab-moves").click(); await page.locator("#add-input").click(); await page.locator("#landmark").selectOption("left_wrist");
     await page.locator("#editor-camera-toggle").uncheck(); await page.locator("#zoom-reset").click(); await page.keyboard.press("Control+v");
     await expect(page.locator(".grid-region.selected")).toHaveCount(2);
     await expect(page.locator(".region-coordinate").first()).toHaveText("[2, 4, 1, 1]");
@@ -554,7 +555,7 @@ test("Ctrl+A selects and moves the step's regions together, supports copying the
 });
 
 test("camera display keeps the editor frame and tools fixed; grid zoom preserves notes and editing coordinates", async ({ page }) => {
-    await fakeObservations(page); await openStudio(page, "home"); await page.locator("#new-profile").click();
+    await fakeObservations(page); await openStudio(page, "home"); await page.locator("#new-profile").click(); await page.locator("#landmark").selectOption("left_wrist");
     for (const size of [{width:1440,height:1000}, {width:390,height:844}]) {
         await page.setViewportSize(size);
         const before = await page.locator(".editor-frame").boundingBox();
@@ -589,7 +590,7 @@ test("camera display keeps the editor frame and tools fixed; grid zoom preserves
 });
 
 test("profile, movement, step and selection options have distinct scopes and contextual controls", async ({ page }) => {
-    await openStudio(page,"home"); await page.locator("#new-profile").click();
+    await openStudio(page,"home"); await page.locator("#new-profile").click(); await page.locator("#landmark").selectOption("left_wrist");
     await expect(page.locator("#selection-inspector")).toBeHidden();
     await expect(page.locator("#creation-settings")).toBeVisible();
     await expect(page.locator(".movement-inspector #input-name")).toBeVisible();
@@ -611,7 +612,7 @@ test("profile, movement, step and selection options have distinct scopes and con
 });
 
 test("camera commands stay outside its frame and shoulder references survive live edits and lost observations", async ({ page }) => {
-    await fakeObservations(page); await openStudio(page,"home"); await page.locator("#new-profile").click();
+    await fakeObservations(page); await openStudio(page,"home"); await page.locator("#new-profile").click(); await page.locator("#landmark").selectOption("left_wrist");
     await page.locator("#editor-camera-toggle").check();
     const frame = await page.locator(".editor-frame").boundingBox();
     const controls = await page.locator("#editor-camera-controls").boundingBox();
@@ -688,7 +689,7 @@ test("Studio fits phone and desktop screens, changes language and shares theme a
 
 test("authoring explicitly assigns simultaneous keys, text and sequential presses before exporting", async ({page})=>{
     await openStudio(page,"home");
-    await page.locator("#new-profile").click();
+    await page.locator("#new-profile").click(); await page.locator("#landmark").selectOption("left_wrist");
     await page.locator("#input-name").fill("Next slide"); await page.locator("#input-name").press("Tab");
     await page.locator('#editor-grid button[data-x="2"][data-y="4"]').focus(); await page.keyboard.press("Enter");
     await page.locator('[data-tool="trigger"]').click();
@@ -791,7 +792,10 @@ for(const width of [1280,390])test(`HI spotlight tutorial follows drawing, recog
     await expect(page.locator("#input-name")).toHaveClass(/tour-target/);
     await page.locator("#input-name").fill("Wrong");await page.locator("#input-name").press("Tab");await stage("name");
     await page.locator("#input-name").fill("HI");await page.locator("#input-name").press("Tab");
-    await stage("point");await page.locator("#landmark").selectOption("left_wrist");await stage("drawStart");
+    await stage("point");await expect(page.locator("#landmark")).toHaveValue("");
+    await page.locator("#input-name").evaluate(node=>node.dispatchEvent(new Event("change",{bubbles:true})));
+    await expect(page.locator("#landmark")).toHaveValue("");
+    await page.locator("#landmark").selectOption("left_wrist");await stage("drawStart");
     const draw=async(y1,y2)=>{
         const a=await page.locator(`#editor-grid button[data-x="-4"][data-y="${y1}"]`).boundingBox();
         const b=await page.locator(`#editor-grid button[data-x="13"][data-y="${y2}"]`).boundingBox();
@@ -823,8 +827,12 @@ for(const width of [1280,390])test(`HI spotlight tutorial follows drawing, recog
     const profile=JSON.parse(await readFile(await downloaded.path(),"utf8"));
     expect(profile.inputs[0].name).toBe("HI");expect(profile.inputs[0].keyboard).toEqual([{keys:[39]}]);
     expect(profile.inputs[0].steps[0].constraints.every(r=>r.landmark==="left_wrist")).toBe(true);
-    await stage("controller");await page.screenshot({path:"test-results/HI-export.png"});
-    await page.locator("#leave-guide").click();await expect(page.locator("body")).not.toHaveAttribute("data-tour-step");
+    await expect(page.locator("#export-dialog")).toBeVisible();
+    await expect(page.locator("#export-guide-step")).toBeVisible();
+    await expect(page.locator("#pipeline-guide")).toBeHidden();
+    await expect(page.locator("dialog[open]")).toHaveCount(1);
+    await expect(page.locator("body")).not.toHaveAttribute("data-tour-step");
+    await page.screenshot({path:"test-results/HI-export.png"});
     await page.locator("#close-export").click();expect(await page.locator("[inert]").count()).toBe(0);
 });
 
@@ -835,6 +843,7 @@ test("leaving a tutorial restores normal editing and keyboard plus never adds an
     await expect(page.locator("#pipeline-guide")).toBeHidden();
     await page.locator("#back-menu").click();await page.locator("#resume-profile").click();
     await page.locator(".movement-card button").first().click();
+    await page.locator("#landmark").selectOption("left_wrist");
     await page.locator('#editor-grid button[data-x="2"][data-y="4"]').focus();await page.keyboard.press("Enter");
     await page.locator("#edit-keyboard").click();await page.locator("#add-chord").click();
     await expect(page.locator("#keyboard-preview")).not.toContainText("Right");
@@ -845,4 +854,22 @@ test("leaving a tutorial restores normal editing and keyboard plus never adds an
     await page.locator("#keyboard-save").click();
     await expect(page.locator("#moves-panel")).toBeVisible();
     expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("mig-studio-profile-v2")).inputs[0].keyboard)).toEqual([{keys:[65,17]}]);
+});
+
+
+test("new region point stays unselected across renders and new movements require an explicit choice",async({page})=>{
+    await openStudio(page,"home");await page.locator("#new-profile").click();
+    await expect(page.locator("#landmark")).toHaveValue("");
+    await page.locator("#input-name").fill("Fresh");await page.locator("#input-name").press("Tab");
+    await expect(page.locator("#landmark")).toHaveValue("");
+    const cell=page.locator('#editor-grid button[data-x="2"][data-y="4"]');
+    await cell.focus();await page.keyboard.press("Enter");
+    expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("mig-studio-profile-v2")).inputs[0].steps[0].constraints)).toHaveLength(0);
+    await page.locator("#landmark").selectOption("left_wrist");
+    await page.locator("#input-name").fill("Chosen");await page.locator("#input-name").press("Tab");
+    await expect(page.locator("#landmark")).toHaveValue("left_wrist");
+    await cell.focus();await page.keyboard.press("Enter");
+    expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("mig-studio-profile-v2")).inputs[0].steps[0].constraints[0].landmark)).toBe("left_wrist");
+    await page.locator("#tab-moves").click();await page.locator("#add-input").click();
+    await expect(page.locator("#landmark")).toHaveValue("");
 });

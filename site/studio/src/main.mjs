@@ -23,7 +23,8 @@ let selectedRegions = [];
 const selectionIds = () => selectedRegions.length ? selectedRegions : selectedRegion ? [selectedRegion] : [];
 let view = "home", detail = "position", hasDraft = false, noteMode = null;
 let guided = false, testScope = "movement";
-let tourStage=0, tourPoint=false, tourRecognised=false;
+let tourStage=0, tourRecognised=false;
+let creationLandmark = "";
 let tour;
 let editorPreview = "grid";
 let gridZoom = 1;
@@ -275,8 +276,10 @@ function render() {
     // Preserve and show imported landmark names, even outside the basic menu.
     for (const name of regions(movement).map(region => region.landmark)) if (!names.includes(name)) names.push(name);
     for (const name of ["landmark", "region-landmark"]) {
-        const selected = $(name).value || "left_wrist";
-        selectOptions($(name), names.map(point => [point, t(point)]), selected);
+        const selected = name === "landmark" ? creationLandmark : $(name).value;
+        const choices = names.map(point => [point, t(point)]);
+        if (name === "landmark") choices.unshift(["", t("tour_choosePoint")]);
+        selectOptions($(name), choices, selected);
     }
     const scopes = [...(movement?.steps ?? []).map((step, index) => [String(index), `${t("step")} ${index + 1}`]), ["global", t("global")]];
     selectOptions($("scope"), scopes, scope);
@@ -409,6 +412,9 @@ function removeRegions(movement, ids) {
     }
 }
 function drawRegion(from, to) {
+    if (!noteMode && !["select", "erase"].includes(tool) && !creationLandmark) {
+        feedback("tour_choosePoint", true); return;
+    }
     if (noteMode) {
         const [x, y, w, h] = rectangle(from, to), cells = [];
         for (let row = y; row < y + h; row++) for (let column = x; column < x + w; column++) cells.push({ x: column, y: row });
@@ -555,6 +561,7 @@ $("full-grid").addEventListener("change", () => { brush.cancel(); gridBrush.canc
 for (const button of document.querySelectorAll("[data-tool]")) button.addEventListener("click", () => { brush.cancel(); gridBrush.cancel(); editor.cancel(); noteMode = null; tool = button.dataset.tool; render(); });
 for (const button of document.querySelectorAll("[data-language]")) button.addEventListener("click", () => { language = button.dataset.language; renderLanguage(); });
 $("add-input").addEventListener("click", () => {
+    creationLandmark = "";
     if (history.value.inputs.length >= 64) { feedback("invalid", true, "inputs: maximum 64"); return; }
     const profile = clone(history.value), movement = newInput(profile.inputs.length + 1);
     movement.name = `${t("movement")} ${profile.inputs.length + 1}`;
@@ -673,6 +680,7 @@ document.addEventListener("keydown", event => {
 $("undo").setAttribute("aria-keyshortcuts", "Control+Z Meta+Z");
 $("redo").setAttribute("aria-keyshortcuts", "Control+Y Meta+Shift+Z Control+Shift+Z");
 $("new-profile").addEventListener("click", () => {
+    creationLandmark = "";
     const movement = newInput(); movement.name = `${t("movement")} 1`;
     inputIndex = 0; scope = "0"; selectedRegion = null; selectedRegions = []; tool = "required"; noteMode = null;
     changed({ schema_version: 2, tracking: { hands: false }, inputs: [movement] });
@@ -714,6 +722,8 @@ $("export-profile").addEventListener("click", async () => {
         const link = document.createElement("a"); link.href = url; link.download = "mig-profile.json"; link.click();
         setTimeout(() => URL.revokeObjectURL(url), 1000); feedback("exported");
         $("controller-guide").href = `./controller/?lang=${language}`;
+        // The export dialog itself completes onboarding. Do not stack a second
+        // spotlight tutorial over the download/Controller handoff.
         $("export-guide-step").hidden = !guided;
         $("export-dialog").showModal();
         $("export-download-status").textContent=t("checkingDownloads");
@@ -733,8 +743,8 @@ $("start-test").addEventListener("click", startTest);
 $("quick-test").addEventListener("click", () => {
     guided = false;
     $("new-profile").click();
-    guided=true;tourStage=0;tourPoint=false;tourRecognised=false;
-    $("full-grid").checked=false;render();$("landmark").add(new Option(t("tour_choosePoint"),"",true,true),0);
+    guided=true;tourStage=0;tourRecognised=false;
+    $("full-grid").checked=false;render();
     tour.schedule();
 });
 $("stop-test").addEventListener("click", () => stopTest());
@@ -811,11 +821,11 @@ window.addEventListener("pagehide", () => {
 });
 
 tour = new SpotlightTour(() => {
-    if(!guided)return null;
+    if(!guided || $("export-dialog").open)return null;
     const list=regions(input());
     const states=[
         ["name","#input-name",()=>input()?.name==="HI"],
-        ["point","#landmark",()=>tourPoint&&$("landmark").value==="left_wrist"],
+        ["point","#landmark",()=>creationLandmark==="left_wrist"],
         ["drawStart",".grid-viewport",()=>list.some(r=>r.type==="required"&&r.landmark==="left_wrist")],
         ["toolFinish",'[data-tool="trigger"]',()=>tool==="trigger"],
         ["drawFinish",".grid-viewport",()=>list.some(r=>r.type==="trigger"&&r.landmark==="left_wrist")],
@@ -842,7 +852,7 @@ tour = new SpotlightTour(() => {
     if([2,4].includes(tourStage))for(const cell of $("editor-grid").children){const y=Number(cell.dataset.y);if(tourStage===2?y>=4&&y<=7:y>=-3&&y<=2)cell.classList.add("tour-draw-cell");}
     return {id,target,extra,message:t(`tour_${id}`)};
 },()=>{guided=false;document.querySelectorAll(".tour-draw-cell").forEach(cell=>cell.classList.remove("tour-draw-cell"));},t);
-$("landmark").addEventListener("change",()=>{tourPoint=true;});
+$("landmark").addEventListener("change",()=>{creationLandmark=$("landmark").value;});
 $("export-dialog").addEventListener("close",()=>{if(guided){guided=false;tour.schedule();}});
 renderLanguage();
 try { notes.load(localStorage.getItem(notesKey)); } catch { /* Invalid notes never block a profile. */ }
