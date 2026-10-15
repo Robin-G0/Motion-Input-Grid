@@ -14,19 +14,11 @@ Start with one deliberate movement and keep your keyboard available as a backup.
    🟨 **Trigger** region higher up. Use the camera to place them around your actual
    movement, keeping both shoulders visible. Avoid placing Trigger where you
    normally gesture while speaking. Return to rest between activations.
-3. Assign **Right** with **Single press** in the desktop Studio's movement settings.
-   In Studio Web, open **JSON** and add these fields to the existing movement
-   object inside `inputs` (keep its existing `steps` and other fields):
-
-   ```json
-   "keyboard": [{"keys": [39]}],
-   "action_mode": "single_press",
-   "cooldown_ms": 700
-   ```
-
-   These are fields to merge, not a complete profile. Apply the JSON and export
-   it. Keyboard codes and output modes are described in the
-   [configuration reference](../reference/configuration.md#action-output-modes).
+3. Choose **Assign keys** in web Studio. Add a key press, keep **Right** and
+   the **Once** mode, then **Save and return to movements**. To test all movements,
+   choose **Test the whole configuration**: the journal shows actions and simulated
+   keyboard operations. Choose **Export**. The export reminder links to Controller
+   downloads and the illustrated setup guide. No JSON editing is needed.
 4. Stop the editor camera. Import the exported file in the
    [Controller](controller.md), start tracking and calibrate in your presentation
    position. Keep **Keyboard output** off until only the intended gesture lights
@@ -40,6 +32,6 @@ several activations. See Microsoft's
 [slide-show keyboard shortcuts](https://support.microsoft.com/en-us/office/use-keyboard-shortcuts-to-deliver-powerpoint-presentations-1524ffce-bd2a-45f4-9a7f-f18b992b93a0).
 For another presentation application, check its shortcuts first.
 
-Add a separate **Previous slide** movement with `Left` (JSON key code `37`) if
+Add a separate **Previous slide** movement with **Left** if
 needed. Keep the two routes distinct and use Single press for both. Disable
 output during questions or whenever normal gestures could activate a route.

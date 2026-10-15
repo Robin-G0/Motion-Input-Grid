@@ -11,18 +11,11 @@ plan. Commencez sur un document jetable avec une action facile à annuler.
    [Studio de bureau](configurator.fr.md). Nommez-le **Copier la sélection**, avec
    l'action `copy_selection`. Dessinez 🟩 **Required** au repos du poignet et
    🟨 **Trigger** dans une position que votre frappe normale n'atteint pas.
-2. Dans les réglages du mouvement du Studio de bureau, associez **Ctrl + C** en
-   **Single press**. Sinon, ouvrez **JSON** dans le Studio web et ajoutez ces
-   champs à l'objet du mouvement dans `inputs`, en conservant les autres champs :
-
-   ```json
-   "keyboard": [{"keys": [17, 67]}],
-   "action_mode": "single_press",
-   "cooldown_ms": 700
-   ```
-
-   Appliquez puis exportez le profil. Consultez la
-   [référence clavier](../reference/configuration.fr.md) pour d'autres raccourcis.
+2. Dans le Studio web, choisissez **Associer des touches**, ajoutez un raccourci
+   et capturez **Ctrl+C**, ou ajoutez **Ctrl** et **C** sur la même ligne.
+   Gardez **Une seule fois**, puis **Enregistrer et revenir aux mouvements**.
+   Dans le Studio de bureau, utilisez les réglages et **Single press**.
+   Testez la configuration, puis exportez-la. Aucune modification de JSON n’est nécessaire.
 3. Arrêtez la caméra de l'éditeur et importez le JSON dans le
    [Controller](controller.fr.md). Démarrez le suivi, calibrez et vérifiez le
    mouvement avec la sortie clavier désactivée.
