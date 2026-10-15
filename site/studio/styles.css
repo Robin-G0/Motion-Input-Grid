@@ -1,4 +1,25 @@
 /* Shared paper, ink and typography come from the presentation's stylesheet. */
+.pipeline-guide { padding: 18px 22px; border: 1px solid var(--accent); border-radius: 12px; background: var(--surface); margin: 16px 0; }
+.pipeline-guide h2 { font-size: 17px; margin: 0; }
+.pipeline-guide p { max-width: 80ch; line-height: 1.7; }
+.keyboard-dialog { width: min(760px, calc(100vw - 32px)); }
+.keyboard-steps { list-style: none; padding: 0; display: grid; gap: 14px; }
+.keyboard-step { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 16px; border: 1px solid var(--border); border-radius: 10px; }
+.keyboard-step strong, .keyboard-step textarea { flex-basis: 100%; }
+.keyboard-step select { max-width: 180px; }
+.keyboard-step select, .keyboard-step textarea { font: inherit; color: var(--ink); background: var(--paper); border: 1px solid var(--border); border-radius: 6px; padding: 8px; }
+.keyboard-dialog .dialog-actions { position: sticky; bottom: -24px; padding: 16px 0; background: var(--paper); border-top: 1px solid var(--border); }
+.key-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.key-chips button { border: 1px solid var(--border); border-radius: 5px; }
+.keyboard-preview { white-space: pre-wrap; overflow-wrap: anywhere; padding: 14px; background: var(--surface); border-radius: 8px; line-height: 1.8; }
+.movement-card p { overflow-wrap: anywhere; }
+#editor-panel > .panel-heading, #test-panel > .panel-heading { flex-wrap: wrap; }
+#export-dialog .button { white-space: normal; }
+.controller-handoff { max-width: 1000px; }
+.controller-handoff > section { margin-block: 36px; padding: 24px; border: 1px solid var(--border); border-radius: 12px; }
+.controller-steps { list-style: none; padding: 0; display: grid; gap: 48px; }
+.controller-steps img { width: 100%; height: auto; border-radius: 12px; }
+.controller-steps p { max-width: 75ch; line-height: 1.8; }
 .editor-frame { position: relative; height: clamp(280px, 55svh, 640px); border: 1px solid var(--border); background: var(--surface); overflow: hidden; }
 #editor-camera { position: absolute; inset: 0; }
 #editor-camera .test-stage { width: 100%; height: 100%; aspect-ratio: auto !important; border: 0; }

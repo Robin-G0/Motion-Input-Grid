@@ -7,6 +7,8 @@ import { GridEditor, drawPreview, selectionRect, transformSelection, RegionHighl
 import { Journal } from "./journal.mjs";
 import { NoteLayer, LiveNoteBrush, previewCell } from "./notes.mjs";
 import { FingerEditor, setFingerRule } from "./fingers.mjs";
+import { KeyboardEditor, keyboardSummary, validateKeyboard } from "./keyboard.mjs";
+import { latestControllerDownloads } from "./controller-downloads.mjs";
 
 const $ = id => document.getElementById(id);
 const storageKey = "mig-studio-profile-v2";
@@ -19,6 +21,7 @@ let inputIndex = 0, scope = "0", selectedRegion = null, tool = "select";
 let selectedRegions = [];
 const selectionIds = () => selectedRegions.length ? selectedRegions : selectedRegion ? [selectedRegion] : [];
 let view = "home", detail = "position", hasDraft = false, noteMode = null;
+let guided = false, testScope = "movement";
 let editorPreview = "grid";
 let gridZoom = 1;
 let regionClipboard = null;
@@ -38,6 +41,17 @@ const input = () => history.value.inputs[inputIndex];
 const currentRegion = () => regions(input()).find(region => region.id === selectedRegion);
 const theme = new ThemeToggle($("theme-toggle"), () => copy[language], { iconBase: "../" });
 const journal = new Journal($("log-list"), $("log-empty"), $("action-count"), $("journal-announcement"), t);
+const keyboardEditor = new KeyboardEditor($("keyboard-dialog"), t, async draft => {
+    const movement = clone(input());
+    movement.keyboard = draft.keyboard;
+    movement.action_mode = draft.action_mode;
+    movement.repeat_interval_ms = draft.repeat_interval_ms;
+    validateKeyboard(movement);
+    await validateProfile(JSON.stringify({ ...history.value, inputs: [movement] }));
+    if (!$("keyboard-dialog").open || keyboardEditor.draft !== draft) return;
+    edit(current => Object.assign(current, movement));
+    stopTest(); setView("moves"); feedback("movementSaved");
+});
 const editor = new GridEditor($("editor-grid"), $("grid-regions"), $("drawing-selection"), drawRegion, t, (regionId, rect) => {
     edit(movement => {
         if (regionId === "__selection__") {
@@ -122,7 +136,7 @@ function cameraMessage(key, error = false) {
     $("camera-message").textContent = t(key); $("camera-message").dataset.error = String(error);
 }
 function errorDetails(error) {
-    const known = ["size", "json", "schema", "bounds", "oneTrigger", "globalTrigger", "noInputs", "emptyField", "emptyPath", "copyReference"];
+    const known = ["size", "json", "schema", "bounds", "oneTrigger", "globalTrigger", "noInputs", "emptyField", "emptyPath", "copyReference", "emptyExport", "keyboardInvalid", "keyboardLimit", "holdNeedsKeys", "keyboardInterval"];
     return known.includes(error.message) ? { key: error.message, detail: "" } : { key: "invalid", detail: error.message };
 }
 function save() {
@@ -201,6 +215,13 @@ function openRegion(regionId) {
     $(`detail-${detail}-tab`).focus();
 }
 function render() {
+    $("pipeline-guide").hidden = !guided;
+    $("guide-instruction").textContent = t(view === "test" ? "guideTest" : view === "moves" ? "guideManage" : "guideDraw");
+    $("test-scope").textContent = t(testScope === "configuration" ? "wholeTest" : "selectedTest");
+    $("test-keyboard").hidden = testScope === "configuration";
+    $("test-configuration").disabled = busy || !history.value.inputs.length;
+    $("save-movement").disabled = $("edit-keyboard").disabled = busy || !input();
+    $("test-keyboard").disabled = busy || !input();
     renderEditorPreview();
     document.querySelector(".movement-switch").hidden = view === "moves" || view === "home";
     draftHint.hidden = !previewOnly || !session?.state.running;
@@ -235,12 +256,12 @@ function render() {
     $("movement-list").replaceChildren(...profile.inputs.map((item, index) => {
         const card = document.createElement("article"); card.className = "movement-card";
         const title = document.createElement("h3"); title.textContent = item.name;
-        const summary = document.createElement("p"); summary.textContent = `${item.action} · ${regions(item).length} ${t("zoneCount")}`;
+        const summary = document.createElement("p"); summary.textContent = `${item.action} · ${regions(item).length} ${t("zoneCount")} · ${keyboardSummary(item,t)}`;
         const actions = document.createElement("div"); actions.className = "card-actions";
         for (const target of ["edit", "test"]) {
             const button = document.createElement("button"); button.type = "button"; button.className = "text-button";
             button.disabled = busy; button.textContent = t(target === "edit" ? "editCard" : "testCard");
-            button.addEventListener("click", () => { inputIndex = index; scope = "0"; selectedRegion = null; selectedRegions = []; setView(target); }); actions.append(button);
+            button.addEventListener("click", () => { stopTest(); testScope = "movement"; inputIndex = index; scope = "0"; selectedRegion = null; selectedRegions = []; setView(target); }); actions.append(button);
         }
         const remove = document.createElement("button"); remove.type = "button"; remove.className = "text-button danger-text";
         remove.textContent = t("deleteCard"); remove.disabled = busy; remove.dataset.deleteMovement = item.id;
@@ -443,13 +464,13 @@ async function acceptJSON(text, target = "feedback") {
     } finally { if (token === operation) setBusy(false); }
 }
 function onAction(event) {
-    journal.add("action", `${event.action} · ${event.id}`);
     const movement = history.value.inputs.find(item => item.id === event.id);
+    journal.add("action", `${movement?.name ?? event.id} · ${event.action} · ${t("keyboardPreview")}: ${keyboardSummary(movement,t)}`);
     if (movement) highlights.confirm(movement, performance.now());
     const flash = $("action-flash");
     for (const animation of flash.getAnimations()) animation.cancel();
     clearTimeout(flash.hideTimer);
-    flash.textContent = event.action; flash.hidden = false;
+    flash.textContent = `${event.action} · ${keyboardSummary(movement,t)}`; flash.hidden = false;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) flash.hideTimer = setTimeout(() => { flash.hidden = true; }, 2400);
     else flash.animate([{ opacity: 0 }, { opacity: 1, offset: .1 }, { opacity: 1, offset: .85 }, { opacity: 0 }], { duration: 2400, easing: "ease-out" }).finished
         .then(() => { flash.hidden = true; }).catch(() => {});
@@ -487,8 +508,9 @@ async function startTest() {
     setBusy(true); cameraMessage("loading"); feedback(null);
     let candidate;
     try {
-        let json = JSON.stringify(history.value);
-        if (view !== "edit" && history.value.inputs.some(movement => !regions(movement).length && !(movement.fingers?.length))) throw new Error("emptyPath");
+        const profile = view === "test" && testScope === "movement" ? {...history.value, inputs: [input()]} : history.value;
+        let json = JSON.stringify(profile);
+        if (view !== "edit" && profile.inputs.some(movement => !regions(movement).length && !(movement.fingers?.length))) throw new Error("emptyPath");
         const configuration = await cameraConfiguration(json, view === "edit");
         if (token !== operation) return;
         json = configuration.json; previewOnly = configuration.previewOnly;
@@ -652,6 +674,17 @@ $("new-profile").addEventListener("click", () => {
     changed({ schema_version: 2, tracking: { hands: false }, inputs: [movement] });
     feedback(null); setView("edit"); $("input-name").focus(); $("input-name").select();
 });
+for (const name of ["edit-keyboard", "test-keyboard", "save-movement"]) $(name).addEventListener("click", () => {
+    if (busy || !input()) return;
+    if (!regions(input()).length && !input().fingers?.length) { feedback("emptyPath", true); return; }
+    stopTest();
+    keyboardEditor.open(input());
+    if (guided) $("guide-instruction").textContent=t("guideKeys");
+});
+$("leave-guide").addEventListener("click",()=>{guided=false;render();});
+$("test-back-moves").addEventListener("click",()=>{stopTest();setView("moves");});
+$("test-configuration").addEventListener("click",()=>{stopTest();testScope="configuration";setView("test");});
+$("close-export").addEventListener("click",()=>$("export-dialog").close());
 $("import-profile").addEventListener("click", () => $("import-file").click());
 $("import-file").addEventListener("change", async () => {
     const file = $("import-file").files[0];
@@ -661,14 +694,30 @@ $("import-file").addEventListener("change", async () => {
     try { await acceptJSON(await file.text()); } catch (error) { feedback("invalid", true, error.message); }
 });
 $("export-profile").addEventListener("click", async () => {
+    // Release the device before handing the profile to the desktop Controller.
+    if (session) stopTest();
     const token = ++operation; setBusy(true);
     try {
+        if (!history.value.inputs.length) throw new Error("emptyExport");
+        for (const movement of history.value.inputs) {
+            validateKeyboard(movement);
+            if (!regions(movement).length && !movement.fingers?.length) throw new Error("emptyPath");
+        }
         const json = JSON.stringify(history.value, null, 2);
         await validateProfile(json);
         if (token !== operation) return;
         const url = URL.createObjectURL(new Blob([json + "\n"], { type: "application/json" }));
         const link = document.createElement("a"); link.href = url; link.download = "mig-profile.json"; link.click();
         setTimeout(() => URL.revokeObjectURL(url), 1000); feedback("exported");
+        $("controller-guide").href = `./controller/?lang=${language}`;
+        $("export-guide-step").hidden = !guided;
+        $("export-dialog").showModal();
+        $("export-download-status").textContent=t("checkingDownloads");
+        for(const platform of ["windows","linux"]) $(`export-${platform}`).hidden=true;
+        latestControllerDownloads().then(downloads=>{
+            for(const [platform,url] of Object.entries(downloads)) {const link=$(`export-${platform}`);link.href=url;link.hidden=false;}
+            $("export-download-status").textContent=t(downloads.windows&&downloads.linux?"directDownloads":"pendingDownloads");
+        }).catch(()=>{$("export-download-status").textContent=t("unverifiedDownloads");});
     } catch (error) { if (token === operation) { const { key, detail } = errorDetails(error); feedback(key, true, detail); } }
     finally { if (token === operation) setBusy(false); }
 });
@@ -678,9 +727,8 @@ $("json-dialog").addEventListener("cancel", event => { if (busy) event.preventDe
 $("apply-json").addEventListener("click", async () => { if (await acceptJSON($("json-source").value, "json-error")) $("json-dialog").close(); });
 $("start-test").addEventListener("click", startTest);
 $("quick-test").addEventListener("click", () => {
-    const profile = starter(); if (language === "en") profile.inputs[0].name = "Raise the left hand";
-    inputIndex = 0; scope = "0"; selectedRegion = null; selectedRegions = []; tool = "select"; noteMode = null;
-    changed(profile); $("full-grid").checked = false; feedback(null); setView("test");
+    guided = true;
+    $("new-profile").click();
 });
 $("stop-test").addEventListener("click", () => stopTest());
 $("recalibrate").addEventListener("click", () => { brush.cancel(); gridBrush.cancel(); session?.recalibrate(); geometry.reset(); trackingState = null; cameraMessage("recalibrating"); journal.add("info", t("recalibrating")); });
@@ -690,7 +738,7 @@ $("clear-logs").addEventListener("click", () => journal.clear());
 $("header-stop").addEventListener("click", () => stopTest());
 $("back-menu").addEventListener("click", () => { if (session || busy) stopTest(); feedback(null); setView("home"); });
 $("resume-profile").addEventListener("click", () => { feedback(null); setView("moves"); });
-$("edit-test").addEventListener("click", () => setView("test"));
+$("edit-test").addEventListener("click", () => {stopTest(); testScope="movement"; setView("test");});
 $("test-edit").addEventListener("click", () => setView("edit"));
 $("editor-camera-toggle").addEventListener("change", () => {
     brush.cancel(); gridBrush.cancel(); editor.cancel(); editorPreview = $("editor-camera-toggle").checked ? "camera" : "grid"; render();

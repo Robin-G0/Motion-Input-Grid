@@ -11,6 +11,8 @@ test("unfinished drafts restore without execution validation while damaged draft
     const broken = structuredClone(draft); broken.inputs[0].steps = [null];
     assert.throws(() => parseDraft(JSON.stringify(broken)), /draftUnreadable/);
     assert.throws(() => parseDraft(JSON.stringify({...draft,inputs:[null]})), /draftUnreadable/);
+    const brokenKeys = structuredClone(draft); brokenKeys.inputs[0].keyboard = "broken";
+    assert.throws(() => parseDraft(JSON.stringify(brokenKeys)), /draftUnreadable/);
     const advanced = starter(); advanced.inputs[0].steps.push({id:"unfinished",mode:"simultaneous",constraints:[],hold_ms:100});
     advanced.inputs[0].mirror = true;
     assert.deepEqual(parseDraft(JSON.stringify(advanced)),advanced);

@@ -1,4 +1,5 @@
 import { defineConfig } from "@playwright/test";
+const baseURL = `http://127.0.0.1:${process.env.PORT ?? 4173}/Motion-Input-Grid/`;
 
 export default defineConfig({
     testDir: "./tests/browser",
@@ -7,13 +8,13 @@ export default defineConfig({
     retries: process.env.CI ? 1 : 0,
     reporter: "list",
     use: {
-        baseURL: "http://127.0.0.1:4173/Motion-Input-Grid/",
+        baseURL,
         locale: "fr-FR",
         trace: "retain-on-failure"
     },
     webServer: {
-        command: "npm run preview",
-        url: "http://127.0.0.1:4173/Motion-Input-Grid/",
+        command: "node scripts/serve.mjs",
+        url: baseURL,
         reuseExistingServer: !process.env.CI
     },
     projects: [

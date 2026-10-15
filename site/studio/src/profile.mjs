@@ -1,3 +1,4 @@
+import { validateKeyboard } from "./keyboard.mjs";
 export const MAX_BYTES = 1024 * 1024;
 export const landmarks = { head: 33, left_shoulder: 11, right_shoulder: 12,
     left_elbow: 13, right_elbow: 14, left_wrist: 15, right_wrist: 16,
@@ -53,6 +54,8 @@ export function parseDraft(text) {
         && (input.steps === undefined || Array.isArray(input.steps) && input.steps.length <= 64 && input.steps.every(step => object(step)
             && typeof step.id === "string" && [undefined,"ordered","visited","simultaneous"].includes(step.mode)
             && rules(step.fingers) && list(step.constraints))))) throw new Error("draftUnreadable");
+    try { for (const movement of profile.inputs) validateKeyboard(movement); }
+    catch { throw new Error("draftUnreadable"); }
     return profile;
 }
 export function scopedRegions(input, scope) {
