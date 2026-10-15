@@ -114,6 +114,9 @@ def windows_cache_tests(portable, directory, environment, local_data):
 def main():
     source = Path(sys.argv[1]).resolve()
     windows = source.suffix.lower() == ".exe"
+    if windows:
+        from windows_icon import verify_icon
+        verify_icon(source)
     checks = ["--help", "--ui-test", "--infer-test", "--hands-test"] if windows else ["--ui-test"]
     environment = dict(os.environ, QT_QPA_PLATFORM="offscreen")
     with tempfile.TemporaryDirectory(prefix="MIG isolated portable check ") as temporary:
