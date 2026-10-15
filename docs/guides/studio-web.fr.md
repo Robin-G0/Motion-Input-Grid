@@ -70,10 +70,11 @@ entièrement extraites et conservées ensemble ; ouvrez le Controller, pas le St
    s’allume, activez **Keyboard: On**, puis donnez le focus à votre application.
 
 Le Controller autonome contient le moteur et les modèles en un fichier.
-Il extrait temporairement ses fichiers pendant l’exécution, puis les retire à la
-fermeture. Les fonctions caméra et affichage du système restent nécessaires ;
-Linux demande glibc 2.35 ou plus récent. Aucun compilateur, Python ou Studio de
-bureau à installer.
+Windows conserve un cache du moteur dans Local AppData et le vérifie avant
+chaque réutilisation ; Linux extrait temporairement ses fichiers et les retire
+à la fermeture normale. Les fonctions caméra et affichage du système restent
+nécessaires ; Linux demande glibc 2.35 ou plus récent. Aucun compilateur, Python
+ou Studio de bureau à installer.
 
 ## Quelques repères
 

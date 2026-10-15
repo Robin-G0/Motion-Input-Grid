@@ -66,10 +66,11 @@ together; open only the Controller, not desktop Studio.
 3. Start tracking with keyboard output off. Check the correct movement lights up,
    then enable **Keyboard: On** and focus the presentation or target application.
 
-The standalone Controller contains its runtime and models in one download. It
-extracts temporary files while running and removes them on exit. OS camera and
-display facilities remain necessary; Linux needs glibc 2.35 or later. No compiler,
-Python or desktop Studio installation is needed.
+The standalone Controller contains its runtime and models in one download.
+Windows keeps a verified runtime cache under Local AppData and checks it before
+each reuse; Linux extracts temporary files and removes them on normal exit.
+OS camera and display facilities remain necessary; Linux needs glibc 2.35 or
+later. No compiler, Python or desktop Studio installation is needed.
 
 ## Useful details
 
