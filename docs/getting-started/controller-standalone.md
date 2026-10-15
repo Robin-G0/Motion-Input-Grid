@@ -1,0 +1,54 @@
+# Standalone Controller
+
+[English](controller-standalone.md) | [Français](controller-standalone.fr.md)
+
+Controller-only candidates are one Windows x64 `.exe` and one Linux x64 `.run`.
+They include runtime, models, dependencies and legal notices, with no desktop
+Studio, SDKs or examples. They must be published in a release before the web
+Studio's download buttons can offer them. Publication remains manual.
+
+## Use a published file
+
+Download from the [official release](https://github.com/Robin-G0/Motion-Input-Grid/releases/latest).
+Run the `.exe`. On Linux, allow execution in the file properties or run
+`sh filename.run`. Import the JSON exported by web Studio, review the bindings,
+start tracking with keyboard output off, then enable output and focus your
+application. See the [Controller guide](../guides/controller.md).
+
+The file extracts its runtime into a fresh user temporary directory per launch
+and removes it on normal exit. A forced termination can leave temporary files.
+No installation, admin rights, Python or development toolchain is needed.
+The launcher never downloads models or dependencies.
+
+Windows includes app-local Visual C++ runtime DLLs; the launcher uses a static
+CRT. OS camera/display facilities remain required. Linux bundles Qt plugins,
+fonts and non-system libraries, and requires glibc 2.35+, camera access and a
+display session. Keyboard output requires X11/XTest, not Wayland. The temporary
+directory must permit execution; use `TMPDIR` to select another user directory.
+
+SmartScreen can warn about unsigned files. Verify the official source. If you
+choose to trust it, **More info** and **Run anyway** may be offered. Do not disable
+Windows protection. Signing and reputation are separate from bundling.
+
+## Build and validate
+
+`tools/packaging/package-windows-release.ps1` also builds the standalone file
+using the Visual Studio app-local redistributable CRT. For a prepared directory:
+
+```powershell
+python tools/packaging/package-controller.py --platform windows --source distribution/windows --redist "C:/path/to/Microsoft.VC143.CRT"
+```
+
+`tools/packaging/package-linux.py --native` also creates the Linux file. To
+repackage an extracted dependency-complete native bundle:
+
+```sh
+python3 tools/packaging/package-controller.py --platform linux --source /path/to/extracted-native-bundle
+python3 tests/packaging/controller_package_tests.py
+python3 tests/packaging/controller_runtime_tests.py build/releases/motion-input-grid-1.1.0-controller-linux-x64.run
+```
+
+Outputs are versioned with SHA-256 sidecars. Candidate workflows test the bundle
+and run built-in app diagnostics through its final file; native builds must use
+`MIG_BUILD_TESTS=ON`. Test real camera input and keyboard delivery on the target
+desktop before publication. Headless UI tests cannot verify those interactions.

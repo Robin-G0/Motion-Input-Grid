@@ -9,6 +9,10 @@ précise les prérequis et la maturité des intégrations.
 
 ## Applications desktop et exemples
 
+Les candidats Controller en un fichier sont décrits dans le
+[guide du Controller autonome](controller-standalone.fr.md). Publiez-les avant
+de les proposer en téléchargement dans le Studio web.
+
 **Télécharger Studio + Controller :** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications).
 
 Extrayez tout le paquet, puis suivez le guide de l’application ci-dessous.

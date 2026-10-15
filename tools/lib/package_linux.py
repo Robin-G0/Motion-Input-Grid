@@ -221,6 +221,17 @@ def main():
         write_manifest(root, options, inventory)
         output = options.destination / f"{name}.tar.gz"
         create_archive(root, output)
+        if options.native:
+            from importlib.util import spec_from_file_location, module_from_spec
+            spec = spec_from_file_location("controller_package", project / "tools/packaging/package-controller.py")
+            controller_package = module_from_spec(spec)
+            spec.loader.exec_module(controller_package)
+            payload = Path(folder) / "controller-only"
+            controller_package.controller_payload(root, payload, "linux")
+            portable = options.destination / f"motion-input-grid-{options.version}-controller-linux-x64.run"
+            controller_package.linux_file(payload, portable)
+            digest = hashlib.sha256(portable.read_bytes()).hexdigest()
+            portable.with_name(portable.name + ".sha256").write_text(f"{digest}  {portable.name}\n")
     print(output)
 
 

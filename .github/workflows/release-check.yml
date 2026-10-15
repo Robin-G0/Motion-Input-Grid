@@ -118,6 +118,11 @@ jobs:
               run: |
                   ./tools/packaging/package-distribution.ps1
                   ./tools/packaging/package-windows-release.ps1
+                  python tests/packaging/controller_package_tests.py
+                  if ($LASTEXITCODE -ne 0) { throw 'Controller packaging tests failed.' }
+                  $version = (Get-Content VERSION -Raw).Trim()
+                  python tests/packaging/controller_runtime_tests.py "build/releases/motion-input-grid-$version-controller-windows-x64.exe"
+                  if ($LASTEXITCODE -ne 0) { throw 'Standalone Controller diagnostics failed.' }
                   cmake --install build/windows --config Release --prefix build/examples-sdk/windows
                   ./tools/build/build-examples.ps1
                   python -m pip install pyinstaller==6.16.0 pillow==11.3.0 pygame==2.6.1
