@@ -275,18 +275,18 @@ void App::draw_control(const DRAWITEMSTRUCT& item) {
                                  : item.CtlID == PaintForbidden   ? RGB(242, 87, 105)
                                  : item.CtlID == PaintInteraction ? RGB(184, 112, 245)
                                                                   : RGB(255, 210, 60);
-        const bool primary = tool_active || item.CtlID == Start || item.CtlID == NewMotion ||
-                             item.CtlID == Commit || item.CtlID == SaveLayer ||
-                             item.CtlID == TestInput ||
-                             (item.CtlID == ConstraintsTab && inspector_tab == 0) ||
-                             (item.CtlID == FingersTab && inspector_tab == 1) ||
-                             (item.CtlID == RecordingTab && inspector_tab == 2) ||
-                             (item.CtlID == LayersTab && inspector_tab == 3) ||
-                             (item.CtlID == InteractionTab && inspector_tab == 4) ||
-                             (item.CtlID == MovementTab && inspector_tab == 5) ||
-                             (item.CtlID == StudioMovements && studio_view == 0) ||
-                             (item.CtlID == StudioEdit && studio_view == 1) ||
-                             (item.CtlID == StudioTest && studio_view == 2);
+        const bool primary =
+            GetPropW(item.hwndItem, L"MIGPrimary") || tool_active || item.CtlID == Start ||
+            item.CtlID == NewMotion || item.CtlID == Commit || item.CtlID == SaveLayer ||
+            item.CtlID == TestInput || (item.CtlID == ConstraintsTab && inspector_tab == 0) ||
+            (item.CtlID == FingersTab && inspector_tab == 1) ||
+            (item.CtlID == RecordingTab && inspector_tab == 2) ||
+            (item.CtlID == LayersTab && inspector_tab == 3) ||
+            (item.CtlID == InteractionTab && inspector_tab == 4) ||
+            (item.CtlID == MovementTab && inspector_tab == 5) ||
+            (item.CtlID == StudioMovements && studio_view == 0) ||
+            (item.CtlID == StudioEdit && studio_view == 1) ||
+            (item.CtlID == StudioTest && studio_view == 2);
         const bool toggle = item.CtlID == Theme || item.CtlID == Logs || item.CtlID == TrackHands ||
                             item.CtlID == Keys || item.CtlID == Mirror ||
                             item.CtlID == GridViewMode;

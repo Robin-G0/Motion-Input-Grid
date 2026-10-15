@@ -35,20 +35,52 @@ int App::controller_ui_test() {
     trigger.cell = {4, 3, 1, 1};
     input.steps[0].constraints.push_back(trigger);
     sample.motions.push_back(input);
-    for (const auto button : {IDCANCEL, IDOK}) {
-        keyboard_enabled = true;
-        std::jthread responder([button] {
-            // Exercise the real modal window without user interaction or keys.
-            for (int attempt = 0; attempt < 200; ++attempt) {
-                if (const auto dialog = FindWindowW(L"MIGImportReview", nullptr)) {
-                    PostMessageW(dialog, WM_COMMAND, button, 0);
-                    return;
+    for (const bool dark_theme : {true, false}) {
+        dark = dark_theme;
+        update_theme();
+        for (const auto button : {IDCANCEL, IDOK}) {
+            keyboard_enabled = true;
+            std::atomic_bool themed{false};
+            std::jthread responder([&, button] {
+                // Exercise the real modal window without user interaction or keys.
+                for (int attempt = 0; attempt < 200; ++attempt) {
+                    if (const auto dialog = FindWindowW(L"MIGImportReview", nullptr);
+                        dialog && IsWindowVisible(dialog)) {
+                        const auto summary = GetDlgItem(dialog, 1001);
+                        const auto accept = GetDlgItem(dialog, IDOK);
+                        const auto dc = GetDC(summary);
+                        const auto brush =
+                            SendMessageW(dialog, WM_CTLCOLORSTATIC, reinterpret_cast<WPARAM>(dc),
+                                         reinterpret_cast<LPARAM>(summary));
+                        themed =
+                            summary && (GetWindowLongW(summary, GWL_STYLE) & ES_READONLY) &&
+                            !(GetWindowLongW(summary, GWL_EXSTYLE) & WS_EX_CLIENTEDGE) &&
+                            SendMessageW(summary, WM_GETFONT, 0, 0) ==
+                                reinterpret_cast<LRESULT>(font) &&
+                            SendMessageW(accept, WM_GETFONT, 0, 0) ==
+                                reinterpret_cast<LRESULT>(font) &&
+                            (GetWindowLongW(accept, GWL_STYLE) & BS_TYPEMASK) == BS_OWNERDRAW &&
+                            GetPropW(accept, L"MIGPrimary") &&
+                            brush == reinterpret_cast<LRESULT>(surface_brush) &&
+                            GetTextColor(dc) == palette().text &&
+                            GetBkColor(dc) == palette().surface;
+                        ReleaseDC(summary, dc);
+                        if (button == IDCANCEL) {
+                            PostMessageW(dialog, WM_KEYDOWN, VK_RETURN, 0);
+                        } else {
+                            PostMessageW(dialog, WM_COMMAND, button, 0);
+                        }
+                        return;
+                    }
+                    std::this_thread::sleep_for(std::chrono::milliseconds(5));
                 }
-                std::this_thread::sleep_for(std::chrono::milliseconds(5));
-            }
-        });
-        check(review_import(sample) == (button == IDOK) && !keyboard_enabled,
-              "Import review must require acceptance and reset keyboard consent.");
+            });
+            check(review_import(sample) == (button == IDOK) && !keyboard_enabled,
+                  "Import review must require acceptance and reset keyboard consent.");
+            responder.join();
+            check(themed, "Import review must use the shared font, colors and owner-drawn controls "
+                          "in both themes.");
+        }
     }
     const auto first = profiles->import(sample, "First game");
     const auto second = profiles->import(sample, "Second game");
