@@ -19,10 +19,12 @@ Les actions restent dans l'application.
 4. Gardez les épaules visibles, baissez les mains dans le vert, puis montez vers le jaune.
 5. `/profile` permet d'importer un JSON. Stop libère la caméra ; Ctrl+C arrête le serveur.
 
-Objectif : 30–60 secondes après extraction avec les prérequis installés.
-WASM, modèles et MediaPipe Vision sont locaux ; aucune installation npm ni CDN
-n'est nécessaire pour essayer les pages compilées. L'archive JavaScript groupée
-fournit aussi Node portable. Le chargement initial dépend du matériel.
+> [!TIP]
+> **Pour essayer l'archive compilée, passez directement par `run.cmd` ou `sh run.sh`.**
+> Modèles, WASM et MediaPipe sont locaux ; aucune installation npm ni CDN n'est nécessaire.
+> Node.js 22.12+ reste requis pour l'archive individuelle ; la groupée fournit Node.
+
+Comptez 30–60 secondes avec les prérequis installés ; le chargement dépend du matériel.
 
 ## Organisation du dossier
 

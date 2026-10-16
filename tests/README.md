@@ -43,6 +43,8 @@ Enable `MIG_BUILD_BENCHMARKS=ON` to build `mig-engine-benchmark` under
 
 ## Script tests
 
+### Repository checks
+
 ```sh
 python tests/tooling/release_version_tests.py
 python tests/tooling/docs_tests.py
@@ -50,9 +52,21 @@ python tools/dev/check-docs.py
 python tests/tooling/version_resolution_tests.py
 python tests/packaging/example_package_tests.py
 python tests/packaging/wheel_record_tests.py
+```
+
+### Binding checks
+
+These commands need the matching native library or prepared browser dependencies:
+
+```sh
 python tests/bindings/python/python_tests.py build/windows/src/c-api/Release/mig-c.dll
 npm test
 npm run test:types
+```
+
+### Website checks
+
+```sh
 npm --prefix site run build
 npm --prefix site test
 ```

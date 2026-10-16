@@ -2,6 +2,11 @@
 
 [English](https://github.com/Robin-G0/Motion-Input-Grid/blob/main/bindings/python/README.md) | [Français](https://github.com/Robin-G0/Motion-Input-Grid/blob/main/bindings/python/README.fr.md)
 
+> [!IMPORTANT]
+> **The wheel recognizes supplied positions; camera inference and models are separate.**
+> For a first webcam game, start with the [Pygame example](https://github.com/Robin-G0/Motion-Input-Grid/blob/main/examples/pygame/README.md).
+> `MIG OK` below only confirms that the binding loads.
+
 ## Install from PyPI
 
 ```sh
@@ -48,10 +53,12 @@ with Tracker(None, profile) as tracker:
 
 ## Lifecycle and camera
 
-Use increasing timestamps in milliseconds and increasing sequence numbers.
-Calibration requires roughly one second with both shoulders visible.
-Positions use unmirrored anatomical MediaPipe indices; missing points have zero
-confidence. Keep each tracker on one owning thread and close it explicitly.
+| For each observation | Rule |
+| --- | --- |
+| Time and sequence | Increasing milliseconds and sequence numbers |
+| Calibration | Roughly one second with **both shoulders visible** |
+| Positions | Unmirrored anatomical MediaPipe indices; zero confidence for missing points |
+| Ownership | One thread per tracker; use `close()` or a context manager |
 
 `start_camera(runtime_directory)` and `poll_camera()` optionally use a native
 camera-enabled SDK plus its MediaPipe runtime and models. Poll already updates

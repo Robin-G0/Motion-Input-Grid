@@ -24,10 +24,21 @@ Extract the complete package for your system.
 Choose your OS and architecture. Windows requires a compatible MSVC toolset;
 Linux release SDKs target glibc 2.35+ and GCC 11+.
 
-The install prefix is the folder containing `include/` and `lib/`, with
-`lib/cmake/MIG/MIGConfig.cmake` below it. Native application archives also have
-an SDK under `sdk/`. Pass this prefix to `CMAKE_PREFIX_PATH`; do not pass the
-archive filename or the repository's source directory.
+Find the **SDK prefix** in the extracted package:
+
+```text
+sdk/                         <- CMAKE_PREFIX_PATH points here
+  include/
+  lib/
+    cmake/MIG/MIGConfig.cmake
+```
+
+Native application archives also have an SDK under `sdk/`.
+
+> [!TIP]
+> **Want to see an action before writing your own host?** Run the
+> [positions tutorial](../../examples/sdk-consumer/README.md). It recognizes
+> a generated hand raise without a camera or tracking models.
 
 ## Build and install from source
 
@@ -49,7 +60,10 @@ disables desktop applications and native camera dependencies; no MediaPipe
 bootstrap is needed. For camera-enabled builds, use the
 [Windows](windows.md) or [Linux](linux.md) guide instead.
 
-To generate Makefiles explicitly on Linux, use a separate build directory:
+<details>
+<summary>Alternative: generate GNU Makefiles on Linux</summary>
+
+Use a separate build directory:
 
 ```sh
 cmake -S . -B build/sdk-make -G "Unix Makefiles" \
@@ -64,6 +78,8 @@ cmake --install build/sdk-make --prefix install
 `cmake --build` invokes Make for this generator; `make -C build/sdk-make -j2`
 is equivalent. A checkout has no handwritten root Makefile. Do not change the
 generator of an existing build directory.
+
+</details>
 
 ## Link your application
 
@@ -115,8 +131,9 @@ without a custom prefix. vcpkg provides it through the release overlay and its
 CMake toolchain. See [distribution](packages.md) and the
 [vcpkg port](../../ports/motion-input-grid/README.md).
 
-If CMake cannot find MIG, locate `MIGConfig.cmake` and check your prefix. You can
-instead set `-DMIG_DIR=/path/to/sdk/lib/cmake/MIG`. A missing target means the
-selected SDK was built without that feature. A missing MediaPipe error during
-SDK compilation means you selected a desktop/camera configuration instead of
-`sdk-release`.
+| Symptom | Check |
+| --- | --- |
+| CMake cannot find MIG | Point `CMAKE_PREFIX_PATH` at the SDK prefix above, or set `MIG_DIR=/path/to/sdk/lib/cmake/MIG`. |
+| `MIG::native` is missing | Use a camera-enabled SDK; the positions-only download does not export this target. |
+| MediaPipe is requested for a positions-only build | Select `sdk-release`, which disables desktop/camera targets. |
+| Linker or DLL/SO loading error | Match architecture, compiler/runtime and build configuration; make shared libraries available at runtime. |

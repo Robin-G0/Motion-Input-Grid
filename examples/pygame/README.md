@@ -82,9 +82,23 @@ the import file picker; drag-and-drop JSON is also supported.
 
 ## Configuration and reuse
 
-The raised-hands profile has a broad Required region `[-9,3,27,3]`, followed by
-a Trigger region `[-9,1,27,2]` for each wrist. Starting only in yellow cannot
-trigger the upward path. Import mode starts without rules; invalid JSON keeps
+**First change for your game:** adapt `handle_detected_actions()` in
+`example_usage.py`. For example, add this inside its existing action loop:
+
+```python
+if action == "left_raise":
+    print("Jump!")  # Replace with your game's jump command.
+```
+
+> [!TIP]
+> **Lower your wrist into green, then raise it into yellow.** Standing in yellow
+> does not fire an action: MIG recognizes a path.
+
+| Profile step | Region |
+| --- | --- |
+| Start: Required (green) | `[-9,3,27,3]` |
+| Finish: Trigger (yellow) | `[-9,1,27,2]` |
+ Import mode starts without rules; invalid JSON keeps
 the previous configuration, while a valid import resets calibration.
 
 Copy the named integration file and configuration into your application. Replace

@@ -19,10 +19,12 @@ displays logical action/input IDs. Actions stay in your application.
 4. Keep both shoulders visible, lower your hands into green, then raise into yellow.
 5. Visit `/profile.html` to import JSON; click Stop and use Ctrl+C to stop the server.
 
-Target: 30–60 seconds after extraction with prerequisites installed. All models,
-WASM and MediaPipe Vision assets are local; no npm install or CDN is needed to try
-compiled pages. The combined JavaScript archive also includes portable Node;
-its launchers select that interpreter. Initial model loading depends on hardware.
+> [!TIP]
+> **To try the built archive, use `run.cmd` or `sh run.sh` directly.**
+> Models, WASM and MediaPipe are local; no npm install or CDN is needed.
+> Individual archives still need Node.js 22.12+; the combined archive supplies Node.
+
+Allow 30–60 seconds with prerequisites installed; model loading depends on hardware.
 
 ## Folder walkthrough
 

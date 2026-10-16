@@ -4,7 +4,10 @@
 
 **Télécharger l’intégration :** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-unreal-integration) · [Linux x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-unreal-integration) · [Linux ARM64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-unreal-integration).
 
-**Preview.** Les exports éditeur/jeu et un fournisseur réel restent à valider. Voir la [matrice de support](../../docs/reference/support.fr.md).
+> [!IMPORTANT]
+> **Package runtime en preview, sans fournisseur caméra.** Pour un premier essai,
+> préférez les [démos Unreal](../../examples/unreal/README.fr.md) et leur mode synthétique.
+> Validez votre éditeur, le fournisseur réel et les exports : [matrice de support](../../docs/reference/support.fr.md).
 
 Extrayez le ZIP `motion-input-grid-<version>-<plateforme>-unreal.zip` adapté dans `Plugins` de
 votre projet. Activez **Motion Input Grid**, recompilez le projet C++ et ajoutez

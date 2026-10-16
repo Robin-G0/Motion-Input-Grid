@@ -7,11 +7,25 @@
 This directory is the port for MIG itself. The root `vcpkg.json` is the separate
 dependency manifest used to build MIG.
 
-Run `python tools/packaging/package-source.py` to create the engine source archive and the
-overlay archive in `build/releases`. Extract the overlay and pass its root to
-`vcpkg install motion-input-grid --overlay-ports=/path/to/motion-input-grid-vcpkg-overlay`. The generated
-`motion-input-grid/source.cmake` pins the release URL and the source archive's actual SHA512.
-The tracked template intentionally fails until that pin has been generated.
+**Install the extracted overlay:**
+
+```sh
+vcpkg install motion-input-grid --overlay-ports=/path/to/motion-input-grid-vcpkg-overlay
+```
+
+**Generate your own overlay from the full checkout:**
+
+```sh
+python tools/packaging/package-source.py
+```
+
+The engine source and overlay archives are written to `build/releases`.
+Generated `motion-input-grid/source.cmake` pins the release URL and the source
+archive's actual SHA512.
+
+> [!NOTE]
+> The tracked template intentionally fails until that pin is generated.
+> For direct installation, use **the release overlay**, rather than the template.
 
 Default features provide JSON profiles and hands. `motion-input-grid[c-api]` adds the shared
 C ABI and requires a dynamic triplet. Applications and MediaPipe are excluded.

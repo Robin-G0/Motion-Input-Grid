@@ -66,10 +66,10 @@ compilateur C++20, SDK MIG et bibliothèques de développement graphiques.
 
 ## Recompiler hors du dépôt
 
-Utilisez un SDK avec caméra exportant `MIG::native` : le dossier `sdk/` d'une
-archive d'application native ou de tutoriel natif, ou une
-[compilation native](../../docs/integrations/overview.fr.md). Le SDK autonome de
-positions ne fournit pas cette cible.
+> [!IMPORTANT]
+> **Recompiler demande un SDK avec caméra exportant `MIG::native`.** Utilisez `sdk/`
+> d'une archive d'application/tutoriel natif ou une [compilation native](../../docs/integrations/overview.fr.md).
+> Le SDK autonome de positions ne fournit pas cette cible.
 
 ```sh
 cmake -S . -B build -DCMAKE_PREFIX_PATH="/chemin/MIG/sdk;/chemin/sdk/graphique"
@@ -88,8 +88,15 @@ Sous Windows, le sélecteur est natif.
 
 ## Configuration et réutilisation
 
-Le profil contient, pour chaque poignet, une zone Required `[-9,3,27,3]`, puis
-une zone Trigger `[-9,1,27,2]`. Une pose isolée dans le jaune ne déclenche rien.
+> [!TIP]
+> **Baissez le poignet dans le vert, puis montez-le vers le jaune.** Rester dans le
+> jaune ne déclenche rien : MIG reconnaît un parcours.
+
+| Étape du profil | Région |
+| --- | --- |
+| Départ Required (vert) | `[-9,3,27,3]` |
+| Arrivée Trigger (jaune) | `[-9,1,27,2]` |
+
 Le mode import démarre sans règles. Un JSON invalide préserve le profil précédent ;
 un import valide recommence la calibration.
 

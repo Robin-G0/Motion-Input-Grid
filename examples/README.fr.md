@@ -7,6 +7,17 @@ importez votre propre profil. Les démos caméra affichent une image miroir, des
 objets suivant les poignets et un retour indiquant l'action acceptée. Elles
 transmettent des événements sans envoyer de touches clavier.
 
+> [!TIP]
+> **Premier jeu ?** Choisissez un parcours ci-dessous, puis ouvrez seulement son tutoriel.
+> Vous pouvez essayer les observations synthétiques avant de brancher une caméra.
+
+| Votre objectif | Premier essai | Ce qu'il faut préparer |
+| --- | --- | --- |
+| Un petit jeu Python avec webcam | [Pygame](pygame/README.fr.md) | Archive compilée ; Python seulement pour modifier le code |
+| Un jeu Godot, Unity ou Unreal | [Godot](godot/README.fr.md), [Unity](unity/README.fr.md), [Unreal](unreal/README.fr.md) | Éditeur et démo synthétique ; fournisseur de points pour une vraie caméra |
+| Un jeu dans le navigateur | [HTML](web/README.fr.md) | Node.js 22.12+, navigateur et autorisation caméra |
+| Mon jeu fournit déjà les points du corps | [SDK C++](sdk-consumer/README.fr.md) | Aucun estimateur caméra pour le premier essai |
+
 ## Lancer une démo
 
 > [!NOTE]

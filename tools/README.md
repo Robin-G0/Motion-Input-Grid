@@ -43,9 +43,13 @@ outside an individual package. See the [tutorial index](../examples/README.md).
 
 ## What the packagers produce
 
-Most Python entry points describe their arguments with `--help`. Packaging runs
-on the target OS after compiling its binaries; it does not turn Windows binaries
-into Linux binaries. Output defaults to `build/releases/` where supported.
+Most Python entry points describe their arguments with `--help`.
+
+> [!IMPORTANT]
+> **Package on the target OS after compiling its binaries.** A packager assembles
+> existing files; it does not turn Windows binaries into Linux binaries.
+
+Output defaults to `build/releases/` where supported.
 JavaScript bootstrap/packaging uses `python` on Windows and `python3` on Linux;
 set `MIG_PYTHON` to select another interpreter. Running compiled pages needs no Python.
 

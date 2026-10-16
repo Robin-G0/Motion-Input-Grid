@@ -45,9 +45,10 @@ depends on hardware. The combined archive offers the same launchers in its examp
 
 ## Dependencies and rebuilding
 
-Use a camera-enabled SDK exporting `MIG::native`: the `sdk/` from a desktop or
-native tutorial archive, or a [native source build](../../docs/integrations/overview.md).
-The standalone positions-only SDK does not include this target.
+> [!IMPORTANT]
+> **Rebuilding needs a camera-enabled SDK exporting `MIG::native`.** Use `sdk/` from
+> a desktop/native tutorial archive or a [native source build](../../docs/integrations/overview.md).
+> The standalone positions-only SDK does not include this target.
 
 External: Windows x64 with VC++ runtime, or Linux x64 with glibc 2.35+.
 Bundled: executable, public SDK, licenses, native MediaPipe and models.

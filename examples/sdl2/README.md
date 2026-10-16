@@ -66,9 +66,10 @@ C++20 compiler, installed MIG SDK and graphics development libraries.
 
 ## Rebuild this folder outside the repository
 
-Use a camera-enabled SDK exporting `MIG::native`: the `sdk/` from a desktop or
-native tutorial archive, or a [native source build](../../docs/integrations/overview.md).
-The standalone positions-only SDK does not include this target.
+> [!IMPORTANT]
+> **Rebuilding needs a camera-enabled SDK exporting `MIG::native`.** Use `sdk/` from
+> a desktop/native tutorial archive or a [native source build](../../docs/integrations/overview.md).
+> The standalone positions-only SDK does not include this target.
 
 ```sh
 cmake -S . -B build -DCMAKE_PREFIX_PATH="/path/to/MIG/sdk;/path/to/graphics/sdk"
@@ -88,9 +89,15 @@ Qt6 Widgets for the profile picker; Windows uses its native dialog.
 
 ## Configuration and reuse
 
-The raised-hands profile has a broad Required region `[-9,3,27,3]`, followed by
-a Trigger region `[-9,1,27,2]` for each wrist. Starting only in yellow cannot
-trigger the upward path. Import mode starts without rules; invalid JSON keeps
+> [!TIP]
+> **Lower your wrist into green, then raise it into yellow.** Standing in yellow
+> does not fire an action: MIG recognizes a path.
+
+| Profile step | Region |
+| --- | --- |
+| Start: Required (green) | `[-9,3,27,3]` |
+| Finish: Trigger (yellow) | `[-9,1,27,2]` |
+ Import mode starts without rules; invalid JSON keeps
 the previous configuration, while a valid import resets calibration.
 
 Copy the named integration file and configuration into your application. Replace
