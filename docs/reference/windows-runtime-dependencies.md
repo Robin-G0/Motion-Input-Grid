@@ -2,6 +2,10 @@
 
 [English](windows-runtime-dependencies.md) | [Français](windows-runtime-dependencies.fr.md)
 
+> [!NOTE]
+> **Running the Controller does not require Visual Studio.** The single-file bundle includes its application DLLs.
+> Windows Media Foundation, device drivers and camera permissions remain required.
+
 The Windows single-file Controller embeds its complete application runtime and
 licenses. A developer Visual Studio installation is not a runtime dependency.
 See [cache architecture and usage](../getting-started/controller-standalone.md).

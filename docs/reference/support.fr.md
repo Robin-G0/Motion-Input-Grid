@@ -2,6 +2,10 @@
 
 [English](support.md) | [Français](support.fr.md)
 
+> [!IMPORTANT]
+> **Lisez ensemble les preuves et leurs limites.** « Tested » concerne les contrôles indiqués,
+> pas toutes les webcams, tous les éditeurs ou les jeux exportés. Les builds éditeur Unity et Unreal restent non validés.
+
 Cette page est la matrice canonique de MIG 1.1.0, schéma JSON 2 et C ABI 1.
 La maturité concerne les interfaces, pas la précision d’une webcam. Les tests
 synthétiques et les images vides ne prouvent pas une compatibilité matérielle.

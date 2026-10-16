@@ -2,6 +2,10 @@
 
 [English](lifecycle.md) | [Français](lifecycle.fr.md)
 
+> [!IMPORTANT]
+> **Un propriétaire par moteur/session de capture.** Copiez les données empruntées avant de les transmettre à un autre thread.
+> Stop rejoint le thread d’inférence ; un appel d’inférence tiers doit revenir avant la fin de l’arrêt.
+
 Cette page décrit les propriétaires effectifs. L'[architecture](overview.fr.md)
 décrit les modules ; les [performances](performance.fr.md) séparent reconnaissance,
 estimation native et affichage.
@@ -42,11 +46,15 @@ copiés et jusqu'à 64 événements horodatés. Un changement arrête et rejoint
 remplacement. Les widgets restent sur le thread principal. La capture YUYV
 single-plane négocie jusqu'à 720p et les attentes poll sont bornées.
 
+### Hôtes SDK positions et natifs
+
 Les hôtes positions fournissent des paquets frais non reflétés, sans caméra.
 Les hôtes natifs estiment RGB ou lisent capture. CaptureRuntime équilibre COM/
 Media Foundation. Start/poll/stop/destroy restent sur un propriétaire ; un import
 valide arrête capture, un invalide la conserve. Poll reconnaît déjà le paquet.
 Les pixels expirent au poll suivant ; Python copie avant publication à l'UI.
+
+### Sessions navigateur
 
 La session navigateur possède modèles, WASM, stream et générations d'annulation.
 Start demande capture ; Stop libère les pistes ; Dispose libère tout. Une seule
@@ -70,7 +78,9 @@ signe valide réserve la main. Maintien Interaction seul et commandes tolèrent
 250 ms, commandes 500 ms. Un événement accepté et un état terminal actif distinct
 sont produits.
 
-ActionOutput sérialise les séquences temporaires, partage les touches Hold par
+### Propriété des sorties desktop
+
+`ActionOutput` sérialise les séquences temporaires, partage les touches Hold par
 compteurs et répète sans chevauchement/rattrapage. Le texte attend les modificateurs
 étrangers. L'utilisateur active les sorties ; Windows utilise SendInput Unicode,
 Linux XTest et le clavier X11 courant, sans Wayland natif. Test, dialogues, Stop,
@@ -81,6 +91,8 @@ reset et données anciennes libèrent. Les SDK n'injectent pas de touches.
 Stop réveille/annule capture, rejoint les propriétaires puis libère tâches,
 buffers et touches. L'appel opaque upstream doit revenir avant join, sans garantie
 d'annulation. JSON limité à 1 Mio/profondeur 32, staging isolé et remplacement atomique.
+
+### Portée des validations
 
 CTest couvre règles, conversion, capacités, leases et inférence d'images vides.
 Les tests UI/navigateur sont synthétiques ; ASan/UBSan concerne le portable.

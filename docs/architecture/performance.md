@@ -2,12 +2,16 @@
 
 [English](performance.md) | [Français](performance.fr.md)
 
+> [!IMPORTANT]
+> **Engine time is not camera-to-action latency.** The benchmark excludes capture,
+> model inference, rendering and OS key delivery. No end-to-end latency number is established here.
+
 The portable engine ingests positions and produces logical events. Camera/model
 inference, language marshalling, GUI rendering and key delivery are separate costs.
 
 ## Work and ownership
 
-Let J be 34 body landmarks, M up to 64 inputs, K up to 4,096 constraints per input,
+Let J be 34 body landmarks (33 model points plus derived `head`), M up to 64 inputs, K up to 4,096 constraints per input,
 F the compiled finger rules and N the captured pixels. Each scope is limited to
 1,024 constraints and each input to 64 steps. JSON input is limited to 1 MiB and
 32 levels of nesting. Configuration construction/validation is a cold operation.
@@ -55,7 +59,8 @@ the portable build; it does not establish leak freedom in the external estimator
 For webcam performance, measure capture timestamps, result age, inference time,
 rendering and capture-to-key latency on the target hardware. Native controllers
 reject recognition older than 250 ms; command gestures use a 500 ms freshness cap.
-Pose defaults to the Lite CPU model, with Full available for comparison. Both models
+Desktop applications default to the Lite CPU model; the native `Pose` class defaults
+to Full. Compare them under the same capture conditions. Both models
 predict all 33 pose joints; ignoring leg constraints does not reduce the model's work.
 See the [official pose model guide](https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker).
 

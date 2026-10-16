@@ -4,6 +4,7 @@
 
 ## Non publié
 
+- Ajouter un parcours illustré bilingue pour Canva, PowerPoint, PDF et autres présentations ; alléger la navigation, les exemples et les références techniques.
 - Refuser NUL dans les identifiants, noms et actions des profils pour préserver les chaînes natives.
 - Conserver l'enregistrement actif si une nouvelle sélection de points est invalide.
 - Valider la documentation à chaque push et pull request, même sans modification de code.

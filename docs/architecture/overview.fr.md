@@ -2,6 +2,11 @@
 
 [English](overview.md) | [Français](overview.fr.md)
 
+> [!TIP]
+> **Pour évaluer la conception :** consultez les [modules](#modules),
+> les [propriétaires des ressources](#exécution-et-propriété), puis les [coûts mesurés](performance.fr.md).
+> Pour un premier jeu, commencez par les [exemples](../getting-started/examples.fr.md).
+
 <details>
 <summary>Dans cette page</summary>
 
@@ -211,11 +216,15 @@ ressources qu'après le geste utilisateur, jamais en SSR.
 
 ## Disponible et prévu
 
-Les deux éditeurs utilisent une fenêtre contextuelle pour l'édition et les tests,
-avec thèmes clair/sombre, portée des étapes, mode de parcours, maintien simultané,
-doigts et séquences clavier. Windows propose aussi l'enregistrement/revue et undo.
-Qt Linux conserve tous les champs via Advanced JSON ; l'enregistrement interactif
-et undo ne sont pas disponibles. Face est un squelette. Gamepad, analogique, courbures, replay et façade SDK
+Les deux éditeurs exposent contraintes spatiales, doigts et séquences clavier.
+Windows utilise l’édition contextuelle avec mise à jour immédiate des mouvements ;
+les options séparées d’enregistrement, de parties du corps et d’Undo/Redo ont été retirées.
+La présence de code d’enregistrement/historique ne prouve pas l’existence d’un outil visible.
+Linux conserve les profils complets via son éditeur JSON Advanced. Consultez les guides
+[Windows](../getting-started/windows.fr.md) et [Linux](../getting-started/linux.fr.md)
+pour les commandes disponibles. **Face reste un squelette, sans estimateur.**
+
+Gamepad, analogique, courbures, replay et façade SDK
 threadée restent prévus. Aucune approximation de profondeur n'est une distance
 caméra réelle. [Limites de publication](../reference/support.fr.md).
 

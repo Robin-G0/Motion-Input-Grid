@@ -2,6 +2,10 @@
 
 [English](support.md) | [Français](support.fr.md)
 
+> [!IMPORTANT]
+> **Read the evidence and limits together.** “Tested” covers the named checks,
+> not every webcam, editor or exported game. Unity and Unreal editor builds remain unvalidated.
+
 This is the canonical support matrix for MIG 1.1.0, JSON schema 2 and C ABI 1.
 A maturity label describes the interface, not the quality of a particular camera.
 Automated synthetic and blank-frame checks cannot establish hardware compatibility.

@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- Add illustrated, bilingual presentation steps for Canva, PowerPoint, PDF and other slideshows; improve reading paths, examples and technical references.
 - Reject NUL in profile identifiers, names and actions to preserve native string contracts.
 - Preserve an active recording when a replacement landmark selection is invalid.
 - Validate documentation on every push and pull request, including documentation-only changes.

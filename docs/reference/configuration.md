@@ -2,6 +2,10 @@
 
 [English](configuration.md) | [Français](configuration.fr.md)
 
+> [!TIP]
+> **Need a working profile?** Import the [complete HI example](#complete-studio-hi-example).
+> Read individual sections when editing a field; this page is a reference, not a required first lesson.
+
 <details>
 <summary>On this page</summary>
 
@@ -25,7 +29,9 @@ numbered ordered rows require an upward path, rather than a Python height check.
 Hand inference is enabled for the finger overlay, but no finger sign is required
 to raise a wrist. These examples emit logical events and bind no keyboard keys.
 
-Only schema version 2 is accepted. Older versions and legacy_path fields are rejected;
+### Parser and replacement contract
+
+**Only schema version 2 is accepted.** Older versions and legacy_path fields are rejected;
 there is no migration or legacy recognition engine. Unknown versions and fields fail
 before replacing the active document.
 `load_configuration(path)` and `parse_configuration(json_text)` use the same strict
@@ -71,10 +77,12 @@ the same schema; desktop review is an application UI responsibility.
 
 Root fields are `schema_version: 2`, required `inputs` (0..64), optional
 `tracking: {"hands": false}`, and optional `controls`. Both applications use this
-same persisted Hands switch, including after loading and undoing a profile. Applying
+same persisted Hands switch, including after loading a profile. Applying
 hand gesture bindings or an input with finger rules enables it in hands-enabled builds.
 Finger rules require hand observations;
 missing observations never silently bypass a configured rule.
+
+### Input fields
 
 Each input requires stable `id`, display `name`, and logical `action`, each at most
 80 UTF-8 bytes. Input, step and constraint IDs, names, actions and tolerance
@@ -97,6 +105,8 @@ deadline. An explicit positive time limit remains available in Advanced mode and
 when an attempt begins. Newly authored inputs have no movement time limit.
 The global hand-command recovery delay remains separate and fixed at 1000 ms.
 
+### Keyboard sequence syntax
+
 `keyboard` contains up to 256 objects, each with exactly one of `text` (UTF-8)
 or `keys` (1..255 unique Windows virtual keys, each 1..255). The former eight-key
 limit is removed. Keys may repeat across successive objects, but repeating a key
@@ -112,6 +122,8 @@ invalid UTF-8 and NUL are rejected. An empty text object is a no-op.
   {"keys": [67]}
 ]
 ```
+
+### Keyboard execution and cancellation
 
 Both apps execute this sequence in the foreground application when **Keyboard: On**.
 Text uses Windows Unicode input; chords press modifiers first and release keys in
@@ -222,6 +234,8 @@ to `visited`; `hold_ms` is 0..1000 (default 0); `fingers` is optional.
 | `simultaneous` | All Required regions must be occupied together. |
 | `ordered` | Constraint array order applies independently to each landmark; different landmarks progress in parallel. |
 
+### Numbered alternatives
+
 In an ordered step, a positive `order` explicitly numbers a High Required/Trigger
 region. Regions with the same **step, anatomical landmark and number** form an
 alternative group: reaching any one region validates that number. The numbers
@@ -237,7 +251,7 @@ An entirely unnumbered lane (`order` omitted or 0) retains independent visits in
 array order. Mixing numbered and unnumbered High positive constraints in one lane
 is rejected. The editor numbers the existing lane when a manual number is chosen.
 Switching the step to Visited/Simultaneous explicitly removes its order numbers;
-the operation is undoable in the Windows editor.
+the resulting profile still uses the same spatial constraints.
 
 For example, a general right-hand raise can use these Required alternatives in
 one Ordered step (with unique IDs and High priority on each constraint):
@@ -264,6 +278,8 @@ completed movement cannot emit repeatedly; normal mode rearms after leaving the
 start region. Test results remain locked until Restart. Restart clears progress
 without changing calibration; Recalibrate also replaces the body anchor.
 
+### Supported landmarks
+
 The central landmark registry in `mig/core/input.hpp` supports all 33 pose
 landmarks, derived `head`, and `left_hand`/`right_hand` aliases for the pose wrists.
 Head uses the midpoint of visible ears, falling back to the nose. Names include
@@ -286,6 +302,8 @@ confidence must be >=0.6. Stability must be acquired before grace can bridge a
 brief mismatch. Native extension is a joint-angle abstraction; uncertain anatomical
 hand assignment is rejected. Human accuracy still requires camera validation.
 
+### Global application controls
+
 Application controls are separate from finger input rules. Optional `restart`,
 `recalibrate`, and `record_toggle` each contain `gesture`
 (`none`/`thumb`/`v`/`ok`/`open_palm`/`fist`)
@@ -306,8 +324,9 @@ Global V commands require index/middle >=0.7, ring/pinky <=0.4 and thumb <=0.55
 not change persisted finger constraints. Command continuity tolerates up to 500 ms
 between observations; the app accepts command results up to 500 ms old. Movement
 recognition, overlays and keyboard freshness retain the tighter 250 ms limit.
-Record toggle requires an open input editor and uses its selected recording
-landmarks and coordinate space; the main status and logs expose recognition/recovery.
+`record_toggle` remains a valid schema field for the retained recorder backend;
+current Studio does not expose recording tools. The main status and logs expose
+command recognition/recovery.
 
 ## Purple Interaction cells
 
@@ -351,20 +370,14 @@ palm/contact observations reject OK. Open palm requires all five extensions >=0.
 Fist requires all five <=0.3. All five fingers must have confidence >=0.6.
 These classifiers serve global commands, status and Interaction cells.
 
-Choose the purple **Interaction** brush, then set hand, sign and hold
-time in its tab before drawing. Select an existing purple cell and **Update
-interaction** to edit it. The **Fingers** tab edits scoped poses and stable/grace
-times. These settings are stored in the profile regardless of the selected tool.
-Applying/testing an Interaction input enables hand tracking in a hands-enabled build.
-In an Ordered step, Auto purple painting/fill groups cells for the same body part
-under one number: any matching cell can fire the action. No green/yellow prerequisite
-is required. The editor and main input stack show scoped finger/sign counts.
+### Editing and feedback
 
-For new wrist regions, the editor defaults the sign's hand to the selected anatomical
-wrist. Existing regions retain their explicit hand; select the cell and **Update
-interaction** to change it. Left/right always refer to the user's own hands.
-Live progress distinguishes missing hand observations, a known sign mismatch,
-additional finger-rule mismatch, and a valid hold with elapsed/required milliseconds.
+Use the current platform guide for [Windows Interaction editing](../getting-started/windows.md)
+or [Linux Advanced JSON](../getting-started/linux.md). Explicit `hand`, `gesture`
+and `hold_ms` values stay in the constraint; left/right always refer to the user's
+own anatomy. Live progress distinguishes missing observations, a sign mismatch,
+additional finger-rule mismatch and elapsed/required hold duration.
+
 For pure Interaction inputs, input-level finger mismatch resets the hold and waits
 for recovery instead of permanently locking the attempt. It never bypasses that rule.
 
@@ -377,14 +390,15 @@ and never enters JSON. Stop or document replacement clears the highlight.
 
 ## Recording, limits and validation
 
-Live multi-landmark recordings remain temporary until explicit conversion/apply.
-They sample at most 20 Hz for 60 seconds, synchronously for all selected landmarks.
-Review supports moving a point, deleting a synchronized sample, trimming, discarding,
-and explicit conversion to simultaneous cell stages. More than 64 cell transitions
-requires trimming. The coordinate basis is frozen for the recording session.
-Reviewed `recordings` metadata stores `{ "landmark": "head", "points": [[4.5,0.5]] }`;
-there are at most 34 traces and 2048 points per trace, finite and within [-9,18).
-Saved points are authoring metadata, never implicit recognition rules.
+> [!NOTE]
+> **Current Studio does not expose recording tools.** The schema retains reviewed
+> traces for existing profiles; those points never become recognition rules implicitly.
+
+`recordings` entries store `{ "landmark": "head", "points": [[4.5,0.5]] }`.
+Each input permits at most **34 traces**, each with **2,048 finite points** inside
+`[-9,18)`. The retained recorder backend samples synchronously at up to 20 Hz for
+60 seconds with a frozen coordinate basis; conversion must fit 64 steps.
+These backend limits do not describe an available recording toolbar.
 
 Files are bounded to 1 MiB and nesting depth 32. IDs/names/actions are at most
 80 bytes. There are at most 1024 constraints per scope and 4096 per input.
@@ -432,60 +446,37 @@ in the same step. To require an extended index at a Trigger, add
 to that Trigger constraint. To require it throughout, put the list on the input.
 ## Editor presentation and live scaling
 
-The editor's **View: Body** projects the grid onto its own mirrored inference
-image using that snapshot's calibrated/body basis, aspect, centre, axis and current
-shoulder scale. Rendered cell width changes with shoulder spacing; it is no longer
-normalized to a fixed square. Pointer hit testing uses the inverse of the exact
-same projection, including mirror and rotation. A drawing stroke freezes its view
-until release so moving shoulders cannot move cells under the pointer mid-stroke.
-**View: Full grid** exposes the complete 27x27 authoring area, including zones
-outside the camera image. Before calibration this view is also the fallback.
-Full grid reflects the horizontal axis exactly once, just like the camera view;
-cells, dots, traces and pointer hit testing use the same projection. This does not
-alter saved anatomical coordinates or the input's optional recognition Mirror.
-The main camera remains unobstructed; body/grid diagnostics belong to the editor.
-Theme, inspector tabs and viewport selection are UI state, not JSON recognition
-parameters. Dark/light menus, combo fields, buttons and linked logs use one palette.
+The editor projects the same anatomical grid used by recognition. Body view uses
+the snapshot’s basis, aspect, centre, axis and shoulder scale; inverse hit testing
+uses that same transform. A drawing stroke freezes the view until release.
+Full grid exposes all **27 × 27 cells**, including regions outside the camera image.
 
-The editor uses one ordered step for a new input. Visible Pencil,
-Fill, Tolerance, Eraser and Select buttons operate on the chosen landmark with
-green Required, red Forbidden and yellow Trigger paint. Tolerance selects its
-High target directly on click, including through its linked Low region; one click
-adds a faint Low contour. Select supports rectangular dragging and Ctrl to retain
-the previous selection. Deletion also removes the deleted region's linked Low entries.
-Pencil/eraser
-interpolate between mouse samples, and each stroke remains one Undo operation.
-The yellow finish is one movable Trigger. Adding Required cells keeps them before
-that finish. Full grid shows centered order numbers per landmark for ordered
-steps (step.order for multiple steps), X for Forbidden and R for unordered
-Required; Low contours do not introduce additional required visits. The selected
-landmark is filled; other landmark layers remain outlined and independently editable.
-The contextual editor exposes steps, ordering/hold controls, High/Low properties,
-finger scopes, coordinate space, optional timing limits and keyboard shortcuts.
-Windows also provides recording. Selecting a different tool preserves the definition.
+| Visual marker | Schema meaning |
+| --- | --- |
+| Green Required | Spatial prerequisite |
+| Yellow Trigger | Firing region |
+| Red Forbidden / X | Guard that invalidates an attempt |
+| Purple Interaction | Firing region with a hand sign and optional dwell |
+| Low contour | Alternative tolerance linked to a High region, not another required visit |
+| Order number | Progress within one anatomical landmark lane |
 
-All drawing tools and paint types now live in the editor sidebar. Its layer stack
-groups constraints by anatomical landmark across global guards and all steps.
-Layers are a view of existing independent constraints; no second recognition model
-or JSON layer array is introduced. Selecting a layer selects the body part; hiding
-it changes only presentation. Deleting it removes that landmark's constraints in
-all scopes, with one Undo operation on Windows. Clear removes the current scope's
-constraints and finger rules. Help is optional and closes when
-drawing begins. Visibility/help/selection never enter the JSON file.
-Select a stack row, change **Layer body part**, then click
-**Save layer**. This changes `landmark` on that layer's spatial constraints in
-every scope, preserving IDs, cells, order, tolerance links, finger rules and
-Interaction settings. Explicit anatomical finger/sign hands remain unchanged;
-review them when changing hands. Recorded traces retain their original
-capture identity and are not reassigned. A body part already used by another layer
-is rejected without changing either drawing. The body-part selector is a pending
-edit: save it or restore its original value before switching layers, drawing,
-applying or testing. Drawing edits otherwise remain in the input draft when switching
-layers. Reassignment is one Undo/Redo operation. **Save layer** saves into the draft;
-**Apply input** publishes it, and File > Save persists the configuration. No JSON
-field is added for the layer editor or its pending selection.
-Eraser removes all colours/priorities of the selected body part at the pointer
-in the current scope, including linked tolerance entries.
+**Colours supplement labels and symbols.** Theme, visibility, inspector tabs,
+selection and viewport are UI state, not profile fields. Layers group existing
+constraints by landmark; they add neither a JSON array nor another recognition model.
+
+### Reassigning a layer
+
+In current Windows Studio, changing the tracked point **immediately reassigns its
+existing zones** and updates the movement. A destination collision preserves both
+drawings. IDs, cells, order, tolerance links and finger/Interaction settings remain intact.
+Explicit anatomical sign/finger hands and captured trace identity are preserved;
+**review hand-specific rules when changing sides**. File > Save persists the document.
+
+The separate body-parts, recording and Undo/Redo toolbar options are removed.
+See the current [Windows editing workflow](../getting-started/windows.md)
+and [Linux guide](../getting-started/linux.md) for platform controls.
+
+### Startup and integration behavior
 
 Normal application startup is an empty configuration, with Right V assigned to
 Recalibrate (Hands remains off until enabled). Bundled `configs/default.json` is
@@ -536,61 +527,34 @@ The complete [studio-hi.json](../../configs/studio-hi.json) profile is the small
 ```json
 {
   "schema_version": 2,
-  "tracking": {
-    "hands": false
-  },
-  "inputs": [
-    {
-      "id": "hi",
-      "name": "HI",
-      "action": "next_slide",
-      "space": "body",
-      "cooldown_ms": 700,
-      "keyboard": [
-        {
-          "keys": [
-            39
-          ]
-        }
-      ],
-      "action_mode": "single_press",
-      "steps": [
-        {
-          "id": "wave",
-          "mode": "ordered",
-          "constraints": [
-            {
-              "id": "start",
-              "landmark": "left_wrist",
-              "cell": [
-                -4,
-                4,
-                18,
-                4
-              ],
-              "type": "required",
-              "priority": "high",
-              "order": 1
-            },
-            {
-              "id": "finish",
-              "landmark": "left_wrist",
-              "cell": [
-                -4,
-                -3,
-                18,
-                6
-              ],
-              "type": "trigger",
-              "priority": "high",
-              "order": 2
-            }
-          ]
-        }
+  "tracking": {"hands": false},
+  "inputs": [{
+    "id": "hi", "name": "HI", "action": "next_slide", "space": "body",
+    "cooldown_ms": 700,
+    "keyboard": [{"keys": [39]}],
+    "action_mode": "single_press",
+    "steps": [{
+      "id": "wave", "mode": "ordered",
+      "constraints": [
+        {"id": "start", "landmark": "left_wrist", "cell": [-4, 4, 18, 4],
+         "type": "required", "priority": "high", "order": 1},
+        {"id": "finish", "landmark": "left_wrist", "cell": [-4, -3, 18, 6],
+         "type": "trigger", "priority": "high", "order": 2}
       ]
-    }
-  ]
+    }]
+  }]
 }
 ```
 
-Omitting `keyboard` or using `[]` sends no keys. `[{"keys":[17,39]}]` is one simultaneous Ctrl+Right shortcut. `[{"keys":[17]},{"keys":[39]}]` presses and releases Ctrl, then presses Right as a separate sequential action. There is no implicit key or custom delay field. In `hold` mode, only the final chord stays held; `repeat` repeats the sequence while the activation remains valid. See the limits, defaults and optional fields above. `blocking` is not a profile field: use `type: "forbidden"` constraints. Only `schema_version: 2` is supported.
+> [!IMPORTANT]
+> **Omitting `keyboard` or using `[]` sends no keys.** The profile’s logical action name does not imply a keyboard binding.
+
+| Binding | Result |
+| --- | --- |
+| `[{"keys":[17,39]}]` | One simultaneous Ctrl+Right shortcut |
+| `[{"keys":[17]},{"keys":[39]}]` | Press/release Ctrl, then press/release Right |
+| `action_mode: "hold"` | Keep only the final chord held while activation is valid |
+| `action_mode: "repeat"` | Repeat the sequence while activation is valid |
+
+There is no implicit key or custom delay field. `blocking` is not a profile field:
+use `type: "forbidden"` constraints. Only **`schema_version: 2`** is supported.

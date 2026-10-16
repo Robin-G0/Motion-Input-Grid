@@ -2,6 +2,10 @@
 
 [English](configuration.md) | [Français](configuration.fr.md)
 
+> [!TIP]
+> **Besoin d’un profil prêt à importer ?** Utilisez l’[exemple HI complet](#exemple-complet-hi-du-studio).
+> Consultez ensuite les sections correspondant aux champs à modifier ; cette page est une référence.
+
 ## Revue d'import
 
 L'import desktop valide le profil et affiche tous ses mouvements et actions dans
@@ -43,7 +47,9 @@ puis Trigger jaune. Les ordres exigent un chemin, pas un test de hauteur écrit
 dans le langage hôte. Hands sert à dessiner les doigts ; aucun signe n'est exigé
 pour lever le poignet. Les exemples n'associent aucune touche.
 
-Seul schema_version 2 est accepté. Anciennes versions, legacy_path et champs
+### Parseur et remplacement du document
+
+**Seul `schema_version: 2` est accepté.** Anciennes versions, legacy_path et champs
 inconnus sont rejetés avant de remplacer le document. load_configuration(path)
 et parse_configuration(texte) ont la même validation stricte : 1 Mio, profondeur
 32. serialize_configuration exporte sans fichier ; save_configuration remplace
@@ -62,11 +68,13 @@ Consentements, fenêtres et paquets runtime ne sont pas sérialisés.
 | tracking | Facultatif, {"hands":false} par défaut |
 | controls | Facultatif, commandes globales décrites plus bas |
 
-Les deux apps restaurent Hands au chargement/undo. Appliquer doigts/commandes
+Les deux apps restaurent Hands au chargement. Appliquer doigts/commandes
 l'active dans ON. Une règle de doigt exige des observations, jamais contournée
 par leur absence.
 
-Chaque input exige id stable, name affiché et action logique, au plus 80 octets
+### Champs d’un input
+
+Chaque input exige un `id` stable, un `name` affiché et une `action` logique, au plus **80 octets UTF-8**
 chacun. Les identifiants des inputs, étapes et contraintes, les noms, actions et
 références de tolérance ne peuvent pas contenir NUL (`\u0000`) : les interfaces
 natives utilisent des chaînes terminées par NUL. Champs facultatifs :
@@ -92,7 +100,7 @@ n'ont pas de limite. La récupération des commandes globales reste fixe 1000 ms
 
 ## Clavier et modes
 
-keyboard contient jusqu'à 256 objets, chacun exactement text UTF-8 ou keys.
+`keyboard` contient jusqu'à 256 objets, chacun exactement text UTF-8 ou keys.
 Un accord keys contient 1..255 codes virtuels Windows uniques dans 1..255.
 Une touche peut répéter dans les objets successifs, jamais dans un même accord.
 Le texte total est limité à 16384 octets UTF-8 ; NUL et UTF-8 invalide sont rejetés.
@@ -112,7 +120,9 @@ Noms : Alt+F4, Space, Left, F1..F24, VK:65 ; Plus désigne la touche plus.
 Keys/Ctrl+K et Edit keys montrent les éléments reconnus dans des boîtes et
 défilent les longues séquences. Une expression invalide interdit Apply.
 
-Keyboard On envoie à l'application au premier plan. Windows utilise Unicode
+### Exécution et annulation des touches
+
+**Keyboard On** envoie à l'application au premier plan. Windows utilise Unicode
 SendInput, modificateurs d'abord puis libération inverse après 80 ms pour Single.
 Séparation 20 ms, au plus 16 séquences en attente par input, séquences temporaires
 sérialisées. Hold peut coexister via compteurs de propriété : libérer un input
@@ -121,11 +131,13 @@ modificateurs étrangers et est envoyé en petits lots non bloquants. Linux XTes
 utilise le layout X11 courant, sans Unicode complet ni Wayland natif :
 [limites Linux](../getting-started/linux.fr.md).
 
-- Single press exécute une séquence par trigger, sans répétition si maintenue.
-- Hold exécute le préfixe une fois et maintient le dernier accord jusqu'à la fin
+### Modes de sortie
+
+- **Single press** exécute une séquence par trigger, sans répétition si maintenue.
+- **Hold** exécute le préfixe une fois et maintient le dernier accord jusqu'à la fin
   des conditions. `"Ready" _ Enter _ Shift` maintient finalement Shift.
   Une séquence Hold non vide doit finir par des touches ; texte seul invalide.
-- Repeat exécute immédiatement puis aux intervalles début-à-début tant que
+- **Repeat** exécute immédiatement puis aux intervalles début-à-début tant que
   l'action reste active. Pas de séquence chevauchée ni rafale de rattrapage.
   Le pulse vaut au plus 80 ms ou la moitié de l'intervalle, le gap au plus 20 ms.
   Le timer UI détermine l'exécution effective.
@@ -183,10 +195,12 @@ hold_ms 0..1000 défaut 0, fingers facultatif.
 | simultaneous | Toutes les régions Required occupées ensemble |
 | ordered | Ordre indépendant par landmark ; les voies progressent en parallèle |
 
-En Ordered, order positif numérote High Required/Trigger/Interaction. Même étape,
+### Alternatives numérotées
+
+En Ordered, `order` positif numérote High Required/Trigger/Interaction. Même étape,
 landmark et numéro = alternatives ; une région suffit. Les numéros croissent
 indépendamment de leur position JSON. Chaque landmark garde sa voie/prérequis.
-Forbidden et Low gardent order0 ; la tolérance garde sa référence High.
+Forbidden et Low gardent `order: 0` ; la tolérance garde sa référence High.
 Un groupe numéroté a un seul type. Les doigts locaux s'appliquent à la région
 réellement touchée et sa tolérance. Seules les cases contactées sont surlignées.
 Plusieurs jaunes numérotées peuvent constituer un seul groupe Trigger.
@@ -194,8 +208,8 @@ Plusieurs jaunes numérotées peuvent constituer un seul groupe Trigger.
 Une voie entièrement sans numéro suit l'ordre du tableau. Mélanger High positifs
 numérotés/non numérotés dans une voie est rejeté. L'éditeur numérote la voie lors
 du premier numéro manuel. Passer à Visited/Simultaneous retire explicitement les
-numéros, avec undo sous Windows. Peignez une ligne Order1,
-puis une ligne Order2 : une case de chaque ligne suffit. Repeindre du même type
+numéros dans le profil. Peignez une ligne **Order: 1**,
+puis une ligne **Order: 2** : une case de chaque ligne suffit. Repeindre du même type
 change son numéro sans superposition. Auto continue les numéros ; Forbidden = X.
 
 Les étapes suivent le tableau, au plus une par observation. Les Required globales
@@ -204,7 +218,9 @@ s'appliquent ensemble. Un mouvement maintenu ne répète pas les événements.
 Mode normal réarme après sortie du départ, Test verrouille jusqu'à Restart.
 Restart garde le calibrage ; Recalibrate remplace l'ancre.
 
-Le registre mig/core/input.hpp couvre 33 points et head dérivé : milieu des
+### Points corporels disponibles
+
+Le registre `mig/core/input.hpp` couvre 33 points et head dérivé : milieu des
 oreilles visibles, sinon nez. left_hand/right_hand sont alias des poignets.
 Noms : nose, left/right_eye_inner, eye, eye_outer, ear, mouth_left/right,
 left/right_shoulder, elbow, wrist, hand, pinky, index, thumb, hip, knee, ankle,
@@ -221,9 +237,11 @@ Liste vide sans exigence. Extension >=0.7 étendu, <=0.3 fermé, confiance >=0.6
 La stabilité doit être acquise avant la grâce. Angles articulaires natifs et
 association anatomique ambiguë rejetée ; précision humaine à vérifier.
 
-controls contient restart/recalibrate/record_toggle facultatifs : gesture
+### Commandes globales de l’application
+
+`controls` contient restart/recalibrate/record_toggle facultatifs : gesture
 none/thumb/v/ok/open_palm/fist et hand left/right. Par défaut désactivés.
-Thumb exige seulement pouce étendu ; V index et majeur. validation_ms100..1000
+Thumb exige seulement pouce étendu ; V index et majeur. `validation_ms` 100..1000
 défaut 250, post_gesture_delay_ms exactement 1000. La récupération commence à
 validation, efface reconnaissance et suspend les échantillons d'enregistrement.
 Une commande maintenue se verrouille jusqu'à un relâchement connu volontaire,
@@ -234,9 +252,10 @@ Right V Recalibrate si réaffecté à Record.
 V global : index/majeur>=0.7, annulaire/auriculaire<=0.4, pouce<=0.55.
 Thumb reste strict >=0.7/<=0.3. Les cinq observations doivent être connues.
 Ces tolérances ne modifient pas les contraintes de doigts persistées.
-Commandes : gaps/résultats jusqu'à500 ms ; mouvements, overlays et clavier250 ms.
-RecordToggle nécessite un éditeur ouvert et ses landmarks/espace sélectionnés.
-Statut/logs indiquent reconnaissance et récupération.
+Commandes : intervalles et résultats jusqu’à **500 ms** ; mouvements, overlays et clavier **250 ms**.
+`record_toggle` reste un champ valide pour le backend d’enregistrement conservé ;
+le Studio actuel n’expose pas d’outils d’enregistrement. Statut et logs indiquent
+la reconnaissance et la récupération des commandes.
 
 ## Interaction violette
 
@@ -246,31 +265,32 @@ déclenchement High au plus, commun aux deux types. Chaque alternative numérot�
 garde son hand/gesture/hold_ms. Les doigts existants restent requis partout.
 
 hand left/right anatomique, gesture thumb/v/ok/open_palm/fist, jamais none.
-hold_ms0..60000, défaut 0 immédiat. Landmark doit être actuellement dans la zone
+`hold_ms` 0..60000, défaut 0 immédiat. Landmark doit être actuellement dans la zone
 et main correspondre au signe ; traverser rapidement ne suffit pas. Maintien
 démarre après prérequis et hold de l'étape. Sortir, perdre signe/points, données
 anciennes, Restart ou rupture remet le timer à zéro. Inputs composés seulement
-Interaction/Forbidden tolèrent500 ms entre observations ; chemins/balayages180 ms.
-Clavier exige toujours250 ms. Une Interaction occupée avec son signe réserve la
+Interaction/Forbidden tolèrent 500 ms entre observations ; chemins/balayages 180 ms.
+Clavier exige toujours 250 ms. Une Interaction occupée avec son signe réserve la
 main des commandes globales, même en cooldown, pour empêcher Recalibrate d'interrompre.
 Hors zone, les commandes fonctionnent normalement. Les doigts gardent leur grâce.
 Low doit copier exactement les paramètres du High cible et partager son timer ;
 chaque alternative High numérotée a son propre timer. Mirror échange main/landmark.
 Réarmement et cooldown ordinaires s'appliquent après déclenchement.
 
-OK : distance3D pouce/index divisée par largeur paume indexMCP-pinkyMCP, correction
+OK : distance 3D pouce/index divisée par largeur paume indexMCP-pinkyMCP, correction
 d'aspect ; ratio<=0.25, confiance contact>=0.6, majeur/annulaire/auriculaire>=0.7.
 Paume/contact absent ou dégénéré rejette. Open palm exige cinq extensions>=0.7 ;
 Fist cinq<=0.3 ; confiance>=0.6 pour chaque doigt. Ces classifieurs servent
 commandes, statut et cellules Interaction.
 
-En Advanced, choisissez le pinceau violet, main/signe/durée puis dessinez. Select et
-Update interaction modifient une zone. Fingers règle scopes/stable/grace.
-Le choix d'outil conserve les règles. Apply/Test active Hands en ON. Auto violet
-groupe les cases d'un landmark sous un numéro : l'une peut déclencher sans
-aucun prérequis vert/jaune. Un nouveau poignet choisit la même main anatomique,
-les anciennes zones gardent leur réglage explicite. Statut distingue absence,
-mauvais signe, autres doigts invalides et maintien elapsed/required.
+### Modifier une Interaction dans Studio
+
+Consultez le [parcours Windows](../getting-started/windows.fr.md) ou
+l’[éditeur JSON Linux](../getting-started/linux.fr.md) pour modifier une Interaction.
+`hand`, `gesture` et `hold_ms` restent des champs explicites de la contrainte ;
+gauche/droite désignent toujours les mains de l’utilisateur. La progression distingue
+les observations absentes, un mauvais signe, des doigts invalides et le maintien écoulé/requis.
+
 Pour Interaction seul, mismatch des doigts globaux remet le timer à zéro et
 attend sans verrouiller définitivement ; la règle n'est jamais contournée.
 Details montre doigts/scopes/poses/délais et Interaction avec séquence clavier.
@@ -279,18 +299,27 @@ du clavier/logs ; Stop/remplacement efface, rien de cela n'est sérialisé.
 
 ## Enregistrement et validation
 
-Traces temporaires avant conversion/apply explicite. Au plus20 Hz pendant60 s,
-échantillonnage synchrone de tous les points choisis. Revue : déplacement de
-point, suppression d'échantillon synchrone, trim, discard, conversion en étapes
-simultanées. Plus de64 transitions exige trim. Base de coordonnées figée.
-recordings contient landmark et points [[x,y]] ; au plus34 traces,2048 points chacune,
-finis dans[-9,18). Métadonnées d'auteur, jamais règles implicites.
+> [!NOTE]
+> **Le Studio actuel n’expose pas d’outils d’enregistrement.** Le schéma conserve les
+> traces des anciens profils ; ces points ne deviennent jamais des règles implicites.
 
-JSON1 Mio/profondeur32 ; IDs/noms/actions80 octets ;1024contraintes/scope,
-4096/input. Enum/landmark inconnu, IDs/règles dupliqués, cases invalides,
-version non supportée, Trigger mal placé, tolérance incohérente rejettent tout.
-Save valide avant remplacement atomique. Images, surlignage, étape actuelle,
-verrous de signes et recorder vivant ne sont pas sérialisés.
+Chaque entrée `recordings` contient un `landmark` et des points `[[x,y]]`.
+Limites par input : **34 traces**, **2 048 points finis** par trace, dans `[-9,18)`.
+Le backend conservé échantillonne tous les points sélectionnés simultanément,
+au plus 20 Hz pendant 60 secondes, avec une base figée. La conversion doit tenir
+dans 64 étapes. Ces limites internes ne désignent pas une barre d’enregistrement disponible.
+
+| Élément validé | Limite |
+| --- | --- |
+| Document JSON | 1 Mio, profondeur 32 |
+| ID, nom, action | 80 octets UTF-8 |
+| Contraintes | 1 024 par scope, 4 096 par input |
+| Traces | 34 × 2 048 points au maximum |
+
+Enums ou landmarks inconnus, doublons, cases invalides, version non supportée,
+Trigger mal placé ou tolérance incohérente **rejettent tout l’import**.
+La sauvegarde valide avant remplacement atomique. Images, surlignage, étape actuelle,
+verrous de signes et état vivant du recorder ne sont jamais sérialisés.
 
 Jump/Crouch utilisent head/épaules dans des régions plus hautes/basses,
 sans branche spéciale du moteur. Les cellules d'exemple ne sont pas universelles.
@@ -299,51 +328,48 @@ seulement ce contact, sur l'input l'exige pendant tout le mouvement.
 
 ## Présentation et layers
 
-Body projette sur l'image d'inférence reflétée avec base/aspect/centre/axe/échelle
-du snapshot. Cellules suivent les épaules ; pointage utilise le transform inverse.
-Un trait fige la vue. Full grid montre tout27x27, également avant calibrage ;
-axeX, dots, traces et pointage sont reflétés une fois, sans changer JSON/anatomie.
-La caméra principale a des overlays View facultatifs, discrets et périmés effacés.
-Thème, onglets, viewport et logs sont des états UI.
+L’éditeur projette la même grille anatomique que la reconnaissance. La vue Body
+utilise la base, l’aspect, le centre, l’axe et l’échelle du snapshot ; le pointage
+applique le transform inverse. Un trait fige la vue jusqu’au relâchement.
+Full grid montre les **27 × 27 cases**, y compris hors de l’image caméra.
 
-Nouvel input : une étape Ordered, Pencil actif, aucun délai de mouvement.
-Pencil, Fill, Tolerance, Eraser, Select dans le volet ; vert Required, rouge
-Forbidden, jaune Trigger. Tolerance cible directement la région cliquée, même
-via son contour Low. Select trace une sélection rectangulaire ; Ctrl conserve
-la précédente. Supprimer une région retire aussi ses entrées Low liées.
-Pencil/Eraser interpolent, un trait=un undo. Trigger unique movable, nouveaux
-Required avant. Full grid affiche numéros centrés par voie (step.order si
-plusieurs étapes), X Forbidden, R Required non ordonné. Low n'ajoute pas une visite.
-Layer choisi rempli, autres contours. L'éditeur contextuel expose étapes,
-ordre/hold, High/Low, doigts, espace/durées et clavier. Windows propose aussi
-l'enregistrement. Changer d'outil conserve la définition.
+| Repère visuel | Sens dans le schéma |
+| --- | --- |
+| Required vert | Prérequis spatial |
+| Trigger jaune | Région de déclenchement |
+| Forbidden rouge / X | Garde qui invalide une tentative |
+| Interaction violette | Déclenchement avec signe et maintien facultatif |
+| Contour Low | Tolérance liée à une région High, sans visite obligatoire supplémentaire |
+| Numéro | Progression dans la voie d’un landmark anatomique |
 
-La stack groupe les contraintes par landmark à travers scopes/étapes, sans
-tableau layer JSON ni second modèle. Sélection choisit le corps ; cacher n'affecte
-que le dessin ; supprimer retire toutes ses contraintes avec un undo.
-Clear retire contraintes et doigts du scope actuel. L'aide ferme au premier dessin.
-Sélection/visibilité/aide ne sont pas persistées.
+**Les couleurs complètent les noms et les symboles.** Thème, visibilité, onglets,
+sélection et viewport sont des états UI, jamais des champs du profil. Les layers
+regroupent les contraintes existantes par landmark, sans tableau JSON supplémentaire.
 
-Layer body part puis Save layer réaffecte toutes les contraintes de ce landmark,
-gardant IDs/cases/ordres/tolérances/doigts/Interaction. Les mains explicites des
-signes/doigts et identités des traces capturées ne changent pas : vérifiez-les.
-Une destination déjà utilisée est rejetée atomiquement. Réaffectation pending :
-sauver ou rétablir l'origine avant changement de layer/dessin/apply/Test.
-Les autres dessins du brouillon survivent aux changements. Une réaffectation=un
-undo. Save layer modifie le brouillon, Apply input publie, File Save persiste.
-Aucun champ de layer/pending ajouté. Eraser enlève toutes couleurs/priorités
-du landmark dans le scope actuel, avec les tolérances liées.
+### Réaffecter un layer
+
+Dans le Studio Windows actuel, changer le point suivi **réaffecte immédiatement ses
+zones** et met à jour le mouvement. Une collision de destination conserve les deux
+dessins. IDs, cases, ordres, tolérances et réglages doigts/Interaction restent intacts.
+Les mains explicites des règles et l’identité des traces capturées sont conservées :
+**vérifiez les règles anatomiques quand vous changez de côté**. File > Save persiste le document.
+
+Les options séparées de parties du corps, d’enregistrement et d’Undo/Redo ont été retirées.
+Consultez le [parcours Windows](../getting-started/windows.fr.md) et le
+[guide Linux](../getting-started/linux.fr.md) pour les commandes disponibles.
+
+### Démarrage et comportement des intégrations
 
 Démarrage normal vide avec Right V Recalibrate, Hands désactivé jusqu'à demande.
 configs/default.json est ouvert explicitement ou via --config, jamais imposé aux
 nouvelles définitions. Les commandes activent Hands et le sauvegardent.
-Recalibrate efface grille/progrès avec récupération1000 ms/verrou maintenu.
+Recalibrate efface grille/progrès avec récupération 1 000 ms/verrou maintenu.
 
 Profile importeurs commencent inputs vide, rapportent action/ID textuels.
 Succès remplace/recalibre ; échec conserve. Python importe/redémarre capture sur
 son propriétaire ; C++ garde caméra et remplace moteur. Tous respectent
 tracking.hands ; démos l'activent pour dessiner. Fenêtres/chemins ne sont pas JSON.
-Capture Motion Input Grid Controller/ABI rejette observations âgées>250 ms via horloge actuelle ;
+Capture Motion Input Grid Controller/ABI rejette observations âgées de plus de 250 ms via horloge actuelle ;
 hôtes positions possèdent leur horloge.
 
 React/Vue/Next partagent schéma 2/session ; import valide efface retour et
@@ -444,61 +470,34 @@ Le profil complet [studio-hi.json](../../configs/studio-hi.json) est l’exemple
 ```json
 {
   "schema_version": 2,
-  "tracking": {
-    "hands": false
-  },
-  "inputs": [
-    {
-      "id": "hi",
-      "name": "HI",
-      "action": "next_slide",
-      "space": "body",
-      "cooldown_ms": 700,
-      "keyboard": [
-        {
-          "keys": [
-            39
-          ]
-        }
-      ],
-      "action_mode": "single_press",
-      "steps": [
-        {
-          "id": "wave",
-          "mode": "ordered",
-          "constraints": [
-            {
-              "id": "start",
-              "landmark": "left_wrist",
-              "cell": [
-                -4,
-                4,
-                18,
-                4
-              ],
-              "type": "required",
-              "priority": "high",
-              "order": 1
-            },
-            {
-              "id": "finish",
-              "landmark": "left_wrist",
-              "cell": [
-                -4,
-                -3,
-                18,
-                6
-              ],
-              "type": "trigger",
-              "priority": "high",
-              "order": 2
-            }
-          ]
-        }
+  "tracking": {"hands": false},
+  "inputs": [{
+    "id": "hi", "name": "HI", "action": "next_slide", "space": "body",
+    "cooldown_ms": 700,
+    "keyboard": [{"keys": [39]}],
+    "action_mode": "single_press",
+    "steps": [{
+      "id": "wave", "mode": "ordered",
+      "constraints": [
+        {"id": "start", "landmark": "left_wrist", "cell": [-4, 4, 18, 4],
+         "type": "required", "priority": "high", "order": 1},
+        {"id": "finish", "landmark": "left_wrist", "cell": [-4, -3, 18, 6],
+         "type": "trigger", "priority": "high", "order": 2}
       ]
-    }
-  ]
+    }]
+  }]
 }
 ```
 
-Omettre `keyboard` ou utiliser `[]` n’envoie aucune touche. `[{"keys":[17,39]}]` est un raccourci simultané Ctrl+Droite. `[{"keys":[17]},{"keys":[39]}]` appuie puis relâche Ctrl, puis appuie sur Droite séparément. Il n’existe aucune touche implicite ni champ de délai personnalisé. En mode `hold`, seul le dernier raccourci reste maintenu ; `repeat` répète la séquence tant que l’activation reste valide. Les limites, valeurs par défaut et champs optionnels sont détaillés plus haut. `blocking` n’est pas un champ du profil : utilisez `type: "forbidden"`. Seule la version `schema_version: 2` est acceptée.
+> [!IMPORTANT]
+> **Omettre `keyboard` ou utiliser `[]` n’envoie aucune touche.** Le nom de l’action logique ne définit aucun raccourci implicite.
+
+| Définition | Résultat |
+| --- | --- |
+| `[{"keys":[17,39]}]` | Un raccourci simultané Ctrl+Droite |
+| `[{"keys":[17]},{"keys":[39]}]` | Appuie/relâche Ctrl, puis appuie/relâche Droite |
+| `action_mode: "hold"` | Maintient seulement le dernier accord tant que l’activation reste valide |
+| `action_mode: "repeat"` | Répète la séquence tant que l’activation reste valide |
+
+Aucune touche implicite ni délai personnalisé. `blocking` n’est pas un champ du
+profil : utilisez `type: "forbidden"`. Seul **`schema_version: 2`** est accepté.
