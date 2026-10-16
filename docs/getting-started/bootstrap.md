@@ -35,8 +35,9 @@ list runtime and operating-system requirements.
 ## Configure one action
 
 Use [raised-hands.json](../../examples/common/raised-hands.json) as your first profile.
-It defines `left_raise` and `right_raise`: anatomical wrist 15/16 travels through
-four green Required rows, then a yellow Trigger row. Each row spans the grid.
+It defines `left_raise` and `right_raise`: anatomical wrist 15/16 enters the
+green Required region `[-9,3,27,3]`, then the yellow Trigger region `[-9,1,27,2]`.
+Both regions span the grid width; starting in yellow alone cannot trigger an action.
 Keep shoulders visible for about one second, lower your hands, then raise either
 one. The view mirrors once; left/right feedback refers to your anatomy.
 Copy the profile before editing it. Change `action` to your application's command

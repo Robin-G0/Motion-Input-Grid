@@ -33,6 +33,8 @@ from the [example catalogue](../examples/README.md).
 | Technology | Installation and first action |
 | --- | --- |
 | C++ / CMake / Make | [SDK installation](getting-started/cpp.md), [C++ API](reference/cpp.md) |
+| SDL2 / SFML | [SDL2 tutorial](../examples/sdl2/README.md), [SFML tutorial](../examples/sfml/README.md) |
+| .NET / C# | [Managed bridge and first action](../bindings/dotnet/README.md) |
 | Python | [pip and frame submission](../bindings/python/README.md), [Tkinter](../examples/python-tkinter/README.md), [Pygame](../examples/pygame/README.md) |
 | Browser / React / Vue / Next.js | [npm package](../bindings/javascript/README.md), [framework setup](integrations/javascript.md) |
 | Godot / Unity / Unreal | [Godot add-on](../integrations/godot/README.md), [Unity UPM](../integrations/unity/README.md), [Unreal plugin](../integrations/unreal/README.md) |

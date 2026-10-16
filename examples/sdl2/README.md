@@ -10,7 +10,7 @@ A mirrored camera preview, finger outlines and wrist-following props show two
 logical actions: **Left hand raised!** and **Right hand raised!**. The second
 executable imports your own Motion Input Grid Studio JSON and displays its action names.
 
-## Quick Start — prebuilt package
+## Quick Start - prebuilt package
 
 1. Extract this example's `*-sdl2-standalone` archive.
 2. In the extracted folder, run `mig-sdl2.exe` on Windows or `./mig-sdl2` on Linux.
@@ -65,6 +65,10 @@ desktop display; webcam for real tracking. Optional development: CMake 3.25+,
 C++20 compiler, installed MIG SDK and graphics development libraries.
 
 ## Rebuild this folder outside the repository
+
+Use a camera-enabled SDK exporting `MIG::native`: the `sdk/` from a desktop or
+native tutorial archive, or a [native source build](../../docs/integrations/overview.md).
+The standalone positions-only SDK does not include this target.
 
 ```sh
 cmake -S . -B build -DCMAKE_PREFIX_PATH="/path/to/MIG/sdk;/path/to/graphics/sdk"

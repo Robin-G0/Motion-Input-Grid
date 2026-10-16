@@ -10,7 +10,7 @@ Un aperçu miroir, les doigts et des objets suivant les poignets illustrent
 **Left hand raised!** et **Right hand raised!**. Le second exécutable importe
 votre JSON du Motion Input Grid Studio et affiche ses noms d'actions.
 
-## Démarrage rapide — archive compilée
+## Démarrage rapide - archive compilée
 
 1. Extrayez l'archive `*-python-tkinter-standalone`.
 2. Dans ce dossier, lancez `main.exe` sous Windows ou `./main` sous Linux.

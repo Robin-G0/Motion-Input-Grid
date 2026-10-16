@@ -96,10 +96,10 @@ Les couleurs des régions indiquent leurs conditions :
 
 | Couleur | Condition |
 | --- | --- |
-| 🟩 Vert — Required | Passer par cette région ; les numéros définissent l'ordre du parcours. |
-| 🟥 Rouge — Forbidden | Éviter cette région. |
-| 🟨 Jaune — Trigger | Terminer le mouvement ici pour déclencher son action. |
-| 🟪 Violet — Interaction | Faire le signe de main choisi dans cette région, avec un maintien facultatif. |
+| 🟩 Vert - Required | Passer par cette région ; les numéros définissent l'ordre du parcours. |
+| 🟥 Rouge - Forbidden | Éviter cette région. |
+| 🟨 Jaune - Trigger | Terminer le mouvement ici pour déclencher son action. |
+| 🟪 Violet - Interaction | Faire le signe de main choisi dans cette région, avec un maintien facultatif. |
 
 Cliquez sur un mouvement pour afficher son point suivi et ses zones. Changer le
 point réaffecte immédiatement ses zones dans le document ; une collision avec un

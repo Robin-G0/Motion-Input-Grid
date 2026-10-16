@@ -33,6 +33,7 @@ les contrats d'exécution ; les guides liés décrivent les API et les plateform
 MIG/
   src/                  Moteur C++, adaptateurs natifs et applications desktop
   bindings/             Interfaces publiques Python, .NET et JavaScript
+  site/                 Présentation et Studio web, moteur npm publié
   integrations/         Add-ons/packages runtime Godot, Unity et Unreal
   ports/                Modèle du port vcpkg motion-input-grid
   VERSION               Version commune du moteur et des archives
@@ -49,7 +50,7 @@ MIG/
   cmake/                Dépendances et configuration du SDK installé
   tools/                bootstrap/, build/, packaging/, release/, web/, dev/, lib/, docker/
   .github/workflows/    Tâches automatisées de compilation et validation
-  docs/                 Guides, contrats et revues historiques
+  docs/                 Guides et contrats de l'implémentation
     fr/                 Traductions françaises du README et des politiques racine
   CMakeLists.txt        Sélection des cibles natives/portables/WebAssembly
   CMakePresets.json     Configurations CMake nommées
@@ -75,10 +76,11 @@ sont générés localement. Modifiez les sources, pas leurs copies dans ces doss
 | src/native / MIG::native | Capture Windows/Linux, tâches/résultats MediaPipe et conversion |
 | src/c-api / MIG::c | ABI 1 handles/paquets, bibliothèque partagée et capture facultative |
 | src/web | Même moteur exposé par les bindings C++/JavaScript Emscripten |
-| src/Motion Input Grid Controller | Copies des profils, noms et dernière sélection ; partagé par les deux contrôleurs |
+| src/controller | Copies des profils, noms et dernière sélection ; partagé par les deux contrôleurs |
 | src/apps | UI Win32, brouillons/historique, workers et consentement |
 | src/linux-apps | UI Qt, worker propriétaire de capture/moteur, ordonnanceur partagé |
 | bindings | ctypes Python, pont C#, session npm et adaptateurs |
+| site | Présentation et Studio web indépendants, liés à une version publiée du moteur npm |
 | examples | Application, intégration, profil et utilitaires locaux à chaque tutoriel |
 | tests | Régressions CTest, vérifications des langages/interfaces/navigateurs et archives |
 | tools, cmake, workflows | Compilation, dépendances épinglées, contrôles et paquets locaux |
@@ -209,10 +211,11 @@ ressources qu'après le geste utilisateur, jamais en SSR.
 
 ## Disponible et prévu
 
-Windows possède thèmes, logs, dessin Basic/Advanced, sauvegarde de layer, doigts,
-séquences clavier, enregistrement/revue et undo. Qt Linux conserve tous les champs
-via Advanced JSON, mais enregistrement interactif, outils avancés et undo restent à
-porter. Face est un squelette. Gamepad, analogique, courbures, replay et façade SDK
+Les deux éditeurs utilisent une fenêtre contextuelle pour l'édition et les tests,
+avec thèmes clair/sombre, portée des étapes, mode de parcours, maintien simultané,
+doigts et séquences clavier. Windows propose aussi l'enregistrement/revue et undo.
+Qt Linux conserve tous les champs via Advanced JSON ; l'enregistrement interactif
+et undo ne sont pas disponibles. Face est un squelette. Gamepad, analogique, courbures, replay et façade SDK
 threadée restent prévus. Aucune approximation de profondeur n'est une distance
 caméra réelle. [Limites de publication](../reference/support.fr.md).
 

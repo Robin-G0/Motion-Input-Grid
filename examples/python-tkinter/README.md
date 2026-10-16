@@ -10,7 +10,7 @@ A mirrored camera preview, finger outlines and wrist-following props show two
 logical actions: **Left hand raised!** and **Right hand raised!**. The second
 executable imports your own Motion Input Grid Studio JSON and displays its action names.
 
-## Quick Start — prebuilt package
+## Quick Start - prebuilt package
 
 1. Extract this example's `*-python-tkinter-standalone` archive.
 2. In the extracted folder, run `main.exe` on Windows or `./main` on Linux.

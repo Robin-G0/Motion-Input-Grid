@@ -2,7 +2,10 @@
 
 [English](readme.md) | [Français](docs/fr/readme.fr.md)
 
-# [<img src="site/favicon-dark.svg" width="32" height="32" alt=""> Explore the presentation website](https://robin-g0.github.io/Motion-Input-Grid/)
+Motion Input Grid is an open-source motion input framework. It turns tracked body
+movements into configurable actions for websites, desktop applications and games.
+
+## [<img src="site/favicon-dark.svg" width="32" height="32" alt=""> Explore the presentation website](https://robin-g0.github.io/Motion-Input-Grid/)
 
 Start here for a **quick introduction and an interactive demo of the concept**, directly in your browser.
 
@@ -17,7 +20,7 @@ keyboard shortcuts to a desktop application.
 | Start here | What you can do |
 | --- | --- |
 | **[Browser Studio / configuration editor](https://robin-g0.github.io/Motion-Input-Grid/studio/)** | Create, import and test a profile, then export JSON. No installation. |
-| **Motion Input Grid Controller (desktop)** | [Download for Windows x64 (ZIP)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) · [Download for Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) — includes Studio for profile editing. |
+| **Motion Input Grid Controller (desktop)** | [Download for Windows x64 (ZIP)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) · [Download for Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) - includes Studio for profile editing. |
 
 MIG is in early development. Desktop Linux applications and game-engine
 integrations still need wider testing; check the [support matrix](docs/reference/support.md).

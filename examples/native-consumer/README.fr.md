@@ -35,6 +35,11 @@ du matériel. L'archive groupée propose aussi ces lanceurs dans son dossier d'e
 
 ## Dépendances et compilation
 
+Utilisez un SDK avec caméra exportant `MIG::native` : le dossier `sdk/` d'une
+archive d'application native ou de tutoriel natif, ou une
+[compilation native](../../docs/integrations/overview.fr.md). Le SDK autonome de
+positions ne fournit pas cette cible.
+
 Externe : Windows x64 et runtime VC++, ou Linux x64 avec glibc 2.35+.
 Fourni : exécutable, SDK, licences et MediaPipe/modèles.
 L’archive individuelle contient `runtime/` auprès de l’exécutable ; la groupée le partage à sa racine. Le lanceur Linux règle les chemins relatifs.

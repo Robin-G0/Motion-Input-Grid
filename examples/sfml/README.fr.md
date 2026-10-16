@@ -10,7 +10,7 @@ Un aperçu miroir, les doigts et des objets suivant les poignets illustrent
 **Left hand raised!** et **Right hand raised!**. Le second exécutable importe
 votre JSON du Motion Input Grid Studio et affiche ses noms d'actions.
 
-## Démarrage rapide — archive compilée
+## Démarrage rapide - archive compilée
 
 1. Extrayez l'archive `*-sfml-standalone`.
 2. Dans ce dossier, lancez `mig-sfml.exe` sous Windows ou `./mig-sfml` sous Linux.
@@ -66,6 +66,11 @@ compilateur C++20, SDK MIG et bibliothèques de développement graphiques.
 
 ## Recompiler hors du dépôt
 
+Utilisez un SDK avec caméra exportant `MIG::native` : le dossier `sdk/` d'une
+archive d'application native ou de tutoriel natif, ou une
+[compilation native](../../docs/integrations/overview.fr.md). Le SDK autonome de
+positions ne fournit pas cette cible.
+
 ```sh
 cmake -S . -B build -DCMAKE_PREFIX_PATH="/chemin/MIG/sdk;/chemin/sdk/graphique"
 cmake --build build --config Release
@@ -78,7 +83,7 @@ vers le dossier MediaPipe et `models/`. `--smoke` génère des images sans camé
 puis quitte. La capture est synchrone : utilisez un worker dans un jeu qui doit
 rendre indépendamment du temps d'inférence.
 
-Développement : SFML 2.6 et Qt6 Widgets sous Linux pour le sélecteur.
+Développement : SFML 2.5 ou 2.6 (pas SFML 3), et Qt6 Widgets sous Linux pour le sélecteur.
 Sous Windows, le sélecteur est natif.
 
 ## Configuration et réutilisation

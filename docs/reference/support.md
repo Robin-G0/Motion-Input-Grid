@@ -25,7 +25,7 @@ desktop applications.
 | Unity UPM | Preview | Untested in editor | Windows/Linux x64 | Native/.NET payload tested; editor/player builds not run |
 | Unreal plugin | Preview | Untested in editor | Windows x64, Linux x64/ARM64 payloads | C ABI payload tested; module/game builds not run |
 | Face scaffold | Experimental | Untested | Portable source | No face estimator or supported face recognition product |
-| Real cameras, OS key delivery, physical ARM64 | — | Untested | Target-dependent | Hardware/manual tests required |
+| Real cameras, OS key delivery, physical ARM64 | - | Untested | Target-dependent | Hardware/manual tests required |
 | macOS, mobile engine plugins | Planned | Untested | No distributed binaries | No support claim |
 
 ## Labels

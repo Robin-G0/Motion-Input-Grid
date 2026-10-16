@@ -10,7 +10,7 @@ Un aperçu miroir, les doigts et des objets suivant les poignets illustrent
 **Left hand raised!** et **Right hand raised!**. Le second exécutable importe
 votre JSON du Motion Input Grid Studio et affiche ses noms d'actions.
 
-## Démarrage rapide — archive compilée
+## Démarrage rapide - archive compilée
 
 1. Extrayez l'archive `*-sdl2-standalone`.
 2. Dans ce dossier, lancez `mig-sdl2.exe` sous Windows ou `./mig-sdl2` sous Linux.
@@ -65,6 +65,11 @@ graphique ; webcam pour le suivi réel. Développement facultatif : CMake 3.25+,
 compilateur C++20, SDK MIG et bibliothèques de développement graphiques.
 
 ## Recompiler hors du dépôt
+
+Utilisez un SDK avec caméra exportant `MIG::native` : le dossier `sdk/` d'une
+archive d'application native ou de tutoriel natif, ou une
+[compilation native](../../docs/integrations/overview.fr.md). Le SDK autonome de
+positions ne fournit pas cette cible.
 
 ```sh
 cmake -S . -B build -DCMAKE_PREFIX_PATH="/chemin/MIG/sdk;/chemin/sdk/graphique"

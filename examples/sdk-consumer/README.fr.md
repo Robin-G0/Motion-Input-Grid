@@ -14,8 +14,8 @@ Reconnaît `left_raise` à partir de positions synthétiques. Illustre SDK insta
 2. Lancez `run.cmd` sous Windows ou `sh run.sh` sous Linux dans ce dossier.
 3. Observez la sortie console et la fermeture normale. Aucune webcam nécessaire.
 
-Objectif : 30–60 secondes avec les prérequis ; le chargement des modèles dépend
-du matériel. L'archive groupée propose aussi ces lanceurs dans son dossier d'exemple.
+L'exemple synthétique se ferme après avoir affiché l'action reconnue. L'archive
+groupée propose aussi ces lanceurs dans son dossier d'exemple.
 
 ## Organisation du dossier
 

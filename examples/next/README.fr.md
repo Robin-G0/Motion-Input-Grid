@@ -43,7 +43,9 @@ fournit aussi Node portable. Le chargement initial dépend du matériel.
 
 1. `app/example_usage.mjs` importe `useMIG` depuis `motion-input-grid/react`.
    `useMotionInput(profileMode)` fournit les ressources et `handleDetectedAction`.
-2. Le hook/composable crée une session ; `assetBase` héberge JSON, WASM, Vision et
+2. Le hook crée la session dans un effet après montage et la libère au nettoyage
+   de cet effet. Le rendu serveur ne crée aucune ressource navigateur.
+   `assetBase` héberge JSON, WASM, Vision et
    modèles. Le mode import démarre vide. La caméra n'est demandée qu'après un clic.
 3. `app/CameraExample.jsx / app/CameraView.jsx` connecte les refs vidéo/canvas et appelle `start()`, `stop()`, `recalibrate()`.
 4. `runtime/session.mjs` du binding gère la capture. `runtime/mig-tracker.mjs`,

@@ -194,7 +194,7 @@ Plusieurs jaunes numérotées peuvent constituer un seul groupe Trigger.
 Une voie entièrement sans numéro suit l'ordre du tableau. Mélanger High positifs
 numérotés/non numérotés dans une voie est rejeté. L'éditeur numérote la voie lors
 du premier numéro manuel. Passer à Visited/Simultaneous retire explicitement les
-numéros, avec undo. Basic/Advanced conserve la définition. Peignez une ligne Order1,
+numéros, avec undo sous Windows. Peignez une ligne Order1,
 puis une ligne Order2 : une case de chaque ligne suffit. Repeindre du même type
 change son numéro sans superposition. Auto continue les numéros ; Forbidden = X.
 
@@ -266,7 +266,7 @@ commandes, statut et cellules Interaction.
 
 En Advanced, choisissez le pinceau violet, main/signe/durée puis dessinez. Select et
 Update interaction modifient une zone. Fingers règle scopes/stable/grace.
-Basic conserve les règles avancées. Apply/Test active Hands en ON. Auto violet
+Le choix d'outil conserve les règles. Apply/Test active Hands en ON. Auto violet
 groupe les cases d'un landmark sous un numéro : l'une peut déclencher sans
 aucun prérequis vert/jaune. Un nouveau poignet choisit la même main anatomique,
 les anciennes zones gardent leur réglage explicite. Statut distingue absence,
@@ -304,9 +304,9 @@ du snapshot. Cellules suivent les épaules ; pointage utilise le transform inver
 Un trait fige la vue. Full grid montre tout27x27, également avant calibrage ;
 axeX, dots, traces et pointage sont reflétés une fois, sans changer JSON/anatomie.
 La caméra principale a des overlays View facultatifs, discrets et périmés effacés.
-Thème, Basic/Advanced, onglets, viewport et logs sont des états UI.
+Thème, onglets, viewport et logs sont des états UI.
 
-Nouveau Basic : une étape Ordered, Pencil actif, aucun délai de mouvement.
+Nouvel input : une étape Ordered, Pencil actif, aucun délai de mouvement.
 Pencil, Fill, Tolerance, Eraser, Select dans le volet ; vert Required, rouge
 Forbidden, jaune Trigger. Tolerance cible directement la région cliquée, même
 via son contour Low. Select trace une sélection rectangulaire ; Ctrl conserve
@@ -314,25 +314,25 @@ la précédente. Supprimer une région retire aussi ses entrées Low liées.
 Pencil/Eraser interpolent, un trait=un undo. Trigger unique movable, nouveaux
 Required avant. Full grid affiche numéros centrés par voie (step.order si
 plusieurs étapes), X Forbidden, R Required non ordonné. Low n'ajoute pas une visite.
-Layer choisi rempli, autres contours. Advanced expose étapes, ordre/hold, High/Low,
-doigts, enregistrement, espace/durées ; clavier disponible dans les deux.
-Changer mode préserve tout.
+Layer choisi rempli, autres contours. L'éditeur contextuel expose étapes,
+ordre/hold, High/Low, doigts, espace/durées et clavier. Windows propose aussi
+l'enregistrement. Changer d'outil conserve la définition.
 
 La stack groupe les contraintes par landmark à travers scopes/étapes, sans
 tableau layer JSON ni second modèle. Sélection choisit le corps ; cacher n'affecte
 que le dessin ; supprimer retire toutes ses contraintes avec un undo.
-Basic Clear tout, Advanced Clear scope. Aide facultative ferme au premier dessin.
+Clear retire contraintes et doigts du scope actuel. L'aide ferme au premier dessin.
 Sélection/visibilité/aide ne sont pas persistées.
 
 Layer body part puis Save layer réaffecte toutes les contraintes de ce landmark,
 gardant IDs/cases/ordres/tolérances/doigts/Interaction. Les mains explicites des
-signes/doigts et identités des traces capturées ne changent pas : vérifiez en Advanced.
+signes/doigts et identités des traces capturées ne changent pas : vérifiez-les.
 Une destination déjà utilisée est rejetée atomiquement. Réaffectation pending :
 sauver ou rétablir l'origine avant changement de layer/dessin/apply/Test.
 Les autres dessins du brouillon survivent aux changements. Une réaffectation=un
 undo. Save layer modifie le brouillon, Apply input publie, File Save persiste.
-Aucun champ de layer/pending ajouté. Basic Eraser enlève toutes couleurs/priorités
-du landmark dans tous scopes ; Advanced garde type/priorité/scope choisis.
+Aucun champ de layer/pending ajouté. Eraser enlève toutes couleurs/priorités
+du landmark dans le scope actuel, avec les tolérances liées.
 
 Démarrage normal vide avec Right V Recalibrate, Hands désactivé jusqu'à demande.
 configs/default.json est ouvert explicitement ou via --config, jamais imposé aux

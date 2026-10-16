@@ -33,6 +33,8 @@ choisissez un téléchargement dans le [catalogue des exemples](../examples/READ
 | Technologie | Installation et première action |
 | --- | --- |
 | C++ / CMake / Make | [Installation du SDK](getting-started/cpp.fr.md), [API C++](reference/cpp.fr.md) |
+| SDL2 / SFML | [Tutoriel SDL2](../examples/sdl2/README.fr.md), [Tutoriel SFML](../examples/sfml/README.fr.md) |
+| .NET / C# | [Pont managé et première action](../bindings/dotnet/README.fr.md) |
 | Python | [pip et envoi de frames](../bindings/python/README.fr.md), [Tkinter](../examples/python-tkinter/README.fr.md), [Pygame](../examples/pygame/README.fr.md) |
 | Navigateur / React / Vue / Next.js | [Package npm](../bindings/javascript/README.fr.md), [Installation des frameworks](integrations/javascript.fr.md) |
 | Godot / Unity / Unreal | [Add-on Godot](../integrations/godot/README.fr.md), [UPM Unity](../integrations/unity/README.fr.md), [Plugin Unreal](../integrations/unreal/README.fr.md) |

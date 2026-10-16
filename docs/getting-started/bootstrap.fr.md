@@ -36,8 +36,9 @@ précisent les exigences du système.
 
 Commencez avec [raised-hands.json](../../examples/common/raised-hands.json).
 Les actions `left_raise` et `right_raise` suivent les poignets anatomiques 15/16
-à travers quatre lignes vertes Required puis une ligne jaune Trigger. Chaque ligne
-traverse la grille. Gardez les épaules visibles environ une seconde, baissez les
+dans la région verte Required `[-9,3,27,3]`, puis la région jaune Trigger
+`[-9,1,27,2]`. Elles couvrent toute la largeur de la grille ; commencer dans le
+jaune seul ne déclenche aucune action. Gardez les épaules visibles environ une seconde, baissez les
 mains puis levez-en une. L'image est reflétée une seule fois ; gauche/droite
 désignent votre anatomie. Copiez le profil avant de changer ses noms `action`.
 Les IDs doivent rester uniques et le [schéma 2](../reference/configuration.fr.md) valide.

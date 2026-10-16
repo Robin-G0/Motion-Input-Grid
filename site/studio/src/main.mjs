@@ -506,7 +506,7 @@ function onFrame(current) {
         const tracked = new Set(regions(input()).map(region => region.landmark));
         const values = [...tracked].map(name => {
             const point = trackedPoint(current, name);
-            return point ? `${name}: x=${point.x.toFixed(3)} y=${point.y.toFixed(3)} confidence=${(point.confidence ?? 0).toFixed(2)}` : `${name}: —`;
+            return point ? `${name}: x=${point.x.toFixed(3)} y=${point.y.toFixed(3)} confidence=${(point.confidence ?? 0).toFixed(2)}` : `${name}: -`;
         });
         journal.add("debug", values.slice(0, 12).join(" | ") || state);
     }

@@ -91,10 +91,10 @@ Region colors describe their conditions:
 
 | Color | Condition |
 | --- | --- |
-| 🟩 Green — Required | Visit this region; numbered regions specify the route's order. |
-| 🟥 Red — Forbidden | Avoid this region. |
-| 🟨 Yellow — Trigger | Complete the movement here to emit its action. |
-| 🟪 Purple — Interaction | Perform the selected hand sign in this region, optionally holding it. |
+| 🟩 Green - Required | Visit this region; numbered regions specify the route's order. |
+| 🟥 Red - Forbidden | Avoid this region. |
+| 🟨 Yellow - Trigger | Complete the movement here to emit its action. |
+| 🟪 Purple - Interaction | Perform the selected hand sign in this region, optionally holding it. |
 
 Click a movement to open its tracked point and zones. Changing the tracked point
 immediately reassigns its existing zones in the document; a collision with another

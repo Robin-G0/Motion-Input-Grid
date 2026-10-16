@@ -141,7 +141,7 @@ reader. Schema v1 remains unsupported.
 
 ## Action output modes
 
-The editor's **Action mode** selector is available in Basic and Advanced. **Repeat ms**
+The editor's **Action mode** selector applies to the selected input. **Repeat ms**
 appears for Repeat. These settings apply to the entire input and are persisted:
 
 ```json
@@ -237,7 +237,7 @@ An entirely unnumbered lane (`order` omitted or 0) retains independent visits in
 array order. Mixing numbered and unnumbered High positive constraints in one lane
 is rejected. The editor numbers the existing lane when a manual number is chosen.
 Switching the step to Visited/Simultaneous explicitly removes its order numbers;
-the operation is undoable. Changing Basic/Advanced presentation preserves the definition.
+the operation is undoable in the Windows editor.
 
 For example, a general right-hand raise can use these Required alternatives in
 one Ordered step (with unique IDs and High priority on each constraint):
@@ -351,10 +351,10 @@ palm/contact observations reject OK. Open palm requires all five extensions >=0.
 Fist requires all five <=0.3. All five fingers must have confidence >=0.6.
 These classifiers serve global commands, status and Interaction cells.
 
-In Advanced mode, choose the purple **Interaction** brush, then set hand, sign and hold
+Choose the purple **Interaction** brush, then set hand, sign and hold
 time in its tab before drawing. Select an existing purple cell and **Update
 interaction** to edit it. The **Fingers** tab edits scoped poses and stable/grace
-times. Basic mode preserves these definitions while hiding advanced authoring.
+times. These settings are stored in the profile regardless of the selected tool.
 Applying/testing an Interaction input enables hand tracking in a hands-enabled build.
 In an Ordered step, Auto purple painting/fill groups cells for the same body part
 under one number: any matching cell can fire the action. No green/yellow prerequisite
@@ -444,10 +444,10 @@ Full grid reflects the horizontal axis exactly once, just like the camera view;
 cells, dots, traces and pointer hit testing use the same projection. This does not
 alter saved anatomical coordinates or the input's optional recognition Mirror.
 The main camera remains unobstructed; body/grid diagnostics belong to the editor.
-Theme, Basic/Advanced mode, inspector tabs and viewport selection are UI state, not JSON recognition
+Theme, inspector tabs and viewport selection are UI state, not JSON recognition
 parameters. Dark/light menus, combo fields, buttons and linked logs use one palette.
 
-The default Basic editor uses one ordered step for a new input. Visible Pencil,
+The editor uses one ordered step for a new input. Visible Pencil,
 Fill, Tolerance, Eraser and Select buttons operate on the chosen landmark with
 green Required, red Forbidden and yellow Trigger paint. Tolerance selects its
 High target directly on click, including through its linked Low region; one click
@@ -460,24 +460,23 @@ that finish. Full grid shows centered order numbers per landmark for ordered
 steps (step.order for multiple steps), X for Forbidden and R for unordered
 Required; Low contours do not introduce additional required visits. The selected
 landmark is filled; other landmark layers remain outlined and independently editable.
-Advanced mode exposes steps, ordering/hold controls, High/Low properties, finger scopes,
-recording, coordinate space and optional timing limits. The keyboard shortcut
-field is available in both Basic and Advanced. Switching
-modes preserves the definition, including existing advanced rules.
+The contextual editor exposes steps, ordering/hold controls, High/Low properties,
+finger scopes, coordinate space, optional timing limits and keyboard shortcuts.
+Windows also provides recording. Selecting a different tool preserves the definition.
 
 All drawing tools and paint types now live in the editor sidebar. Its layer stack
 groups constraints by anatomical landmark across global guards and all steps.
 Layers are a view of existing independent constraints; no second recognition model
 or JSON layer array is introduced. Selecting a layer selects the body part; hiding
 it changes only presentation. Deleting it removes that landmark's constraints in
-all scopes, with one Undo operation. Basic Clear removes the complete drawing;
-Advanced Clear retains its current-scope behaviour. Help is optional and closes when
+all scopes, with one Undo operation on Windows. Clear removes the current scope's
+constraints and finger rules. Help is optional and closes when
 drawing begins. Visibility/help/selection never enter the JSON file.
-In Basic and Advanced, select a stack row, change **Layer body part**, then click
+Select a stack row, change **Layer body part**, then click
 **Save layer**. This changes `landmark` on that layer's spatial constraints in
 every scope, preserving IDs, cells, order, tolerance links, finger rules and
 Interaction settings. Explicit anatomical finger/sign hands remain unchanged;
-review them in Advanced when changing hands. Recorded traces retain their original
+review them when changing hands. Recorded traces retain their original
 capture identity and are not reassigned. A body part already used by another layer
 is rejected without changing either drawing. The body-part selector is a pending
 edit: save it or restore its original value before switching layers, drawing,
@@ -485,8 +484,8 @@ applying or testing. Drawing edits otherwise remain in the input draft when swit
 layers. Reassignment is one Undo/Redo operation. **Save layer** saves into the draft;
 **Apply input** publishes it, and File > Save persists the configuration. No JSON
 field is added for the layer editor or its pending selection.
-Basic Eraser removes all colours/priorities of the selected body part at the pointer,
-across all scopes. Advanced Eraser retains the chosen type/priority/current scope.
+Eraser removes all colours/priorities of the selected body part at the pointer
+in the current scope, including linked tolerance entries.
 
 Normal application startup is an empty configuration, with Right V assigned to
 Recalibrate (Hands remains off until enabled). Bundled `configs/default.json` is

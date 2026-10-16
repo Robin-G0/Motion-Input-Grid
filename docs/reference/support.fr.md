@@ -25,7 +25,7 @@ Debian `.deb` fournit le SDK et l'ABI C, pas ces applications de bureau.
 | UPM Unity | Preview | Untested en éditeur | Windows/Linux x64 | Payload natif/.NET testé ; builds éditeur/player non exécutés |
 | Plugin Unreal | Preview | Untested en éditeur | Payloads Windows x64, Linux x64/ARM64 | Payload C ABI testé ; compilation module/jeu non exécutés |
 | Structure visage | Experimental | Untested | Sources portables | Aucun estimateur visage ni produit de reconnaissance supporté |
-| Caméras, touches OS, ARM64 physique | — | Untested | Selon cible | Tests matériels/manuels nécessaires |
+| Caméras, touches OS, ARM64 physique | - | Untested | Selon cible | Tests matériels/manuels nécessaires |
 | macOS, plugins mobiles | Planned | Untested | Aucun binaire distribué | Aucun support déclaré |
 
 ## Définitions
