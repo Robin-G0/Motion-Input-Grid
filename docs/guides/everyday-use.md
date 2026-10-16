@@ -7,6 +7,12 @@
 Use one deliberate movement to run a familiar shortcut in the foreground
 application. Start in a disposable document, with an action that is easy to undo.
 
+> [!TIP]
+> **First goal: copy sample text.** Choose **Once** and a yellow region your
+> ordinary movements do not reach.
+
+## Create, test and use
+
 1. Create a movement in [Studio Web](studio-web.md) or
    [desktop Studio](configurator.md). Name it **Copy selection**, with logical
    action `copy_selection`. Draw 🟩 **Required** at the wrist's resting position
@@ -22,9 +28,12 @@ application. Start in a disposable document, with an action that is easy to undo
 5. Return your hand to rest before trying again. Disable output or stop tracking
    when you leave the target application.
 
-Shortcuts go to whichever application has focus; MIG does not choose the target
-window for you. Check each application's bindings before reusing a profile.
-Avoid destructive commands, passwords or irreversible actions while learning.
+> [!WARNING]
+> Shortcuts go to the **foreground application**. Check its bindings before reusing
+> a profile. Avoid destructive commands, passwords or irreversible actions while learning.
+
+## If tracking feels unreliable
+
 If recognition feels unreliable, reposition the drawn regions using the camera
 and recalibrate after moving your chair or camera. You can edit and export a
 profile even when camera permission is unavailable.

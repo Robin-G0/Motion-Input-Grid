@@ -5,6 +5,10 @@
 [Open Studio](https://robin-g0.github.io/Motion-Input-Grid/studio/). Create gestures,
 assign keys and export a configuration without editing JSON. No account is needed.
 
+> [!TIP]
+> **Start with the step-by-step guide.** One movement is enough for your first try.
+> Draw → test → assign a key → export → open Controller.
+
 ## Your first movement
 
 1. Choose **Guide me step by step** for on-screen instructions, or **New profile**.
@@ -49,6 +53,10 @@ all movements. The journal shows each action and the keyboard operations that
 would be sent. A test opened from a movement card only recognises that movement.
 Neither test sends real keys.
 
+> [!NOTE]
+> The journal shows **simulated** keys. To control Canva, PowerPoint, a PDF or
+> a game, export your profile and use the **desktop Controller**.
+
 ## Export and use the Controller
 
 Choose **Export** and keep `mig-profile.json`. The reminder links to the
@@ -66,11 +74,20 @@ together; open only the Controller, not desktop Studio.
 3. Start tracking with keyboard output off. Check the correct movement lights up,
    then enable **Keyboard: On** and focus the presentation or target application.
 
+![Reviewing the HI movement and Right key in Windows Controller](../../site/studio/controller/images/import.png)
+
+*Check the movement name and key before confirming. Linux layout differs.*
+
+<details>
+<summary>Runtime and system requirements</summary>
+
 The standalone Controller contains its runtime and models in one download.
 Windows keeps a verified runtime cache under Local AppData and checks it before
 each reuse; Linux extracts temporary files and removes them on normal exit.
 OS camera and display facilities remain necessary; Linux needs glibc 2.35 or
 later. No compiler, Python or desktop Studio installation is needed.
+
+</details>
 
 ## Useful details
 
@@ -87,11 +104,20 @@ Drafts belong to one browser and origin (scheme, hostname and port). Export a
 durable copy before clearing storage or moving devices. Drafts are not synced
 to an account.
 
+> [!IMPORTANT]
+> **Export your file** before clearing browser storage or changing devices.
+> A local draft is not a synced backup.
+
 ## The guided HI walkthrough
 
 The guide asks you to name HI, select Left wrist, draw the marked lower starting band and upper finishing band, then test the gesture. Keep your shoulders visible and move your left wrist from green into yellow. Recognition unlocks keyboard assignment. Explicitly add Right Arrow, save, then repeat the gesture in the complete-configuration test. Check HI and Right in the journal before exporting. The final guide links directly to the Controller download and import instructions.
 
+<details>
+<summary>For maintainers: screenshot provenance</summary>
+
 The download page shows three real Windows application screenshots directly below its buttons: an empty Controller with Import profile visible, the HI import review, and HI with keyboard consent enabled. The last screenshot has not started camera capture. Linux placement differs. Screenshot sources and the real executable hash are recorded in `site/studio/controller/images/capture.json`; regenerate with `tools/dev/capture-controller.py` from the binary branch after relevant native UI changes.
+
+</details>
 
 On first Windows launch, the standalone file explains where it will extract its runtime. Copy the actual path if needed, then choose Continue. Later launches reuse the verified directory. Close MIG before deleting that directory for cleanup; the next launch recreates it. Your profiles are separate.
 

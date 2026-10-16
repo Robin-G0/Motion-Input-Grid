@@ -2,10 +2,13 @@
 
 [English](controller-standalone.md) | [Français](controller-standalone.fr.md)
 
-Controller-only candidates are one Windows x64 `.exe` and one Linux x64 `.run`.
+Controller-only packages are one Windows x64 `.exe` and one Linux x64 `.run`.
 They include runtime, models, dependencies and legal notices, with no desktop
-Studio, SDKs or examples. They must be published in a release before the web
-Studio's download buttons can offer them. Publication remains manual.
+Studio, SDKs or examples. Check the official release catalogue for available downloads.
+
+> [!TIP]
+> **Coming from Studio Web?** The [Controller guide](../guides/controller.md) walks
+> through import and your first test. **No Python or compiler installation needed.**
 
 ## Use a published file
 
@@ -15,6 +18,10 @@ Run the `.exe`. On Linux, allow execution in the file properties or run
 start tracking with keyboard output off, then enable output and focus your
 application. See the [Controller guide](../guides/controller.md).
 
+> [!IMPORTANT]
+> **Import → start with output off → check the movement → enable output → click
+> inside the target application.** Close Studio's camera first.
+
 Windows extracts the embedded runtime once under
 `%LOCALAPPDATA%\MotionInputGrid\runtime\<payload-sha256>\`. Every launch validates
 all files and the completion marker before reuse. It does not normally use
@@ -22,6 +29,9 @@ all files and the completion marker before reuse. It does not normally use
 removes it on normal exit. A forced termination can leave temporary files.
 No installation, admin rights, Python or development toolchain is needed.
 The launcher never downloads models or dependencies. Licenses remain included.
+
+<details>
+<summary>Technical details: Windows cache validation</summary>
 
 Windows extraction is staged next to the cache and published by a same-volume
 rename only after file flushing and validation. A per-payload file lock prevents
@@ -36,6 +46,8 @@ Unexpected entries, reparse points and hard links are rejected. Validated files
 remain locked against writes/deletes while the Controller runs. This protects
 cache integrity; it is not a security boundary against an attacker who already
 controls the same Windows account or can replace the downloaded EXE.
+
+</details>
 
 Windows includes app-local Visual C++ runtime DLLs; the launcher uses a static
 CRT. OS camera/display facilities remain required. Linux bundles Qt plugins,

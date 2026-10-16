@@ -4,7 +4,13 @@
 
 Motion Input Grid (MIG) reconnaît les mouvements décrits dans un profil JSON.
 Utilisez ses applications de bureau pour contrôler une autre application,
-ou intégrez le même moteur dans votre projet. Choisissez un point de départ.
+ou intégrez le même moteur dans votre projet.
+
+| Votre objectif | Point de départ | Premier résultat |
+| --- | --- | --- |
+| Commander une présentation | [Parcours présentation](guides/presentations.fr.md) | Un mouvement fait avancer une diapositive |
+| Développer un jeu avec MIG | [Catalogue des exemples](../examples/README.fr.md) | Des actions reconnues dans votre langage ou moteur |
+| Examiner la conception | [Architecture](architecture/overview.fr.md), [performances](architecture/performance.fr.md) | Modules, ressources et limites des mesures |
 
 ## Utiliser les applications de bureau
 
@@ -24,7 +30,7 @@ choisissez un téléchargement dans le [catalogue des exemples](../examples/READ
 
 | Situation | Guide |
 | --- | --- |
-| PowerPoint et autres diaporamas | [Présentations](guides/presentations.fr.md) |
+| Canva, PowerPoint, PDF et autres présentations / diaporamas | [Présentations](guides/presentations.fr.md) |
 | Jeux existants ou votre propre jeu | [Jeux vidéo et précautions anti-cheat](guides/video-games.fr.md) |
 | Raccourcis des applications de bureau | [Usage quotidien](guides/everyday-use.fr.md) |
 

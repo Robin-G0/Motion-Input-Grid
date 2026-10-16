@@ -7,6 +7,10 @@
 MIG peut envoyer des touches à un jeu existant avec le Controller ou reconnaître
 directement des mouvements dans un jeu que vous développez.
 
+> [!TIP]
+> **Vous créez votre jeu ?** Passez à [l'intégration](#intégrer-dans-votre-propre-jeu).
+> **Vous jouez à un jeu existant ?** Le Controller envoie ses touches habituelles.
+
 ## Commander un jeu existant
 
 > [!CAUTION]

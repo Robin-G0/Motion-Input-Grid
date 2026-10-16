@@ -9,9 +9,10 @@ movements into configurable actions for websites, desktop applications and games
 
 Start here for a **quick introduction and an interactive demo of the concept**, directly in your browser.
 
-Camera images are processed on your device. Starting the demo first downloads
-the camera modules, tracking models and engine from the site. If loading fails,
-restore your connection and retry; the demo is not installed for offline use.
+> [!NOTE]
+> **Camera images are processed on your device.** The first start downloads the
+> engine and tracking models. Keep an internet connection for loading; the hosted
+> demo is not installed for offline use.
 
 **Turn a movement into an action.** Draw a route for a wrist or another body part,
 then recognize it with a camera. Use the resulting actions in your project or send
@@ -62,18 +63,15 @@ Linux keyboard output needs X11/XTest; native Wayland output is unavailable.
 
 | Situation | Guide |
 | --- | --- |
-| Advance a PowerPoint presentation | [Presentation controls](docs/guides/presentations.md) |
+| Advance Canva, PowerPoint, PDF and other presentations / slideshows | [Presentation controls](docs/guides/presentations.md) |
 | Control a game using its existing keyboard bindings | [Video games](docs/guides/video-games.md) |
 | Run shortcuts while using your computer | [Everyday computer use](docs/guides/everyday-use.md) |
 
 > [!CAUTION]
 > **Check the rules before using the Controller in competitive games.** MIG
-> generates operating-system keyboard events; it does not patch games, inject
-> code or read their process memory. This does not guarantee acceptance by an
-> anti-cheat system: unfamiliar processes or simulated input may be flagged.
-> Follow the game's policy and obtain permission where needed. Avoid ranked or
-> protected sessions when acceptance is unclear; MIG cannot guarantee protection
-> from an account penalty.
+> generates operating-system keyboard events. This does not guarantee acceptance
+> by an anti-cheat system. Read the [game-use precautions](docs/guides/video-games.md)
+> before enabling it in a protected session.
 
 ## Integrate MIG into your project
 
