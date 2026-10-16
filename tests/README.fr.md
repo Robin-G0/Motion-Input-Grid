@@ -49,6 +49,8 @@ Unity/Unreal et les exports nécessitent encore leurs éditeurs installés.
 
 ```sh
 python tests/tooling/release_version_tests.py
+python tests/tooling/docs_tests.py
+python tools/dev/check-docs.py
 python tests/tooling/version_resolution_tests.py
 python tests/packaging/example_package_tests.py
 python tests/packaging/wheel_record_tests.py

@@ -40,6 +40,8 @@ def check(path):
     english_name = path.name.replace(".fr.md", ".md")
     french_name = english_name.removesuffix(".md") + ".fr.md"
     errors = []
+    if "\u2014" in content:
+        errors.append("use ordinary punctuation instead of an em dash")
     if any(ord(character) < 32 and character not in "\n\r\t" for character in content):
         errors.append("unexpected control character")
     if path.parent == ROOT:
