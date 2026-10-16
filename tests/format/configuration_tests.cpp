@@ -71,13 +71,20 @@ int main(int argc, char** argv) {
         const auto encoded = mig::serialize_configuration(original);
         for (const auto field : {"id", "name", "action"}) {
             auto document = encoded;
-            const auto value =
-                document.find(std::string("\"") + field + "\": \"") + std::string(field).size() + 5;
+            const auto token = std::string("\"") + field + "\": \"";
+            const auto position = document.find(token);
+            if (position == std::string::npos) {
+                throw std::runtime_error("Missing profile text fixture");
+            }
+            const auto value = position + token.size();
             document.insert(value, "\\u0000");
             bool rejected = false;
             try {
                 mig::parse_configuration(document);
-            } catch (const std::exception&) {
+            } catch (const std::exception& error) {
+                if (std::string(error.what()).find("NUL") == std::string::npos) {
+                    throw;
+                }
                 rejected = true;
             }
             if (!rejected) {

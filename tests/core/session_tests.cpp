@@ -102,6 +102,27 @@ int main() {
             }
             recorder.sample(observed, grid);
         }
+        for (const auto& selected :
+             {std::vector<int>{-1}, std::vector<int>{15, 99}, std::vector<int>{}}) {
+            bool rejected = false;
+            try {
+                recorder.begin(selected);
+            } catch (const std::exception&) {
+                rejected = true;
+            }
+            check(rejected && recorder.active() && recorder.traces().size() == 3 &&
+                      recorder.traces()[0].landmark == 0 && recorder.traces()[0].points.size() == 3,
+                  "Invalid recording selection preserves the active traces");
+        }
+        auto next = frame(150, false);
+        next.aspect = 1;
+        for (int landmark : {0, 15, 16}) {
+            next.points[landmark] = {grid.metric({4.5f, 4.5f}), 1};
+        }
+        recorder.sample(next, grid);
+        check(recorder.traces()[0].points.size() == 4,
+              "Recording safely continues after a failed begin");
+        recorder.remove_sample(3);
         recorder.stop();
         recorder.edit_point(0, 0, {3.5f, 3.5f});
         check(recorder.traces()[0].points[0][0] == 3.5f, "Manual raw trace editing");

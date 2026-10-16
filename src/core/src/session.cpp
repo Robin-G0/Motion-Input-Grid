@@ -121,12 +121,14 @@ void Recorder::begin(std::vector<int> selected) {
     if (selected.empty() || selected.size() > 34) {
         throw std::runtime_error("Select recording landmarks");
     }
-    traces_.clear();
+    std::vector<RecordedTrace> traces;
+    traces.reserve(selected.size());
     for (int landmark : selected) {
         landmark_name(landmark);
-        traces_.push_back({landmark, {}});
-        traces_.back().points.reserve(2048);
+        traces.push_back({landmark, {}});
+        traces.back().points.reserve(2048);
     }
+    traces_.swap(traces);
     last_ = began_ = -1;
     active_ = true;
 }
