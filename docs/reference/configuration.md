@@ -76,7 +76,10 @@ hand gesture bindings or an input with finger rules enables it in hands-enabled 
 Finger rules require hand observations;
 missing observations never silently bypass a configured rule.
 
-Each input requires stable `id`, display `name`, and logical `action`. Optional
+Each input requires stable `id`, display `name`, and logical `action`, each at most
+80 UTF-8 bytes. Input, step and constraint IDs, names, actions and tolerance
+references cannot contain NUL (`\u0000`), because native consumers use
+NUL-terminated strings. Optional
 fields are `keyboard` (an ordered array of text/chord actions; omitted or empty
 means logical event only), `mirror`
 (false), `space` (`calibrated`, default, or `body`), `max_duration_ms` (0..10000,

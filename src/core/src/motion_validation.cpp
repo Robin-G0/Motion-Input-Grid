@@ -10,6 +10,9 @@ void require(bool condition, const std::string& message) {
         throw std::runtime_error(message);
     }
 }
+void text(const std::string& value) {
+    require(value.find('\0') == std::string::npos, "Profile text cannot contain NUL");
+}
 void fingers(const std::vector<FingerConstraint>& list) {
     require(list.size() <= 10, "Too many finger constraints");
     std::array<bool, 10> used{};
@@ -27,6 +30,8 @@ void fingers(const std::vector<FingerConstraint>& list) {
 void constraints(const std::vector<SpatialConstraint>& list, std::unordered_set<std::string>& ids) {
     require(list.size() <= 1024, "Too many constraints");
     for (const auto& item : list) {
+        text(item.id);
+        text(item.tolerance_for);
         require(!item.id.empty() && item.id.size() <= 80 && ids.insert(item.id).second,
                 "Constraint IDs must be unique within an input");
         landmark_name(item.landmark);
@@ -97,6 +102,9 @@ void validate(const Configuration& config) {
     }
     std::unordered_set<std::string> input_ids;
     for (const auto& input : config.motions) {
+        text(input.id);
+        text(input.name);
+        text(input.action);
         require(!input.id.empty() && input.id.size() <= 80 && input_ids.insert(input.id).second,
                 "Input IDs must be nonempty and unique");
         require(input.name.size() <= 80 && input.action.size() <= 80 &&
@@ -126,6 +134,7 @@ void validate(const Configuration& config) {
         }
         int triggers = 0;
         for (const auto& step : input.steps) {
+            text(step.id);
             require(!step.id.empty() && step.id.size() <= 80 && step_ids.insert(step.id).second &&
                         !step.constraints.empty() && int(step.mode) >= 0 && int(step.mode) < 3 &&
                         step.hold_ms >= 0 && step.hold_ms <= 1000,

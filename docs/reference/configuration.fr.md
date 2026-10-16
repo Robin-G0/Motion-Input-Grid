@@ -67,7 +67,9 @@ l'active dans ON. Une règle de doigt exige des observations, jamais contournée
 par leur absence.
 
 Chaque input exige id stable, name affiché et action logique, au plus 80 octets
-chacun. Champs facultatifs :
+chacun. Les identifiants des inputs, étapes et contraintes, les noms, actions et
+références de tolérance ne peuvent pas contenir NUL (`\u0000`) : les interfaces
+natives utilisent des chaînes terminées par NUL. Champs facultatifs :
 
 | Champ | Valeurs / défaut |
 | --- | --- |
