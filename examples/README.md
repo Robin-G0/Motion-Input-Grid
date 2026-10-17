@@ -6,6 +6,17 @@ See Motion Input Grid (MIG) recognize a raised hand, then import a profile of yo
 own. The camera demos show a mirrored preview, wrist-following props and feedback
 identifying the accepted action. They report events without sending keyboard keys.
 
+> [!TIP]
+> **Building your first game?** Pick one route below and open that tutorial first.
+> You can try synthetic observations before connecting a camera.
+
+| Your goal | First example | What to prepare |
+| --- | --- | --- |
+| A small Python game with a webcam | [Pygame](pygame/README.md) | Prebuilt archive; Python only when editing the code |
+| A Godot, Unity or Unreal game | [Godot](godot/README.md), [Unity](unity/README.md), [Unreal](unreal/README.md) | Editor and synthetic demo; a landmark provider for a real camera |
+| A browser game | [Plain HTML](web/README.md) | Node.js 22.12+, browser and camera permission |
+| My game already supplies body landmarks | [C++ SDK](sdk-consumer/README.md) | No camera estimator for the first trial |
+
 ## Launch a demo
 
 > [!NOTE]

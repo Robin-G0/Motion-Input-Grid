@@ -10,7 +10,7 @@ Un aperçu miroir, les doigts et des objets suivant les poignets illustrent
 **Left hand raised!** et **Right hand raised!**. Le second exécutable importe
 votre JSON du Motion Input Grid Studio et affiche ses noms d'actions.
 
-## Démarrage rapide — archive compilée
+## Démarrage rapide - archive compilée
 
 1. Extrayez l'archive `*-pygame-standalone`.
 2. Dans ce dossier, lancez `main.exe` sous Windows ou `./main` sous Linux.
@@ -80,8 +80,23 @@ de fichier et accepte aussi le glisser-déposer JSON.
 
 ## Configuration et réutilisation
 
-Le profil contient, pour chaque poignet, une zone Required `[-9,3,27,3]`, puis
-une zone Trigger `[-9,1,27,2]`. Une pose isolée dans le jaune ne déclenche rien.
+**Premier changement dans votre jeu :** dans `example_usage.py`, adaptez
+`handle_detected_actions()`. Par exemple, ajoutez ceci dans sa boucle existante :
+
+```python
+if action == "left_raise":
+    print("Saut !")  # Remplacez par votre commande de saut.
+```
+
+> [!TIP]
+> **Baissez le poignet dans le vert, puis montez-le vers le jaune.** Rester dans le
+> jaune ne déclenche rien : MIG reconnaît un parcours.
+
+| Étape du profil | Région |
+| --- | --- |
+| Départ Required (vert) | `[-9,3,27,3]` |
+| Arrivée Trigger (jaune) | `[-9,1,27,2]` |
+
 Le mode import démarre sans règles. Un JSON invalide préserve le profil précédent ;
 un import valide recommence la calibration.
 

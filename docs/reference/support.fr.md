@@ -2,6 +2,10 @@
 
 [English](support.md) | [Français](support.fr.md)
 
+> [!IMPORTANT]
+> **Lisez ensemble les preuves et leurs limites.** « Tested » concerne les contrôles indiqués,
+> pas toutes les webcams, tous les éditeurs ou les jeux exportés. Les builds éditeur Unity et Unreal restent non validés.
+
 Cette page est la matrice canonique de MIG 1.1.0, schéma JSON 2 et C ABI 1.
 La maturité concerne les interfaces, pas la précision d’une webcam. Les tests
 synthétiques et les images vides ne prouvent pas une compatibilité matérielle.
@@ -25,7 +29,7 @@ Debian `.deb` fournit le SDK et l'ABI C, pas ces applications de bureau.
 | UPM Unity | Preview | Untested en éditeur | Windows/Linux x64 | Payload natif/.NET testé ; builds éditeur/player non exécutés |
 | Plugin Unreal | Preview | Untested en éditeur | Payloads Windows x64, Linux x64/ARM64 | Payload C ABI testé ; compilation module/jeu non exécutés |
 | Structure visage | Experimental | Untested | Sources portables | Aucun estimateur visage ni produit de reconnaissance supporté |
-| Caméras, touches OS, ARM64 physique | — | Untested | Selon cible | Tests matériels/manuels nécessaires |
+| Caméras, touches OS, ARM64 physique | - | Untested | Selon cible | Tests matériels/manuels nécessaires |
 | macOS, plugins mobiles | Planned | Untested | Aucun binaire distribué | Aucun support déclaré |
 
 ## Définitions

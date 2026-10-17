@@ -29,9 +29,15 @@ and verification. The drawing tools described below belong to the Motion Input G
 
 ## Build and launch
 
-Windows 10/11 x64, Visual Studio 2022 C++ Build Tools/Windows SDK and CMake 3.25+
-are required to build. Bootstrap needs network once; -SkipBootstrap reuses assets.
-The latest Visual C++ Redistributable is needed on deployment machines.
+| Requirement | Purpose |
+| --- | --- |
+| **Windows 10/11 x64** | Native application target |
+| **Visual Studio 2022 C++ Build Tools / Windows SDK** | Compiler and platform headers |
+| **CMake 3.25+** | Configure the build |
+| Internet for bootstrap | Download pinned native libraries and models once; `-SkipBootstrap` reuses them |
+
+Unbundled MSVC binaries need a compatible Visual C++ runtime on the destination
+machine. The [standalone Controller](controller-standalone.md) includes its runtime.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/build/build-windows.ps1
@@ -77,79 +83,50 @@ seated/standing speedup is assumed.
 
 ## Workspace and drawing
 
-File/Edit/View menus, session toolbar, MOVEMENTS sidebar and status bar surround the mirrored
-camera. View selects light/dark and toggles grid, hand bones, body dots and linked
-logs independently. Hiding hands does not disable inference. Stale overlays vanish.
-The log terminal is a small, opaque floating window: drag its title bar or resize
-its edges. Closing hides it; reopening retains its position and size. It remains
-open when switching workspace views and closes with the app. Reading or selecting
-older events pauses automatic scrolling until you return to the bottom.
-Rounded filled controls expose enabled/hover/focus state.
-Accepted actions flash green for 900ms without logs or keyboard enabled.
+For the illustrated workflow, use the [Studio guide](../guides/configurator.md).
+The [Controller guide](../guides/controller.md) covers running a saved profile.
 
-Use **Movements**, **Edit** and **Test** in the main window. No separate
-movement editor opens. Start the camera explicitly and keep both shoulders
-visible for about one second. Body view projects the grid using shoulder scale; Full grid shows all
-27x27 cells, mirrored once including dots/traces. Pointer mapping uses the same
-inverse transform; a stroke freezes its view until release.
+| Task | Windows behavior |
+| --- | --- |
+| Edit and test | **Movements**, **Edit** and **Test** share the main window. |
+| Draw a route | Choose the tracked point and Required, Trigger, Forbidden or Interaction. The Zones inspector selects the step and its ordering mode. |
+| Change the tracked point | Existing zones move to that point immediately; a collision is rejected without losing either drawing. Explicit sign/finger hands and trace identities stay unchanged. |
+| Undo a drawing edit | **Ctrl+Z / Ctrl+Y** undo or redo. A stroke is one operation. |
+| Save | Existing movement edits update the document; **Apply** adds a new movement. **File > Save** persists it to disk. |
+| Inspect the preview | Body view follows shoulder scale; Full grid shows all **27 × 27** cells. The preview mirrors once. |
+| Read logs | The floating terminal can be moved and resized. Reading older events pauses automatic scrolling until returning to the bottom. |
 
-A new movement starts empty with one step and no time limit. Choose the tracked
-point, then **Select**, **Required**, **Trigger**, **Forbidden**, **Interaction** or
-**Erase**, like the web Studio. Place the cells directly; there is no tolerance
-tool or priority selector. Imported margins remain intact. Select drags a rectangle;
-Ctrl retains the previous selection, and Delete removes selected regions and linked
-imported margins. A stroke is one Undo. Action is one movable finish.
-The Zones inspector labels phases as **Step 1 of N**: phases run successively.
-Within a phase, choose **In order**, **Any order** or **Simultaneous**. One phase
-is enough for a simple movement. Route position edits appear only for a selected
-ordered region; equal numbers are alternatives for that tracked point.
-The grid displays centered numbers, X guards and R unordered Required.
-
-Independent tracked points keep their own zones; other points remain outlined.
-Help is optional and Clear step removes the current scope.
-Click a movement to edit its tracked point and zones. Changing the tracked point
-reassigns its existing zones immediately; destination collisions preserve both
-drawings. Explicit sign/finger hands and recorded trace identity remain intact.
-**Movement settings** opens identity, keyboard, reference and timing; **Back to
-zones** returns to the movement's current step and selected-region geometry.
-The separate body-parts, recording and Undo/Redo toolbar options are removed.
-Ctrl+Z/Y remains available. The document updates automatically for existing
-movements; File Save persists it to disk. New movements are published with Apply.
-
-Purple conditional triggers reveal hand, sign and continuous hold (0..60000 ms)
-after placement or selection. Edits update the selected trigger immediately.
-Clicking with its existing colour selects a zone; a different colour asks before
-replacement. Erase removes zones explicitly. Imported margins remain supported.
-Purple-only inputs work without green/yellow. Matching signs reserve the hand
-from global commands. Details shows every scope/finger/sign/time/key binding.
-
-Jump/Crouch use calibrated head/shoulder/hip regions; body space follows the
-torso. Mirror transforms anatomy/rules/fingers; camera mirror is separate.
-Hands settings are shared and saved. Applying finger/sign bindings enables Hands
-in ON builds; missing observations never waive the rules. OFF can edit data but
-cannot infer hands. See [hand contract](../guides/hands.md).
+> [!NOTE]
+> **Hiding hand overlays does not stop hand inference.** Change the Hands setting
+> to control that capability. Finger/sign rules still require reliable observations.
+> See the [hand-tracking guide](../guides/hands.md).
 
 ## Output, test and recording
 
-Set name/action and keyboard in **Movement**. Keys/Ctrl+K and Edit keys recognize
-`"Hello world" _ Enter _ Ctrl + C`, repeated actions and simultaneous + chords.
-Outlined boxes confirm parsing. None gives a logical event only.
-Action mode offers Single press, Hold or Repeat with interval20..60000ms.
-Hold's last action must be a chord. Keyboard starts disabled and targets the
-foreground app only after consent. Lost terminal conditions, stale data, Stop,
-dialogs, editing and Test cancel/release. Shared modifiers stay down until their
-last owning action ends. [Complete output contract](../reference/configuration.md).
+Set the name, action and keyboard sequence in **Movement settings**. The key
+editor accepts quoted text, sequential `_` and simultaneous `+`, for example:
 
-Test isolates an input, never sends keys, and keeps cell/step/finger feedback.
-Restart clears attempts without recalibration, Recalibrate replaces the anchor;
-both recover before resuming. Remote controls map Restart/Recalibrate/Record
-to anatomical Thumb/V/OK/Open palm/Fist. Validation defaults250ms, recovery is
-exactly1000ms from validation, held command needs deliberate release. A sign/hand
-pair controls one command; reassignment removes its previous binding.
+```text
+"Hello world" _ Enter _ Ctrl + C
+```
 
-Recording tools are no longer exposed in Studio. Existing recording data remains
-compatible with the schema. Ctrl+Z/Y, copy/paste/duplicate/delete retain ordinary
-text-field editing.
+| Control | Effect |
+| --- | --- |
+| **Single press** | Execute the sequence once per accepted movement. |
+| **Hold** | Execute the prefix once and hold the final chord; the last action must be a chord. |
+| **Repeat** | Replay at the configured **20..60000 ms** interval while terminal conditions remain active. |
+| **Test** | Isolate an input and show recognition feedback **without sending keys**. |
+| **Restart / Recalibrate** | Clear attempts / replace the calibration anchor; remote commands require deliberate release before reuse. |
+
+> [!IMPORTANT]
+> **Keyboard output starts off and targets the foreground application.** Lost
+> conditions, stale data, Stop, dialogs, editing and Test cancel or release output.
+> The [configuration reference](../reference/configuration.md) defines timing,
+> shared modifiers and global command bindings.
+
+Recording tools are **not exposed in the current Studio UI**. Existing recording
+metadata remains compatible with the schema. Ordinary text-field editing keeps
+its usual copy/paste and Ctrl+Z/Y behavior.
 
 ## Diagnostics and provenance
 

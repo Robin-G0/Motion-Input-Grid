@@ -16,6 +16,11 @@ Les intégrations navigateur utilisent le moteur C++ compilé en WASM. Chaque
 framework propose une démo de levage des mains et un importateur de profils du
 Motion Input Grid Studio, affichant chaque action acceptée avec son identifiant.
 
+> [!TIP]
+> **Pour essayer MIG, prenez l'archive compilée.** Aucun build Emscripten n'est nécessaire.
+> Pour votre propre application, allez à [Dans votre projet](#dans-votre-projet) :
+> le package npm fournit déjà WASM et modèles. Les commandes du dépôt complet servent au développement.
+
 ## Lancer les exemples
 
 **Télécharger un exemple prêt à lancer :** [HTML](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-web-examples) · [React](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-react-examples) · [Vue](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-vue-examples) · [Next.js](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-next-examples).
@@ -86,6 +91,25 @@ Vue utilise une ref `state` superficielle ; React expose directement ses champs.
 `profileMode: true` crée un moteur vide. `await importJSON(json)` valide le
 texte du fichier ; capturez les erreurs. `assetBase` indique l'URL des ressources
 publiques, `/mig/` par défaut. Pour un sous-dossier, donnez son URL réelle.
+
+Exemple React minimal, après la copie des ressources dans `public/mig` :
+
+```jsx
+import { useMIG } from 'motion-input-grid/react';
+
+function Camera() {
+    const mig = useMIG({
+        assetBase: '/mig/',
+        onAction: ({ action }) => console.log(action)
+    });
+    return <>
+        <button onClick={mig.start}>Start</button>
+        <p>{mig.status}</p>
+        <video ref={mig.video} muted playsInline />
+        <canvas ref={mig.canvas} />
+    </>;
+}
+```
 
 Next.js réutilise React dans une frontière `'use client'`. Ces composants sont
 aussi pré-rendus côté serveur : le composant fourni protège les accès navigateur

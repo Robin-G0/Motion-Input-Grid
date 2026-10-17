@@ -21,6 +21,10 @@ Motion Input Grid Studio turns drawn body movements into JSON
 profiles. Choose a tracked body part, draw its route and set the action to emit.
 Run the saved profile in the [Motion Input Grid Controller](controller.md) or an application using MIG.
 
+> [!TIP]
+> **Just want to control a presentation?** Follow the [presentation guide](presentations.md)
+> for a route without code. Here, Studio **draws** movements and Controller **runs** them.
+
 ## Find and launch the application
 
 > [!NOTE]
@@ -64,6 +68,10 @@ open [raised-hands.json](../../examples/common/raised-hands.json), then add your
 shortcut to the chosen input. The sample supplies two wrist routes, enables hand
 tracking and needs a hands-enabled build. It sends no keys until you add a binding.
 
+> [!NOTE]
+> For Canva, PowerPoint, PDF or another slideshow, **try the key on your physical
+> keyboard first**. The shortcut depends on the viewer and presenting mode.
+
 ### Choose what the keyboard does
 
 | Mode | Behavior |
@@ -91,10 +99,13 @@ Region colors describe their conditions:
 
 | Color | Condition |
 | --- | --- |
-| 🟩 Green — Required | Visit this region; numbered regions specify the route's order. |
-| 🟥 Red — Forbidden | Avoid this region. |
-| 🟨 Yellow — Trigger | Complete the movement here to emit its action. |
-| 🟪 Purple — Interaction | Perform the selected hand sign in this region, optionally holding it. |
+| 🟩 Green - Required | Visit this region; numbered regions specify the route's order. |
+| 🟥 Red - Forbidden | Avoid this region. |
+| 🟨 Yellow - Trigger | Complete the movement here to emit its action. |
+| 🟪 Purple - Interaction | Perform the selected hand sign in this region, optionally holding it. |
+
+<details>
+<summary>Detailed region editing controls</summary>
 
 Click a movement to open its tracked point and zones. Changing the tracked point
 immediately reassigns its existing zones in the document; a collision with another
@@ -110,6 +121,8 @@ an in-app **Complete JSON profile** page for all schema fields.
 The [Windows controls](../getting-started/windows.md#workspace-and-drawing) and
 [Linux controls](../getting-started/linux.md) describe the available tools.
 
+</details>
+
 ## Check and use the profile
 
 Use **Select** and drag with the left button held to select a rectangle on the
@@ -121,6 +134,9 @@ tolerance authoring and priority controls have been removed. Imported margin
 rules remain supported. Steps are successive phases, whereas route mode controls
 the cells inside a phase (in order, any order or simultaneous).
 
+<details>
+<summary>Advanced: finger and sign conditions</summary>
+
 Changing inspector sections preserves the input's conditions. Removing a purple region
 removes its own sign and finger rules, but independent whole-input and step
 finger rules still apply. The binding summary shows these rules. Use
@@ -130,6 +146,8 @@ this leaves the regions and purple hand signs in place. On Windows, the Fingers
 scope selector also shows each scope's rule count. After editing, apply
 the input again before testing and save the document to persist it.
 
+</details>
+
 Keep your shoulders visible so the grid can follow your body. Try the movement
 and watch for action feedback. Use the [hand tracking guide](hands.md) for signs
 and finger conditions. Close one application's camera before opening the other's.
@@ -138,6 +156,10 @@ Keyboard output starts disabled. The Motion Input Grid Controller guide explains
 and use Single press, Hold and Repeat. **View** controls the theme, preview overlays
 and logs. The [configuration reference](../reference/configuration.md) describes
 all saved fields and action modes.
+
+> [!TIP]
+> **Apply, save, then reimport** after a change.
+> Stop Studio's camera before starting it in Controller.
 
 ## Build from source
 

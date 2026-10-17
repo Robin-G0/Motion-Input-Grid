@@ -4,7 +4,10 @@
 
 **Download the integration:** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-godot-integration) · [Linux x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-godot-integration) · [Linux ARM64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-godot-integration).
 
-**Preview.** Editor/player export and live-provider validation remain required. See the [support matrix](../../docs/reference/support.md).
+> [!IMPORTANT]
+> **Preview runtime package; supply your own camera/landmark provider.** For a first trial,
+> use the [Godot demos](../../examples/godot/README.md) and their synthetic mode.
+> Verify your editor, real provider and exports: [support matrix](../../docs/reference/support.md).
 
 Extract the matching `motion-input-grid-<version>-<platform>-godot.zip` at the root of a Godot
 4.3+ project. The archive provides `addons/mig`, its GDExtension, the C ABI library

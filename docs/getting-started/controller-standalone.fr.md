@@ -2,10 +2,13 @@
 
 [English](controller-standalone.md) | [Français](controller-standalone.fr.md)
 
-Les candidats Controller seuls sont un `.exe` Windows x64 et un `.run` Linux x64.
+Les packages Controller seuls sont un `.exe` Windows x64 et un `.run` Linux x64.
 Ils incluent moteur, modèles, dépendances et licences, sans Studio de bureau,
-SDK ou exemples. Il faut les publier dans une release pour que les boutons du
-Studio web les proposent. La publication reste manuelle.
+SDK ou exemples. Consultez le catalogue officiel pour les téléchargements disponibles.
+
+> [!TIP]
+> **Vous venez du Studio web ?** Le [guide du Controller](../guides/controller.fr.md)
+> montre l'import et le premier essai. **Pas de Python ni de compilateur à installer.**
 
 ## Utiliser un fichier publié
 
@@ -15,6 +18,10 @@ Lancez le `.exe`. Sous Linux, autorisez l’exécution dans les propriétés ou 
 démarrez le suivi clavier désactivé, puis activez-le et donnez le focus à votre
 application. Voir le [guide du Controller](../guides/controller.fr.md).
 
+> [!IMPORTANT]
+> **Importez → démarrez clavier désactivé → vérifiez le mouvement → activez la
+> sortie → cliquez dans l'application cible.** Fermez la caméra du Studio d'abord.
+
 Windows extrait les fichiers une fois dans
 `%LOCALAPPDATA%\MotionInputGrid\runtime\<sha256-du-payload>\`. Chaque lancement
 vérifie tous les fichiers et le marqueur de fin avant réutilisation, sans passer
@@ -22,6 +29,9 @@ normalement par `%TEMP%`. Linux garde son extraction temporaire par lancement
 et son nettoyage à la fermeture normale. Un arrêt forcé peut laisser des fichiers.
 Ni installation, ni droits administrateur, ni Python ou compilateur requis.
 Le lanceur ne télécharge pas les dépendances. Les licences restent incluses.
+
+<details>
+<summary>Détails techniques : validation du cache Windows</summary>
 
 Windows prépare un dossier voisin, écrit et vérifie les fichiers, puis le publie
 par renommage sur le même volume. Un verrou par payload empêche deux premiers
@@ -37,6 +47,8 @@ de réanalyse et liens physiques sont refusés. Les fichiers vérifiés restent
 verrouillés contre l’écriture et la suppression pendant l’exécution. Cela
 protège le cache, sans constituer une frontière contre un attaquant contrôlant
 déjà le même compte Windows ou capable de remplacer l’EXE téléchargé.
+
+</details>
 
 Windows inclut les DLL du runtime Visual C++ ; le lanceur utilise un CRT statique.
 Les fonctions caméra et affichage du système restent nécessaires. Linux inclut

@@ -10,7 +10,7 @@ Un aperçu miroir, les doigts et des objets suivant les poignets illustrent
 **Left hand raised!** et **Right hand raised!**. Le second exécutable importe
 votre JSON du Motion Input Grid Studio et affiche ses noms d'actions.
 
-## Démarrage rapide — archive compilée
+## Démarrage rapide - archive compilée
 
 1. Extrayez l'archive `*-sdl2-standalone`.
 2. Dans ce dossier, lancez `mig-sdl2.exe` sous Windows ou `./mig-sdl2` sous Linux.
@@ -66,6 +66,11 @@ compilateur C++20, SDK MIG et bibliothèques de développement graphiques.
 
 ## Recompiler hors du dépôt
 
+> [!IMPORTANT]
+> **Recompiler demande un SDK avec caméra exportant `MIG::native`.** Utilisez `sdk/`
+> d'une archive d'application/tutoriel natif ou une [compilation native](../../docs/integrations/overview.fr.md).
+> Le SDK autonome de positions ne fournit pas cette cible.
+
 ```sh
 cmake -S . -B build -DCMAKE_PREFIX_PATH="/chemin/MIG/sdk;/chemin/sdk/graphique"
 cmake --build build --config Release
@@ -83,8 +88,15 @@ Sous Windows, le sélecteur est natif.
 
 ## Configuration et réutilisation
 
-Le profil contient, pour chaque poignet, une zone Required `[-9,3,27,3]`, puis
-une zone Trigger `[-9,1,27,2]`. Une pose isolée dans le jaune ne déclenche rien.
+> [!TIP]
+> **Baissez le poignet dans le vert, puis montez-le vers le jaune.** Rester dans le
+> jaune ne déclenche rien : MIG reconnaît un parcours.
+
+| Étape du profil | Région |
+| --- | --- |
+| Départ Required (vert) | `[-9,3,27,3]` |
+| Arrivée Trigger (jaune) | `[-9,1,27,2]` |
+
 Le mode import démarre sans règles. Un JSON invalide préserve le profil précédent ;
 un import valide recommence la calibration.
 

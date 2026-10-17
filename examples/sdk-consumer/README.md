@@ -16,8 +16,8 @@ and logical event dispatch without a camera, model or window.
 2. Run `run.cmd` (Windows) or `sh run.sh` (Linux) from this folder.
 3. Observe the console result, then normal process exit. No webcam is needed.
 
-Target: 30–60 seconds with prerequisites installed; inference model loading
-depends on hardware. The combined archive offers the same launchers in its example folder.
+The synthetic example exits after printing its recognized action. The combined
+archive offers the same launchers in its example folder.
 
 ## Folder walkthrough
 

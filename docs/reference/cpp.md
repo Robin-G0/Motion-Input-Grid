@@ -2,6 +2,10 @@
 
 [English](cpp.md) | [Français](cpp.fr.md)
 
+> [!TIP]
+> **Integrating a game?** Run the short update loop below, then read the ownership and live-state contracts.
+> Installation commands are in the [C++ quick start](../getting-started/cpp.md).
+
 To install just the library and link it to your project, follow the
 [C++ SDK / CMake guide](../getting-started/cpp.md). It covers archives, source builds,
 `cmake --install` and generated Makefiles on Linux.
@@ -14,6 +18,8 @@ and estimator types separately; it does not enlarge the portable positions core.
 See [the native consumer](../../examples/native-consumer/CMakeLists.txt) and
 [hand capability contract](../guides/hands.md). A complete threaded session facade
 remains planned.
+### Optional coordinate queries
+
 `mig/core/coordinates.hpp` adds O(1), allocation-free XYZ access and borrowed spans.
 Frame points retain optional image depth and hip-relative world metres independently
 of 2D recognition. `WorldHeightUp` flips world Y for height-based game logic. Missing
@@ -21,6 +27,8 @@ XYZ returns `nullopt`; coordinate validity never invents depth for 2D-only hosts
 The hands library supplies equivalent joint access and anatomical association indices.
 JSON text import/export and the Emscripten website wrapper share the native v2 parser
 and engine. See [SDL2/SFML/web examples and coordinate units](../integrations/overview.md).
+
+## Minimal update loop
 
 ```cpp
 mig::Engine engine(mig::load_configuration("profile.json"));
@@ -37,16 +45,20 @@ for (const auto event : engine.update(frame, monotonic_now_ms)) {
 }
 ```
 
+## Ownership and timing
+
 `update` is noexcept and working storage is reserved during construction.
 Segment geometry is compiled at construction; hot-path validation, grid update,
-recognition and arbitration live in separate source modules. No per-update
-allocations are introduced. Future/stale packets do not advance source watermarks.
+recognition and arbitration live in separate source modules. The [real-time regression](../../tests/core/realtime_tests.cpp) checks that the mixed-space
+update workload performs no ordinary C++ allocations; this does not cover native inference. Future/stale packets do not advance source watermarks.
 The returned span belongs to the engine and is invalidated by its next update.
 Events reference the immutable configuration's motion index and carry the trigger
 observation timestamp, not an interpolated crossing time. Caller supplies timestamps
 from one monotonic clock domain; use `recalibrate()` when changing source/session.
 Drive one engine instance from one thread. `grid()` exposes calibration and the
 body coordinate conversions for preview. Call conversions only when grid is valid.
+
+## Coordinate contract
 
 Tracking requires valid shoulders; each path requires its selected wrist. Model
 indices 11/12 are left/right shoulders and 15/16 left/right wrists. The body grid's
@@ -61,6 +73,8 @@ The native applications mirror only the displayed image and overlays. This does
 not change the SDK input contract or anatomical indices. Their pointer editing
 applies the inverse display transform before converting into grid coordinates.
 
+## Events and held actions
+
 The SDK emits one-shot recognition events and separately exposes live terminal
 state through `action_active(motion_index)` / `InputProgress::output_active`. This
 state becomes true only after an accepted activation, remains true while terminal
@@ -70,8 +84,12 @@ final Required group in each landmark lane. The persistent Test `triggered` flag
 does not imply that an action is still physically held. Hosts can implement Hold
 or Repeat using the Motion's `action_mode` and `repeat_interval_ms`; the SDK does
 not inject keys. Keyboard scheduling/watchdog belongs to the native applications.
-Missing frames need an application freshness watchdog;
-the core cannot react while it is not called. Constructors/loaders validate and
+
+> [!WARNING]
+> **The host must release output when frames stop arriving.** The core cannot update
+> `output_active` while it is not called; implement an application freshness watchdog.
+
+Constructors/loaders validate and
 throw descriptive errors; prepare replacement instances outside the real-time loop.
 
 [examples/sdk-consumer](../../examples/sdk-consumer/CMakeLists.txt) demonstrates

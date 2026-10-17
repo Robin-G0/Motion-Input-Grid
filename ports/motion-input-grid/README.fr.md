@@ -2,16 +2,30 @@
 
 [English](README.md) | [Français](README.fr.md)
 
-[**Télécharger l’overlay prêt à installer**](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-vcpkg-overlay) — extrayez-le avant `vcpkg install`. La génération ci-dessous est facultative.
+[**Télécharger l’overlay prêt à installer**](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-vcpkg-overlay) - extrayez-le avant `vcpkg install`. La génération ci-dessous est facultative.
 
 Ce dossier est le port de MIG lui-même. Le `vcpkg.json` à la racine est le manifeste
 séparé des dépendances nécessaires pour compiler MIG.
 
-Lancez `python tools/packaging/package-source.py` pour créer les archives du moteur et de
-l'overlay dans `build/releases`. Extrayez l'overlay et passez sa racine à
-`vcpkg install motion-input-grid --overlay-ports=/chemin/motion-input-grid-vcpkg-overlay`. Le fichier généré
-`motion-input-grid/source.cmake` fixe l'URL de publication et le SHA512 réel de l'archive source.
-Le modèle versionné échoue volontairement tant que ce fichier n'a pas été généré.
+**Installer l'overlay extrait :**
+
+```sh
+vcpkg install motion-input-grid --overlay-ports=/chemin/motion-input-grid-vcpkg-overlay
+```
+
+**Générer votre propre overlay depuis le dépôt complet :**
+
+```sh
+python tools/packaging/package-source.py
+```
+
+Les archives du moteur et de l'overlay sont écrites dans `build/releases`.
+Le fichier généré `motion-input-grid/source.cmake` fixe l'URL de publication et
+le SHA512 réel de l'archive source.
+
+> [!NOTE]
+> Le modèle versionné échoue volontairement avant la génération de cette empreinte.
+> Pour installer directement, utilisez **l'overlay de la release**, pas ce modèle.
 
 Les features par défaut activent les profils JSON et les mains. `motion-input-grid[c-api]`
 ajoute l'ABI C partagée et nécessite un triplet dynamique. Applications et

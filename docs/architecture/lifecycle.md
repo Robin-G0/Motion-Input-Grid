@@ -2,6 +2,10 @@
 
 [English](lifecycle.md) | [Français](lifecycle.fr.md)
 
+> [!IMPORTANT]
+> **One owner per engine/capture session.** Copy borrowed data before sending it to another thread.
+> Stop joins the inference owner; an upstream inference call must return before shutdown can finish.
+
 This page describes implemented ownership. [Architecture](overview.md)
 describes module boundaries; [performance](performance.md) separates measured
 recognition costs from native estimation and UI work.
@@ -43,12 +47,16 @@ publishes copied latest images/observations and at most 64 timestamped events.
 Profile changes stop/join before replacement. UI widgets stay on the main thread.
 Single-plane YUYV capture negotiates modes up to 720p and uses bounded poll waits.
 
+### Positions and native SDK hosts
+
 Positions hosts supply fresh unmirrored packets without models/camera. Native
 hosts optionally estimate RGB or poll capture. `CaptureRuntime` balances Windows
 COM/Media Foundation ownership. ABI capture start/poll/stop/destroy stays on one
 owner thread; successful import stops it, invalid import preserves it. A poll
 already recognizes its packet; preview pixels expire at the next poll.
 Python viewers copy pixels/events before publishing to a worker mailbox.
+
+### Browser sessions
 
 Browser sessions own models, WASM, stream and cancellation generations. Start
 requests capture; Stop releases tracks; Dispose releases all resources. Work is
@@ -73,6 +81,8 @@ commands permit 500 ms observation gaps; paths/sweeps permit 180 ms. Native
 recognition/output freshness is 250 ms; command results are limited to 500 ms.
 The engine emits one accepted event and updates independent live terminal state.
 
+### Desktop output ownership
+
 ActionOutput serializes transient sequences, owns terminal Hold chords with key
 reference counts and repeats without queued overlap/catch-up bursts. Text waits
 for foreign modifiers to release. The user explicitly enables output. Windows
@@ -86,6 +96,8 @@ Stop wakes/cancels capture, joins owners and releases tasks, buffers and output.
 An opaque upstream inference call must return before join; it has no application
 cancellation guarantee. JSON reads are bounded to 1 MiB/depth 32 and save uses
 isolated same-directory staging with atomic replacement.
+
+### What validation establishes
 
 CTest covers semantics, conversion, capabilities, leases and blank-frame native
 lifecycles. Browser/GUI tests use synthetic observations. ASan/UBSan covers the

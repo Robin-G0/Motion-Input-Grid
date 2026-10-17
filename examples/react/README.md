@@ -19,10 +19,12 @@ displays logical action/input IDs. Actions stay in your application.
 4. Keep both shoulders visible, lower your hands into green, then raise into yellow.
 5. Visit `/profile.html` to import JSON; click Stop and use Ctrl+C to stop the server.
 
-Target: 30–60 seconds after extraction with prerequisites installed. All models,
-WASM and MediaPipe Vision assets are local; no npm install or CDN is needed to try
-compiled pages. The combined JavaScript archive also includes portable Node;
-its launchers select that interpreter. Initial model loading depends on hardware.
+> [!TIP]
+> **To try the built archive, use `run.cmd` or `sh run.sh` directly.**
+> Models, WASM and MediaPipe are local; no npm install or CDN is needed.
+> Individual archives still need Node.js 22.12+; the combined archive supplies Node.
+
+Allow 30–60 seconds with prerequisites installed; model loading depends on hardware.
 
 ## Folder walkthrough
 
@@ -44,7 +46,8 @@ its launchers select that interpreter. Initial model loading depends on hardware
 
 1. `src/example_usage.mjs` imports `useMIG` from `motion-input-grid/react`.
    `useMotionInput(profileMode)` supplies local asset URLs and `handleDetectedAction`.
-2. The public hook creates its session safely during render, including SSR.
+2. The public hook creates its session in a mounted effect and disposes it during
+   effect cleanup. Server rendering does not create browser resources.
    `assetBase` contains `default.json`, `mig.mjs`, `mig.wasm`, `vision/` and `models/`.
    Import mode starts empty. Camera/model work starts only after a user click.
 3. `src/CameraExample.jsx` connects video/canvas refs and calls `start()`, `stop()` and `recalibrate()`.

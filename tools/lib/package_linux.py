@@ -202,7 +202,7 @@ def main():
         usage = ("Run `./motion-input-grid-controller` or `./motion-input-grid-studio` from this directory."
                  if options.native else "Set CMAKE_PREFIX_PATH to the extracted `sdk` directory.")
         (root / "README.md").write_text(
-            f"# Motion Input Grid (MIG) {options.version} — Linux {options.architecture}\n\n"
+            f"# Motion Input Grid (MIG) {options.version} - Linux {options.architecture}\n\n"
             "[English](README.md) | [Français](README.fr.md)\n\n"
             f"{usage}\n\n"
             "See [package installation](docs/getting-started/packages.md) and the "
@@ -210,7 +210,7 @@ def main():
         usage_fr = ("Lancez ./motion-input-grid-controller ou ./motion-input-grid-studio depuis ce dossier."
                     if options.native else "Utilisez le dossier sdk comme CMAKE_PREFIX_PATH.")
         (root / "README.fr.md").write_text(
-            f"# Motion Input Grid (MIG) {options.version} — Linux {options.architecture}\n\n"
+            f"# Motion Input Grid (MIG) {options.version} - Linux {options.architecture}\n\n"
             "[English](README.md) | [Français](README.fr.md)\n\n"
             f"{usage_fr}\n\n"
             "[Installation](docs/getting-started/packages.fr.md) et "

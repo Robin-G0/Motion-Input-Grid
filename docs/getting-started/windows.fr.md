@@ -31,9 +31,15 @@ Motion Input Grid Studio.
 
 ## Compiler et lancer
 
-Windows 10/11 x64, BuildTools VisualStudio 2022/SDK Windows et CMake 3.25+ pour compiler.
-Bootstrap utilise le réseau une fois, -SkipBootstrap réutilise. Le dernier Microsoft
-Visual C++ Redistributable x64 est requis sur la machine de destination.
+| Prérequis | Utilité |
+| --- | --- |
+| **Windows 10/11 x64** | Cible des applications natives |
+| **Visual Studio 2022 C++ Build Tools / SDK Windows** | Compilateur et en-têtes système |
+| **CMake 3.25+** | Configurer la compilation |
+| Internet pour la préparation | Télécharger une fois bibliothèques et modèles épinglés ; `-SkipBootstrap` les réutilise |
+
+Les binaires MSVC sans runtime fourni demandent un runtime Visual C++ compatible
+sur la machine cible. Le [Controller autonome](controller-standalone.fr.md) inclut le sien.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/build/build-windows.ps1
@@ -76,70 +82,51 @@ jambes. Comparez temps/âge/précision avec même éclairage et réglage Hands.
 
 ## Dessiner
 
-File/Edit/View, commandes de session, MOVEMENTS et statut entourent la caméra reflétée. View
-choisit thème, grille, os des mains, dots et logs séparément. Cacher Hands ne
-supprime pas l'inférence ; overlays périmés disparaissent. Le terminal de logs
-est une petite fenêtre flottante opaque : déplacez son titre ou redimensionnez
-ses bords. Fermer le masque ; le rouvrir conserve sa position et sa taille.
-Il reste ouvert entre les vues et ferme avec l'app. Lire ou sélectionner des
-événements anciens suspend le défilement automatique jusqu'au retour en bas.
-Boutons remplis/arrondis, états hover/focus/activé. Action verte900 ms
-même sans logs/clavier.
+Le [guide illustré du Studio](../guides/configurator.fr.md) décrit le parcours
+d'édition ; le [guide du Controller](../guides/controller.fr.md) explique comment
+utiliser un profil enregistré.
 
-Les vues **Movements**, **Edit** et **Test** restent dans la fenêtre principale.
-Activez la caméra explicitement et gardez les épaules visibles une seconde.
-Body suit les épaules ; Full grid montre27x27, dots/traces reflétés une fois.
-Pointage inverse identique ; un trait gèle sa vue.
-Un mouvement commence vide avec une étape et sans limite de temps. Choisissez
-le point suivi, puis **Select**, **Required**, **Trigger**, **Forbidden**, **Interaction**
-ou **Erase**, comme sur le web. Placez directement les cases : il n'y a plus
-d'outil de tolérance ni de sélecteur de priorité. Les marges importées sont conservées.
-Select trace un rectangle ; Ctrl conserve la sélection précédente, Suppr retire
-les régions et leurs marges liées. Un trait correspond à un undo. Action déplace
-la case de fin. Zones affiche **Step 1 of N** : les étapes sont des phases
-successives. Dans une phase, choisissez **In order**, **Any order** ou
-**Simultaneous**. Une étape suffit pour un mouvement simple. La position dans
-le parcours apparaît pour une région ordonnée sélectionnée ; un même numéro
-représente des alternatives pour le point suivi.
+| Objectif | Comportement sous Windows |
+| --- | --- |
+| Éditer et tester | **Movements**, **Edit** et **Test** partagent la fenêtre principale. |
+| Dessiner un parcours | Choisissez le point suivi et Required, Trigger, Forbidden ou Interaction. L'inspecteur Zones choisit l'étape et son mode de parcours. |
+| Changer le point suivi | Les zones lui sont réaffectées immédiatement ; une collision est refusée sans perte. Les mains explicites des signes/doigts et l'identité des traces restent inchangées. |
+| Annuler un dessin | **Ctrl+Z / Ctrl+Y** annulent ou rétablissent. Un trait est une opération. |
+| Enregistrer | Les modifications d'un mouvement existant actualisent le document ; **Apply** ajoute un nouveau mouvement. **File > Save** écrit le fichier. |
+| Examiner la caméra | Body suit l'échelle des épaules ; Full grid montre les **27 × 27** cases. L'image est reflétée une fois. |
+| Lire les logs | Le terminal flottant se déplace et se redimensionne. Lire les anciens événements suspend le défilement jusqu'au retour en bas. |
 
-Les contraintes de chaque point restent distinctes ; les autres points sont
-visibles en contour. Clear step retire la portée courante ; l'aide est facultative.
-Cliquez sur un mouvement pour éditer son point suivi et ses zones. Changer le
-point réaffecte immédiatement ses zones ; une collision avec un autre point est
-refusée sans perte. Les mains explicites et l’identité des traces sont conservées.
-**Movement settings** ouvre identité, clavier et délais ; **Back to zones** revient
-au parcours et à la géométrie de la zone sélectionnée. Les options séparées Body
-parts, Recording et les boutons Undo/Redo sont retirés ; Ctrl+Z/Y reste disponible.
-Les mouvements existants sont actualisés automatiquement dans le document,
-les nouveaux sont ajoutés par Apply ; File Save écrit le fichier.
-
-Les réglages main/signe/maintien 0..60000 ms apparaissent après la pose ou la
-sélection d’un déclencheur conditionnel violet et modifient directement celui-ci.
-Un clic avec sa couleur sélectionne la zone ; une autre couleur demande
-confirmation avant remplacement. Erase supprime explicitement les zones.
-Les marges importées restent prises en charge.
-Jump/Crouch sont des régions calibrées ordinaires ; body suit torse. Mirror
-échange anatomie/règles/doigts séparément du miroir caméra. Hands partagé/persisté,
-activé par règles/signes en ON ; absence ne contourne rien. OFF édite sans inférer.
-[Contrat mains](../guides/hands.fr.md).
+> [!NOTE]
+> **Masquer les dessins des mains n'arrête pas leur inférence.** Le réglage Hands
+> contrôle cette capacité. Les règles de doigts/signes exigent toujours des
+> observations fiables. Voir le [guide des mains](../guides/hands.fr.md).
 
 ## Sorties, Test, enregistrement
 
-Nom/action/clavier dans **Movement**. Keys/Ctrl+K et Edit keys acceptent
-`"Hello world" _ Enter _ Ctrl + C`, répétitions, accords+ ; boîtes de confirmation.
-None événement logique. Single press, Hold ou Repeat 20..60000 ms ; Hold doit finir
-par accord. Clavier désactivé au départ, envoie au premier plan après consentement.
-Perte, ancienneté, Stop, dialogue, édition et Test annulent/libèrent. Modificateur
-reste maintenu tant qu'un propriétaire subsiste. [Contrat](../reference/configuration.fr.md).
+**Movement settings** regroupe nom, action et séquence clavier. L'éditeur accepte
+le texte entre guillemets, `_` pour la succession et `+` pour un accord :
 
-Test isole sans touches, feedback persistant. Restart efface sans recalibrer,
-Recalibrate remplace l'ancre avec récupération. Remote contrôle Restart/Recalibrate/
-Record par Thumb/V/OK/Open palm/Fist anatomiques. Validation 250 ms par défaut,
-récupération exactement 1000 ms, relâchement volontaire requis. Un couple signe/main
-ne contrôle qu'une commande ; réaffectation retire l'ancienne.
-L’interface d’enregistrement n’est plus présentée dans Studio. Les traces des
-profils existants restent compatibles avec le schéma. Ctrl+Z/Y et les commandes
-de copie/duplication restent disponibles.
+```text
+"Hello world" _ Enter _ Ctrl + C
+```
+
+| Commande | Effet |
+| --- | --- |
+| **Single press** | Exécuter la séquence une fois par mouvement reconnu. |
+| **Hold** | Exécuter le préfixe une fois puis maintenir le dernier accord ; la séquence doit finir par un accord. |
+| **Repeat** | Répéter selon l'intervalle **20..60000 ms** tant que les conditions finales restent actives. |
+| **Test** | Isoler un mouvement et afficher la reconnaissance **sans envoyer de touches**. |
+| **Restart / Recalibrate** | Effacer les tentatives / remplacer l'ancre ; les commandes par signe exigent un relâchement avant réutilisation. |
+
+> [!IMPORTANT]
+> **La sortie clavier démarre désactivée et cible l'application au premier plan.**
+> Perte des conditions, données périmées, Stop, dialogues, édition et Test annulent
+> ou libèrent la sortie. La [référence de configuration](../reference/configuration.fr.md)
+> précise les délais, modificateurs partagés et commandes globales.
+
+Les outils d'enregistrement **ne sont pas présentés dans l'interface actuelle du
+Studio**. Les traces existantes restent compatibles avec le schéma. Les champs
+de texte conservent leurs commandes ordinaires de copie et Ctrl+Z/Y.
 
 ## Tests et origine
 

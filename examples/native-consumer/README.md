@@ -45,6 +45,11 @@ depends on hardware. The combined archive offers the same launchers in its examp
 
 ## Dependencies and rebuilding
 
+> [!IMPORTANT]
+> **Rebuilding needs a camera-enabled SDK exporting `MIG::native`.** Use `sdk/` from
+> a desktop/native tutorial archive or a [native source build](../../docs/integrations/overview.md).
+> The standalone positions-only SDK does not include this target.
+
 External: Windows x64 with VC++ runtime, or Linux x64 with glibc 2.35+.
 Bundled: executable, public SDK, licenses, native MediaPipe and models.
 Keep `runtime/` beside the executable in an individual package; combined archives use their shared runtime root. The Linux launcher sets relative library paths.
@@ -59,8 +64,8 @@ build/mig-native-example runtime
 
 Visual Studio puts the binary under `build/Release/` and appends `.exe`.
 Source-only folders require an installed SDK and runtime/models from its native release.
-For source-only positions setup, obtain `default.json` from the configuration
-release or create a profile in the Motion Input Grid Studio. Compilation exceeds the prebuilt trial time.
+No JSON profile is needed for this inference-only example. The
+[positions tutorial](../sdk-consumer/README.md) demonstrates configured recognition.
 
 ## Reuse and troubleshooting
 

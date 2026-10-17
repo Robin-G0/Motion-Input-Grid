@@ -2,6 +2,10 @@
 
 [English](recognition.md) | [Français](recognition.fr.md)
 
+> [!TIP]
+> **A missed gesture?** Check [sampling gaps and observation age](#low-frame-rates-and-demo-paths) first.
+> A 180 ms sampling gap and a 250 ms-old packet are different failure conditions.
+
 ## Grid and coordinate spaces
 
 The image carries normalized unmirrored anatomical indices. Aspect correction
@@ -13,6 +17,8 @@ Body space follows the torso center/axis. Calibrated space keeps the baseline
 center/axis and follows current scale so jumps/crouches remain ordinary constraints.
 After gaps over 180 ms, scale adopts the fresh observation immediately.
 UI projection and inverse hit testing share one transform; a stroke freezes its view.
+
+### Depth and mirroring
 
 Body image depth is hip-relative; hand image depth is wrist-relative. Optional
 world body coordinates are meters relative to hips, while hand world coordinates
@@ -38,6 +44,8 @@ Normal variants arbitrate ambiguous same-wrist hits; Test isolates an input.
 After activation, terminal conditions expose `output_active` independently of
 the persistent Test highlight. Release/rearm and cooldown prevent duplicate events.
 
+### Hand assignment and commands
+
 Native association uses pose wrists to assign detected hands, rejecting ambiguity.
 Thumb, V, OK, Open palm and Fist classification is shared by commands and
 Interaction. A matching Interaction reserves its hand from global commands.
@@ -46,11 +54,17 @@ release latch and fixed 1000 ms recovery; loss of tracking is not a deliberate r
 
 ## Low frame rates and demo paths
 
+| Limit | Value | Meaning |
+| --- | --- | --- |
+| Path observation interval | ≤ 180 ms | A larger gap ends the sweep |
+| Interaction-only hold interval | ≤ 500 ms | Actual occupancy and matching sign are still required; mixed path/Interaction inputs retain 180 ms continuity |
+| Recognized packet age | ≤ 250 ms | Compared with current time, independently of capture intervals |
+
 The engine tests the segment between consecutive visible positions against
 regions in `constraints.cpp::crossing()`, with ordered contact positions per anatomical
 lane. A fresh sample need not land in every intermediate cell. Sweeps require valid
 tracking with at most 180 ms between observations; larger gaps end an active path
-rather than drawing a trajectory through unknown movement. Interaction holds allow
+rather than drawing a trajectory through unknown movement. Interaction-only holds allow
 500 ms gaps but require actual occupancy/sign, so swept transit cannot satisfy dwell.
 Packets older than 250 ms are rejected even if their sampling interval is small.
 

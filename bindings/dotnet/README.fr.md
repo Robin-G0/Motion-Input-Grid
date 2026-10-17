@@ -6,13 +6,17 @@
 Copiez-le dans le projet avec la bibliothèque native correspondant à l'éditeur
 et à chaque architecture exportée. Le dépôt ne publie pas de paquet NuGet.
 
-Créez le tracker avec un JSON schéma 2. Réutilisez les tableaux de
-`MigTracker.Packet.Empty()`, remplissez les observations fraîches et appelez
-`Update(ref packet, callback)` sur un seul thread propriétaire. Le callback
-reçoit des chaînes action/ID copiées. `TryCoordinate` nécessite au moins quatre
-floats et retourne fraîcheur/confiance. `ImportJson` valide atomiquement et
-réinitialise la reconnaissance si l'import réussit. Appelez Dispose à la sortie
-de scène ; ne mettez jamais le même handle à jour simultanément.
+| Étape | API et contrat |
+| --- | --- |
+| Créer | Construire le tracker avec un JSON **schéma 2** |
+| Alimenter | Réutiliser les tableaux de `MigTracker.Packet.Empty()` et soumettre les observations fraîches avec `Update(ref packet, callback)` |
+| Réagir | Le callback reçoit des chaînes action/ID copiées |
+| Lire une coordonnée | `TryCoordinate` demande un buffer d'au moins quatre floats et retourne fraîcheur/confiance |
+| Importer | `ImportJson` valide avant remplacement et réinitialise la reconnaissance si l'import réussit |
+| Fermer | Appeler `Dispose()` à la sortie/désactivation de la scène |
+
+> [!IMPORTANT]
+> **Un thread propriétaire par tracker.** Ne mettez jamais le même handle à jour simultanément.
 
 Disposition des tableaux, espaces et durées de vie : [API C](../../docs/reference/c-abi.fr.md).
 Commencez avec [Unity](../../examples/unity/README.fr.md) ou

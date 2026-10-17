@@ -38,8 +38,6 @@ jobs:
                   clang-format-16 --version
                   find src tests examples integrations -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) -print0 |
                       xargs -0 -r clang-format-16 --dry-run --Werror
-            - name: Check bilingual documentation and links
-              run: python3 tools/dev/check-docs.py
             - name: Check release version consistency
               run: |
                   python3 tests/tooling/release_version_tests.py

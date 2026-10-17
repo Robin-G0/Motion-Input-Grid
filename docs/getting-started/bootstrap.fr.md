@@ -13,6 +13,12 @@
 
 </details>
 
+> [!TIP]
+> **Pour intégrer MIG dans un premier jeu, partez d'un exemple fonctionnel.**
+> Choisissez votre [langage ou moteur](../../examples/README.fr.md), lancez la démo,
+> puis reliez son traitement des actions à votre jeu. Les détails de configuration
+> et de ressources ci-dessous servent ensuite à l'adapter.
+
 Pour installer uniquement la bibliothèque et la lier à votre projet, suivez
 le [guide SDK C++ / CMake](cpp.fr.md). Il couvre les archives,
 la compilation, `cmake --install` et les Makefiles générés sous Linux.
@@ -36,11 +42,17 @@ précisent les exigences du système.
 
 Commencez avec [raised-hands.json](../../examples/common/raised-hands.json).
 Les actions `left_raise` et `right_raise` suivent les poignets anatomiques 15/16
-à travers quatre lignes vertes Required puis une ligne jaune Trigger. Chaque ligne
-traverse la grille. Gardez les épaules visibles environ une seconde, baissez les
-mains puis levez-en une. L'image est reflétée une seule fois ; gauche/droite
-désignent votre anatomie. Copiez le profil avant de changer ses noms `action`.
-Les IDs doivent rester uniques et le [schéma 2](../reference/configuration.fr.md) valide.
+dans la région verte Required `[-9,3,27,3]`, puis la région jaune Trigger
+`[-9,1,27,2]`. Elles couvrent toute la largeur de la grille ; commencer dans le
+jaune seul ne déclenche aucune action.
+
+1. **Calibrer :** gardez les deux épaules visibles environ une seconde.
+2. **Commencer :** baissez une main dans 🟩 Required.
+3. **Terminer :** levez ce poignet dans 🟨 Trigger ; observez `left_raise` ou `right_raise`.
+4. **Relier au jeu :** dans une copie du profil, remplacez `action` par votre
+   commande. Gardez les IDs uniques et le [schéma 2](../reference/configuration.fr.md) valide.
+
+L'image est reflétée une fois ; gauche/droite désignent votre anatomie.
 
 La démo charge ce profil. La variante profile commence vide : **Import profile**
 charge un JSON et relance le calibrage. Une erreur conserve le profil précédent.
@@ -59,7 +71,7 @@ n'envoient pas de touches aux autres applications.
 | React | `run.cmd` ou `sh run.sh`, `/` ou `/profile.html` | `useMIG({onAction})` |
 | Vue | `run.cmd` ou `sh run.sh`, `/` ou `/profile.html` | Composable `useMIG({onAction})` |
 | Next.js | `run.cmd` ou `sh run.sh`, `/` ou `/profile` | `onAction` du composant client |
-| C++ positions fournies | `run.cmd` / `sh run.sh` dans le tutoriel SDK | Événements du résultat de `engine.update(frame)` |
+| C++ positions fournies | `run.cmd` / `sh run.sh` dans le tutoriel SDK | Événements de `engine.update(frame, frame.timestamp_ms)` |
 | Estimateur C++ natif | `run.cmd` / `sh run.sh` ; arguments dans son README | Fournir RGB, mettre à jour le moteur, lire les événements |
 | Unity | Ajouter le `package.json` du tutoriel autonome via Package Manager | UnityEvent `OnAction`, `SubmitFrame(packet)` |
 | Godot C# | Ouvrir le projet .NET autonome et `raised_hands.tscn` | Signal `MotionAction`, `SubmitFrame` |
@@ -77,6 +89,8 @@ générique. Ils nécessitent l'éditeur installé et un fournisseur caméra/poi
 
 ## Bibliothèque installée ou dépôt
 
+### Viewers caméra Python
+
 Les sources Python nécessitent Python 3.10+, Pillow, Pygame et Tk pour le sélecteur :
 
 ```sh
@@ -85,13 +99,16 @@ python examples/python-tkinter/main.py
 python examples/pygame/profile.py
 ```
 
-L'import `mig` installé est préféré, avec repli sur `bindings/python` fourni
-dans le package ou un dépôt complet vérifié.
-La wheel pip inclut l’ABI C de positions. Les exemples caméra demandent aussi
-un SDK natif avec caméra ; `MIG_LIBRARY` désigne sa bibliothèque ABI C et
-`MIG_RUNTIME` son dossier MediaPipe/modèles pour remplacer la découverte. Les exécutables figés
-incluent Python et les interfaces, puis utilisent le runtime natif de l'archive.
+> [!IMPORTANT]
+> **La wheel Python n'installe pas le suivi caméra.** Les exemples caméra demandent
+> aussi un SDK natif avec caméra. Pour remplacer la découverte, `MIG_LIBRARY`
+> désigne sa bibliothèque ABI C et `MIG_RUNTIME` son dossier MediaPipe/modèles.
+
+Les scripts préfèrent `mig` installé, puis le binding fourni ou un dépôt vérifié.
+Les exécutables figés incluent Python, l'interface et le runtime natif de l'archive.
 Consultez le [paquet Python](../../bindings/python/README.fr.md).
+
+### Viewers graphiques C++ natifs
 
 Les exemples graphiques C++ cherchent `find_package(MIG CONFIG)` avant de compiler le dépôt :
 
@@ -105,6 +122,8 @@ Ajoutez `--config Release` sous Windows pour compiler/installer. La recompilatio
 exige le compilateur et les paquets de développement SDL2/SFML ; l'archive fournit
 leurs dépendances d'exécution. L'[intégration](../integrations/overview.fr.md) décrit RGB et
 les observations fournies.
+
+### Workspaces navigateur
 
 Les workspaces JavaScript utilisent le même nom de paquet que les applications :
 

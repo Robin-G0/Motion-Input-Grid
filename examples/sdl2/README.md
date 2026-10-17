@@ -10,7 +10,7 @@ A mirrored camera preview, finger outlines and wrist-following props show two
 logical actions: **Left hand raised!** and **Right hand raised!**. The second
 executable imports your own Motion Input Grid Studio JSON and displays its action names.
 
-## Quick Start — prebuilt package
+## Quick Start - prebuilt package
 
 1. Extract this example's `*-sdl2-standalone` archive.
 2. In the extracted folder, run `mig-sdl2.exe` on Windows or `./mig-sdl2` on Linux.
@@ -66,6 +66,11 @@ C++20 compiler, installed MIG SDK and graphics development libraries.
 
 ## Rebuild this folder outside the repository
 
+> [!IMPORTANT]
+> **Rebuilding needs a camera-enabled SDK exporting `MIG::native`.** Use `sdk/` from
+> a desktop/native tutorial archive or a [native source build](../../docs/integrations/overview.md).
+> The standalone positions-only SDK does not include this target.
+
 ```sh
 cmake -S . -B build -DCMAKE_PREFIX_PATH="/path/to/MIG/sdk;/path/to/graphics/sdk"
 cmake --build build --config Release
@@ -84,9 +89,15 @@ Qt6 Widgets for the profile picker; Windows uses its native dialog.
 
 ## Configuration and reuse
 
-The raised-hands profile has a broad Required region `[-9,3,27,3]`, followed by
-a Trigger region `[-9,1,27,2]` for each wrist. Starting only in yellow cannot
-trigger the upward path. Import mode starts without rules; invalid JSON keeps
+> [!TIP]
+> **Lower your wrist into green, then raise it into yellow.** Standing in yellow
+> does not fire an action: MIG recognizes a path.
+
+| Profile step | Region |
+| --- | --- |
+| Start: Required (green) | `[-9,3,27,3]` |
+| Finish: Trigger (yellow) | `[-9,1,27,2]` |
+ Import mode starts without rules; invalid JSON keeps
 the previous configuration, while a valid import resets calibration.
 
 Copy the named integration file and configuration into your application. Replace

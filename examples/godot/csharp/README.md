@@ -6,8 +6,12 @@
 
 One logical action per raised wrist, an on-screen panel and a profile-import
 variant. The editor components accept supplied pose observations. Synthetic
-mode demonstrates action wiring without a camera or claims about tracking accuracy.
-All editor integrations remain preview integrations.
+mode demonstrates action wiring; it does not measure tracking accuracy.
+
+> [!IMPORTANT]
+> **Start in synthetic mode** to see `left_raise` and `right_raise` without a camera.
+> For a webcam-controlled game, supply body landmarks from your own pose provider next.
+> **This is a preview integration**: verify your editor and exported game.
 
 ## Quick Start
 

@@ -7,11 +7,17 @@ Download packages for your operating system and architecture from
 archive together after extraction. See the [support matrix](../reference/support.md)
 for platform requirements and integration maturity.
 
+| What you need | Package / guide |
+| --- | --- |
+| Control slides or another desktop app | **Studio + Controller**, below |
+| Try an existing integration | [Standalone example for your technology](../../examples/README.md) |
+| Add recognition to C++ | [SDK installation](cpp.md) |
+| Add recognition to Python or a browser | [Python package](../../bindings/python/README.md) / [JavaScript package](../../bindings/javascript/README.md) |
+
 ## Desktop applications and examples
 
-Controller-only single-file candidates are described in the
-[standalone Controller guide](controller-standalone.md). Publish them before
-offering them as downloads in web Studio.
+Controller-only runtime and packaging details are in the
+[standalone Controller guide](controller-standalone.md).
 
 **Download Studio + Controller:** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications).
 
@@ -36,12 +42,18 @@ under `examples/` and share dependencies at the archive root. Moving just one
 subfolder from a combined archive can lose those dependencies; choose its
 `*-standalone` archive when you want to copy only that tutorial.
 
-The source checkout contains editable code, not prebuilt runtimes. For source
-builds, install the dependencies listed in that tutorial's README. Native viewers
-bundle shared libraries/models, Python viewers also bundle the interpreter, and
-browser viewers bundle compiled pages/WASM/MediaPipe/models. Individual browser
-archives require Node; the combined JavaScript archive bundles it. Engine
-tutorials bundle native bridges but still require their editor and your tracking provider.
+> [!IMPORTANT]
+> **An archive and a source checkout have different prerequisites.** Downloads
+> bundle the files below. Rebuilding source still requires the dependencies in
+> the tutorial's README.
+
+| Download | Included | Still needed |
+| --- | --- | --- |
+| Native viewer | Executable, shared libraries and tracking models | Supported OS; webcam for real tracking |
+| Python viewer | Native runtime plus Python and UI dependencies | Supported OS; webcam for real tracking |
+| Individual browser tutorial | Compiled pages, WASM, MediaPipe and models | **Node 22.12+**; localhost server |
+| Combined JavaScript archive | Browser tutorials and Node | Run the supplied local launcher |
+| Engine tutorial | Native bridge and example source | **Editor/toolchain and a landmark provider** |
 
 The [tools guide](../../tools/README.md) maps each package builder to its inputs
 and payload; the [tests guide](../../tests/README.md) explains download validation.

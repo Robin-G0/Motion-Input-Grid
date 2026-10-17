@@ -2,14 +2,18 @@
 
 [English](../../readme.md) | [Français](readme.fr.md)
 
-# [<img src="../../site/favicon-dark.svg" width="32" height="32" alt=""> Découvrez le site de présentation](https://robin-g0.github.io/Motion-Input-Grid/)
+Motion Input Grid est un framework open source d'entrée par le mouvement. Il
+transforme les mouvements corporels suivis en actions configurables pour les
+sites web, applications de bureau et jeux.
+
+## [<img src="../../site/favicon-dark.svg" width="32" height="32" alt=""> Découvrez le site de présentation](https://robin-g0.github.io/Motion-Input-Grid/)
 
 Commencez ici pour une **introduction rapide et une démonstration interactive du concept**, directement dans votre navigateur.
 
-Les images de la caméra sont traitées sur votre appareil. Le démarrage télécharge
-d’abord les modules caméra, les modèles de suivi et le moteur depuis le site.
-Si le chargement échoue, rétablissez votre connexion puis réessayez ; la
-démonstration n’est pas installée pour fonctionner hors ligne.
+> [!NOTE]
+> **Les images de la caméra sont traitées sur votre appareil.** Le premier
+> démarrage télécharge le moteur et les modèles. Gardez une connexion pour ce
+> chargement ; la démonstration hébergée n'est pas installée pour un usage hors ligne.
 
 **Transformez un mouvement en action.** Dessinez un parcours pour un poignet ou
 une autre partie du corps, puis reconnaissez-le avec une caméra. Utilisez les
@@ -18,7 +22,7 @@ actions dans votre projet ou envoyez des raccourcis à une application de bureau
 | Commencer ici | Ce que vous pouvez faire |
 | --- | --- |
 | **[Studio web / éditeur de configuration](https://robin-g0.github.io/Motion-Input-Grid/studio/)** | Créer, importer et tester un profil, puis exporter le JSON. Sans installation. |
-| **Motion Input Grid Controller (bureau)** | [Télécharger pour Windows x64 (ZIP)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) · [Télécharger pour Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) — Studio inclus pour éditer les profils. |
+| **Motion Input Grid Controller (bureau)** | [Télécharger pour Windows x64 (ZIP)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) · [Télécharger pour Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) - Studio inclus pour éditer les profils. |
 
 MIG débute son développement. Les applications Linux et les intégrations aux
 moteurs de jeu nécessitent encore davantage de tests ; consultez les
@@ -64,18 +68,15 @@ elle n'est pas disponible sous Wayland natif.
 
 | Situation | Guide |
 | --- | --- |
-| Faire avancer une présentation PowerPoint | [Présentations](../guides/presentations.fr.md) |
+| Faire avancer Canva, PowerPoint, PDF et autres présentations / diaporamas | [Présentations](../guides/presentations.fr.md) |
 | Contrôler un jeu avec ses raccourcis existants | [Jeux vidéo](../guides/video-games.fr.md) |
 | Déclencher des raccourcis sur son ordinateur | [Usage quotidien](../guides/everyday-use.fr.md) |
 
 > [!CAUTION]
 > **Vérifiez les règles avant d'utiliser le Controller dans un jeu compétitif.**
-> MIG génère des événements clavier du système : il ne modifie pas les jeux,
-> n'injecte pas de code et ne lit pas la mémoire de leurs processus. Cela ne
-> garantit pas son acceptation par un anti-cheat : un processus inconnu ou des
-> entrées simulées peuvent être signalés. Respectez les règles du jeu et obtenez
-> une autorisation si nécessaire. Évitez les sessions classées ou protégées si
-> l'acceptation est incertaine ; MIG ne peut pas garantir l'absence de sanction.
+> MIG génère des événements clavier du système. Cela ne garantit pas son
+> acceptation par un anti-cheat. Consultez les [précautions pour les jeux](../guides/video-games.fr.md)
+> avant d'activer la sortie dans une session protégée.
 
 ## Intégrer MIG dans votre projet
 

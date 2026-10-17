@@ -2,6 +2,10 @@
 
 [English](windows-runtime-dependencies.md) | [Français](windows-runtime-dependencies.fr.md)
 
+> [!NOTE]
+> **Visual Studio n’est pas nécessaire pour lancer le Controller.** Le bundle inclut les DLL applicatives.
+> Media Foundation, les pilotes et l’autorisation caméra restent nécessaires.
+
 Le Controller Windows en un fichier embarque ses dépendances applicatives et
 licences. Visual Studio n’est pas un prérequis d’exécution. Voir
 l’[architecture du cache](../getting-started/controller-standalone.fr.md).

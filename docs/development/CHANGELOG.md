@@ -4,6 +4,12 @@
 
 ## Unreleased
 
+- Add illustrated, bilingual presentation steps for Canva, PowerPoint, PDF and other slideshows; improve reading paths, examples and technical references.
+- Reject NUL in profile identifiers, names and actions to preserve native string contracts.
+- Preserve an active recording when a replacement landmark selection is invalid.
+- Validate documentation on every push and pull request, including documentation-only changes.
+- Align bilingual architecture, camera SDK prerequisites and example walkthroughs with the implementation.
+
 ## 1.1.0
 
 - Browser presentation and Studio for profile creation, import, annotations and live tests.
@@ -41,7 +47,7 @@
 - Example guides include launch instructions, integration walkthroughs and package
   installation instructions.
 
-## 1.0.0 — first public release
+## 1.0.0 - first public release
 
 Prototype and initial development took place privately before this first public release.
 
