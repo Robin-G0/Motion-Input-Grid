@@ -28,6 +28,8 @@ jobs:
 
     linux:
         needs: metadata
+        outputs:
+            artifact-id: ${{ steps.candidates.outputs.artifact-id }}
         runs-on: ubuntu-24.04
         timeout-minutes: 90
         steps:
@@ -73,13 +75,22 @@ jobs:
                   -e CMAKE_CXX_COMPILER_LAUNCHER=ccache mig-linux-release:22.04
                   bash tools/packaging/prepare-linux-packages.sh
             - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              id: candidates
               with:
                   name: motion-input-grid-linux-and-python-candidates
-                  path: build/releases/
+                  path: |
+                      build/releases/
+                      !build/releases/motion-input-grid-*-linux-x64-examples.tar.gz*
+                      !build/releases/SHA256SUMS
+                  # Keep inputs for debugging if assembly fails; delete after successful assembly.
+                  retention-days: 3
+                  if-no-files-found: error
                   compression-level: 1
 
     windows:
         needs: metadata
+        outputs:
+            artifact-id: ${{ steps.candidates.outputs.artifact-id }}
         runs-on: windows-2022
         timeout-minutes: 60
         env:
@@ -135,13 +146,21 @@ jobs:
               shell: pwsh
               run: ./tools/packaging/prepare-windows-packages.ps1
             - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              id: candidates
               with:
                   name: motion-input-grid-windows-x64-candidate
-                  path: build/releases/
+                  path: |
+                      build/releases/
+                      !build/releases/motion-input-grid-*-windows-x64-examples.zip*
+                      !build/releases/SHA256SUMS
+                  retention-days: 3
+                  if-no-files-found: error
                   compression-level: 1
 
     javascript:
         needs: metadata
+        outputs:
+            artifact-id: ${{ steps.candidates.outputs.artifact-id }}
         runs-on: ubuntu-24.04
         timeout-minutes: 30
         steps:
@@ -193,13 +212,21 @@ jobs:
                   python3 tests/packaging/package_artifact_tests.py build/releases/motion-input-grid-*-javascript-examples.tar.gz
                   python3 tests/packaging/release_archive_tests.py build/releases
             - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              id: candidates
               with:
                   name: motion-input-grid-npm-candidate
-                  path: build/releases/
+                  path: |
+                      build/releases/
+                      !build/releases/motion-input-grid-*-javascript-examples.tar.gz*
+                      !build/releases/SHA256SUMS
+                  retention-days: 3
+                  if-no-files-found: error
                   compression-level: 1
 
     source:
         needs: metadata
+        outputs:
+            artifact-id: ${{ steps.candidates.outputs.artifact-id }}
         runs-on: ubuntu-24.04
         timeout-minutes: 20
         steps:
@@ -222,13 +249,18 @@ jobs:
                   build/vcpkg-release-tool/bootstrap-vcpkg.sh -disableMetrics
                   python3 tests/packaging/vcpkg_package_tests.py build/releases/motion-input-grid-*-vcpkg-overlay.tar.gz build/releases/motion-input-grid-*-source.tar.gz --vcpkg build/vcpkg-release-tool/vcpkg
             - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              id: candidates
               with:
                   name: motion-input-grid-source-and-vcpkg-candidates
                   path: build/releases/
+                  retention-days: 3
+                  if-no-files-found: error
                   compression-level: 1
 
     arm64:
         needs: metadata
+        outputs:
+            artifact-id: ${{ steps.candidates.outputs.artifact-id }}
         runs-on: ubuntu-24.04-arm
         container: ubuntu:22.04
         timeout-minutes: 30
@@ -254,14 +286,20 @@ jobs:
                   python3 tests/packaging/python_package_tests.py build/releases/*-manylinux_2_35_aarch64.whl
                   python3 -m twine check build/releases/*.whl
             - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              id: candidates
               with:
                   name: motion-input-grid-arm64-python-candidate
                   path: build/releases/
+                  retention-days: 3
+                  if-no-files-found: error
                   compression-level: 1
 
     manifest:
         needs: [linux, windows, javascript, source, arm64]
         runs-on: ubuntu-24.04
+        permissions:
+            contents: read
+            actions: write
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
               with:
@@ -290,4 +328,22 @@ jobs:
               with:
                   name: motion-input-grid-release-candidates
                   path: build/release-candidates/
+                  # Final candidates are reviewed and published manually.
+                  retention-days: 7
+                  if-no-files-found: error
                   compression-level: 1
+            - name: Delete assembled intermediate Actions artifacts
+              # A cleanup failure must not invalidate the verified final candidate.
+              continue-on-error: true
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  GH_REPO: ${{ github.repository }}
+                  ARTIFACT_IDS: ${{ format('{0} {1} {2} {3} {4}', needs.linux.outputs.artifact-id, needs.windows.outputs.artifact-id, needs.javascript.outputs.artifact-id, needs.source.outputs.artifact-id, needs.arm64.outputs.artifact-id) }}
+              shell: bash
+              run: |
+                  # Only IDs from this run's five producer jobs; never release assets.
+                  for artifact_id in $ARTIFACT_IDS; do
+                      [[ "$artifact_id" =~ ^[0-9]+$ ]] || exit 1
+                      echo "Deleting assembled intermediate Actions artifact $artifact_id from run $GITHUB_RUN_ID"
+                      gh api --method DELETE "repos/$GH_REPO/actions/artifacts/$artifact_id"
+                  done

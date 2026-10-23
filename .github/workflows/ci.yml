@@ -84,6 +84,7 @@ jobs:
               with:
                   name: motion-input-grid-windows-hands-${{ matrix.hands }}
                   path: distribution/windows
+                  retention-days: 3
 
     portable:
         name: Linux portable SDK
@@ -170,6 +171,7 @@ jobs:
               with:
                   name: motion-input-grid-linux-native
                   path: build/motion-input-grid-linux.tar.gz
+                  retention-days: 3
 
     web:
         name: WebAssembly browser SDK
@@ -223,6 +225,8 @@ jobs:
               with:
                   name: motion-input-grid-web
                   path: distribution
+                  # Used by the JavaScript job in this run.
+                  retention-days: 1
 
     javascript:
         name: React, Vue and Next.js integrations
@@ -267,7 +271,20 @@ jobs:
                   npm pack --workspace motion-input-grid --pack-destination build/releases
                   npm run package:examples
                   python3 tests/packaging/standalone_browser_tests.py 'build/releases/*-browser-*-standalone.tar.gz'
+            - name: Stage standalone JavaScript artifacts with matching checksums
+              run: |
+                  mkdir -p build/javascript-artifacts
+                  for file in build/releases/*; do
+                      case "$file" in
+                          *-javascript-examples.tar.gz|*-javascript-examples.tar.gz.sha256|*/SHA256SUMS) continue ;;
+                      esac
+                      cp "$file" build/javascript-artifacts/
+                  done
+                  python3 tools/release/release-checksums.py build/javascript-artifacts
+                  python3 tools/release/release-checksums.py build/javascript-artifacts --check
             - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: motion-input-grid-javascript
-                  path: build/releases
+                  # Standalone examples already contain the compiled examples and runtime.
+                  path: build/javascript-artifacts/
+                  retention-days: 3
