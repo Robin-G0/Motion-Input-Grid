@@ -4,6 +4,9 @@
 
 ## Unreleased
 
+- Capture is an option when adding a movement to a profile, alongside manual drawing.
+  Recording highlights visited cells, start and finish; subsequent takes display
+  the last successful path and endpoints faintly as a guide.
 - Studio can capture a selected body part across three five-second takes, merge
   an ordered route with three precision presets, test it and assign a key.
   Inconsistent takes are retried; cancellation releases the camera without

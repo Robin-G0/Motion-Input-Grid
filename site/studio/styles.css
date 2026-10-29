@@ -16,7 +16,6 @@
 .capture-actions { position: sticky; bottom: -24px; background: var(--paper); padding: 14px 0 0; flex-wrap: wrap; border-top: 1px solid var(--border); }
 .capture-actions .button { white-space: normal; }
 #moves-panel > .panel-heading { flex-wrap: wrap; }
-@media (min-width: 661px) { .studio .menu-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 660px) { .capture-dialog .field-row { display: flex; flex-direction: column; align-items: stretch; }.capture-actions { bottom: -20px; }.capture-actions .button { flex: 1 1 150px; }.capture-camera { height: 180px; } }
 .pipeline-guide { padding: 18px 22px; border: 1px solid var(--accent); border-radius: 12px; background: var(--surface); margin: 16px 0; }
 .pipeline-guide h2 { font-size: 17px; margin: 0; }

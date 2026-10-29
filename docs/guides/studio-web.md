@@ -9,13 +9,17 @@ assign keys and export a configuration without editing JSON. No account is neede
 
 ### Capture instead of drawing
 
-1. Choose **Capture a movement** on the start screen or in **Movements**. Select
-   the body part and **Normal**, **High tolerance** or **High precision**.
+1. Create or import a profile, then choose **Add a movement → Capture with the
+   camera**. A new profile opens this choice for its first movement. Select the
+   body part and **Normal**, **High tolerance** or **High precision**.
 2. Start the camera. Keep both shoulders and the selected point visible until
    **Record take** becomes available.
 3. Return to your starting pose and record the gesture **once per take**. Each
    take starts after **3–2–1** and ends after **five seconds**. Finish sooner with
    **S**, **Space** or **Finish this take**. Repeat for **three consistent takes**.
+   **Blue cells** show the path as you move, with **S (green)** for the start and
+   **F (yellow)** for the current finish. On subsequent takes, the previous
+   successful path and its endpoints remain visible **in transparency**.
 4. Test the generated green-to-yellow route. After a recognized gesture, choose
    **Choose a key**, then save through the usual key editor.
 
@@ -36,7 +40,8 @@ regions and can be adjusted in the editor. No new runtime or file format is need
 
 ### Draw the route yourself
 
-1. Choose **Guide me step by step** for on-screen instructions, or **New profile**.
+1. Choose **Guide me step by step** for on-screen instructions, or **New profile →
+   Draw the route**. For an existing profile, choose **Add a movement → Draw the route**.
    The guide builds a movement named **HI**. A spotlight identifies the current control; the rest is dimmed and inactive. **Leave the guide** returns to normal editing. Steps advance after edits and successful recognition.
 2. Choose the body point to move, for example your left wrist.
 3. Select green **Required** and draw a starting region. Select yellow **Trigger**

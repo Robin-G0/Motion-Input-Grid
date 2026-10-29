@@ -1,5 +1,7 @@
 export const captureCopy = {
     en: {
+        startLabel: "S", endLabel: "F", liveRoute: "Blue cells show your path. S (green): start. F (yellow): current finish.",
+        previousRoute: "The previous successful take is shown faintly, including S (start) and F (finish). Your new path appears in blue.",
         title: "Capture a movement", hint: "Record your gesture three times, test the result, then choose its key.",
         record: "1. Record", test: "2. Test", keys: "3. Choose a key", name: "Movement name", defaultName: "Captured movement",
         part: "Body part", preset: "Precision", normal: "Normal", tolerant: "High tolerance", precise: "High precision",
@@ -27,6 +29,8 @@ export const captureCopy = {
         unknown: "The movement could not be prepared. Try again, or use the drawing editor."
     },
     fr: {
+        startLabel: "D", endLabel: "A", liveRoute: "Les cases bleues montrent votre parcours. D (vert) : départ. A (jaune) : arrivée actuelle.",
+        previousRoute: "La dernière prise réussie apparaît en transparence, avec D (départ) et A (arrivée). Le nouveau parcours se dessine en bleu.",
         title: "Capturer un mouvement", hint: "Enregistrez trois fois votre geste, testez le résultat, puis choisissez sa touche.",
         record: "1. Enregistrer", test: "2. Tester", keys: "3. Choisir une touche", name: "Nom du mouvement", defaultName: "Mouvement capturé",
         part: "Partie du corps", preset: "Précision", normal: "Normale", tolerant: "Haute tolérance", precise: "Haute précision",

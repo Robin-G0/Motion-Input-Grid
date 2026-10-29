@@ -4,6 +4,9 @@
 
 ## Non publié
 
+- La capture est une option d'ajout d'un mouvement à un profil, à côté du dessin.
+  L'enregistrement distingue les cases parcourues, le départ et l'arrivée ; les
+  prises suivantes affichent le dernier parcours réussi en transparence comme repère.
 - Le Studio capture un point du corps sur trois prises de cinq secondes, crée
   un parcours ordonné avec trois niveaux de précision, puis propose test et touche.
   Les prises incohérentes sont refaites ; annuler libère la caméra sans modifier

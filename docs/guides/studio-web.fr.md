@@ -9,13 +9,17 @@ gestes, associez leurs touches et exportez sans modifier de JSON. Aucun compte r
 
 ### Capturer au lieu de dessiner
 
-1. Choisissez **Capturer un mouvement** à l'accueil ou dans **Mouvements**.
+1. Créez ou importez un profil, puis choisissez **Ajouter un mouvement → Capturer
+   avec la caméra**. Un nouveau profil ouvre ce choix pour son premier mouvement.
    Sélectionnez la partie du corps et **Normale**, **Haute tolérance** ou **Haute précision**.
 2. Activez la caméra. Gardez les épaules et le point choisi visibles jusqu'à
    l'activation d'**Enregistrer la prise**.
 3. Revenez au départ et faites le geste **une fois par prise**. Chaque prise
    commence après **3–2–1** et se termine après **cinq secondes**. Arrêtez plus tôt
    avec **S**, **Espace** ou **Terminer cette prise**. Répétez pour **trois prises cohérentes**.
+   Les **cases bleues** montrent le chemin parcouru, avec **D (vert)** pour le départ
+   et **A (jaune)** pour l'arrivée actuelle. Aux prises suivantes, le dernier
+   parcours réussi et ses extrémités restent visibles **en transparence**.
 4. Testez le parcours vert-jaune généré. Après une reconnaissance, choisissez
    **Choisir une touche**, puis enregistrez avec l'éditeur clavier habituel.
 
@@ -38,7 +42,8 @@ Aucun nouveau runtime ni format de fichier n'est nécessaire.
 ### Dessiner le parcours soi-même
 
 1. Choisissez **Me guider pas à pas** pour les explications à l’écran, ou
-   **Créer un profil**. Le guide vous fait créer le mouvement **HI**.
+   **Créer un profil → Dessiner le parcours**. Dans un profil existant, choisissez
+   **Ajouter un mouvement → Dessiner le parcours**. Le guide vous fait créer le mouvement **HI**.
 2. Choisissez le point du corps à déplacer, par exemple votre poignet gauche.
 3. Choisissez **Required** en vert et dessinez une zone de départ, puis **Trigger**
    en jaune et dessinez l’arrivée. Le geste passe de la verte à la jaune.

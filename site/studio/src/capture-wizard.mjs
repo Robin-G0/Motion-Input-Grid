@@ -3,6 +3,7 @@ import { captureCopy } from "./capture-copy.mjs";
 import { createStudioSession, PreviewGrid, trackedPoint, validateProfile } from "./camera.mjs";
 import { drawPreview } from "./grid.mjs";
 import { landmarks, id } from "./profile.mjs";
+import { captureTrace, drawCaptureTrace } from "./capture-preview.mjs";
 
 export class CaptureWizard {
     constructor({ language, label, onAccept }) {
@@ -22,6 +23,7 @@ export class CaptureWizard {
                 <label class="field"><span data-capture-text="reference"></span><select id="capture-space"><option value="body" data-capture-text="body"></option><option value="calibrated" data-capture-text="calibrated"></option></select></label>
                 <p class="hint" data-capture-text="referenceHint"></p></details>
             <div class="capture-camera" data-mirror="true"><video id="capture-video" muted playsinline aria-hidden="true"></video><canvas id="capture-overlay" aria-hidden="true"></canvas><strong id="capture-countdown" aria-hidden="true"></strong></div>
+            <p id="capture-route-hint" class="hint" hidden></p>
             <p id="capture-status" role="status" aria-live="polite" aria-atomic="true" tabindex="-1"></p>
             <progress id="capture-progress" max="5000" value="0" hidden></progress>
             <p id="capture-error" class="feedback" role="alert" data-error="true" hidden></p>
@@ -37,7 +39,7 @@ export class CaptureWizard {
         this.$("close").onclick = () => this.close();
         this.dialog.addEventListener("cancel", event => { event.preventDefault(); this.close(); });
         this.$("camera-start").onclick = () => this.startCamera();
-        this.$("record").onclick = () => { if (!this.canRecord()) return; this.sequence.start(performance.now()); this.error = null; this.render(); };
+        this.$("record").onclick = () => { if (!this.canRecord()) return; this.livePoints = []; this.sequence.start(performance.now()); this.error = null; this.render(); };
         this.$("stop").onclick = () => this.finish();
         this.$("reset").onclick = () => this.reset();
         this.$("preset").onchange = () => { if (this.sequence.phase === "complete") this.prepare(); else this.render(); };
@@ -62,6 +64,7 @@ export class CaptureWizard {
     open({ landmark = "left_wrist", space = "body" } = {}) {
         this.close(); this.sequence = new CaptureSequence(); this.geometry = new PreviewGrid();
         this.identifier = id("captured"); this.candidate = null; this.matches = 0; this.error = null; this.lastFrame = -Infinity;
+        this.livePoints = []; this.previousPoints = []; this.acceptedCount = 0;
         this.$("part").replaceChildren(...Object.keys(landmarks).map(key => {
             const option = document.createElement("option"); option.value = key; option.textContent = this.label(key); return option;
         }));
@@ -83,6 +86,7 @@ export class CaptureWizard {
         ++this.generation; ++this.revision; clearInterval(this.timer); this.timer = null;
         this.sequence?.cancel(); this.session?.dispose(); this.session = null; this.cameraBusy = false; this.preparing = false;
         this.candidate = null; if (this.dialog.open) this.dialog.close();
+        this.livePoints = []; this.previousPoints = [];
     }
     canRecord() {
         const local = this.point && this.geometry.local(this.point.x, this.point.y,
@@ -137,12 +141,20 @@ export class CaptureWizard {
         this.point = trackedPoint(current, this.$("part").value);
         const local = this.point && this.geometry.local(this.point.x, this.point.y, aspect, this.$("space").value);
         this.sequence.observe(local && { ...local, confidence: this.point.confidence }, now);
+        if (this.sequence.phase === "recording") this.livePoints = this.sequence.take.samples;
         const display = this.candidate ?? { space: this.$("space").value, steps: [] };
         drawPreview(this.$("overlay"), current, {inputs:[display]}, 0, this.geometry, { points: false });
         const canvas = this.$("overlay"), ctx = canvas.getContext("2d");
         if (this.point && (this.point.confidence ?? 1) >= .6 && ctx) {
             ctx.beginPath(); ctx.arc(this.point.x * canvas.width, this.point.y * canvas.height, 7, 0, Math.PI * 2);
             ctx.fillStyle = "#fff"; ctx.strokeStyle = "#111923"; ctx.lineWidth = 2; ctx.fill(); ctx.stroke();
+        }
+        if (this.sequence.phase !== "complete") {
+            const options = {startLabel:this.text("startLabel"),endLabel:this.text("endLabel")};
+            drawCaptureTrace(this.$("overlay"), this.geometry, aspect, this.$("space").value,
+                captureTrace(this.previousPoints), {...options,ghost:true});
+            if (this.sequence.phase === "recording") drawCaptureTrace(this.$("overlay"), this.geometry, aspect,
+                this.$("space").value, captureTrace(this.livePoints), options);
         }
         this.render();
     }
@@ -152,11 +164,16 @@ export class CaptureWizard {
     }
     finished() {
         this.error = this.sequence.error;
+        if (this.sequence.takes.length > this.acceptedCount) {
+            this.previousPoints = this.livePoints.map(point => ({...point}));
+            this.acceptedCount = this.sequence.takes.length;
+        }
         if (this.sequence.phase === "complete") this.prepare();
         else { this.render(); this.$("record").focus(); }
     }
     reset() {
         ++this.revision; this.preparing = false; this.sequence = new CaptureSequence(); this.candidate = null; this.matches = 0; this.error = null;
+        this.livePoints = []; this.previousPoints = []; this.acceptedCount = 0;
         const current = this.session, revision = this.revision;
         current?.importJSON('{"schema_version":2,"inputs":[]}').catch(() => {
             if (current === this.session && revision === this.revision) this.cameraFailed();
@@ -205,6 +222,9 @@ export class CaptureWizard {
         this.$("reset").hidden = !this.sequence.takes.length && !this.error; this.$("reset").disabled = timed || !!this.preparing;
         this.$("use").hidden = !complete; this.$("use").disabled = !this.candidate || !this.matches || !!this.preparing || !!this.cameraBusy || !running;
         this.$("legend").hidden = !this.candidate;
+        this.$("route-hint").hidden = complete || !running;
+        const hint = this.text(this.previousPoints.length ? "previousRoute" : "liveRoute");
+        if (this.$("route-hint").textContent !== hint) this.$("route-hint").textContent = hint;
         for (const field of ["part", "space"]) this.$(field).disabled = timed || !!this.sequence.takes.length || !!this.preparing || !!this.cameraBusy;
         this.$("preset").disabled = timed || !!this.preparing;
         this.$("name").disabled = timed;

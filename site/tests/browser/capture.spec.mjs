@@ -12,8 +12,9 @@ async function openCapture(page,existing=null) {
     if(existing) {
         await page.locator("#import-file").setInputFiles({name:"existing.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(existing))});
         await expect(page.locator("#moves-panel")).toBeVisible();
-        await page.locator("#capture-input").click();
-    } else await page.locator("#capture-profile").click();
+        await page.locator("#add-input").click();
+    } else await page.locator("#new-profile").click();
+    await page.locator("#add-captured-input").click();
     await expect(page.locator("#capture-dialog")).toBeVisible();
 }
 async function camera(page) {
@@ -100,7 +101,7 @@ test("a mismatching second take preserves the first and asks for a replacement",
     await expect(page.locator("#capture-status")).toContainText("take 3 of 3");
     await page.keyboard.press("Escape");
     await expect(page.locator("#capture-dialog")).toBeHidden();
-    expect(await page.evaluate(()=>localStorage.getItem("mig-studio-profile-v2"))).toBeNull();
+    expect(JSON.parse(await page.evaluate(()=>localStorage.getItem("mig-studio-profile-v2")))).toEqual({schema_version:2,tracking:{hands:false},inputs:[]});
 });
 
 test("lost selected-point tracking fails the take instead of learning missing data",async({page})=>{
@@ -133,13 +134,13 @@ test("cancel while camera permission is pending releases a late stream and creat
     await page.evaluate(()=>window.finishCapturePermission());
     await expect.poll(()=>page.evaluate(()=>window.studioStream.getTracks().every(t=>t.readyState==="ended"))).toBe(true);
     await expect(page.locator("#capture-dialog")).toBeHidden();
-    expect(await page.evaluate(()=>localStorage.getItem("mig-studio-profile-v2"))).toBeNull();
-    await expect(page.locator("#capture-profile")).toBeFocused();
+    expect(JSON.parse(await page.evaluate(()=>localStorage.getItem("mig-studio-profile-v2")))).toEqual({schema_version:2,tracking:{hands:false},inputs:[]});
+    await expect(page.locator("#add-input")).toBeFocused();
 });
 
 test("French instructions and camera denial retain an accessible retry without opening capture",async({page})=>{
     await fakeStudioCamera(page,"Permission denied");await page.goto("./studio/");
-    await page.locator("[data-language='fr']").click();await page.locator("#capture-profile").click();
+    await page.locator("[data-language='fr']").click();await page.locator("#new-profile").click();await page.locator("#add-captured-input").click();
     await expect(page.locator("#capture-title")).toHaveText("Capturer un mouvement");
     await page.locator("#capture-camera-start").click();
     await expect(page.locator("#capture-error")).toContainText("Caméra indisponible");
@@ -157,7 +158,7 @@ test("Escape during the countdown cancels timers, restores focus and keeps an ex
     await page.keyboard.press("Escape");
     await page.waitForTimeout(3300);
     await expect(page.locator("#capture-dialog")).toBeHidden();
-    await expect(page.locator("#capture-input")).toBeFocused();
+    await expect(page.locator("#add-input")).toBeFocused();
     expect(await page.evaluate(()=>window.studioStream.getTracks().every(t=>t.readyState==="ended"))).toBe(true);
     expect(await page.evaluate(()=>localStorage.getItem("mig-studio-profile-v2"))).toBe(before);
 });
@@ -170,5 +171,60 @@ test("out-of-grid positioning explains why recording is unavailable and recovers
     await expect(page.locator("#capture-record")).toBeDisabled();
     await page.evaluate(()=>{window.studioWristX=.5;window.studioWristY=.45;});
     await expect(page.locator("#capture-record")).toBeEnabled();
+    await page.keyboard.press("Escape");
+});
+
+test("capture is an add-movement option inside a profile, alongside manual drawing",async({page})=>{
+    await page.goto("./studio/");
+    await expect(page.locator("#capture-profile, #capture-input, #capture-edit")).toHaveCount(0);
+    await page.locator("#new-profile").click();
+    await expect(page.locator("#add-movement-dialog")).toBeVisible();
+    expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("mig-studio-profile-v2")).inputs)).toEqual([]);
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#moves-panel")).toBeVisible();
+    await page.locator("#add-input").click();await page.locator("#add-drawn-input").click();
+    await expect(page.locator("#editor-panel")).toBeVisible();
+    expect(await page.evaluate(()=>JSON.parse(localStorage.getItem("mig-studio-profile-v2")).inputs.length)).toBe(1);
+});
+
+async function traceColors(page) {
+    return page.locator("#capture-overlay").evaluate(canvas=>{
+        const pixels=canvas.getContext("2d").getImageData(0,0,canvas.width,canvas.height).data;
+        const counts={strongBlue:0,faintBlue:0,start:0,finish:0};
+        for(let i=0;i<pixels.length;i+=4) {
+            const [r,g,b,a]=pixels.slice(i,i+4);
+            if(b>r+20 && b>g+10 && a>5) counts[a>=160?"strongBlue":"faintBlue"]++;
+            if(g>r+20 && g>b+5 && a>5) counts.start++;
+            if(r>g+20 && g>b+20 && a>5) counts.finish++;
+        }
+        return counts;
+    });
+}
+
+test("recording paints traversed cells and labeled endpoints, then ghosts the last good route on the next take",async({page},info)=>{
+    test.setTimeout(30000);
+    await openCapture(page);await camera(page);
+    await page.locator("#capture-record").click();
+    await expect(page.locator("#capture-stop")).toBeVisible({timeout:5000});
+    await move(page);
+    await expect.poll(async()=> (await traceColors(page)).strongBlue).toBeGreaterThan(0);
+    const liveBlue = (await traceColors(page)).strongBlue;
+    expect((await traceColors(page)).start).toBeGreaterThan(0);
+    expect((await traceColors(page)).finish).toBeGreaterThan(0);
+    await page.screenshot({path:info.outputPath("live-cells.png")});
+    await page.keyboard.press("s");
+    await expect(page.locator("#capture-route-hint")).toContainText("previous successful take");
+    // A faint route over the opaque tracking marker can still yield opaque blue pixels.
+    await expect.poll(async()=> (await traceColors(page)).strongBlue).toBeLessThan(liveBlue / 4);
+    expect((await traceColors(page)).faintBlue).toBeGreaterThan(0);
+    await page.evaluate(()=>window.studioWristY=.7);await page.waitForTimeout(200);
+    await page.locator("#capture-record").click();
+    await expect(page.locator("#capture-countdown")).toHaveText("3");
+    expect((await traceColors(page)).faintBlue).toBeGreaterThan(0);
+    await expect(page.locator("#capture-stop")).toBeVisible({timeout:5000});
+    await page.evaluate(()=>window.studioWristY=.5);await page.waitForTimeout(200);
+    await expect.poll(async()=> (await traceColors(page)).strongBlue).toBeGreaterThan(0);
+    expect((await traceColors(page)).faintBlue).toBeGreaterThan(0);
+    await page.screenshot({path:info.outputPath("previous-route.png")});
     await page.keyboard.press("Escape");
 });
