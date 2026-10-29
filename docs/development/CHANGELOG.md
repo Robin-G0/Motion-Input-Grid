@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+- Studio can capture a selected body part across three five-second takes, merge
+  an ordered route with three precision presets, test it and assign a key.
+  Inconsistent takes are retried; cancellation releases the camera without
+  changing the draft. Existing schema-v2 profiles remain the output format.
 ## 1.1.0
 
 - Browser presentation and Studio for profile creation, import, annotations and live tests.

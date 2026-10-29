@@ -4,6 +4,10 @@
 
 ## Non publié
 
+- Le Studio capture un point du corps sur trois prises de cinq secondes, crée
+  un parcours ordonné avec trois niveaux de précision, puis propose test et touche.
+  Les prises incohérentes sont refaites ; annuler libère la caméra sans modifier
+  le brouillon. Le résultat reste un profil au schéma 2 existant.
 ## 1.1.0
 
 - Présentation et Studio web pour créer, importer, annoter et tester les profils.
