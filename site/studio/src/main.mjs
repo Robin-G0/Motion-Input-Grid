@@ -10,6 +10,7 @@ import { NoteLayer, LiveNoteBrush, previewCell } from "./notes.mjs";
 import { FingerEditor, setFingerRule } from "./fingers.mjs";
 import { KeyboardEditor, keyboardSummary, validateKeyboard } from "./keyboard.mjs";
 import { latestControllerDownloads } from "./controller-downloads.mjs";
+import { CaptureWizard } from "./capture-wizard.mjs";
 
 const $ = id => document.getElementById(id);
 const storageKey = "mig-studio-profile-v2";
@@ -55,6 +56,20 @@ const keyboardEditor = new KeyboardEditor($("keyboard-dialog"), t, async draft =
     edit(current => Object.assign(current, movement));
     stopTest(); setView("moves"); feedback("movementSaved");
 });
+let replaceCapturedProfile = false;
+const capture = new CaptureWizard({ language: () => language, label: t, onAccept: movement => {
+    const profile = replaceCapturedProfile ? {schema_version:2,tracking:{hands:false},inputs:[]} : clone(history.value);
+    profile.inputs.push(movement); inputIndex = profile.inputs.length - 1;
+    scope = "0"; selectedRegion = null; selectedRegions = []; noteMode = null;
+    changed(profile); setView("test"); keyboardEditor.open(input());
+} });
+function captureMovement() {
+    if (busy || guided) return;
+    replaceCapturedProfile = view === "home" && !hasDraft;
+    if (!replaceCapturedProfile && history.value.inputs.length >= 64) { feedback("captureLimit", true); return; }
+    stopTest();
+    capture.open({landmark:$("landmark").value || "left_wrist",space:input()?.space});
+}
 const editor = new GridEditor($("editor-grid"), $("grid-regions"), $("drawing-selection"), drawRegion, t, (regionId, rect) => {
     edit(movement => {
         if (regionId === "__selection__") {
@@ -160,7 +175,7 @@ function selectOptions(node, options, selected) {
 }
 function setBusy(value) {
     busy = value;
-    for (const name of ["new-profile", "import-profile", "export-profile", "open-json", "add-input", "add-step", "apply-json", "input-select"]) $(name).disabled = busy;
+    for (const name of ["new-profile", "import-profile", "export-profile", "open-json", "add-input", "add-step", "apply-json", "input-select", "capture-profile", "capture-input", "capture-edit"]) $(name).disabled = busy;
     render();
 }
 function setView(next, focus = true) {
@@ -678,6 +693,7 @@ $("new-profile").addEventListener("click", () => {
     changed({ schema_version: 2, tracking: { hands: false }, inputs: [movement] });
     feedback(null); setView("edit"); $("input-name").focus(); $("input-name").select();
 });
+for (const name of ["capture-profile", "capture-input", "capture-edit"]) $(name).addEventListener("click", captureMovement);
 for (const name of ["edit-keyboard", "test-keyboard", "save-movement"]) $(name).addEventListener("click", () => {
     if (busy || !input()) return;
     if (!regions(input()).length && !input().fingers?.length) { feedback("emptyPath", true); return; }

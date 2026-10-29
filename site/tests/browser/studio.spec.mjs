@@ -1,3 +1,4 @@
+import { fakeStudioCamera as fakeObservations } from "./support/studio-camera.mjs";
 import { test, expect } from "@playwright/test";
 import { starter } from "../../studio/src/profile.mjs";
 import { readFile } from "node:fs/promises";
@@ -15,32 +16,6 @@ async function openStudio(page, screen = "edit") {
     await page.locator("#full-grid").uncheck();
     if (screen === "test") await page.locator("#tab-test").click();
     await expect(page.locator("#editor-grid button")).toHaveCount(324);
-}
-async function fakeObservations(page, failure = "") {
-    await page.addInitScript(failure => {
-        window.cameraFailure = failure;
-        window.studioWristY = .61;
-        const canvas = document.createElement("canvas"); canvas.width = 960; canvas.height = 720;
-        const context = canvas.getContext("2d");
-        window.studioVideoTimer = setInterval(() => { context.fillStyle = "#17232a"; context.fillRect(0, 0, 960, 720); }, 40);
-        navigator.mediaDevices.getUserMedia = async () => {
-            if (window.cameraFailure) throw new Error(window.cameraFailure);
-            window.studioStream = canvas.captureStream(25); return window.studioStream;
-        };
-    }, failure);
-    // Keep the real published MIGSession and WASM engine, replace only inference.
-    await page.route("**/mig/models.mjs", route => route.fulfill({ contentType: "text/javascript", body: `
-        export async function loadModels() {
-            return { pose: { close() {}, setOptions() {}, detectForVideo() {
-                window.studioInferenceCount = (window.studioInferenceCount || 0) + 1;
-                const points = Array.from({length:33}, () => ({x:.5,y:.45,z:0,visibility:0}));
-                points[11] = {x:.65,y:.45,z:0,visibility:window.studioShouldersVisible === false ? 0 : 1};
-                points[12] = {x:.35,y:.45,z:0,visibility:window.studioShouldersVisible === false ? 0 : 1};
-                points[15] = {x:.5,y:window.studioWristY,z:0,visibility:1};
-                return {landmarks:[points], worldLandmarks:[]};
-            } }, hands: { close() {}, detectForVideo() { return {landmarks:[],handedness:[],worldLandmarks:[]}; } } };
-        }
-    ` }));
 }
 
 test("Studio draws with pointer and keyboard, supports undo, restores drafts and exports real MIG JSON", async ({ page }) => {
