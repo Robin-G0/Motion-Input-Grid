@@ -13,6 +13,12 @@
 
 </details>
 
+> [!TIP]
+> **For a first game integration, start with a working example.** Choose your
+> [language or engine](../../examples/README.md), run its demo, then replace its
+> action handler with your game's command. The configuration and ownership details
+> below become useful when adapting that example.
+
 To install just the library and link it to your project, follow the
 [C++ SDK / CMake guide](cpp.md). It covers archives, source builds,
 `cmake --install` and generated Makefiles on Linux.
@@ -35,12 +41,16 @@ list runtime and operating-system requirements.
 ## Configure one action
 
 Use [raised-hands.json](../../examples/common/raised-hands.json) as your first profile.
-It defines `left_raise` and `right_raise`: anatomical wrist 15/16 travels through
-four green Required rows, then a yellow Trigger row. Each row spans the grid.
-Keep shoulders visible for about one second, lower your hands, then raise either
-one. The view mirrors once; left/right feedback refers to your anatomy.
-Copy the profile before editing it. Change `action` to your application's command
-name; preserve unique input IDs and the [schema-v2 rules](../reference/configuration.md).
+It defines `left_raise` and `right_raise`: anatomical wrist 15/16 enters the
+green Required region `[-9,3,27,3]`, then the yellow Trigger region `[-9,1,27,2]`.
+Both regions span the grid width; starting in yellow alone cannot trigger an action.
+1. **Calibrate:** keep both shoulders visible for about one second.
+2. **Start:** lower a hand into 🟩 Required.
+3. **Finish:** raise that wrist into 🟨 Trigger; watch for `left_raise` or `right_raise`.
+4. **Connect:** change `action` to your application's command name in a copy of
+   the profile. Preserve unique IDs and the [schema-v2 rules](../reference/configuration.md).
+
+The view mirrors once; left/right feedback refers to your anatomy.
 
 The demo variant loads that profile. The profile variant starts empty: click
 **Import profile**, choose JSON and recalibrate. Invalid imports preserve the
@@ -59,7 +69,7 @@ examples do not type keys into another application.
 | React | `run.cmd` or `sh run.sh`; `/` or `/profile.html` | `useMIG({onAction})` |
 | Vue | `run.cmd` or `sh run.sh`; `/` or `/profile.html` | Composable `useMIG({onAction})` |
 | Next.js | `run.cmd` or `sh run.sh`; `/` or `/profile` | Client component's React `onAction` |
-| C++ supplied positions | Run `run.cmd` / `sh run.sh` in the SDK tutorial | Read the span returned by `engine.update(frame)` as demonstrated by the consumer |
+| C++ supplied positions | Run `run.cmd` / `sh run.sh` in the SDK tutorial | Read the span returned by `engine.update(frame, frame.timestamp_ms)` |
 | Native C++ estimator | `run.cmd` / `sh run.sh`; see its README for arguments | Supply RGB, update the same engine, consume events |
 | Unity | Add the standalone tutorial’s `package.json` through Package Manager | `OnAction` UnityEvent or `SubmitFrame(packet)` |
 | Godot C# | Open the standalone .NET project and `raised_hands.tscn` | Connect `MotionAction`; call `SubmitFrame` from your provider |
@@ -77,6 +87,8 @@ Game engines require their installed editor and a camera/landmark provider;
 
 ## Use installed libraries or the checkout
 
+### Python camera viewers
+
 Python sources require Python 3.10+, Pillow and Pygame (Tk for the picker):
 
 ```sh
@@ -85,12 +97,16 @@ python examples/python-tkinter/main.py
 python examples/pygame/profile.py
 ```
 
-Scripts prefer an installed `mig` import, then use the packaged `bindings/python` or a verified full
-checkout. The pip wheel bundles the positions-only C ABI. Camera examples need a
-camera-enabled native SDK too; set `MIG_LIBRARY` to its C ABI library and
-`MIG_RUNTIME` to its MediaPipe/model directory when overriding discovery. Frozen viewers
-include Python/UI dependencies and use the archive's native runtime.
+> [!IMPORTANT]
+> **Installing the Python wheel does not install camera tracking.** Camera examples
+> also need a camera-enabled native SDK. Override discovery with `MIG_LIBRARY`
+> (its C ABI library) and `MIG_RUNTIME` (its MediaPipe/model directory).
+
+Scripts prefer installed `mig`, then the packaged binding or a verified checkout.
+Frozen viewers include Python/UI dependencies and their archive's native runtime.
 See the [Python package](../../bindings/python/README.md).
+
+### Native C++ graphics viewers
 
 C++ graphics consumers first try `find_package(MIG CONFIG)` and otherwise build the checkout.
 From a configured native build, install and configure an example:
@@ -104,6 +120,8 @@ cmake --build build/graphics --parallel 2
 On Windows, add `--config Release` to build/install. SDL2/SFML development
 packages and the platform toolchain are needed for rebuilding, not for bundled
 execution. [Integration](../integrations/overview.md) explains RGB and supplied-pose hosts.
+
+### Browser workspaces
 
 JavaScript workspaces use the same package name as consumers. Prepare WASM and
 checksummed assets, then build the frameworks:

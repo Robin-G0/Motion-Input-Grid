@@ -7,6 +7,12 @@
 Associez un mouvement volontaire à un raccourci connu de l'application au premier
 plan. Commencez sur un document jetable avec une action facile à annuler.
 
+> [!TIP]
+> **Premier objectif : copier du texte d'essai.** Choisissez **Une seule fois**
+> et une zone jaune que vos gestes habituels n'atteignent pas.
+
+## Créer, tester et utiliser
+
 1. Créez un mouvement dans le [Studio web](studio-web.fr.md) ou le
    [Studio de bureau](configurator.fr.md). Nommez-le **Copier la sélection**, avec
    l'action `copy_selection`. Dessinez 🟩 **Required** au repos du poignet et
@@ -24,9 +30,13 @@ plan. Commencez sur un document jetable avec une action facile à annuler.
 5. Revenez au repos avant de recommencer. Désactivez la sortie ou arrêtez le suivi
    lorsque vous quittez l'application cible.
 
-Les raccourcis vont à l'application qui a le focus ; MIG ne choisit pas sa fenêtre.
-Vérifiez les raccourcis avant de réutiliser un profil. Évitez les commandes
-destructrices, les mots de passe et les actions irréversibles pendant les essais.
+> [!WARNING]
+> Les raccourcis vont à **l'application au premier plan**. Vérifiez-les avant de
+> réutiliser un profil. Pendant les essais, évitez les commandes destructrices,
+> les mots de passe et les actions irréversibles.
+
+## Si le suivi manque de précision
+
 Si le suivi manque de précision, replacez les régions avec la caméra et
 recalibrez après avoir déplacé la chaise ou la caméra. Vous pouvez éditer et
 exporter un profil même si la caméra n'est pas accessible.

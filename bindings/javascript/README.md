@@ -33,6 +33,11 @@ Use only the import matching your application. In PowerShell, use
 composable backed by the existing C++/WASM engine. React and Vue are optional
 peer dependencies; Next.js uses the React adapter.
 
+> [!TIP]
+> **Keep both installation commands.** `npm install` installs the code;
+> `mig-copy-assets` makes WASM and models available to the browser.
+> Serve your application over **localhost or HTTPS** for camera access.
+
 ## Use the package
 
 Pass the public asset URL to `useMIG` or `MIGSession`. The default is `/mig/`;
@@ -76,12 +81,19 @@ window.addEventListener('pagehide', () => {
 }, { once: true });
 ```
 
-`subscribe` immediately supplies a snapshot, then receives status changes and
-accepted actions. The action list holds the most recent accepted frame, including
-simultaneous events; it is feedback rather than live held-state information.
-`stop` releases the camera and resets recognition, retaining models for restart.
-`dispose` also closes models and the engine. It is idempotent. Failed profile
-validation leaves the active configuration intact. `recalibrate` resets progress.
+| Method | Effect |
+| --- | --- |
+| `subscribe(callback)` | Immediate snapshot, then status changes and accepted actions |
+| `start(video, canvas)` | Loads resources and opens the camera |
+| `stop()` | Releases camera, resets recognition and retains models for restart |
+| `dispose()` | Also closes models and engine; safe to call repeatedly |
+| `importJSON(text)` | Validates before replacing; failure retains the active profile |
+| `recalibrate()` | Clears recognition progress |
+
+> [!NOTE]
+> `actions` holds events from the **most recent accepted frame**, including simultaneous actions.
+> Use `onAction({ action, id })` for commands; this list is not live held-state information.
+
 The session's optional `onFrame(session)` callback reads `coordinate(index,
 system)` for imperative animation/XYZ feedback without reactive updates; system
 0 is normalized image XYZ, 1 world metres, 2 world metres with Y up. Missing

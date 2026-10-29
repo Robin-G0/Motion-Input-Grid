@@ -1,0 +1,26 @@
+name: Check documentation
+
+on:
+    push:
+    pull_request:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: docs-${{ github.event_name }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    documentation:
+        runs-on: ubuntu-24.04
+        timeout-minutes: 5
+        steps:
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  persist-credentials: false
+            - name: Test documentation validation
+              run: python3 tests/tooling/docs_tests.py
+            - name: Check translations, punctuation and local links
+              run: python3 tools/dev/check-docs.py

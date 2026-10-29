@@ -17,6 +17,11 @@ Each framework example has two pages: raised hands with immediate feedback, and
 a Motion Input Grid Studio JSON importer showing each accepted action and input identifier.
 No new configuration schema or framework-specific recognition logic is added.
 
+> [!TIP]
+> **To try MIG, use the built example archive.** No Emscripten build is needed.
+> For your own application, go to [Add MIG to your application](#add-mig-to-your-application):
+> the npm package already supplies WASM and models. Full-checkout commands are for source development.
+
 ## Run an example
 
 **Download a ready-to-run example:** [HTML](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-web-examples) · [React](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-react-examples) · [Vue](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-vue-examples) · [Next.js](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-next-examples).
@@ -93,7 +98,7 @@ import { useMIG } from 'motion-input-grid/react';
 
 function Camera() {
     const mig = useMIG({
-        assetBase: new URL('/mig/', window.location.href).href,
+        assetBase: '/mig/',
         onAction: ({ action }) => console.log(action)
     });
     return <>

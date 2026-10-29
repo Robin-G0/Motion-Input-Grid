@@ -4,7 +4,13 @@
 
 Motion Input Grid (MIG) reconnaît les mouvements décrits dans un profil JSON.
 Utilisez ses applications de bureau pour contrôler une autre application,
-ou intégrez le même moteur dans votre projet. Choisissez un point de départ.
+ou intégrez le même moteur dans votre projet.
+
+| Votre objectif | Point de départ | Premier résultat |
+| --- | --- | --- |
+| Commander une présentation | [Parcours présentation](guides/presentations.fr.md) | Un mouvement fait avancer une diapositive |
+| Développer un jeu avec MIG | [Catalogue des exemples](../examples/README.fr.md) | Des actions reconnues dans votre langage ou moteur |
+| Examiner la conception | [Architecture](architecture/overview.fr.md), [performances](architecture/performance.fr.md) | Modules, ressources et limites des mesures |
 
 ## Utiliser les applications de bureau
 
@@ -24,7 +30,7 @@ choisissez un téléchargement dans le [catalogue des exemples](../examples/READ
 
 | Situation | Guide |
 | --- | --- |
-| PowerPoint et autres diaporamas | [Présentations](guides/presentations.fr.md) |
+| Canva, PowerPoint, PDF et autres présentations / diaporamas | [Présentations](guides/presentations.fr.md) |
 | Jeux existants ou votre propre jeu | [Jeux vidéo et précautions anti-cheat](guides/video-games.fr.md) |
 | Raccourcis des applications de bureau | [Usage quotidien](guides/everyday-use.fr.md) |
 
@@ -33,6 +39,8 @@ choisissez un téléchargement dans le [catalogue des exemples](../examples/READ
 | Technologie | Installation et première action |
 | --- | --- |
 | C++ / CMake / Make | [Installation du SDK](getting-started/cpp.fr.md), [API C++](reference/cpp.fr.md) |
+| SDL2 / SFML | [Tutoriel SDL2](../examples/sdl2/README.fr.md), [Tutoriel SFML](../examples/sfml/README.fr.md) |
+| .NET / C# | [Pont managé et première action](../bindings/dotnet/README.fr.md) |
 | Python | [pip et envoi de frames](../bindings/python/README.fr.md), [Tkinter](../examples/python-tkinter/README.fr.md), [Pygame](../examples/pygame/README.fr.md) |
 | Navigateur / React / Vue / Next.js | [Package npm](../bindings/javascript/README.fr.md), [Installation des frameworks](integrations/javascript.fr.md) |
 | Godot / Unity / Unreal | [Add-on Godot](../integrations/godot/README.fr.md), [UPM Unity](../integrations/unity/README.fr.md), [Plugin Unreal](../integrations/unreal/README.fr.md) |

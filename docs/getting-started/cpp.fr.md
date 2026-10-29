@@ -24,10 +24,21 @@ Extrayez entièrement le paquet de votre système.
 Choisissez votre système et architecture. Windows demande un toolset MSVC
 compatible ; les SDK Linux publiés ciblent glibc 2.35+ et GCC 11+.
 
-Le préfixe d'installation est le dossier contenant `include/` et `lib/`, avec
-`lib/cmake/MIG/MIGConfig.cmake` en dessous. Les archives d'applications natives
-contiennent aussi un SDK dans `sdk/`. Passez ce préfixe à `CMAKE_PREFIX_PATH`,
-plutôt que le fichier archive ou le dossier des sources du dépôt.
+Repérez le **préfixe du SDK** dans l'archive extraite :
+
+```text
+sdk/                         <- CMAKE_PREFIX_PATH pointe ici
+  include/
+  lib/
+    cmake/MIG/MIGConfig.cmake
+```
+
+Les archives d'applications natives contiennent aussi un SDK dans `sdk/`.
+
+> [!TIP]
+> **Une première action avant d'écrire votre application ?** Lancez le
+> [tutoriel de positions](../../examples/sdk-consumer/README.fr.md). Il reconnaît
+> une levée de main synthétique, sans caméra ni modèles de suivi.
 
 ## Compiler et installer depuis les sources
 
@@ -49,7 +60,10 @@ administrateur. La première configuration peut télécharger la dépendance JSO
 bootstrap MediaPipe n'est nécessaire. Pour compiler avec la caméra, suivez le
 guide [Windows](windows.fr.md) ou [Linux](linux.fr.md).
 
-Pour générer explicitement des Makefiles sous Linux, utilisez un dossier distinct :
+<details>
+<summary>Variante : générer des Makefiles GNU sous Linux</summary>
+
+Utilisez un dossier distinct :
 
 ```sh
 cmake -S . -B build/sdk-make -G "Unix Makefiles" \
@@ -64,6 +78,8 @@ cmake --install build/sdk-make --prefix install
 `cmake --build` appelle Make pour ce générateur ; `make -C build/sdk-make -j2`
 est équivalent. Le dépôt n'a pas de Makefile manuel à la racine. Ne changez pas
 le générateur d'un dossier de build existant.
+
+</details>
 
 ## Lier votre application
 
@@ -116,8 +132,9 @@ préfixe personnalisé. vcpkg utilise l'overlay de release et son toolchain CMak
 Consultez la [distribution](packages.fr.md) et le
 [port vcpkg](../../ports/motion-input-grid/README.fr.md).
 
-Si CMake ne trouve pas MIG, localisez `MIGConfig.cmake` et vérifiez le préfixe.
-Vous pouvez aussi passer `-DMIG_DIR=/chemin/sdk/lib/cmake/MIG`. Une cible absente
-signifie que le SDK choisi n'inclut pas cette fonctionnalité. Une erreur MediaPipe
-pendant la compilation signifie que vous avez sélectionné une configuration
-application/caméra plutôt que `sdk-release`.
+| Symptôme | Vérification |
+| --- | --- |
+| CMake ne trouve pas MIG | Pointez `CMAKE_PREFIX_PATH` vers le préfixe ci-dessus, ou définissez `MIG_DIR=/chemin/sdk/lib/cmake/MIG`. |
+| `MIG::native` est absent | Utilisez un SDK avec caméra ; le SDK de positions ne fournit pas cette cible. |
+| MediaPipe est demandé pour compiler les seules positions | Choisissez `sdk-release`, sans applications ni caméra. |
+| Erreur de liaison ou de chargement DLL/SO | Faites correspondre architecture, compilateur/runtime et configuration ; rendez les bibliothèques partagées accessibles à l'exécution. |

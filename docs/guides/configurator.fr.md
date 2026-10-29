@@ -23,6 +23,11 @@ en profils JSON. Choisissez une partie du corps, dessinez son parcours et défin
 l'action à envoyer. Exécutez le profil enregistré dans le [Motion Input Grid Controller](controller.fr.md)
 ou dans une application utilisant MIG.
 
+> [!TIP]
+> **Vous voulez simplement piloter une présentation ?** Le [guide présentation](presentations.fr.md)
+> propose un parcours sans code. Ici, le Studio sert à **dessiner**, puis le
+> Controller à **utiliser** vos mouvements.
+
 ## Où trouver et lancer l'application
 
 > [!NOTE]
@@ -69,6 +74,10 @@ puis ajoutez votre raccourci à l'input choisi. Il fournit deux parcours de poig
 active le suivi des mains et demande une version compilée avec leur prise en charge.
 Il n'envoie aucune touche tant que vous n'avez pas ajouté de binding.
 
+> [!NOTE]
+> Pour Canva, PowerPoint, un PDF ou un autre diaporama, **essayez d'abord la touche
+> au clavier physique**. Le raccourci dépend du lecteur et du mode de présentation.
+
 ### Choisir ce que le clavier fait
 
 | Mode | Comportement |
@@ -96,10 +105,13 @@ Les couleurs des régions indiquent leurs conditions :
 
 | Couleur | Condition |
 | --- | --- |
-| 🟩 Vert — Required | Passer par cette région ; les numéros définissent l'ordre du parcours. |
-| 🟥 Rouge — Forbidden | Éviter cette région. |
-| 🟨 Jaune — Trigger | Terminer le mouvement ici pour déclencher son action. |
-| 🟪 Violet — Interaction | Faire le signe de main choisi dans cette région, avec un maintien facultatif. |
+| 🟩 Vert - Required | Passer par cette région ; les numéros définissent l'ordre du parcours. |
+| 🟥 Rouge - Forbidden | Éviter cette région. |
+| 🟨 Jaune - Trigger | Terminer le mouvement ici pour déclencher son action. |
+| 🟪 Violet - Interaction | Faire le signe de main choisi dans cette région, avec un maintien facultatif. |
+
+<details>
+<summary>Réglages détaillés des zones</summary>
 
 Cliquez sur un mouvement pour afficher son point suivi et ses zones. Changer le
 point réaffecte immédiatement ses zones dans le document ; une collision avec un
@@ -115,6 +127,8 @@ la page intégrée **Complete JSON profile** pour tous les champs du schéma.
 Les guides [Windows](../getting-started/windows.fr.md#dessiner)
 et [Linux](../getting-started/linux.fr.md) détaillent les outils disponibles.
 
+</details>
+
 ## Vérifier et utiliser le profil
 
 Choisissez **Select**, puis maintenez le clic gauche en déplaçant la souris pour
@@ -128,6 +142,9 @@ importés restent reconnues. Les étapes sont des phases successives ; le parcou
 détermine comment atteindre les cases d'une phase : dans l'ordre, en ordre libre
 ou simultanément. Une seule étape suffit pour un mouvement simple.
 
+<details>
+<summary>Avancé : conditions de doigts et signes</summary>
+
 Changer de section conserve les conditions du mouvement. Supprimer une région
 violette retire son signe et ses règles de doigts propres, mais les règles
 indépendantes de l'input entier et des étapes restent actives. Le résumé des
@@ -138,6 +155,8 @@ cases violettes. Sous Windows, le sélecteur de portée dans Fingers indique aus
 nombre de règles par portée. Après modification, appliquez de nouveau l'input
 avant de le tester et enregistrez le document pour conserver les changements.
 
+</details>
+
 Gardez les épaules visibles pour que la grille suive votre corps. Essayez le
 mouvement et observez le retour des actions. Consultez le [suivi des mains](hands.fr.md)
 pour les signes et conditions de doigts. Fermez la caméra d'une application avant
@@ -147,6 +166,10 @@ La sortie clavier est désactivée au lancement. Le guide du Motion Input Grid C
 comment l'activer et utiliser Single press, Hold et Repeat. **View** règle le thème,
 les calques de l'aperçu et les logs. La [référence de configuration](../reference/configuration.fr.md)
 décrit les champs enregistrés et les modes d'action.
+
+> [!TIP]
+> **Appliquez, enregistrez, puis importez à nouveau** après une modification.
+> Arrêtez la caméra du Studio avant de la démarrer dans le Controller.
 
 ## Compiler depuis les sources
 

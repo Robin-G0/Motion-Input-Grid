@@ -2,6 +2,11 @@
 
 [English](overview.md) | [Français](overview.fr.md)
 
+> [!TIP]
+> **Review the design in three stops:** [module boundaries](#module-boundaries),
+> [ownership](#scheduling-and-application-ownership), then [measured costs](performance.md).
+> For a first game integration, start with the [examples](../getting-started/examples.md).
+
 <details>
 <summary>On this page</summary>
 
@@ -34,6 +39,7 @@ contracts; the linked guides provide API and platform details.
 MIG/
   src/                  C++ engine, native adapters and desktop applications
   bindings/             Python, .NET and JavaScript public interfaces
+  site/                 Presentation and browser Studio, with a released npm engine
   integrations/         Runtime Godot, Unity and Unreal packages
   ports/                motion-input-grid vcpkg port template
   VERSION               Shared engine and archive version
@@ -80,6 +86,7 @@ generated locally. Edit the source directories, not copies in those folders.
 | `src/apps` | Win32 presentation, drafts/history, capture/inference workers and output consent |
 | `src/linux-apps` | Qt presentation and worker-owned capture/engine; shared output scheduler |
 | `bindings` | Python ctypes, C# bridge and npm session/framework adapters |
+| `site` | Independent presentation and browser Studio project; pins the released npm engine |
 | `examples` | Local application/integration/support files, profiles and reusable tutorials |
 | `tests` | Portable CTest regressions, language/GUI/browser checks and archive validation |
 | `tools`, `cmake`, `.github/workflows` | Reproducible build, pinned bootstrap, validation and local packaging |
@@ -205,10 +212,14 @@ Next starts browser resources after a user gesture, never in SSR.
 
 ## Implemented scope and plans
 
-Windows has modern light/dark UI, linked logs, Basic/Advanced drawing, layer save,
-scoped fingers, keyboard sequences, recording/review and undo. Linux has a native
-Qt UI and complete-profile Advanced JSON, but interactive recording, advanced drawing
-and undo have not all been ported. Face is a scaffold, not face inference.
+Both desktop editors expose spatial constraints, scoped fingers and keyboard sequences.
+Windows uses contextual editing with immediate movement updates; its separate recording,
+body-parts and Undo/Redo toolbar options are removed. Retained recorder/history code
+is not evidence of an exposed authoring tool. Linux retains complete profiles through
+its Advanced JSON editor. See the current [Windows](../getting-started/windows.md)
+and [Linux](../getting-started/linux.md) guides for available UI controls.
+**Face remains a scaffold, without a face estimator.**
+
 Virtual gamepad, analog output, curvature matching, replay and a packaged threaded
 SDK camera-session facade remain plans. No depth proxy is advertised as metric
 camera distance. See [release preparation](../reference/support.md) for platform limits.

@@ -7,6 +7,10 @@
 There are two ways to use MIG with games: send keyboard events to an existing
 game using the Controller, or integrate recognition into a game you develop.
 
+> [!TIP]
+> **Building your own game?** Jump to [integration](#integrate-into-your-own-game).
+> **Playing an existing game?** Controller sends its usual keyboard shortcuts.
+
 ## Control an existing game
 
 > [!CAUTION]

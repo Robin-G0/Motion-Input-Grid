@@ -14,8 +14,8 @@ Reconnaît `left_raise` à partir de positions synthétiques. Illustre SDK insta
 2. Lancez `run.cmd` sous Windows ou `sh run.sh` sous Linux dans ce dossier.
 3. Observez la sortie console et la fermeture normale. Aucune webcam nécessaire.
 
-Objectif : 30–60 secondes avec les prérequis ; le chargement des modèles dépend
-du matériel. L'archive groupée propose aussi ces lanceurs dans son dossier d'exemple.
+L'exemple synthétique se ferme après avoir affiché l'action reconnue. L'archive
+groupée propose aussi ces lanceurs dans son dossier d'exemple.
 
 ## Organisation du dossier
 
@@ -31,7 +31,15 @@ du matériel. L'archive groupée propose aussi ces lanceurs dans son dossier d'e
 
 ## Parcours du code
 
-`main.cpp` appelle `initialize_mig()` dans `example_usage.hpp`. Les API core/format sont incluses explicitement ; `mig::load_configuration(path)` valide le JSON avant création du moteur. `calibrate()` fournit des épaules stables, puis `demonstrate_path()` soumet les centres des contraintes avec `engine.update(frame, frame.timestamp_ms)`. `dispatch_events()` consomme immédiatement les événements empruntés et retrouve leur action dans `engine.configuration().motions[event.motion]`. La sortie de portée détruit le moteur, même après une erreur.
+1. `main.cpp` appelle `initialize_mig()` dans `example_usage.hpp`.
+2. Les API core/format sont incluses explicitement ; `mig::load_configuration(path)`
+   valide le JSON avant la création du moteur.
+3. `calibrate()` fournit des épaules stables, avec une séquence croissante.
+4. `demonstrate_path()` soumet les centres des contraintes avec
+   `engine.update(frame, frame.timestamp_ms)` une fois par observation.
+5. `dispatch_events()` consomme immédiatement les événements empruntés et retrouve
+   leur action dans `engine.configuration().motions[event.motion]`.
+6. La sortie de portée détruit le moteur, même après une erreur.
 
 ## Dépendances et compilation
 

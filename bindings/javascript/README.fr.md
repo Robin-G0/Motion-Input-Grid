@@ -32,6 +32,11 @@ utilisez `npm.cmd` et `npx.cmd` si la politique bloque les scripts `.ps1`.
 `motion-input-grid` fournit une session caméra, un hook React et un composable
 Vue utilisant le moteur C++/WASM. Next.js réutilise React.
 
+> [!TIP]
+> **Gardez les deux commandes d'installation ensemble.** `npm install` installe le code ;
+> `mig-copy-assets` rend WASM et modèles accessibles au navigateur.
+> Servez votre application sur **localhost ou HTTPS** pour autoriser la caméra.
+
 ## Utiliser le package
 
 Le package contient WASM, modèles, modules, types et licences. `assetBase` indique
@@ -75,19 +80,23 @@ window.addEventListener('pagehide', () => {
 }, { once: true });
 ```
 
-`MIGSession` fournit `subscribe`, `start(video, canvas)`, `stop`, `importJSON`,
-`recalibrate` et `dispose`. Les abonnés reçoivent immédiatement un état puis les
-changements de statut et les actions acceptées. `actions` garde les événements
-de la dernière frame acceptée, simultanés compris ; ce n'est pas un état de
-maintien. `onAction` reçoit `{ action, id }` pour vos commandes.
+| Méthode | Effet |
+| --- | --- |
+| `subscribe(callback)` | État immédiat, puis statuts et actions acceptées |
+| `start(video, canvas)` | Charge les ressources et ouvre la caméra |
+| `stop()` | Libère la caméra, réinitialise la reconnaissance et garde les modèles |
+| `dispose()` | Ferme aussi modèles et moteur ; peut être appelé plusieurs fois |
+| `importJSON(text)` | Valide avant remplacement ; un échec conserve le profil actif |
+| `recalibrate()` | Efface la progression de reconnaissance |
 
-`stop` libère la caméra et réinitialise la reconnaissance, en gardant les modèles
-pour redémarrer. `dispose` ferme aussi modèles et moteur, même appelé plusieurs
-fois. Une configuration invalide conserve la précédente. `recalibrate` efface
-la progression. React expose `useMIG` dans `/react`, Vue dans `/vue` ; reliez les
-refs `video`/`canvas` et leurs méthodes aux contrôles. Vue expose `state` comme
-ref superficielle. React recrée la session si `assetBase`/`profileMode` changent ;
-les options Vue restent fixes jusqu'au démontage. Les deux nettoient à la sortie.
+> [!NOTE]
+> `actions` contient les événements de la **dernière frame acceptée**, simultanés compris.
+> Utilisez `onAction({ action, id })` pour vos commandes ; cette liste n'est pas un état de maintien.
+
+**Adaptateurs React/Vue :** reliez les refs `video`/`canvas` et leurs méthodes aux contrôles.
+React expose `useMIG` dans `/react`, Vue dans `/vue` avec une ref `state` superficielle.
+React recrée la session si `assetBase`/`profileMode` changent ; les options Vue sont fixes
+jusqu'au démontage. Les deux libèrent leurs ressources à la sortie.
 
 La session propose aussi `onFrame(session)` pour lire `coordinate(index, system)`
 sans mise à jour réactive : 0 pour XYZ image normalisé, 1 pour mètres monde,

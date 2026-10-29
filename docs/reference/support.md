@@ -2,6 +2,10 @@
 
 [English](support.md) | [Français](support.fr.md)
 
+> [!IMPORTANT]
+> **Read the evidence and limits together.** “Tested” covers the named checks,
+> not every webcam, editor or exported game. Unity and Unreal editor builds remain unvalidated.
+
 This is the canonical support matrix for MIG 1.1.0, JSON schema 2 and C ABI 1.
 A maturity label describes the interface, not the quality of a particular camera.
 Automated synthetic and blank-frame checks cannot establish hardware compatibility.
@@ -25,7 +29,7 @@ desktop applications.
 | Unity UPM | Preview | Untested in editor | Windows/Linux x64 | Native/.NET payload tested; editor/player builds not run |
 | Unreal plugin | Preview | Untested in editor | Windows x64, Linux x64/ARM64 payloads | C ABI payload tested; module/game builds not run |
 | Face scaffold | Experimental | Untested | Portable source | No face estimator or supported face recognition product |
-| Real cameras, OS key delivery, physical ARM64 | — | Untested | Target-dependent | Hardware/manual tests required |
+| Real cameras, OS key delivery, physical ARM64 | - | Untested | Target-dependent | Hardware/manual tests required |
 | macOS, mobile engine plugins | Planned | Untested | No distributed binaries | No support claim |
 
 ## Labels

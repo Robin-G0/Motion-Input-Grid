@@ -11,6 +11,11 @@ Les composants reçoivent des observations fournies. La démo synthétique véri
 le câblage sans caméra et sans prétendre mesurer la précision. Ces intégrations
 d’éditeur restent en preview.
 
+> [!IMPORTANT]
+> **Commencez en mode synthétique** pour voir `left_raise` et `right_raise` sans caméra.
+> Pour jouer avec une webcam, fournissez ensuite les points du corps depuis votre propre
+> estimateur. **Cette intégration est en preview** : vérifiez votre éditeur et vos exports.
+
 ## Démarrage rapide
 
 1. Extrayez `*-unreal-standalone` pour votre plateforme.

@@ -67,6 +67,30 @@ int main(int argc, char** argv) {
                              {"fire", 15, {4, 3}, mig::ConstraintType::Trigger}};
         definition.steps = {route};
         const mig::Configuration original{{definition}};
+        // Escaped JSON NUL must not become a truncated identifier/action at the C ABI.
+        const auto encoded = mig::serialize_configuration(original);
+        for (const auto field : {"id", "name", "action"}) {
+            auto document = encoded;
+            const auto token = std::string("\"") + field + "\": \"";
+            const auto position = document.find(token);
+            if (position == std::string::npos) {
+                throw std::runtime_error("Missing profile text fixture");
+            }
+            const auto value = position + token.size();
+            document.insert(value, "\\u0000");
+            bool rejected = false;
+            try {
+                mig::parse_configuration(document);
+            } catch (const std::exception& error) {
+                if (std::string(error.what()).find("NUL") == std::string::npos) {
+                    throw;
+                }
+                rejected = true;
+            }
+            if (!rejected) {
+                throw std::runtime_error("Escaped NUL in profile text accepted");
+            }
+        }
         mig::save_configuration(original, path);
         for (auto mode :
              {mig::ActionMode::SinglePress, mig::ActionMode::Hold, mig::ActionMode::Repeat}) {
@@ -258,6 +282,24 @@ int main(int argc, char** argv) {
         invalid_cooldown.motions[0].cooldown_ms = 10001;
         invalid(invalid_cooldown);
         auto wrong = modern;
+        for (int field = 0; field < 6; ++field) {
+            auto candidate = modern;
+            auto& input = candidate.motions[0];
+            auto& constraint = input.steps[0].constraints[0];
+            std::string* values[] = {&input.id,          &input.name,    &input.action,
+                                     &input.steps[0].id, &constraint.id, &constraint.tolerance_for};
+            values[field]->push_back('\0');
+            bool rejected = false;
+            try {
+                mig::Engine engine(candidate);
+            } catch (const std::exception&) {
+                rejected = true;
+            }
+            if (!rejected) {
+                throw std::runtime_error("C++ profile text containing NUL accepted");
+            }
+            invalid(candidate);
+        }
         wrong.motions[0].keyboard = {{mig::KeyboardActionType::Chord, {17, 17}, {}}};
         invalid(wrong);
         wrong = modern;

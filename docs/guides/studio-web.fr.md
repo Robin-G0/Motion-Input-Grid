@@ -5,6 +5,10 @@
 [Ouvrir le Studio](https://robin-g0.github.io/Motion-Input-Grid/studio/). Créez des
 gestes, associez leurs touches et exportez sans modifier de JSON. Aucun compte requis.
 
+> [!TIP]
+> **Commencez par le guide pas à pas.** Un premier mouvement suffit.
+> Dessiner → tester → associer une touche → exporter → ouvrir le Controller.
+
 ## Votre premier mouvement
 
 ### Capturer au lieu de dessiner
@@ -86,6 +90,10 @@ les mouvements. Le journal montre les actions et les opérations clavier qui
 seraient envoyées. Un test ouvert depuis une carte ne reconnaît que ce mouvement.
 Aucun test du site n’envoie réellement de touches.
 
+> [!NOTE]
+> Le journal montre des touches **simulées**. Pour commander Canva, PowerPoint,
+> un PDF ou un jeu, exportez puis utilisez le **Controller de bureau**.
+
 ## Exporter et utiliser le Controller
 
 Choisissez **Exporter** et conservez `mig-profile.json`. Le rappel donne accès
@@ -104,12 +112,21 @@ entièrement extraites et conservées ensemble ; ouvrez le Controller, pas le St
 3. Démarrez le suivi avec le clavier désactivé. Vérifiez que le bon mouvement
    s’allume, activez **Keyboard: On**, puis donnez le focus à votre application.
 
+![Vérification de l'import HI et de la touche Right dans le Controller Windows](../../site/studio/controller/images/import.png)
+
+*Vérifiez le nom et la touche avant de confirmer. La disposition Linux diffère.*
+
+<details>
+<summary>Installation et prérequis système</summary>
+
 Le Controller autonome contient le moteur et les modèles en un fichier.
 Windows conserve un cache du moteur dans Local AppData et le vérifie avant
 chaque réutilisation ; Linux extrait temporairement ses fichiers et les retire
 à la fermeture normale. Les fonctions caméra et affichage du système restent
 nécessaires ; Linux demande glibc 2.35 ou plus récent. Aucun compilateur, Python
 ou Studio de bureau à installer.
+
+</details>
 
 ## Quelques repères
 
@@ -126,13 +143,22 @@ Le brouillon appartient à un navigateur et une origine (protocole, hôte et por
 Exportez une copie durable avant de vider le stockage ou changer d’appareil.
 Les brouillons ne sont pas synchronisés avec un compte.
 
+> [!IMPORTANT]
+> **Exportez votre fichier** avant de vider le stockage du navigateur ou de changer
+> d'appareil. Un brouillon local n'est pas une sauvegarde synchronisée.
+
 ## Le parcours guidé HI
 
 Le guide construit un mouvement nommé **HI**. Un projecteur désigne le contrôle à utiliser, et le reste de l’interface est grisé et inactif. **Quitter le guide** rétablit l’édition normale. Les étapes avancent après les vraies actions et reconnaissances, sans temporisation.
 
 Nommez HI, choisissez Poignet gauche, tracez la bande inférieure de départ puis la bande supérieure d’arrivée. Gardez les épaules visibles et passez le poignet gauche du vert au jaune. Après reconnaissance, l’éditeur clavier est vide : cliquez sur **+**, puis sélectionnez **Right** ou capturez la flèche droite. Aucune touche n’est préremplie. Le + dans une ligne ajoute une touche simultanée ; le + du bas ajoute une étape suivante. Enregistrez, testez toute la configuration et vérifiez HI et Right dans le journal avant l’export.
 
+<details>
+<summary>Pour les mainteneurs : origine des captures</summary>
+
 La page de téléchargement présente directement sous les boutons trois captures réelles de Windows : Controller vide avec Import profile visible, vérification de l’import HI, puis HI avec Keyboard: On. Le suivi caméra n’est pas démarré dans cette dernière capture. La disposition Linux diffère. Pour les profils suivants, Import profile se trouve sous Manage profile. L’origine des images est consignée dans `site/studio/controller/images/capture.json`. Le script `tools/dev/capture-controller.py` de la branche binaire permet de les refaire après modification de l’interface.
+
+</details>
 
 Au premier lancement Windows, le fichier autonome explique où son runtime sera extrait. Copiez le chemin si nécessaire, puis choisissez Continue. Les lancements suivants réutilisent ce dossier vérifié. Fermez MIG avant de le supprimer pour nettoyer ; il sera recréé au prochain lancement. Vos profils sont stockés séparément.
 

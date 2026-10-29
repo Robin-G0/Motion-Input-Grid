@@ -2,6 +2,23 @@
 
 [English](hands.md) | [Français](hands.fr.md)
 
+## First try
+
+> [!TIP]
+> **A simple wrist route is enough to start.** Finger tracking is optional.
+> Begin with the [presentation guide](presentations.md) or [Studio Web](studio-web.md).
+
+| You want to… | What to do |
+| --- | --- |
+| Recognize a wrist route | Draw **Required** then **Trigger**; keep your shoulders visible. |
+| Add a finger or sign condition | Use a hands-enabled build and finger settings / a purple **Interaction** region. |
+| Hide hands on screen | Change the overlay; it does not disable tracking requested by the profile. |
+
+> [!WARNING]
+> **Occluded fingers remain uncertain**, even when the model returns positions.
+> Test with keyboard output off and check sign release as well as activation.
+> Automated tests do not measure accuracy on your hand.
+
 <details>
 <summary>On this page</summary>
 
@@ -25,6 +42,7 @@ matching headers. Subsequent builds may skip bootstrap.
 powershell -ExecutionPolicy Bypass -File tools/build/build-windows.ps1
 .\build\windows\bin\motion-input-grid-studio.exe --hands
 # Stop the first application's camera before starting the other:
+
 .\build\windows\bin\motion-input-grid-controller.exe --config profile.json
 ```
 
@@ -38,9 +56,18 @@ The Motion Input Grid Controller's `--hands` flag is accepted only for diagnosti
 Click Start camera. The main video is unobstructed; rule diagnostics appear in the separate editor.
 Hand tracking does not require shoulder calibration; body path
 recognition still does. Without an explicit host request, the hand model is not loaded or run.
+
+### Display and association
+
 The editor displays yellow hand bones/joints alongside body markers. Main status
 shows detected hands and available anatomical finger observations. Finger assignment
 requires visible pose wrists/shoulders and rejects ambiguous associations.
+
+<details>
+<summary>Advanced: global commands, thresholds and build options</summary>
+
+### Global commands and thresholds
+
 Extension checks both thumb MCP/IP or finger PIP/DIP bends, preventing a folded
 thumb with straight IP from invalidating a V gesture. Thumb and V can independently
 bind Restart, Restart calibration (Recalibrate), and Record. Apply enables inference;
@@ -57,6 +84,8 @@ show/hide yellow hand skeletons and body dots in the main window. Recording sign
 need an open editor and use its current landmark selection/coordinate basis.
 `-DMIG_BUILD_HANDS=OFF` removes the native hand code, linkage and model packaging;
 requesting `--hands` then reports an error.
+
+</details>
 
 ## Data contract
 
@@ -99,6 +128,8 @@ handles and the DLL. Upstream Clearcut metrics connection attempts were observed
 zero network traffic and leak-free operation are not established by these tests.
 See [the performance and safety audit](../architecture/performance.md).
 
+### Verify
+
 ```powershell
 ctest --test-dir build/windows -C Release --output-on-failure
 .\build\windows\bin\motion-input-grid-controller.exe --hands-test
@@ -113,6 +144,8 @@ do not inject keyboard input. None establishes human finger accuracy.
 Historical refactor verification passed all nine tests and three real webcam session cycles
 with hands enabled. A separate hands-disabled build passed its seven tests,
 packaged no hand model and explicitly rejected the hands flag.
+
+### Recognized signs
 
 The shared core classifier now recognizes Thumb, V, OK, Open palm and Fist.
 OK requires thumb/index tip contact (3D distance <=25% of palm width), with the

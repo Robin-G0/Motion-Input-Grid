@@ -1,0 +1,2 @@
+#pragma code_page(65001)
+101 ICON "@CONTROLLER_ICON@"

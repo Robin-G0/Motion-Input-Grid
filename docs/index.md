@@ -4,7 +4,13 @@
 
 Motion Input Grid (MIG) recognizes movements described in a JSON profile.
 Use its desktop applications to control another application, or embed the same
-engine in your own project. Choose a starting point below.
+engine in your own project.
+
+| Your goal | Start here | First result |
+| --- | --- | --- |
+| Control a presentation | [Presentation walkthrough](guides/presentations.md) | One movement advances a slide |
+| Build a game with MIG | [Example catalogue](../examples/README.md) | Recognized actions in your language or engine |
+| Inspect the engineering | [Architecture](architecture/overview.md), [performance](architecture/performance.md) | Module boundaries, ownership and measurement limits |
 
 ## Use the desktop applications
 
@@ -24,7 +30,7 @@ from the [example catalogue](../examples/README.md).
 
 | Situation | Guide |
 | --- | --- |
-| PowerPoint and other slide shows | [Presentation controls](guides/presentations.md) |
+| Canva, PowerPoint, PDF and other presentations / slideshows | [Presentation controls](guides/presentations.md) |
 | Existing games or your own game | [Video games and anti-cheat precautions](guides/video-games.md) |
 | Shortcuts in desktop applications | [Everyday computer use](guides/everyday-use.md) |
 
@@ -33,6 +39,8 @@ from the [example catalogue](../examples/README.md).
 | Technology | Installation and first action |
 | --- | --- |
 | C++ / CMake / Make | [SDK installation](getting-started/cpp.md), [C++ API](reference/cpp.md) |
+| SDL2 / SFML | [SDL2 tutorial](../examples/sdl2/README.md), [SFML tutorial](../examples/sfml/README.md) |
+| .NET / C# | [Managed bridge and first action](../bindings/dotnet/README.md) |
 | Python | [pip and frame submission](../bindings/python/README.md), [Tkinter](../examples/python-tkinter/README.md), [Pygame](../examples/pygame/README.md) |
 | Browser / React / Vue / Next.js | [npm package](../bindings/javascript/README.md), [framework setup](integrations/javascript.md) |
 | Godot / Unity / Unreal | [Godot add-on](../integrations/godot/README.md), [Unity UPM](../integrations/unity/README.md), [Unreal plugin](../integrations/unreal/README.md) |

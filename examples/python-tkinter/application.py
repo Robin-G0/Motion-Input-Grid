@@ -15,7 +15,7 @@ class Application:
         self.source = InputSource(options)
         self.photo = None
         self.error = None
-        root.title("MIG — import a profile" if options.profile_mode else "MIG — raise either hand")
+        root.title("MIG - import a profile" if options.profile_mode else "MIG - raise either hand")
         if options.profile_mode:
             tk.Button(root, text="Import profile…", command=self.import_profile).pack(fill="x")
         self.status = tk.StringVar(value="Import a JSON profile, then keep shoulders visible."

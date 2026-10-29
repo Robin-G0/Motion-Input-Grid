@@ -25,6 +25,7 @@ private:
 };
 class Recorder {
 public:
+    // Invalid selections preserve the current recording and its active state.
     void begin(std::vector<int> landmarks);
     void sample(const Frame& frame, const Grid& grid);
     void stop() noexcept {

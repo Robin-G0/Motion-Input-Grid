@@ -15,11 +15,19 @@
 
 ## Installation des bibliothèques
 
-```sh
-python -m pip install motion-input-grid
-npm install motion-input-grid
-npx mig-copy-assets public/mig
-```
+**Choisissez la ligne correspondant à votre application :**
+
+| Application | Installation | Prochaine étape |
+| --- | --- | --- |
+| Python | `python -m pip install motion-input-grid` | [Binding et positions](../../bindings/python/README.fr.md) |
+| Navigateur, React, Vue, Next.js | `npm install motion-input-grid`, puis `npx mig-copy-assets public/mig` | [Démarrage JavaScript](javascript.fr.md) |
+| C++ | SDK CMake correspondant à votre plateforme | [Démarrage C++](../getting-started/cpp.fr.md) |
+| Godot, Unity, Unreal | Exemple adapté à votre éditeur | [Choisir un exemple](../../examples/README.fr.md) |
+
+> [!IMPORTANT]
+> **Reconnaître des positions et obtenir ces positions sont deux étapes distinctes.**
+> Le wheel Python et les packages runtime de moteurs de jeu attendent vos points du corps.
+> Le package navigateur inclut sa session caméra ; les exemples desktop demandent le runtime natif.
 
 Choisissez pip pour Python (`from mig import Tracker`) ou npm pour le
 navigateur, React, Vue et Next.js. Consultez les guides
@@ -70,17 +78,22 @@ body_coordinate(frame,15) donne XYZ/confiance ; WorldHeightUp pour Y monde haut.
 | Monde main | Mètres | Centre main, indépendant du corps |
 | WorldHeightUp | Monde avec Y inversé | Même origine |
 
-Estimations modèle, pas distance caméra mesurée. Ne combinez pas Z main/corps.
-Pour afficher reflété, screen_x=(1-x)*width ; Mirror reconnaissance est séparé.
-body_coordinate/hand_coordinate sont O(1), sans allocation, nullopt si absent/invalide.
-Validité image et monde indépendantes, monde facultatif ; hôtes2D restent reconnus.
-Head33 dérive oreilles ou nez ; confiance corps0.6. Score handedness n'invente pas
-confiance articulaire. body_coordinates/hand_coordinates empruntent des spans.
-Résolvez landmark_index une fois. Mains [0,count), label brut pas identité.
-hand_observations(hands,body) une fois par image donne hand_indices Left/Right
-ou -1 si l'association est ambiguë. Pose hand_frame expire à prochaine inférence/changement/destruction.
-Events update expirent à prochain update. action_active expose activation pour
-Hold/Repeat propre à l'hôte, sans injection clavier par le SDK.
+> [!WARNING]
+> Les coordonnées sont des **estimations du modèle**, pas une distance caméra mesurée.
+> Les profondeurs de la main et du corps ont des origines différentes : ne les additionnez pas.
+> Pour un aperçu miroir, utilisez `screen_x = (1 - x) * width` ; la règle Mirror est indépendante.
+
+| Besoin | Contrat |
+| --- | --- |
+| Lire un point | `body_coordinate` / `hand_coordinate` : O(1), sans allocation, `std::nullopt` si absent ou invalide |
+| Fonctionner en 2D | Les validités image/monde sont indépendantes ; le monde est facultatif |
+| Lire la tête | L'indice 33 utilise le milieu des oreilles, sinon le nez ; seuil corps par défaut : 0,6 |
+| Filtrer les mains | Le score de classification gauche/droite ne donne pas une confiance par articulation |
+| Lire en bloc | `body_coordinates` / `hand_coordinates` renvoient des spans empruntés |
+| Résoudre un nom | Appelez `landmark_index` une seule fois, puis gardez l'indice |
+| Associer les mains | Seules les entrées `[0, count)` existent ; appelez `hand_observations(hands, body)` une fois par image, puis lisez `hand_indices[Left/Right]` (`-1` si ambigu ou absent) |
+| Garder les données | `Pose::hand_frame()` expire à la prochaine inférence, modification de capacité ou destruction ; les événements expirent au prochain `update()` |
+| Maintenir une commande | `action_active` expose l'activation ; l'hôte planifie Hold/Repeat et ses commandes, sans injection clavier par le SDK |
 
 ## SDL2/SFML et Linux natif
 

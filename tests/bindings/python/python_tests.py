@@ -29,6 +29,16 @@ def run(library):
         except RuntimeError:
             pass
         assert tracker.export_json() == original
+        for field in ('id', 'name', 'action'):
+            invalid = json.loads(profile)
+            invalid['inputs'][0][field] = 'visible\0hidden'
+            try:
+                tracker.import_json(json.dumps(invalid))
+            except RuntimeError:
+                pass
+            else:
+                raise AssertionError(f'Embedded NUL accepted in {field}')
+            assert tracker.export_json() == original, 'Failed import replaced the profile'
         for keyboard in ([{'keys': [1]}], [{'keys': [17, 17]}],
                          [{'text': 'x' * 16385}], [{'keys': [32]}] * 257,
                          [{'keys': [65, 66, 67, 68]}] * 255 + [{'keys': [65, 66, 67, 68, 69]}]):

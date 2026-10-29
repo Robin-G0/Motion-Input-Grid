@@ -43,8 +43,12 @@ dépend pas de ce dossier dans un dépôt voisin. Voir l'[index des tutoriels](.
 ## Contenu produit par les packagers
 
 La plupart des commandes Python décrivent leurs arguments avec `--help`.
-Le packaging suit la compilation sur le système cible : il ne convertit pas un
-binaire Windows en binaire Linux. La sortie par défaut est `build/releases/` lorsque prévue.
+
+> [!IMPORTANT]
+> **Créez le package sur le système cible après compilation.** Le packager assemble
+> les fichiers existants ; il ne convertit pas les binaires Windows en binaires Linux.
+
+La sortie par défaut est `build/releases/` lorsque prévue.
 Le bootstrap/packaging JavaScript utilise `python` sous Windows et `python3` sous Linux ;
 `MIG_PYTHON` choisit un autre interpréteur. Les pages compilées ne nécessitent pas Python.
 

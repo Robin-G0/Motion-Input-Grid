@@ -23,10 +23,21 @@ Pour utiliser les bibliothèques sans les compiler, installez
 Les applications de bureau et le runtime caméra Python restent des
 archives natives séparées ; les exemples précompilés incluent leurs dépendances.
 
-Chaque interface suit le même cycle : charger le profil, acquérir une observation,
-mettre à jour MIG, consommer les événements, afficher, libérer les ressources.
+Chaque interface suit le même cycle :
+
+```text
+charger le profil -> acquérir une observation -> mettre à jour MIG -> traiter les actions -> afficher
+à la sortie : arrêter la capture et libérer le tracker avant de fermer l'interface
+```
+
 L'interface ne contient pas un second reconnaisseur. Le [démarrage](bootstrap.fr.md)
 donne les commandes et les deux variantes de chaque intégration.
+
+> [!TIP]
+> **Commencez par relier les actions à votre jeu.** En Python, ouvrez
+> `example_usage.py` ; en SDL2/SFML, `example_usage.hpp` ; dans le navigateur,
+> fournissez `onAction`. Les détails de capture et de ressources ci-dessous
+> expliquent ensuite le fonctionnement de l'ensemble.
 
 ## Profil et coordonnées
 
@@ -52,6 +63,8 @@ dossier de l'archive ; sous Linux, il redémarre une fois avec le chemin des
 bibliothèques fournies. Les polices Linux utilisent une configuration temporaire
 avec chemins absolus, supprimée à la fermeture. La reconnaissance reste identique.
 
+### Capture et import des profils
+
 `InputSource` possède un worker et son tracker. Ce thread crée les tâches,
 ouvre la caméra et lit les observations. Le mode smoke seul génère des points.
 Les pixels empruntés sont copiés avant le prochain poll. Une boîte au dernier
@@ -67,6 +80,8 @@ couleurs et forme des objets. `visible_points`, `hand_lines`, `wrists`
 reflètent l'affichage. `handle_detected_actions()` imprime tous les couples action/ID, même
 simultanés, et retourne le texte de statut. Remplacez ce consommateur pour
 commander votre application en conservant la conversion des observations.
+
+### Affichage et fermeture
 
 Tk planifie `tick` toutes les 20 ms, traite statut et image RGB via Pillow,
 conserve `ImageTk.PhotoImage`, puis dessine points, doigts et objets aux poignets.
@@ -88,6 +103,8 @@ les images. `tutorial::load_configuration()` charge la démo ou le profil vide.
 `demo::import_profile` valide avant remplacement et ajuste Hands ; les erreurs
 conservent le profil actif.
 
+### Ressources graphiques
+
 SDL2 emploie RAII pour fenêtre, renderer, texture et fichier déposé. La texture
 n'est recréée que si les dimensions changent. Le viewport respecte le rapport
 de l'image et la texture est reflétée une fois. Close arrête avant le poll suivant.
@@ -98,7 +115,9 @@ objets une fois. La boucle traite événements, acquisition, reconnaissance et
 affichage à 50 Hz ; smoke accepte le mode sans écran. Le HUD conserve ses textes.
 Les destructeurs libèrent les ressources aussi en cas d'exception.
 
-Les consommateurs SDK montrent find_package, chargement et événements. Le
+### Consommateurs en console
+
+Les consommateurs SDK montrent `find_package`, chargement et événements. Le
 consommateur positions possède les points synthétiques ; le natif possède
 l'inférence RGB. Ils n'ont pas d'interface caméra. Leurs README indiquent les
 arguments. Réutilisez le moteur plutôt que de le recréer à chaque image.
@@ -116,6 +135,8 @@ Dispose libère aussi modèles et moteur. L'import JSON borné et invalide conse
 le profil. Le retour conserve toutes les actions de la dernière image acceptée,
 sans pousser les points dans l'état réactif. `coordinate` et `onFrame` fournissent
 l'accès impératif aux coordonnées.
+
+### Vues et cycle de vie des frameworks
 
 `camera.mjs` relie les commandes HTML à la session ; index charge la démo,
 profile commence vide. React monte `CameraExample.jsx` en StrictMode depuis
@@ -146,6 +167,8 @@ importe dans un profil vide ; la sous-classe de démonstration charge l'exemple.
 `SubmitFrame` met à jour une fois, rapporte toutes les actions et peut déplacer
 l'objet grâce aux coordonnées monde du poignet. Horodatage et séquence avancent ;
 les buffers des doigts doivent respecter l'ABI.
+
+### Cycle de vie des moteurs
 
 Unity initialise/libère dans OnEnable/OnDisable, émet UnityEvent et affiche
 champ d'import et statut. Godot initialise dans _Ready, crée CanvasLayer,

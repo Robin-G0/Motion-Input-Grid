@@ -127,12 +127,12 @@ export class DebugPanel {
         const lines = [
             this.text.units,
             `${this.text.shoulders}: ${[11, 12].map(index =>
-                camera.coordinate(index)?.confidence?.toFixed(2) ?? "—").join(" / ")} ≥ ${minimumConfidence}`,
+                camera.coordinate(index)?.confidence?.toFixed(2) ?? "-").join(" / ")} ≥ ${minimumConfidence}`,
             `${this.text.horizontal}: ${swipes.distance}; ${this.text.vertical}: ${swipes.raiseDistance}`,
             `${this.text.horizontal}: ≥ ${swipes.horizontalDuration} ms; centre: ${swipes.centreDuration} ms`,
             `${this.text.vertical}: ≥ ${swipes.raiseDuration} ms; max ${swipes.duration} ms; gap ≤ ${swipes.gap} ms`,
             `${this.text.drift}: ${swipes.raiseDrift}`,
-            `${this.text.guide}: ${state.guide ?? "—"}; horizontal: ${state.horizontal}`
+            `${this.text.guide}: ${state.guide ?? "-"}; horizontal: ${state.horizontal}`
         ];
         for (const [side, hand] of camera.hands.entries()) {
             const centre = swipes.centres.get(hand.landmark);
@@ -141,7 +141,7 @@ export class DebugPanel {
             const name = side ? this.text.right : this.text.left;
             const sample = swipes.verticalHands.get(hand.landmark) ?? swipes.hands.get(hand.landmark);
             const elapsed = time - (sample?.startTime ?? centre?.startTime ?? time);
-            const point = hand.point ? `${hand.point.x.toFixed(2)}, ${hand.point.y.toFixed(2)}` : "—";
+            const point = hand.point ? `${hand.point.x.toFixed(2)}, ${hand.point.y.toFixed(2)}` : "-";
             lines.push(`${name}: (${point}) · ${Math.round(elapsed)} ms · ${this.text.reasons[reason]}`);
             const horizontal = swipes.hands.get(hand.landmark);
             const vertical = swipes.verticalHands.get(hand.landmark);

@@ -17,6 +17,7 @@ targets and CTest registrations; [CMakeLists.txt](CMakeLists.txt) assembles them
 | `packaging/` | Installed SDKs, wheels, npm, engine packages and release archives |
 | `tooling/` | Downloads and version resolution |
 | `benchmarks/` | Synthetic engine performance measurements |
+| [`../site/tests/`](../site/tests/) | Presentation and web Studio unit, integration and browser behavior |
 
 ## C++ and desktop tests
 
@@ -42,20 +43,44 @@ Enable `MIG_BUILD_BENCHMARKS=ON` to build `mig-engine-benchmark` under
 
 ## Script tests
 
+### Repository checks
+
 ```sh
 python tests/tooling/release_version_tests.py
+python tests/tooling/docs_tests.py
+python tools/dev/check-docs.py
 python tests/tooling/version_resolution_tests.py
 python tests/packaging/example_package_tests.py
 python tests/packaging/wheel_record_tests.py
+```
+
+### Binding checks
+
+These commands need the matching native library or prepared browser dependencies:
+
+```sh
 python tests/bindings/python/python_tests.py build/windows/src/c-api/Release/mig-c.dll
 npm test
 npm run test:types
+```
+
+### Website checks
+
+```sh
+npm --prefix site run build
+npm --prefix site test
 ```
 
 Python binding and example tests need a compiled C ABI library. Browser and
 package tests additionally need the prepared assets or artifact passed on their
 command line. The [tools guide](../tools/README.md) explains how to prepare the
 binaries and packages each check needs.
+
+The website is an independent npm project pinned to a released browser package,
+not the checkout's compiled engine. Its unit and integration tests therefore
+check that release. `npm --prefix site run test:browser` additionally exercises
+the built site in Chromium and Firefox. Checks of a changed core require a fresh
+native or WASM build; the root browser tests use `build/web/web/mig.mjs`.
 
 `packaging/standalone_editor_tests.py --build-csharp` validates isolated editor
 dependencies and compiles the packaged Godot .NET project. Unity/Unreal editor

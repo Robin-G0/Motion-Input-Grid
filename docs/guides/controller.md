@@ -42,11 +42,17 @@ sets up the bundled libraries before starting the binary in `bin/`. Keep the
 archive's DLLs, models, configurations and other resources together. Windows
 requires the [latest Visual C++ x64 runtime](https://aka.ms/vc14/vc_redist.x64.exe); Linux archives require glibc 2.35+.
 
+> [!TIP]
+> **Your first test:** import → start → check the movement lights up → enable
+> keyboard output → click inside the presentation or game.
+> **Stop** ends tracking and releases held keys.
+
 ## First run
 
 1. Close the Motion Input Grid Studio's camera, then open the Controller listed in the download table above.
 2. Open **Manage profile**, then **Import profile** (Windows) or **Import…** (Linux),
    and choose a JSON file saved by Motion Input Grid Studio or Motion Input Grid Studio Web.
+   If the empty start screen offers **Import profile** directly, use that button.
 3. Give the profile a recognizable name. On Windows, edit the name field and click
    **Save name**. On Linux, click **Rename profile**.
 4. Click **Start**, face the camera and keep your shoulders visible for calibration.
@@ -58,6 +64,15 @@ Keyboard output starts disabled every time you launch the Motion Input Grid Cont
 works with output disabled. Windows uses SendInput; Linux requires X11/XTest and
 keys available in the current keyboard layout. Native Wayland output is unavailable.
 Stop, lost tracking, expired observations and closing the Motion Input Grid Controller release held keys.
+
+![Real Windows import review of a movement and its keyboard binding](../../site/studio/controller/images/import.png)
+
+*Import shows the movements and keys. It does not enable keyboard output.
+Linux layout differs.*
+
+> [!WARNING]
+> Keys go to the **foreground application**. **Verify bindings** pauses output;
+> turn that mode off to use the profile.
 
 ## Profiles
 
@@ -74,6 +89,9 @@ as a normal JSON file that you can open in the Motion Input Grid Studio or use w
 To use an edited configuration, import that file again as a new profile.
 Invalid imports preserve the running profile. Up to 64 profiles can be stored.
 
+<details>
+<summary>Profile storage and backup</summary>
+
 Profile data is stored here:
 
 - Windows: `%LOCALAPPDATA%\MIG\controller`.
@@ -83,6 +101,8 @@ Profile data is stored here:
 `profiles.json` stores names and the last selection; numbered JSON files contain
 standard schema-v2 configurations. Back up the whole folder to keep your profiles.
 This list is separate from the [configuration format](../reference/configuration.md).
+
+</details>
 
 ## Views
 
@@ -132,6 +152,9 @@ all bindings continue to report their accepted actions.
 
 ## Build and troubleshooting
 
+<details>
+<summary>For developers: build paths and diagnostics</summary>
+
 After building from source:
 
 | Method | File relative to the repository root |
@@ -155,3 +178,5 @@ The Motion Input Grid Controller uses the same recognition engine and key schedu
 Motion Input Grid Studio. Automated tests cover profile persistence, view changes, verification
 and cancellation. Camera accuracy and delivery to a particular game require a
 check on your desktop.
+
+</details>

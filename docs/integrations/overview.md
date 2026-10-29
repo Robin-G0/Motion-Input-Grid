@@ -18,11 +18,19 @@
 
 ## Install the libraries
 
-```sh
-python -m pip install motion-input-grid
-npm install motion-input-grid
-npx mig-copy-assets public/mig
-```
+**Choose the row matching your application:**
+
+| Application | Installation | Next step |
+| --- | --- | --- |
+| Python | `python -m pip install motion-input-grid` | [Binding and positions](../../bindings/python/README.md) |
+| Browser, React, Vue, Next.js | `npm install motion-input-grid`, then `npx mig-copy-assets public/mig` | [JavaScript bootstrap](javascript.md) |
+| C++ | CMake SDK matching your platform | [C++ setup](../getting-started/cpp.md) |
+| Godot, Unity, Unreal | Example matching your editor | [Choose an example](../../examples/README.md) |
+
+> [!IMPORTANT]
+> **Recognizing positions and obtaining them are separate steps.** The Python wheel and game-engine
+> runtime packages expect your body landmarks. The browser package includes its camera session;
+> desktop camera examples need the native runtime.
 
 Choose pip for Python (`from mig import Tracker`) or npm for the browser,
 React, Vue and Next.js. See the guides for

@@ -45,11 +45,17 @@ le binaire dans `bin/`. Conservez les DLL, modèles, configurations et autres
 ressources de l'archive ensemble. Windows nécessite le [dernier runtime Visual C++
 x64](https://aka.ms/vc14/vc_redist.x64.exe) ; les archives Linux nécessitent glibc 2.35+.
 
+> [!TIP]
+> **Votre premier essai :** importer → démarrer → vérifier que le mouvement
+> s'allume → activer le clavier → cliquer dans la présentation ou le jeu.
+> **Stop** arrête le suivi et relâche les touches maintenues.
+
 ## Premier lancement
 
 1. Fermez la caméra du Motion Input Grid Studio, puis ouvrez le Controller indiqué dans le tableau ci-dessus.
 2. Ouvrez **Manage profile**, puis **Import profile** (Windows) ou **Import…** (Linux),
    et choisissez un JSON enregistré par Motion Input Grid Studio ou Motion Input Grid Studio Web.
+   Si l'écran de démarrage vide propose directement **Import profile**, utilisez ce bouton.
 3. Donnez un nom reconnaissable au profil. Sous Windows, modifiez le champ du nom
    puis cliquez sur **Save name**. Sous Linux, cliquez sur **Rename profile**.
 4. Cliquez sur **Start**, faites face à la caméra et gardez les épaules visibles
@@ -63,6 +69,15 @@ même sans sortie clavier. Windows utilise SendInput ; Linux nécessite X11/XTes
 et des touches disponibles dans l'agencement du clavier. La sortie sous Wayland
 natif n'est pas disponible. Stop, la perte du suivi, les observations trop anciennes
 et la fermeture relâchent les touches maintenues.
+
+![Vérification réelle des mouvements et touches à l'import sous Windows](../../site/studio/controller/images/import.png)
+
+*L'import affiche les mouvements et leurs touches. Il n'active pas la sortie clavier.
+La disposition Linux diffère.*
+
+> [!WARNING]
+> Les touches vont à **l'application au premier plan**. **Verify bindings** les
+> suspend ; désactivez ce mode pour utiliser le profil.
 
 ## Profils
 
@@ -80,6 +95,9 @@ ou les bibliothèques. Pour utiliser une configuration modifiée, importez à no
 son fichier comme nouveau profil. Un import invalide conserve le profil en cours.
 Vous pouvez conserver jusqu'à 64 profils.
 
+<details>
+<summary>Emplacement des profils et sauvegarde</summary>
+
 Les données sont enregistrées ici :
 
 - Windows : `%LOCALAPPDATA%\MIG\controller`.
@@ -90,6 +108,8 @@ Les données sont enregistrées ici :
 numérotés contiennent les configurations habituelles du schéma v2. Sauvegardez
 le dossier entier pour conserver vos profils. Cette liste est distincte du
 [format de configuration](../reference/configuration.fr.md).
+
+</details>
 
 ## Affichage
 
@@ -141,6 +161,9 @@ le profil. La vérification ne modifie pas les régions et n'isole pas la reconn
 
 ## Compilation et problèmes courants
 
+<details>
+<summary>Pour les développeurs : compilation et diagnostics</summary>
+
 Après compilation depuis les sources :
 
 | Méthode | Fichier depuis la racine du dépôt |
@@ -165,3 +188,5 @@ Le Motion Input Grid Controller utilise le même moteur de reconnaissance et ord
 que Motion Input Grid Studio. Les tests automatisés couvrent la persistance des profils,
 les vues, la vérification et l'annulation des sorties. La précision de la caméra
 et l'envoi des touches à un jeu donné se vérifient sur votre machine.
+
+</details>

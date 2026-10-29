@@ -202,7 +202,7 @@ def main():
         usage = ("Run `./motion-input-grid-controller` or `./motion-input-grid-studio` from this directory."
                  if options.native else "Set CMAKE_PREFIX_PATH to the extracted `sdk` directory.")
         (root / "README.md").write_text(
-            f"# Motion Input Grid (MIG) {options.version} — Linux {options.architecture}\n\n"
+            f"# Motion Input Grid (MIG) {options.version} - Linux {options.architecture}\n\n"
             "[English](README.md) | [Français](README.fr.md)\n\n"
             f"{usage}\n\n"
             "See [package installation](docs/getting-started/packages.md) and the "
@@ -210,7 +210,7 @@ def main():
         usage_fr = ("Lancez ./motion-input-grid-controller ou ./motion-input-grid-studio depuis ce dossier."
                     if options.native else "Utilisez le dossier sdk comme CMAKE_PREFIX_PATH.")
         (root / "README.fr.md").write_text(
-            f"# Motion Input Grid (MIG) {options.version} — Linux {options.architecture}\n\n"
+            f"# Motion Input Grid (MIG) {options.version} - Linux {options.architecture}\n\n"
             "[English](README.md) | [Français](README.fr.md)\n\n"
             f"{usage_fr}\n\n"
             "[Installation](docs/getting-started/packages.fr.md) et "
@@ -221,6 +221,17 @@ def main():
         write_manifest(root, options, inventory)
         output = options.destination / f"{name}.tar.gz"
         create_archive(root, output)
+        if options.native:
+            from importlib.util import spec_from_file_location, module_from_spec
+            spec = spec_from_file_location("controller_package", project / "tools/packaging/package-controller.py")
+            controller_package = module_from_spec(spec)
+            spec.loader.exec_module(controller_package)
+            payload = Path(folder) / "controller-only"
+            controller_package.controller_payload(root, payload, "linux")
+            portable = options.destination / f"motion-input-grid-{options.version}-controller-linux-x64.run"
+            controller_package.linux_file(payload, portable)
+            digest = hashlib.sha256(portable.read_bytes()).hexdigest()
+            portable.with_name(portable.name + ".sha256").write_text(f"{digest}  {portable.name}\n")
     print(output)
 
 

@@ -23,10 +23,20 @@ To use the libraries without compiling them, install
 Desktop applications and the Python camera runtime remain separate native
 archives; prebuilt examples include their dependencies.
 
-Every camera viewer follows the same sequence: load an initial profile, acquire
-one observation, update MIG, consume accepted events, draw feedback, release
-resources. UI code never implements a second gesture recognizer.
+Every camera viewer follows the same sequence:
+
+```text
+load profile -> acquire observation -> update MIG -> dispatch actions -> draw
+on exit: stop capture and release the tracker before closing the UI
+```
+
+UI code never implements a second gesture recognizer.
 [Bootstrap](bootstrap.md) lists launch commands and both variants.
+
+> [!TIP]
+> **Change the action handler first.** In Python, open `example_usage.py`; in
+> SDL2/SFML, open `example_usage.hpp`; in the browser, supply `onAction`.
+> The capture and lifecycle details below explain how the rest fits together.
 
 ## Profile and coordinate conventions
 
@@ -52,6 +62,8 @@ resolve from their executable's archive folder; Linux restarts once with bundled
 library search paths. Bundled Linux fonts use a temporary configuration with
 absolute paths; it is removed when the viewer exits. It does not mutate recognition configuration.
 
+### Capture and profile imports
+
 `InputSource` owns a single worker and tracker. It creates native tasks and
 opens the camera on that worker, then polls frames. Generated frames are used
 only in smoke mode. It copies borrowed pixels before another poll. A latest-frame
@@ -66,6 +78,8 @@ and prop geometry. `visible_points`, `hand_lines` and `wrists` mirror image poin
 for presentation. `handle_detected_actions()` prints all accepted action/ID pairs, including
 simultaneous actions, and returns a status string. Change that consumer to invoke
 your app; keep the observation conversion intact.
+
+### Rendering and shutdown
 
 Tk's `Application` schedules `tick` every 20 ms. It updates the status, converts
 RGB through Pillow, retains `ImageTk.PhotoImage`, then draws dots, finger bones
@@ -88,6 +102,8 @@ empty profile variant. `tutorial::process_tracking_frame()` updates the engine o
 every accepted event. `demo::import_profile` validates before replacement and
 updates hand capability. File errors leave the running profile unchanged.
 
+### Graphics resources
+
 SDL2 uses RAII for window, renderer, texture and drop-file ownership. The camera
 texture is recreated only when dimensions change. Drawing sets an aspect-fitted
 viewport and flips the texture once. The event loop exits before another poll
@@ -99,6 +115,8 @@ mirrors camera pixels; the shared geometry mirrors dots and props once. The
 loop handles Close/import, polls, consumes events, draws and displays. A 50 Hz
 limiter avoids spinning; smoke can run headless. Its HUD caches text and bounds.
 RAII destructors stop native resources on both normal exit and exceptions.
+
+### Console consumers
 
 SDK consumers demonstrate `find_package`, profile loading and event callbacks.
 The positions consumer owns generated landmarks; the native consumer owns RGB
@@ -117,6 +135,8 @@ Only new video frames are inferred. Stop releases tracks, Dispose also frees
 tasks/engine; invalid bounded JSON imports preserve the old profile. Feedback
 retains the latest accepted frame's actions without publishing landmarks into UI
 reactive state. `coordinate`/`onFrame` provide imperative coordinate access.
+
+### Views and framework lifecycle
 
 Plain HTML uses `camera.mjs` to connect DOM controls/status to that session.
 `index.html` loads the demo, `profile.html` starts empty. React's `src/main.jsx`
@@ -150,6 +170,8 @@ component starts empty and imports a profile; the raised-hands subclass loads
 the shared sample. `SubmitFrame` updates once, reports every action and optionally
 uses wrist world coordinates to move the attached prop. The packet timestamp
 and sequence must advance and finger buffers must use the documented layout.
+
+### Engine lifecycle
 
 Unity initializes/disposes in OnEnable/OnDisable, emits a UnityEvent and displays
 an import field/status. Godot initializes in _Ready, creates a CanvasLayer panel

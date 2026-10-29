@@ -11,6 +11,12 @@
   un parcours ordonné avec trois niveaux de précision, puis propose test et touche.
   Les prises incohérentes sont refaites ; annuler libère la caméra sans modifier
   le brouillon. Le résultat reste un profil au schéma 2 existant.
+- Ajouter un parcours illustré bilingue pour Canva, PowerPoint, PDF et autres présentations ; alléger la navigation, les exemples et les références techniques.
+- Refuser NUL dans les identifiants, noms et actions des profils pour préserver les chaînes natives.
+- Conserver l'enregistrement actif si une nouvelle sélection de points est invalide.
+- Valider la documentation à chaque push et pull request, même sans modification de code.
+- Aligner l'architecture bilingue, les prérequis du SDK caméra et les exemples avec l'implémentation.
+
 ## 1.1.0
 
 - Présentation et Studio web pour créer, importer, annoter et tester les profils.
@@ -49,7 +55,7 @@
 - Les guides d’exemples décrivent le lancement, l’intégration et l’installation
   des packages.
 
-## 1.0.0 — première version publique
+## 1.0.0 - première version publique
 
 Le prototype et le développement initial ont eu lieu en privé avant cette première publication.
 

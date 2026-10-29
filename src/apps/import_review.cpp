@@ -1,11 +1,13 @@
 #include "import_review.hpp"
 #include "app.hpp"
+#include <dwmapi.h>
 
 namespace mig::app {
 namespace {
 struct ReviewDialog {
     bool accepted{}, done{};
 };
+constexpr int summary_id = 1001;
 LRESULT CALLBACK review_proc(HWND window, UINT message, WPARAM wp, LPARAM lp) {
     auto* state = reinterpret_cast<ReviewDialog*>(GetWindowLongPtrW(window, GWLP_USERDATA));
     if (message == WM_NCCREATE) {
@@ -16,6 +18,48 @@ LRESULT CALLBACK review_proc(HWND window, UINT message, WPARAM wp, LPARAM lp) {
                   message == WM_CLOSE)) {
         state->accepted = message == WM_COMMAND && LOWORD(wp) == IDOK;
         state->done = true;
+        return 0;
+    }
+    if (message == WM_DRAWITEM) {
+        application->draw_control(*reinterpret_cast<DRAWITEMSTRUCT*>(lp));
+        return TRUE;
+    }
+    if (message == WM_CTLCOLORSTATIC || message == WM_CTLCOLOREDIT) {
+        const auto colors = application->palette();
+        SetTextColor(reinterpret_cast<HDC>(wp), colors.text);
+        SetBkColor(reinterpret_cast<HDC>(wp), colors.surface);
+        return reinterpret_cast<LRESULT>(application->surface_brush);
+    }
+    if (message == WM_ERASEBKGND) {
+        return 1;
+    }
+    if (message == WM_PAINT || message == WM_PRINTCLIENT) {
+        PAINTSTRUCT paint{};
+        const auto dc =
+            message == WM_PAINT ? BeginPaint(window, &paint) : reinterpret_cast<HDC>(wp);
+        RECT area{};
+        GetClientRect(window, &area);
+        FillRect(dc, &area, application->background_brush);
+        const auto saved = SaveDC(dc);
+        const auto colors = application->palette();
+        SelectObject(dc, application->heading_font);
+        SetBkMode(dc, TRANSPARENT);
+        SetTextColor(dc, colors.text);
+        RECT heading{24, 18, area.right - 24, 58};
+        DrawTextW(dc, L"Review your profile", -1, &heading, DT_SINGLELINE | DT_VCENTER);
+        SelectObject(dc, application->font);
+        SetTextColor(dc, colors.muted);
+        RECT hint{24, 60, area.right - 24, 84};
+        DrawTextW(dc, L"Check the movements and keys before importing.", -1, &hint, DT_SINGLELINE);
+        const auto pen = CreatePen(PS_SOLID, 1, colors.border);
+        SelectObject(dc, pen);
+        SelectObject(dc, application->surface_brush);
+        RoundRect(dc, 20, 90, area.right - 20, 492, 6, 6);
+        RestoreDC(dc, saved);
+        DeleteObject(pen);
+        if (message == WM_PAINT) {
+            EndPaint(window, &paint);
+        }
         return 0;
     }
     return DefWindowProcW(window, message, wp, lp);
@@ -32,7 +76,6 @@ bool App::review_import(const Configuration& proposed) {
     cls.hInstance = instance;
     cls.lpszClassName = L"MIGImportReview";
     cls.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-    cls.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
     RegisterClassW(&cls);
     ReviewDialog state;
     const auto dialog =
@@ -50,10 +93,8 @@ bool App::review_import(const Configuration& proposed) {
         }
         content += character;
     }
-    const auto summary = CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT", L"",
-                                         WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_VSCROLL |
-                                             ES_MULTILINE | ES_READONLY,
-                                         12, 12, 720, 490, dialog, nullptr, instance, nullptr);
+    const auto summary = control(dialog, L"EDIT", L"", summary_id, 30, 100, 684, 382,
+                                 WS_VSCROLL | ES_MULTILINE | ES_READONLY);
     if (!summary) {
         DestroyWindow(dialog);
         throw std::runtime_error("Cannot display import review");
@@ -64,14 +105,16 @@ bool App::review_import(const Configuration& proposed) {
         DestroyWindow(dialog);
         throw std::runtime_error("Cannot display complete import review");
     }
-    for (const auto [id, label, x] : {std::tuple{IDOK, L"Import reviewed profile", 380},
+    for (const auto [id, label, x] : {std::tuple{IDOK, L"Import reviewed profile", 368},
                                       std::tuple{IDCANCEL, L"Cancel", 600}}) {
-        CreateWindowExW(0, L"BUTTON", label,
-                        WS_CHILD | WS_VISIBLE | WS_TABSTOP |
-                            (id == IDCANCEL ? BS_DEFPUSHBUTTON : BS_PUSHBUTTON),
-                        x, 520, id == IDOK ? 210 : 130, 30, dialog,
-                        reinterpret_cast<HMENU>(INT_PTR(id)), instance, nullptr);
+        const auto button =
+            control(dialog, L"BUTTON", label, id, x, 512, id == IDOK ? 216 : 120, 36);
+        if (id == IDOK) {
+            SetPropW(button, L"MIGPrimary", reinterpret_cast<HANDLE>(1));
+        }
     }
+    const BOOL dark_title = dark;
+    DwmSetWindowAttribute(dialog, 20, &dark_title, sizeof(dark_title));
     EnableWindow(window, FALSE);
     ShowWindow(dialog, SW_SHOW);
     SetFocus(GetDlgItem(dialog, IDCANCEL));
@@ -84,7 +127,10 @@ bool App::review_import(const Configuration& proposed) {
             }
             break;
         }
-        if (!IsDialogMessageW(dialog, &message)) {
+        if (message.message == WM_KEYDOWN && message.wParam == VK_RETURN) {
+            SendMessageW(dialog, WM_COMMAND,
+                         GetFocus() == GetDlgItem(dialog, IDOK) ? IDOK : IDCANCEL, 0);
+        } else if (!IsDialogMessageW(dialog, &message)) {
             TranslateMessage(&message);
             DispatchMessageW(&message);
         }

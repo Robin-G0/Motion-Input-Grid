@@ -17,6 +17,7 @@ ses cibles CMake et ses déclarations CTest ; [CMakeLists.txt](CMakeLists.txt) l
 | `packaging/` | SDK installés, wheels, npm, packages de moteurs et archives de release |
 | `tooling/` | Téléchargements et résolution des versions |
 | `benchmarks/` | Mesures synthétiques des performances du moteur |
+| [`../site/tests/`](../site/tests/) | Tests unitaires, d'intégration et navigateur de la présentation et du Studio web |
 
 ## Tests C++ et applications
 
@@ -47,20 +48,44 @@ Activez `MIG_BUILD_BENCHMARKS=ON` pour compiler `mig-engine-benchmark` dans
 d’éditeur isolées et compile le projet Godot .NET fourni. L’exécution dans
 Unity/Unreal et les exports nécessitent encore leurs éditeurs installés.
 
+### Vérifier le dépôt
+
 ```sh
 python tests/tooling/release_version_tests.py
+python tests/tooling/docs_tests.py
+python tools/dev/check-docs.py
 python tests/tooling/version_resolution_tests.py
 python tests/packaging/example_package_tests.py
 python tests/packaging/wheel_record_tests.py
+```
+
+### Vérifier les bindings
+
+Ces commandes demandent la bibliothèque native ou les dépendances navigateur préparées :
+
+```sh
 python tests/bindings/python/python_tests.py build/windows/src/c-api/Release/mig-c.dll
 npm test
 npm run test:types
+```
+
+### Vérifier le site
+
+```sh
+npm --prefix site run build
+npm --prefix site test
 ```
 
 Les tests du binding Python et des exemples demandent une bibliothèque C ABI compilée.
 Les tests navigateur et de packaging demandent aussi les assets préparés ou l'artefact
 passé en argument. Le [guide des outils](../tools/README.fr.md) décrit la préparation
 des binaires et packages nécessaires à chaque vérification.
+
+Le site est un projet npm indépendant, lié à une version publiée du package
+navigateur. Ses tests ne vérifient donc pas le moteur compilé dans le dépôt.
+`npm --prefix site run test:browser` teste le site construit sous Chromium et
+Firefox. Une modification du cœur nécessite une nouvelle compilation native ou
+WASM ; les tests navigateur racine utilisent `build/web/web/mig.mjs`.
 
 La scène de régression Godot reste dans `examples/godot/gdscript/tests/` : elle accompagne
 le projet d'exemple utilisé pour valider l'add-on extrait et est exécutée par

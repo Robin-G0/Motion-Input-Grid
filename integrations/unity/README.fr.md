@@ -4,7 +4,10 @@
 
 **Télécharger l’intégration :** [Windows x64 (tgz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-unity-integration) · [Linux x64 (tgz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-unity-integration).
 
-**Preview.** Les exports éditeur/jeu et un fournisseur réel restent à valider. Voir la [matrice de support](../../docs/reference/support.fr.md).
+> [!IMPORTANT]
+> **Package runtime en preview, sans fournisseur caméra.** Pour un premier essai,
+> préférez les [démos Unity](../../examples/unity/README.fr.md) et leur mode synthétique.
+> Validez votre éditeur, le fournisseur réel et les exports : [matrice de support](../../docs/reference/support.fr.md).
 
 Utilisez Unity 2021.3+ sur Windows/Linux x64. Dans Package Manager, choisissez
 **Add package from tarball** puis le fichier `motion-input-grid-<version>-<plateforme>-unity.tgz`

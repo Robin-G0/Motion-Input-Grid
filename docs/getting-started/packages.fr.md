@@ -7,7 +7,17 @@ depuis les [tableaux de la dernière release](https://github.com/Robin-G0/Motion
 Conservez l’archive complète après extraction. La [matrice de support](../reference/support.fr.md)
 précise les prérequis et la maturité des intégrations.
 
+| Votre besoin | Package / guide |
+| --- | --- |
+| Commander des diapositives ou une application | **Studio + Controller**, ci-dessous |
+| Essayer une intégration existante | [Exemple autonome pour votre technologie](../../examples/README.fr.md) |
+| Ajouter la reconnaissance en C++ | [Installation du SDK](cpp.fr.md) |
+| Ajouter la reconnaissance en Python ou dans le navigateur | [Package Python](../../bindings/python/README.fr.md) / [package JavaScript](../../bindings/javascript/README.fr.md) |
+
 ## Applications desktop et exemples
+
+Le runtime et les détails du package Controller seul sont décrits dans le
+[guide du Controller autonome](controller-standalone.fr.md).
 
 **Télécharger Studio + Controller :** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications).
 
@@ -32,12 +42,18 @@ runtime dans un seul dossier. Une archive commune les range sous `examples/`
 et partage ses dépendances à la racine. Déplacer seulement un sous-dossier peut
 perdre ces dépendances ; choisissez son archive `*-standalone` pour le copier seul.
 
-Le dépôt source contient du code modifiable, pas les runtimes précompilés.
-Installez les dépendances du README pour recompiler. Les viewers natifs fournissent
-bibliothèques/modèles ; Python fournit aussi l'interpréteur ; les viewers navigateur
-fournissent pages compilées/WASM/MediaPipe/modèles. Node reste externe aux archives
-navigateur individuelles et est fourni dans l'archive JavaScript commune. Les
-tutoriels moteurs fournissent les ponts natifs, mais exigent l'éditeur et votre fournisseur de tracking.
+> [!IMPORTANT]
+> **Une archive et les sources n'ont pas les mêmes prérequis.** Les téléchargements
+> fournissent les fichiers ci-dessous. Recompiler demande aussi les dépendances
+> indiquées dans le README du tutoriel.
+
+| Téléchargement | Fourni | Encore nécessaire |
+| --- | --- | --- |
+| Viewer natif | Exécutable, bibliothèques et modèles | Système compatible ; webcam pour un suivi réel |
+| Viewer Python | Runtime natif, Python et dépendances de l'interface | Système compatible ; webcam pour un suivi réel |
+| Tutoriel navigateur individuel | Pages compilées, WASM, MediaPipe et modèles | **Node 22.12+** ; serveur localhost |
+| Archive JavaScript commune | Tutoriels navigateur et Node | Lancer le serveur fourni |
+| Tutoriel de moteur de jeu | Pont natif et sources de l'exemple | **Éditeur/compilateur et fournisseur de points** |
 
 Le [guide des outils](../../tools/README.fr.md) relie chaque packager à ses entrées
 et à son contenu ; le [guide des tests](../../tests/README.fr.md) décrit la validation des téléchargements.
