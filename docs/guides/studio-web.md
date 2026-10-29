@@ -11,7 +11,41 @@ assign keys and export a configuration without editing JSON. No account is neede
 
 ## Your first movement
 
-1. Choose **Guide me step by step** for on-screen instructions, or **New profile**.
+### Capture instead of drawing
+
+1. Create or import a profile, then choose **Add a movement → Capture with the
+   camera**. A new profile opens this choice for its first movement. Select the
+   body part and **Normal**, **High tolerance** or **High precision**.
+2. Start the camera. Keep both shoulders and the selected point visible until
+   **Record take** becomes available.
+3. Return to your starting pose and record the gesture **once per take**. Each
+   take starts after **3–2–1** and ends after **five seconds**. Finish sooner with
+   **S**, **Space** or **Finish this take**. Repeat for **three consistent takes**.
+   **Blue cells** show the path as you move, with **S (green)** for the start and
+   **F (yellow)** for the current finish. On subsequent takes, the previous
+   successful path and its endpoints remain visible **in transparency**.
+4. Test the generated green-to-yellow route. After a recognized gesture, choose
+   **Choose a key**, then save through the usual key editor.
+
+> [!TIP]
+> **Normal is a useful starting point.** More tolerance widens regions and may
+> overlap other movements; high precision is harder to repeat. Change the preset
+> after capture and test again, or record again if the route is unsuitable.
+
+An inconsistent or interrupted take is explained and retried; earlier good takes
+are retained. Only the chosen point's positions are kept temporarily, not video.
+Nothing changes in the profile until the result is accepted. Escape cancels and
+releases the camera; switching tabs away also cancels.
+
+The capture learns **2D paths with distinct start and finish positions**, not hand
+signs, depth or a closed loop. For whole-body movement, open **Name and reference**
+and choose **Starting position**. The generated result uses ordinary schema-v2
+regions and can be adjusted in the editor. No new runtime or file format is needed.
+
+### Draw the route yourself
+
+1. Choose **Guide me step by step** for on-screen instructions, or **New profile →
+   Draw the route**. For an existing profile, choose **Add a movement → Draw the route**.
    The guide builds a movement named **HI**. A spotlight identifies the current control; the rest is dimmed and inactive. **Leave the guide** returns to normal editing. Steps advance after edits and successful recognition.
 2. Choose the body point to move, for example your left wrist.
 3. Select green **Required** and draw a starting region. Select yellow **Trigger**

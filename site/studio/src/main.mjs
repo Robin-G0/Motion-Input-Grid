@@ -10,6 +10,7 @@ import { NoteLayer, LiveNoteBrush, previewCell } from "./notes.mjs";
 import { FingerEditor, setFingerRule } from "./fingers.mjs";
 import { KeyboardEditor, keyboardSummary, validateKeyboard } from "./keyboard.mjs";
 import { latestControllerDownloads } from "./controller-downloads.mjs";
+import { CaptureWizard } from "./capture-wizard.mjs";
 
 const $ = id => document.getElementById(id);
 const storageKey = "mig-studio-profile-v2";
@@ -56,6 +57,19 @@ const keyboardEditor = new KeyboardEditor($("keyboard-dialog"), t, async draft =
     edit(current => Object.assign(current, movement));
     stopTest(); setView("moves"); feedback("movementSaved");
 });
+const capture = new CaptureWizard({ language: () => language, label: t, onAccept: movement => {
+    const profile = clone(history.value);
+    profile.inputs.push(movement); inputIndex = profile.inputs.length - 1;
+    scope = "0"; selectedRegion = null; selectedRegions = []; noteMode = null;
+    changed(profile); setView("test"); keyboardEditor.open(input());
+} });
+function captureMovement() {
+    if (busy || guided || view === "home") return;
+    if (history.value.inputs.length >= 64) { feedback("captureLimit", true); return; }
+    stopTest();
+    capture.open({landmark:$("landmark").value || "left_wrist",space:input()?.space});
+}
+capture.dialog.addEventListener("close", () => { if (!document.querySelector("dialog[open]")) $("add-input").focus(); });
 const editor = new GridEditor($("editor-grid"), $("grid-regions"), $("drawing-selection"), drawRegion, t, (regionId, rect) => {
     edit(movement => {
         if (regionId === "__selection__") {
@@ -560,7 +574,7 @@ $("scope").addEventListener("change", () => { brush.cancel(); gridBrush.cancel()
 $("full-grid").addEventListener("change", () => { brush.cancel(); gridBrush.cancel(); editor.cancel(); render(); repaintPreview(); });
 for (const button of document.querySelectorAll("[data-tool]")) button.addEventListener("click", () => { brush.cancel(); gridBrush.cancel(); editor.cancel(); noteMode = null; tool = button.dataset.tool; render(); });
 for (const button of document.querySelectorAll("[data-language]")) button.addEventListener("click", () => { language = button.dataset.language; renderLanguage(); });
-$("add-input").addEventListener("click", () => {
+function addDrawnMovement() {
     creationLandmark = "";
     if (history.value.inputs.length >= 64) { feedback("invalid", true, "inputs: maximum 64"); return; }
     const profile = clone(history.value), movement = newInput(profile.inputs.length + 1);
@@ -569,6 +583,18 @@ $("add-input").addEventListener("click", () => {
     inputIndex = profile.inputs.length - 1; scope = "0"; selectedRegion = null; selectedRegions = []; changed(profile);
     tool = "required"; noteMode = null; setView("edit");
     $("input-name").focus(); $("input-name").select();
+}
+function chooseMovementMethod() {
+    if (busy) return;
+    if (history.value.inputs.length >= 64) { feedback("captureLimit", true); return; }
+    $("add-movement-dialog").showModal();
+}
+$("add-input").addEventListener("click", chooseMovementMethod);
+$("add-drawn-input").addEventListener("click", () => { $("add-movement-dialog").close(); addDrawnMovement(); });
+$("add-captured-input").addEventListener("click", () => { $("add-movement-dialog").close(); captureMovement(); });
+$("cancel-add-input").addEventListener("click", () => $("add-movement-dialog").close());
+$("add-movement-dialog").addEventListener("close", () => {
+    if (view === "moves" && !document.querySelector("dialog[open]")) $("add-input").focus();
 });
 function deleteMovement(index) {
     if (busy) return;
@@ -679,13 +705,14 @@ document.addEventListener("keydown", event => {
 });
 $("undo").setAttribute("aria-keyshortcuts", "Control+Z Meta+Z");
 $("redo").setAttribute("aria-keyshortcuts", "Control+Y Meta+Shift+Z Control+Shift+Z");
-$("new-profile").addEventListener("click", () => {
+function createEmptyProfile() {
+    stopTest();
     creationLandmark = "";
-    const movement = newInput(); movement.name = `${t("movement")} 1`;
     inputIndex = 0; scope = "0"; selectedRegion = null; selectedRegions = []; tool = "required"; noteMode = null;
-    changed({ schema_version: 2, tracking: { hands: false }, inputs: [movement] });
-    feedback(null); setView("edit"); $("input-name").focus(); $("input-name").select();
-});
+    changed({ schema_version: 2, tracking: { hands: false }, inputs: [] });
+    feedback(null); setView("moves");
+}
+$("new-profile").addEventListener("click", () => { createEmptyProfile(); chooseMovementMethod(); });
 for (const name of ["edit-keyboard", "test-keyboard", "save-movement"]) $(name).addEventListener("click", () => {
     if (busy || !input()) return;
     if (!regions(input()).length && !input().fingers?.length) { feedback("emptyPath", true); return; }
@@ -742,7 +769,7 @@ $("apply-json").addEventListener("click", async () => { if (await acceptJSON($("
 $("start-test").addEventListener("click", startTest);
 $("quick-test").addEventListener("click", () => {
     guided = false;
-    $("new-profile").click();
+    createEmptyProfile(); addDrawnMovement();
     guided=true;tourStage=0;tourRecognised=false;
     $("full-grid").checked=false;render();
     tour.schedule();

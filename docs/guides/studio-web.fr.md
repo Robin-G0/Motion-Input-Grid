@@ -11,8 +11,43 @@ gestes, associez leurs touches et exportez sans modifier de JSON. Aucun compte r
 
 ## Votre premier mouvement
 
+### Capturer au lieu de dessiner
+
+1. Créez ou importez un profil, puis choisissez **Ajouter un mouvement → Capturer
+   avec la caméra**. Un nouveau profil ouvre ce choix pour son premier mouvement.
+   Sélectionnez la partie du corps et **Normale**, **Haute tolérance** ou **Haute précision**.
+2. Activez la caméra. Gardez les épaules et le point choisi visibles jusqu'à
+   l'activation d'**Enregistrer la prise**.
+3. Revenez au départ et faites le geste **une fois par prise**. Chaque prise
+   commence après **3–2–1** et se termine après **cinq secondes**. Arrêtez plus tôt
+   avec **S**, **Espace** ou **Terminer cette prise**. Répétez pour **trois prises cohérentes**.
+   Les **cases bleues** montrent le chemin parcouru, avec **D (vert)** pour le départ
+   et **A (jaune)** pour l'arrivée actuelle. Aux prises suivantes, le dernier
+   parcours réussi et ses extrémités restent visibles **en transparence**.
+4. Testez le parcours vert-jaune généré. Après une reconnaissance, choisissez
+   **Choisir une touche**, puis enregistrez avec l'éditeur clavier habituel.
+
+> [!TIP]
+> **Commencez par Normale.** Plus de tolérance élargit les zones, qui peuvent
+> chevaucher d'autres mouvements ; une haute précision est plus difficile à reproduire.
+> Changez le préréglage après capture et retestez, ou réenregistrez le geste.
+
+Une prise différente ou interrompue est expliquée et recommencée ; les bonnes
+prises précédentes sont gardées. Seules les positions du point choisi sont
+conservées temporairement, pas la vidéo. Le profil ne change qu'à l'acceptation.
+Échap annule et libère la caméra ; quitter l'onglet annule aussi la capture.
+
+La capture apprend des **parcours 2D avec départ et arrivée distincts**, pas les
+signes de main, la profondeur ni les boucles fermées. Pour déplacer le corps entier,
+ouvrez **Nom et repère** et choisissez **Position initiale**. Le résultat
+utilise les zones ordinaires du schéma 2 et reste modifiable dans l'éditeur.
+Aucun nouveau runtime ni format de fichier n'est nécessaire.
+
+### Dessiner le parcours soi-même
+
 1. Choisissez **Me guider pas à pas** pour les explications à l’écran, ou
-   **Créer un profil**. Le guide vous fait créer le mouvement **HI**.
+   **Créer un profil → Dessiner le parcours**. Dans un profil existant, choisissez
+   **Ajouter un mouvement → Dessiner le parcours**. Le guide vous fait créer le mouvement **HI**.
 2. Choisissez le point du corps à déplacer, par exemple votre poignet gauche.
 3. Choisissez **Required** en vert et dessinez une zone de départ, puis **Trigger**
    en jaune et dessinez l’arrivée. Le geste passe de la verte à la jaune.

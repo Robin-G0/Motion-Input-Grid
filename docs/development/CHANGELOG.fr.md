@@ -4,6 +4,13 @@
 
 ## Non publié
 
+- La capture est une option d'ajout d'un mouvement à un profil, à côté du dessin.
+  L'enregistrement distingue les cases parcourues, le départ et l'arrivée ; les
+  prises suivantes affichent le dernier parcours réussi en transparence comme repère.
+- Le Studio capture un point du corps sur trois prises de cinq secondes, crée
+  un parcours ordonné avec trois niveaux de précision, puis propose test et touche.
+  Les prises incohérentes sont refaites ; annuler libère la caméra sans modifier
+  le brouillon. Le résultat reste un profil au schéma 2 existant.
 - Ajouter un parcours illustré bilingue pour Canva, PowerPoint, PDF et autres présentations ; alléger la navigation, les exemples et les références techniques.
 - Refuser NUL dans les identifiants, noms et actions des profils pour préserver les chaînes natives.
 - Conserver l'enregistrement actif si une nouvelle sélection de points est invalide.
