@@ -1,0 +1,21 @@
+{
+  "name": "mig-controller-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "playwright test",
+    "test:firefox": "node scripts/test-firefox.mjs",
+    "lint": "web-ext lint --source-dir dist/firefox",
+    "package": "node scripts/package.mjs"
+  },
+  "dependencies": {
+    "motion-input-grid": "1.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "web-ext": "10.8.0"
+  }
+}

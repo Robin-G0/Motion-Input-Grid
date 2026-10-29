@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>MIG Controller</title><link rel="stylesheet" href="controller.css"></head>
+<body><header><span id="camera-dot" aria-hidden="true"></span><h1>MIG Controller</h1><button id="language" type="button">EN</button></header>
+<main><p id="target" class="target"></p><label><span data-copy="targetTab"></span><select id="target-tab"></select></label><p id="message" role="status" aria-live="polite"></p>
+<section aria-labelledby="camera-title"><h2 id="camera-title" data-copy="cameraTitle"></h2>
+<label><span data-copy="mode"></span><select id="mode"><option value="manual" data-copy="manual"></option><option value="auto" data-copy="auto"></option></select></label>
+<p class="hint" id="mode-hint"></p><div class="actions"><button id="start" class="primary" type="button"></button><button id="stop" type="button" data-copy="stop"></button><button id="calibrate" type="button" data-copy="calibrate"></button></div>
+<div class="camera"><video id="video" muted playsinline></video><canvas id="overlay" aria-hidden="true"></canvas><span id="camera-empty" data-copy="cameraOff"></span></div>
+<p class="hint" data-copy="poseHint"></p></section>
+<section aria-labelledby="commands-title"><h2 id="commands-title" data-copy="commands"></h2><label><span data-copy="profile"></span><select id="preset"><option value="normal" data-copy="normal"></option><option value="reverse" data-copy="reverse"></option><option value="custom" data-copy="custom" disabled></option></select></label>
+<div id="commands"></div><p class="notice" id="key-notice" data-copy="keysHint"></p>
+<a id="studio" href="https://robin-g0.github.io/Motion-Input-Grid/studio/" target="_blank" rel="noopener" data-copy="studio"></a>
+<label class="import"><span data-copy="import"></span><input id="import" type="file" accept=".json,application/json"></label></section>
+<details><summary data-copy="compatible"></summary><ul><li>Canva</li><li>Gamma</li><li>Google Slides</li><li>PowerPoint web</li></ul><p data-copy="compatHint"></p></details>
+<p class="privacy" data-copy="privacy"></p></main>
+<dialog id="key-dialog" tabindex="-1" aria-labelledby="key-title"><h2 id="key-title" data-copy="pressKey"></h2><p id="key-error" role="alert"></p><button id="cancel-key" type="button" data-copy="cancel"></button></dialog>
+<script type="module" src="controller.mjs"></script></body></html>
