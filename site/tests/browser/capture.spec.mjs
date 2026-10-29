@@ -192,7 +192,9 @@ async function traceColors(page) {
         const pixels=canvas.getContext("2d").getImageData(0,0,canvas.width,canvas.height).data;
         const counts={strongBlue:0,faintBlue:0,start:0,finish:0};
         for(let i=0;i<pixels.length;i+=4) {
-            const [r,g,b,a]=pixels.slice(i,i+4);
+            // Avoid one typed-array allocation per pixel while the live recorder
+            // requires a fresh camera observation every 180 ms.
+            const r=pixels[i],g=pixels[i+1],b=pixels[i+2],a=pixels[i+3];
             if(b>r+20 && b>g+10 && a>5) counts[a>=160?"strongBlue":"faintBlue"]++;
             if(g>r+20 && g>b+5 && a>5) counts.start++;
             if(r>g+20 && g>b+20 && a>5) counts.finish++;
@@ -208,11 +210,12 @@ test("recording paints traversed cells and labeled endpoints, then ghosts the la
     await expect(page.locator("#capture-stop")).toBeVisible({timeout:5000});
     await move(page);
     await expect.poll(async()=> (await traceColors(page)).strongBlue).toBeGreaterThan(0);
-    const liveBlue = (await traceColors(page)).strongBlue;
-    expect((await traceColors(page)).start).toBeGreaterThan(0);
-    expect((await traceColors(page)).finish).toBeGreaterThan(0);
+    const liveColors = await traceColors(page), liveBlue = liveColors.strongBlue;
+    expect(liveColors.start).toBeGreaterThan(0);
+    expect(liveColors.finish).toBeGreaterThan(0);
     await page.screenshot({path:info.outputPath("live-cells.png")});
     await page.keyboard.press("s");
+    await expect(page.locator("#capture-error")).toBeHidden();
     await expect(page.locator("#capture-route-hint")).toContainText("previous successful take");
     // A faint route over the opaque tracking marker can still yield opaque blue pixels.
     await expect.poll(async()=> (await traceColors(page)).strongBlue).toBeLessThan(liveBlue / 4);
