@@ -32,3 +32,33 @@ test("captured routes import into the real WASM engine and recognize only the se
         }
     }
 });
+
+test("captured endpoints support a live held pose across portrait and landscape body grids",async()=>{
+    const module=await createMIG();
+    const takes=[-.1,0,.1].map(offset=>{
+        const take=new MotionTake(0);
+        for(let t=0;t<=1800;t+=30) take.observe({x:4.5+offset,y:7.2-6.8*Math.min(1,Math.max(0,(t-300)/1200))},t);
+        return take.finish(1800);
+    });
+    const movement=mergeTakes(takes,{landmark:"left_wrist",preset:"precise",id:"hold",name:"Hold"});
+    movement.action_mode="hold";movement.keyboard=[{keys:[39]}];
+    for(const aspect of [9/16,16/9]) for(const [center,span] of [[.45,.25],[.6,.35]]) {
+        const tracker=new module.Tracker();let time=0,sequence=0,events=0;
+        try {
+            assert.equal(tracker.load(JSON.stringify({schema_version:2,inputs:[movement]})),"");
+            const frame=y=>{
+                const body=tracker.bodyBuffer();body.fill(0);
+                const put=(joint,x,y)=>body.set([x,y,0,1,0,0,0,0],joint*8);
+                put(11,center+span/2,.45);put(12,center-span/2,.45);
+                put(15,center,.45+(y-3.5)*span*.2*aspect);
+                events+=tracker.update(time+=40,++sequence,aspect,0,0);
+            };
+            for(let i=0;i<35;i++) frame(7.2);
+            for(let i=0;i<=35;i++) frame(7.2-6.8*i/35);
+            for(let i=0;i<15;i++) frame(.4);
+            assert.equal(events,1);
+            assert.equal(tracker.active(0),true,"the demonstrated resting endpoint must sustain Hold");
+            frame(9);assert.equal(tracker.active(0),false);
+        } finally {tracker.delete();}
+    }
+});

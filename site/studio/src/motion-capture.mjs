@@ -6,7 +6,8 @@ const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const median = values => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
 const fail = key => { throw new Error(key); };
 const usable = p => p && Number.isFinite(p.x) && Number.isFinite(p.y)
-    && (p.confidence ?? 1) >= .6 && p.x >= -9 && p.x < 18 && p.y >= -9 && p.y < 18;
+    && Number.isFinite(p.confidence ?? 1) && (p.confidence ?? 1) >= .6 && (p.confidence ?? 1) <= 1
+    && p.x >= -9 && p.x < 18 && p.y >= -9 && p.y < 18;
 
 export class MotionTake {
     constructor(start) { this.start = start; this.samples = []; this.lastTime = -Infinity; this.error = null; }
@@ -37,8 +38,12 @@ export class MotionTake {
         while (end > begin && distance(points[end - 1], points.at(-1)) < .4) end--;
         end = Math.min(points.length - 1, end + 1);
         const trimmed = points.slice(begin, end + 1);
+        // Remove idle time, not the resting poses themselves: the final pose
+        // must remain inside the Trigger, including for Hold/Repeat output.
+        trimmed[0] = { ...points[0], time: trimmed[0].time };
+        trimmed[trimmed.length - 1] = { ...points.at(-1), time: trimmed.at(-1).time };
         if (trimmed.at(-1).time - trimmed[0].time < 200) fail("captureTooShort");
-        if (distance(trimmed[0], trimmed.at(-1)) < 2.5) fail("captureNoMotion");
+        if (distance(trimmed[0], trimmed.at(-1)) < 1) fail("captureNoMotion");
         const length = trimmed.slice(1).reduce((sum, p, i) => sum + distance(p, trimmed[i]), 0);
         if (length > 45) fail("captureComplex");
         return resample(trimmed);
@@ -83,7 +88,7 @@ export class CaptureSequence {
     finish(time) {
         if (this.phase !== "recording") return;
         try {
-            const points = this.take.finish(time);
+            const points = this.take.finish(Math.min(time, this.deadline));
             compareTake(this.takes, points);
             this.takes.push(points); this.error = null;
         } catch (error) { this.error = error.message; }
@@ -94,14 +99,35 @@ export class CaptureSequence {
 }
 
 const PRESETS = { precise: .05, normal: .5, tolerant: 1.25 };
+function checkpoints(points) {
+    const anchors = new Set([0, points.length - 1]);
+    const split = (start, end) => {
+        const a = points[start], b = points[end], dx = b.x - a.x, dy = b.y - a.y;
+        let farthest = -1, deviation = .35;
+        for (let i = start + 1; i < end; i++) {
+            const p = points[i];
+            const fraction = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy || 1)));
+            const error = distance(p, {x:a.x + fraction * dx,y:a.y + fraction * dy});
+            if (error > deviation) { deviation = error; farthest = i; }
+        }
+        if (farthest >= 0) { anchors.add(farthest); split(start, farthest); split(farthest, end); }
+    };
+    split(0, points.length - 1);
+    const corners = [...anchors].sort((a, b) => a - b), indices = [0];
+    for (let segment = 1; segment < corners.length; segment++) {
+        for (let i = corners[segment - 1] + 1; i < corners[segment]; i++) {
+            if (distance(points[indices.at(-1)], points[i]) >= 1.5 - 1e-6) indices.push(i);
+        }
+        indices.push(corners[segment]);
+    }
+    return indices;
+}
 export function mergeTakes(takes, { landmark, preset = "normal", space = "body", name = "Captured movement", id }) {
     if (takes.length !== TAKE_COUNT || !Object.hasOwn(PRESETS, preset)) fail("captureIncomplete");
     const centers = takes[0].map((_, index) => ({ x: median(takes.map(t => t[index].x)), y: median(takes.map(t => t[index].y)) }));
     // Arc-length checkpoints retain curves and direction, but avoid hundreds of
     // tiny rules. Regions are bounded by the native 27 x 27 grid.
-    const indices = [0];
-    for (let i = 1; i < centers.length - 1; i++) if (distance(centers[indices.at(-1)], centers[i]) >= 1.5) indices.push(i);
-    indices.push(centers.length - 1);
+    const indices = checkpoints(centers);
     if (indices.length > 24) fail("captureComplex");
     const cells = indices.map(index => {
         const center = centers[index], margin = PRESETS[preset];

@@ -32,6 +32,9 @@ test("opposite direction and displaced repetitions require a retry", () => {
 test("stationary, tiny and too short movements cannot become bindings", () => {
     assert.throws(() => take({fixed:true}).finish(1500), /captureNoMotion/);
     assert.throws(() => take({duration:180}).finish(180), /captureTooShort/);
+    const tiny=new MotionTake(0);
+    for(const p of take().samples) tiny.observe({...p,y:5+(p.y-7)/30},p.time);
+    assert.throws(()=>tiny.finish(1500),/captureNoMotion/);
 });
 test("lost tracking and implausible jumps do not connect unrelated path segments", () => {
     const lost = take(); lost.observe({x:4.5,y:1},2000);
@@ -42,9 +45,11 @@ test("lost tracking and implausible jumps do not connect unrelated path segments
     assert.throws(() => jump.finish(30), /captureJump/);
 });
 test("invalid points and duplicate clocks do not fill a recording with fake observations", () => {
+    for (const point of [null,{x:NaN,y:0},{x:19,y:0},{x:1,y:2,confidence:.2},{x:1,y:2,confidence:Infinity},{x:1,y:2,confidence:2}]) {
+        const invalid=new MotionTake(0);invalid.observe(point,30);
+        assert.equal(invalid.samples.length,0);
+    }
     const recording = new MotionTake(0);
-    for (const point of [null,{x:NaN,y:0},{x:19,y:0},{x:1,y:2,confidence:.2}]) recording.observe(point,30);
-    assert.equal(recording.samples.length,0);
     recording.observe({x:4,y:5},60);recording.observe({x:5,y:6},60);
     assert.equal(recording.samples.length,1);
 });
@@ -106,4 +111,24 @@ test("stationary lead-in and tail do not outweigh the demonstrated movement",()=
     for(let t=0;t<=TAKE_MS;t+=30) recording.observe({x:4.5,y:7-6*Math.min(1,Math.max(0,(t-1500)/1200))},t);
     const short=take().finish(1500), padded=recording.finish(4980);
     assert.doesNotThrow(()=>compareTake([short],padded));
+    assert.equal(padded[0].y,7);
+    assert.equal(padded.at(-1).y,1);
+});
+
+test("a smaller but distinct gesture can use precision rather than being forced into a wide swipe",()=>{
+    const small=[0,.05,-.05].map(offset=>{
+        const recording=new MotionTake(0);
+        for(const p of take().samples) recording.observe({...p,x:p.x+offset,y:5+(p.y-7)*.3},p.time);
+        return recording.finish(1500);
+    });
+    assert.doesNotThrow(()=>mergeTakes(small,{...options,preset:"precise"}));
+    assert.throws(()=>mergeTakes(small,{...options,preset:"tolerant"}),/captureOverlap/);
+});
+
+test("a delayed stop still uses only the five-second recording window",()=>{
+    const sequence=new CaptureSequence();sequence.start(0);sequence.tick(3000);
+    for(let t=0;t<=4980;t+=30) sequence.observe({x:4.5,y:7-6*Math.min(1,Math.max(0,(t-150)/1200))},3000+t);
+    sequence.finish(8400);
+    assert.equal(sequence.takes.length,1);
+    assert.equal(sequence.error,null);
 });
