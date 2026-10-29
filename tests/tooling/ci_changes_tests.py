@@ -22,6 +22,12 @@ class SelectionTests(unittest.TestCase):
         self.assertEqual(self.enabled("site/studio/src/main.mjs"), {"site"})
         self.assertEqual(self.enabled("site/package-lock.json"), {"site"})
 
+    def test_extension_changes_skip_site_and_native_builds(self):
+        for path in ("extensions/controller/src/background.mjs", "extensions/controller/package-lock.json",
+                     "extensions/controller/package.json", ".github/workflows/extensions.yml"):
+            self.assertEqual(self.enabled(path), {"extensions"})
+        self.assertEqual(self.enabled("extensions/controller/README.md"), {"docs"})
+
     def test_docs_and_illustrations_only_validate_docs(self):
         self.assertEqual(self.enabled("docs/guide.md", "docs/images/demo.png", "bindings/python/README.md"), {"docs"})
 

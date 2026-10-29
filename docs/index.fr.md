@@ -17,6 +17,7 @@ ou intégrez le même moteur dans votre projet.
 | Je veux… | Guide |
 | --- | --- |
 | Créer ou tester un profil dans le navigateur | [Motion Input Grid Studio Web](guides/studio-web.fr.md) |
+| Piloter une présentation web avec l'extension expérimentale | [MIG Controller navigateur](guides/browser-controller.fr.md) |
 | Dessiner un mouvement et lui attribuer un raccourci | [Motion Input Grid Studio](guides/configurator.fr.md) |
 | Utiliser mon profil avec une autre application | [Motion Input Grid Controller](guides/controller.fr.md) |
 | Essayer une démo caméra sans créer de profil | [Exemples autonomes](../examples/README.fr.md) |

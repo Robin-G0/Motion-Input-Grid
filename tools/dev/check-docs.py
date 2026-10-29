@@ -15,6 +15,8 @@ def guides():
     paths = [ROOT / name for name in ("readme.md", "CONTRIBUTING.md", "SECURITY.md")]
     for directory in ("docs", "examples", "bindings", "integrations", "ports", "tests", "tools"):
         paths.extend((ROOT / directory).rglob("*.md"))
+    for pattern in ("*/README*.md", "*/PRIVACY*.md"):
+        paths.extend((ROOT / "extensions").glob(pattern))
     return sorted(path for path in set(paths)
                   if not any(part in EXCLUDED_NAMES or part in ("licenses", "public")
                               for part in path.relative_to(ROOT).parts)

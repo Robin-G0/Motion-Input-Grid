@@ -3,6 +3,8 @@ name: Detect affected CI checks
 on:
     workflow_call:
         outputs:
+            extensions:
+                value: ${{ jobs.detect.outputs.extensions }}
             windows:
                 value: ${{ jobs.detect.outputs.windows }}
             linux:
@@ -28,6 +30,7 @@ jobs:
         runs-on: ubuntu-24.04
         timeout-minutes: 5
         outputs:
+            extensions: ${{ steps.paths.outputs.extensions }}
             windows: ${{ steps.paths.outputs.windows }}
             linux: ${{ steps.paths.outputs.linux }}
             portable: ${{ steps.paths.outputs.portable }}

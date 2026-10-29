@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 
 
-JOBS = ("windows", "linux", "portable", "web", "format", "metadata", "site", "docs")
+JOBS = ("windows", "linux", "portable", "web", "format", "metadata", "site", "docs", "extensions")
 SOURCE = {"windows", "linux", "portable", "web"}
 NATIVE = {"windows", "linux"}
 
@@ -13,6 +13,9 @@ NATIVE = {"windows", "linux"}
 def classify(paths):
     selected = set()
     for path in paths:
+        if path.startswith("extensions/") or path == ".github/workflows/extensions.yml":
+            selected.add("docs" if path.endswith(".md") else "extensions")
+            continue  # Extension builds use their own locked published runtime.
         if path.startswith("site/") or path == ".github/workflows/pages.yml":
             selected.add("site")
             continue  # The site uses its own locked npm runtime, not the source SDK.
