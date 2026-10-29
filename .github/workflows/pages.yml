@@ -3,13 +3,7 @@ name: Test and publish the site
 on:
     push:
         branches: [main]
-        paths:
-            - 'site/**'
-            - '.github/workflows/pages.yml'
     pull_request:
-        paths:
-            - 'site/**'
-            - '.github/workflows/pages.yml'
     workflow_dispatch:
 
 permissions:
@@ -20,7 +14,12 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
+    changes:
+        uses: ./.github/workflows/changes.yml
+
     build-and-test:
+        needs: changes
+        if: needs.changes.outputs.site == 'true'
         runs-on: ubuntu-24.04
         timeout-minutes: 20
         defaults:

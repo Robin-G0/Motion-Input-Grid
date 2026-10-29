@@ -22,6 +22,7 @@ tracking. Camera accuracy, real key delivery and engine exports require manual c
 
 The [test guide](tests/README.md) maps each domain to its directory and explains
 CTest, application UI tests and script checks.
+The [CI guide](docs/development/ci.md) explains which changed paths select each workflow job.
 
 `src/core` owns recognition; `src/format` owns JSON; C ABI/WASM and `bindings`
 expose the same engine. Runtime editor packages live in `integrations`, demos in

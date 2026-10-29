@@ -13,7 +13,12 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
+    changes:
+        uses: ./.github/workflows/changes.yml
+
     documentation:
+        needs: changes
+        if: needs.changes.outputs.docs == 'true'
         runs-on: ubuntu-24.04
         timeout-minutes: 5
         steps:

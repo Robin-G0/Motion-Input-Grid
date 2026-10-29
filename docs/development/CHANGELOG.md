@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- Select CI checks from changed components, preserving shared dependency coverage,
+  complete manual/release validation and the site deployment gate.
 - Capture is an option when adding a movement to a profile, alongside manual drawing.
   Recording highlights visited cells, start and finish; subsequent takes display
   the last successful path and endpoints faintly as a guide.

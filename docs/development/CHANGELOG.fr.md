@@ -4,6 +4,8 @@
 
 ## Non publié
 
+- Sélectionner les contrôles CI selon les composants modifiés, en conservant les
+  dépendances partagées, la validation complète manuelle/des releases et la barrière de publication du site.
 - La capture est une option d'ajout d'un mouvement à un profil, à côté du dessin.
   L'enregistrement distingue les cases parcourues, le départ et l'arrivée ; les
   prises suivantes affichent le dernier parcours réussi en transparence comme repère.

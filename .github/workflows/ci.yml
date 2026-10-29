@@ -2,13 +2,7 @@ name: Build, test and format
 
 on:
     push:
-        paths-ignore:
-            - 'docs/**'
-            - '**/*.md'
     pull_request:
-        paths-ignore:
-            - 'docs/**'
-            - '**/*.md'
     workflow_dispatch:
 
 permissions:
@@ -19,8 +13,13 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
+    changes:
+        uses: ./.github/workflows/changes.yml
+
     format:
         name: C++ formatting
+        needs: changes
+        if: needs.changes.outputs.format == 'true'
         runs-on: ubuntu-24.04
         timeout-minutes: 10
         steps:
@@ -38,6 +37,16 @@ jobs:
                   clang-format-16 --version
                   find src tests examples integrations -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) -print0 |
                       xargs -0 -r clang-format-16 --dry-run --Werror
+    metadata:
+        name: Package and tooling checks
+        needs: changes
+        if: needs.changes.outputs.metadata == 'true'
+        runs-on: ubuntu-24.04
+        timeout-minutes: 5
+        steps:
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  persist-credentials: false
             - name: Check release version consistency
               run: |
                   python3 tests/tooling/release_version_tests.py
@@ -47,6 +56,8 @@ jobs:
 
     windows:
         name: Windows Release (hands ${{ matrix.hands }})
+        needs: changes
+        if: needs.changes.outputs.windows == 'true'
         runs-on: windows-2022
         timeout-minutes: 30
         strategy:
@@ -88,6 +99,8 @@ jobs:
 
     portable:
         name: Linux portable SDK
+        needs: changes
+        if: needs.changes.outputs.portable == 'true'
         runs-on: ubuntu-24.04
         timeout-minutes: 15
         defaults:
@@ -123,6 +136,8 @@ jobs:
 
     linux-native:
         name: Linux native SDK and graphics integrations
+        needs: changes
+        if: needs.changes.outputs.linux == 'true'
         runs-on: ubuntu-24.04
         timeout-minutes: 20
         steps:
@@ -175,6 +190,8 @@ jobs:
 
     web:
         name: WebAssembly browser SDK
+        needs: changes
+        if: needs.changes.outputs.web == 'true'
         runs-on: ubuntu-24.04
         timeout-minutes: 15
         steps:
@@ -230,7 +247,8 @@ jobs:
 
     javascript:
         name: React, Vue and Next.js integrations
-        needs: web
+        needs: [changes, web]
+        if: needs.changes.outputs.web == 'true'
         runs-on: ubuntu-24.04
         timeout-minutes: 15
         env:
@@ -288,3 +306,25 @@ jobs:
                   # Standalone examples already contain the compiled examples and runtime.
                   path: build/javascript-artifacts/
                   retention-days: 3
+
+    checks:
+        name: Affected checks passed
+        needs: [changes, format, metadata, windows, portable, linux-native, web, javascript]
+        if: always()
+        runs-on: ubuntu-24.04
+        timeout-minutes: 5
+        steps:
+            - name: Reject failed or cancelled checks
+              env:
+                  RESULTS: ${{ toJSON(needs) }}
+              run: |
+                  python3 - <<'PY'
+                  import json, os
+                  results = json.loads(os.environ['RESULTS'])
+                  failed = [name for name, job in results.items() if job['result'] not in ('success', 'skipped')]
+                  if results['changes']['result'] != 'success':
+                      failed.append('change detection')
+                  if failed:
+                      raise SystemExit('Checks failed: ' + ', '.join(failed))
+                  print('All affected checks passed; unrelated checks were skipped.')
+                  PY

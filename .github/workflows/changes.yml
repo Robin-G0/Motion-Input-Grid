@@ -1,0 +1,48 @@
+name: Detect affected CI checks
+
+on:
+    workflow_call:
+        outputs:
+            windows:
+                value: ${{ jobs.detect.outputs.windows }}
+            linux:
+                value: ${{ jobs.detect.outputs.linux }}
+            portable:
+                value: ${{ jobs.detect.outputs.portable }}
+            web:
+                value: ${{ jobs.detect.outputs.web }}
+            format:
+                value: ${{ jobs.detect.outputs.format }}
+            metadata:
+                value: ${{ jobs.detect.outputs.metadata }}
+            docs:
+                value: ${{ jobs.detect.outputs.docs }}
+            site:
+                value: ${{ jobs.detect.outputs.site }}
+
+permissions:
+    contents: read
+
+jobs:
+    detect:
+        runs-on: ubuntu-24.04
+        timeout-minutes: 5
+        outputs:
+            windows: ${{ steps.paths.outputs.windows }}
+            linux: ${{ steps.paths.outputs.linux }}
+            portable: ${{ steps.paths.outputs.portable }}
+            web: ${{ steps.paths.outputs.web }}
+            format: ${{ steps.paths.outputs.format }}
+            metadata: ${{ steps.paths.outputs.metadata }}
+            docs: ${{ steps.paths.outputs.docs }}
+            site: ${{ steps.paths.outputs.site }}
+        steps:
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  persist-credentials: false
+                  fetch-depth: 0
+            - name: Test change detection
+              run: python3 tests/tooling/ci_changes_tests.py
+            - name: Select affected checks
+              id: paths
+              run: python3 tools/dev/ci-changes.py
