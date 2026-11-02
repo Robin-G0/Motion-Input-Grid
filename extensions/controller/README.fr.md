@@ -128,7 +128,10 @@ Activez **Afficher la configuration dans la caméra**, puis choisissez la main.
 Le vert représente le départ Required ; le jaune représente l'arrivée Trigger.
 Suivez la flèche avec cette main. Le point blanc indique son poignet suivi.
 L'option et la main choisie sont mémorisées. L'affichage concerne les presets Normal
-et Inversé ; il est désactivé pour les profils personnalisés. Les zones apparaissent
+et Inversé. Attendez la fin du message de calibrage avant de faire le geste. Le repos
+au départ n'expire plus ; y revenir pendant le cooldown réarme le prochain parcours
+sans le consommer. Aucune action n'est émise pendant les 900 ms du cooldown.
+L'affichage est désactivé pour les profils personnalisés. Les zones apparaissent
 après calibrage et disparaissent en cas de perte de suivi.
 
 Cette version lit la grille du moteur MIG via un accès WASM en lecture seule,

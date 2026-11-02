@@ -21,7 +21,8 @@ flèches droite/gauche, ou [le profil inversé](../../configs/presentation-toler
 pour les échanger. La main droite balaie de droite à gauche pour avancer ; la main
 gauche balaie de gauche à droite pour reculer, du point de vue de la personne.
 Ces profils utilisent toute la hauteur de la grille, des zones de départ élargies
-et jusqu'à quatre secondes pour terminer un geste. Les coordonnées suivent la
+et permettent de rester au départ sans expiration : le prochain parcours complet
+reste reconnu une seule fois. Les coordonnées suivent la
 largeur des épaules : s'éloigner ne demande pas le même déplacement en pixels.
 Gardez les épaules et le poignet en mouvement visibles.
 

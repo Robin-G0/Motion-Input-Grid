@@ -49,7 +49,7 @@ test("key rebinding, safe import and blocked Windows shortcuts retain the previo
 });
 test.afterAll(async()=>{await context?.close();if(root){expect(root.startsWith(resolve(tmpdir())+sep)).toBe(true);await rm(root,{recursive:true,force:true});}});
 test.beforeEach(async()=>{await worker.evaluate(()=>chrome.storage.local.clear());});
-async function openRemote(url="https://www.canva.com/design/fixture/edit"){
+async function openRemote(url="https://www.canva.com/design/fixture/edit",sampleInterval=null){
     await context.route(new URL(url).origin+"/**",route=>route.fulfill({contentType:"text/html",body:'<html><title>Remote fixture</title><body><h1>Presentation</h1><input aria-label="Notes"><p id="count">0</p><script>let n=0;addEventListener("keydown",e=>{if(e.key==="ArrowRight")document.querySelector("#count").textContent=++n;});</script></body></html>'}));
     const deck=await context.newPage();await deck.goto(url);
     const opened=context.waitForEvent("page");await worker.evaluate(url=>chrome.windows.create({url,type:"popup",width:520,height:780}),`chrome-extension://${id}/controller.html`);
@@ -57,19 +57,24 @@ async function openRemote(url="https://www.canva.com/design/fixture/edit"){
     await page.locator("#target-tab").selectOption({label:"Remote fixture"});
     await page.locator("#mode").selectOption("manual");
     await expect(page.locator("#start")).toHaveText(/^(Start|Démarrer)$/);
-    // Replace inference only; retain the installed extension, media stream, native
-    // WASM recognition, messaging, permissions and page event dispatch.
-    await page.evaluate(async()=>{
+    // Replace inference and optionally the source clock; retain the installed
+    // extension, media stream, native WASM, messaging and page event dispatch.
+    await page.evaluate(async sampleInterval=>{
         window.wrist=.2;
+        // A deterministic 10 FPS source clock accompanies the synthetic pose
+        // observations. Some headless fake webcams keep currentTime at zero.
+        if(sampleInterval)Object.defineProperty(document.querySelector("#video"),"currentTime",{
+            configurable:true,get:()=>Math.floor(performance.now()/sampleInterval)*sampleInterval/1000
+        });
         const {MIGSession}=await import("./mig/session.mjs");const start=MIGSession.prototype.start;
         MIGSession.prototype.start=function(...args){
             this.dependencies.loadModels=async()=>({pose:{close(){},detectForVideo(){
-                const points=Array.from({length:33},()=>({x:0,y:0,visibility:0}));
-                points[11]={x:.65,y:.45,visibility:1};points[12]={x:.35,y:.45,visibility:1};points[16]={x:window.wrist,y:.6,visibility:1};
+                const points=Array.from({length:33},()=>({x:0,y:0,z:0,visibility:0}));
+                points[11]={x:.65,y:.45,z:0,visibility:1};points[12]={x:.35,y:.45,z:0,visibility:1};points[16]={x:window.wrist,y:.6,z:0,visibility:1};
                 return {landmarks:[points],worldLandmarks:[]};}},hands:{close(){},detectForVideo(){return {landmarks:[],handedness:[]};}}});
             return start.apply(this,args);
         };
-    });
+    },sampleInterval);
     return {page,deck};
 }
 async function sweep(page){for(let i=0;i<=18;i++){await page.evaluate(x=>window.wrist=x,.2+i*.6/18);await page.waitForTimeout(60);}}
@@ -83,6 +88,22 @@ test("a real WASM gesture emits one page key and typing in notes is protected",a
     await deck.locator("input").focus();await page.evaluate(()=>window.wrist=.2);await page.waitForTimeout(400);await sweep(page);
     await expect(deck.locator("#count")).toHaveText("1");
     await page.close();await expect.poll(()=>worker.evaluate(()=>chrome.action.getTitle({}))).toContain("Camera off");await deck.close();
+});
+test("the first resting swipe and the next swipe each deliver one page command",async()=>{
+    const {page,deck}=await openRemote(undefined,100);await page.locator("#start").click();
+    await expect(page.locator("#message")).toHaveText("Camera active · perform the movement",{timeout:10000});
+    // Rest longer than the former preset timeout without leaving the start.
+    await page.waitForTimeout(4500);
+    await sweep(page);
+    await expect(deck.locator("#count")).toHaveText("1");
+    // Return directly during cooldown, as a fast return can skip a neutral frame.
+    await page.evaluate(()=>window.wrist=.2);
+    await page.waitForTimeout(1200);
+    await sweep(page);
+    await expect(deck.locator("#count")).toHaveText("2");
+    await page.waitForTimeout(1200);
+    await expect(deck.locator("#count")).toHaveText("2");
+    await page.close();await deck.close();
 });
 test("automatic camera follows presentation start, exit, return and tab closure",async()=>{
     const {page,deck}=await openRemote("https://gamma.app/docs/fixture");

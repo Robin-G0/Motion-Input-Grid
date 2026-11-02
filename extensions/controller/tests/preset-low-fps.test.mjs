@@ -65,7 +65,10 @@ test("slow-camera presets keep the existing continuity and tracking safeguards",
     const { MIGTracker } = await import("../dist/chromium/mig/mig-tracker.mjs");
     for (const hand of ["right", "left"]) {
         for (const fault of ["gap", "confidence", "shoulders", "outside", "timeout"]) {
-            const tracker = await MIGTracker.create(JSON.stringify(presetProfile()));
+            const profile = presetProfile();
+            // Explicit user time limits still apply; the defaults allow resting.
+            if (fault === "timeout") for (const input of profile.inputs) input.max_duration_ms = 4000;
+            const tracker = await MIGTracker.create(JSON.stringify(profile));
             let time = 0, sequence = 0;
             const actions = [];
             const start = hand === "right" ? 2.5 : 6.5;

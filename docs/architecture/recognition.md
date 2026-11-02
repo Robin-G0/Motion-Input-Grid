@@ -48,6 +48,12 @@ Normal variants arbitrate ambiguous same-wrist hits; Test isolates an input.
 After activation, terminal conditions expose `output_active` independently of
 the persistent Test highlight. Release/rearm and cooldown prevent duplicate events.
 
+Release is observed during cooldown, while recognition remains suppressed. After
+an accepted action, visibly leaving every terminal region (including Low tolerances)
+can rearm a direct return to the start without a sampled neutral frame. A missing
+point or lost finger sign alone is not that release. Test mode retains its result
+latch, and paths performed during cooldown are not queued for later execution.
+
 ### Hand assignment and commands
 
 Native association uses pose wrists to assign detected hands, rejecting ambiguity.

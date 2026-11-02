@@ -30,7 +30,7 @@
                     ]
                 }
             ],
-            "max_duration_ms": 4000,
+            "max_duration_ms": 0,
             "mirror": false,
             "name": "Right hand: right → left",
             "recordings": [],
@@ -91,7 +91,7 @@
                     ]
                 }
             ],
-            "max_duration_ms": 4000,
+            "max_duration_ms": 0,
             "mirror": false,
             "name": "Left hand: left → right",
             "recordings": [],

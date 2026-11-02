@@ -10,7 +10,9 @@ export function presetProfile(reverse = false, site = null, overrides = {}) {
         {id:"left_sweep",name:"Left hand: left → right",landmark:"left_wrist",cells:[[6,-9,12,27],[-9,-9,12,27]]}
     ].map((motion,index) => {
         const action = (index === 0) !== reverse ? "next" : "previous";
-        return {id:motion.id,name:motion.name,action,space:"body",cooldown_ms:900,max_duration_ms:4000,
+        // Resting in the starting region is not a failed gesture. Continuity,
+        // ordered regions and cooldown still constrain each accepted crossing.
+        return {id:motion.id,name:motion.name,action,space:"body",cooldown_ms:900,max_duration_ms:0,
             keyboard:[{keys:overrides[motion.id] ?? defaults[action]}],action_mode:"single_press",
             steps:[{id:`${motion.id}_route`,mode:"ordered",constraints:motion.cells.map((cell,i)=>({id:`${motion.id}_${i}`,landmark:motion.landmark,
                 cell,type:i ? "trigger" : "required",priority:"high",order:i+1}))}]};

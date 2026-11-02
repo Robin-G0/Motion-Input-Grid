@@ -126,6 +126,9 @@ privacy URL and developer-account actions remain with the publisher.
 Enable **display configuration in camera** and choose a hand. Green is the Required
 start region; yellow is the Trigger region. Follow the arrow with that hand. The
 white dot is its tracked wrist. The preference and selected hand are remembered.
+Wait for the calibration message to clear before moving. Resting in a preset's
+start region no longer expires; returning there during cooldown rearms the next
+swipe without consuming it. Cooldown still suppresses actions during its 900 ms.
 Normal and Reversed presets use their active configuration; custom-profile display
 is disabled. Regions appear after calibration and clear when tracking is lost.
 

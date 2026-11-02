@@ -4,6 +4,7 @@ import {presetProfile} from "./presets.mjs";
 import {profileBindings,eventKeys,keyLabel} from "./keys.mjs";
 import {copy} from "./copy.mjs";
 import {drawConfiguration,clearConfiguration} from "./configuration-overlay.mjs";
+import {trackingStatus} from "./tracking-status.mjs";
 const api=globalThis.browser??chrome,$=id=>document.getElementById(id);
 let language=navigator.language.startsWith("fr")?"fr":"en",kind="normal",overrides={},custom=null,profile,bindings=[],current=null,site=null,pending=null,busy=false,disposed=false,starting=false,connected=true;
 let keymaps={};
@@ -27,7 +28,7 @@ class CameraSession extends MIGSession{
 }
 const session=new CameraSession({assetBase:api.runtime.getURL("mig/"),profileMode:true,
     onAction:event=>{const binding=bindings.find(item=>item.id===event.id);if(binding&&current?.shouldRun)send({type:"command",commands:binding.keys});},
-    onFrame:()=>{if(session.state.running)message(t(session.coordinate(11)?.confidence>.6&&session.coordinate(12)?.confidence>.6?"active":"missing"));renderConfiguration();}});
+    onFrame:()=>{if(session.state.running)message(t(trackingStatus(session)));renderConfiguration();}});
 session.subscribe(state=>{
     $("camera-dot").dataset.active=String(state.running);$("camera-empty").hidden=state.running;
     $("calibrate").disabled=!state.running;send({type:"camera",running:state.running});

@@ -20,7 +20,8 @@ Import [the tolerant profile](../../configs/presentation-tolerant.json) for Righ
 arrow commands, or [the reversed profile](../../configs/presentation-tolerant-reversed.json)
 to swap them. The right hand sweeps right to left to advance; the left hand sweeps
 left to right to go back, from the performer's perspective. These profiles use the
-full grid height, wider starting regions and up to four seconds to complete a swipe.
+full grid height and wider starting regions. You can rest in the starting region
+without a timeout; the next complete swipe is still recognized once.
 Their coordinates scale with shoulder width, so moving farther away does not require
 the same travel in screen pixels. Keep shoulders and the moving wrist visible.
 

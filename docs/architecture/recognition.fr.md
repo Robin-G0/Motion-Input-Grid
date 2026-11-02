@@ -68,6 +68,13 @@ Les variantes normales arbitrent les ambiguïtés de même poignet ; Test isole
 l'input. `output_active` décrit les conditions terminales actuelles, séparément
 du surlignage Test persistant. Réarmement et cooldown empêchent les doublons.
 
+Le relâchement est observé pendant le cooldown, sans permettre la reconnaissance.
+Après une action acceptée, quitter visiblement toutes les régions terminales
+(tolérances Low comprises) permet de réarmer un retour direct au départ, même sans
+image intermédiaire neutre. Un point absent ou un signe de doigts perdu ne suffit
+pas à établir cette sortie. Test conserve son résultat ; un parcours effectué
+pendant le cooldown n'est pas mis en attente pour être exécuté ensuite.
+
 ### Attribution des mains et commandes
 
 L'association native utilise les poignets du corps et rejette l'ambiguïté.

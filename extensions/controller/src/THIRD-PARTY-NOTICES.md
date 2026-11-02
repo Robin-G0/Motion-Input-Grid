@@ -6,7 +6,9 @@ under `mig/LICENSE` and `mig/licenses/`. Package files are pinned by package-loc
 This local build recompiles the MIG 1.1.0 sources with Emscripten 4.0.15 and
 `DYNAMIC_EXECUTION=0` for Manifest V3. The web binding adds a read-only grid accessor
 so configuration regions can be rendered using the actual engine transform.
-Recognition sources are unchanged. The glue and WASM differ from the npm release;
+The recognition core also fixes rearming during cooldown and direct returns to
+the starting region. Its source hashes are in the same provenance document.
+The glue and WASM differ from the npm release;
 their hashes and the modified binding hash are recorded in `mig/grid-provenance.json`.
 The matching sources and `scripts/rebuild-grid-runtime.py` are in the source archive.
 The older `scripts/csp-runtime.mjs` transformation is retained for historical review

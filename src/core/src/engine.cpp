@@ -181,6 +181,7 @@ void Engine::restart() noexcept {
             candidate.started = candidate.held_since = -1;
             candidate.ready_after = 0;
             candidate.locked = false;
+            candidate.completed_step = -1;
         }
     }
 }
