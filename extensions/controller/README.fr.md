@@ -9,8 +9,9 @@ Elle n'envoie aucune touche au système et ne contacte pas le Controller bureau.
 > [!IMPORTANT]
 > **Première version : testez avant de présenter.** Les parcours sont testés dans
 > l'extension installée avec des pages contrôlées. Les comptes réels Canva, Gamma,
-> Google Slides et PowerPoint, Opera et la précision avec une webcam physique
-> restent à vérifier manuellement. Certains lecteurs ignorent les touches simulées ;
+> Google Slides et PowerPoint ainsi que la précision selon les webcams restent à
+> vérifier manuellement. Un essai utilisateur Opera + Canva a fonctionné ; un délai
+> de reprise après sortie du champ a été signalé. Certains lecteurs ignorent les touches simulées ;
 > l'extension ne fabrique pas de véritables événements matériels.
 
 ## Compiler et installer pour un essai
@@ -113,5 +114,25 @@ descriptions traduites, publier la [notice de confidentialité](PRIVACY.fr.md), 
 les permissions et fournir un parcours aux évaluateurs. Comptes, signature,
 soumission et publication restent manuels. L'acceptation par les stores n'est pas garantie.
 
+Les [dossiers de soumission Chrome, Firefox et Opera](store/README.fr.md) contiennent
+les fiches FR/EN, justifications de permissions, confidentialité, sources de revue
+et consignes d'évaluation. `npm run prepare:stores` assemble les ZIP, icônes et image
+promotionnelle dans `dist/store-submission`. Les captures restent à fournir et la
+page de confidentialité doit être publiée avant de renseigner son URL dans les stores.
+
 Le code et le lockfile reproduisent les ZIP. La transformation CSP vérifie le hash du
 runtime ; les [mentions tierces](src/THIRD-PARTY-NOTICES.md) documentent les adaptations.
+# Version locale avec affichage de configuration
+
+Activez **Afficher la configuration dans la caméra**, puis choisissez la main.
+Le vert représente le départ Required ; le jaune représente l'arrivée Trigger.
+Suivez la flèche avec cette main. Le point blanc indique son poignet suivi.
+L'option et la main choisie sont mémorisées. L'affichage concerne les presets Normal
+et Inversé ; il est désactivé pour les profils personnalisés. Les zones apparaissent
+après calibrage et disparaissent en cas de perte de suivi.
+
+Cette version lit la grille du moteur MIG via un accès WASM en lecture seule,
+sans seconde grille MediaPipe. Le runtime est recompilé sans exécution dynamique.
+Voir `runtime-grid/provenance.json` et `BUILD-REVIEW.md` dans l'archive des sources.
+Des tests caméra/navigation sans interface visible restent instables ou échouent
+aussi sur l'ancienne version. Les tests de l'affichage passent ; version locale de test.

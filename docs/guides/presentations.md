@@ -14,6 +14,23 @@ presentation / slideshow formats**, through the keyboard shortcuts of the viewer
 > If it does not advance, use the viewer's actual next-page shortcut in MIG.
 > Shortcuts depend on the application, browser and viewing mode.
 
+## Ready-made profile for 10–15 FPS
+
+Import [the tolerant profile](../../configs/presentation-tolerant.json) for Right/Left
+arrow commands, or [the reversed profile](../../configs/presentation-tolerant-reversed.json)
+to swap them. The right hand sweeps right to left to advance; the left hand sweeps
+left to right to go back, from the performer's perspective. These profiles use the
+full grid height, wider starting regions and up to four seconds to complete a swipe.
+Their coordinates scale with shoulder width, so moving farther away does not require
+the same travel in screen pixels. Keep shoulders and the moving wrist visible.
+
+Calibrate at your presentation distance. Begin with your hand on its starting side,
+move smoothly across your torso, briefly hold the finish, then return to rest.
+Synthetic tests cover 10–15 FPS, varying frame intervals and smaller shoulder spans;
+they do not establish real-camera accuracy at a particular distance. Frames more than
+180 ms apart interrupt the path. Configuration cannot recover missing or low-confidence
+landmarks; move closer or improve lighting if tracking is lost.
+
 ## Draw and test one gesture
 
 1. Open [Studio Web](https://robin-g0.github.io/Motion-Input-Grid/studio/) or the

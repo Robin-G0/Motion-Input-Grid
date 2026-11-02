@@ -45,24 +45,29 @@ test("both wrists can start gestures across almost the entire camera", async () 
     }
 });
 
-test("short horizontal gestures need 100 ms and fresh tracking for the next gesture", async () => {
-    for (const direction of [-1, 1]) {
-        const swipes = new CameraSwipes();
-        let wrist = { x: .5, y: .5 };
-        const session = { coordinate: index => index === 15 ? wrist : null };
-        swipes.update(session, 0);
-        swipes.update(session, 150);
-        wrist.x = .5 + direction * .081;
-        assert.deepEqual(swipes.update(session, 249), []);
-        assert.deepEqual(swipes.update(session, 250), [direction > 0 ? "next_slide" : "previous_slide"]);
-        wrist = { x: .5, y: .5 };
-        swipes.update(session, 300);
-        swipes.update(session, 449);
-        assert.equal(swipes.isArmed(449), false);
-        swipes.update(session, 450);
-        assert.equal(swipes.isArmed(450), true);
-        wrist.x = .5 - direction * .081;
-        assert.deepEqual(swipes.update(session, 550), [direction > 0 ? "previous_slide" : "next_slide"]);
+test("short horizontal gestures need 7 percent travel, 100 ms and fresh tracking for the next gesture", async () => {
+    for (const landmark of [15, 16]) {
+        for (const direction of [-1, 1]) {
+            const swipes = new CameraSwipes();
+            let wrist = { x: .5, y: .5 };
+            const session = { coordinate: index => index === landmark ? wrist : null };
+            swipes.update(session, 0);
+            swipes.update(session, 150);
+            wrist.x = .5 + direction * .071;
+            assert.deepEqual(swipes.update(session, 249), []);
+            wrist.x = .5 + direction * .069;
+            assert.deepEqual(swipes.update(session, 250), []);
+            wrist.x = .5 + direction * .071;
+            assert.deepEqual(swipes.update(session, 251), [direction > 0 ? "next_slide" : "previous_slide"]);
+            wrist = { x: .5, y: .5 };
+            swipes.update(session, 300);
+            swipes.update(session, 449);
+            assert.equal(swipes.isArmed(449), false);
+            swipes.update(session, 450);
+            assert.equal(swipes.isArmed(450), true);
+            wrist.x = .5 - direction * .071;
+            assert.deepEqual(swipes.update(session, 550), [direction > 0 ? "previous_slide" : "next_slide"]);
+        }
     }
 });
 

@@ -8,6 +8,10 @@
 
 ## Grid and coordinate spaces
 
+The web presentation's camera-space slide gestures require horizontal wrist travel
+of 7% of the image width over at least 100 ms, after 150 ms of initial tracking.
+Both hands and directions use the same thresholds; vertical scrolling is separate.
+
 The image carries normalized unmirrored anatomical indices. Aspect correction
 prevents horizontal camera dimensions changing distances. Valid shoulders provide
 a torso axis, center and width. Calibration collects a stable median baseline;

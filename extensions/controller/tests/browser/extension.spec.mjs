@@ -7,7 +7,7 @@ test.beforeAll(async()=>{
     root=await mkdtemp(resolve(tmpdir(),"mig-extension-"));
     context=await chromium.launchPersistentContext(root,{channel:"chromium",headless:true,ignoreDefaultArgs:["--disable-extensions"],args:["--enable-unsafe-extension-debugging","--use-fake-ui-for-media-stream","--use-fake-device-for-media-stream"]});
     const cdp=await context.browser().newBrowserCDPSession();
-    ({id}=await cdp.send("Extensions.loadUnpacked",{path:resolve("dist/chromium")}));
+    ({id}=await cdp.send("Extensions.loadUnpacked",{path:resolve(process.env.MIG_TEST_EXTENSION??"dist/chromium")}));
     worker=context.serviceWorkers()[0]??await context.waitForEvent("serviceworker");
 });
 test("real packaged models start and stop a camera under extension CSP",async()=>{
@@ -132,6 +132,58 @@ test("packaged runtime validates presets inside the actual extension CSP",async(
     await page.goto(`chrome-extension://${id}/controller.html`);
     await expect(page.locator(".command")).toHaveCount(2);
     expect(errors).toEqual([]);await page.close();
+});
+test("configuration display persists, identifies each preset hand and hides for custom profiles",async()=>{
+    await worker.evaluate(()=>chrome.storage.local.set({controller:{language:"en",kind:"normal"}}));
+    const page=await context.newPage();const errors=[];page.on("pageerror",error=>errors.push(error.message));
+    await page.goto(`chrome-extension://${id}/controller.html`);
+    await expect(page.locator(".command")).toHaveCount(2);
+    const toggle=page.getByRole("switch",{name:"display configuration in camera"});
+    await expect(toggle).not.toBeChecked();
+    await toggle.focus();await page.keyboard.press("Space");
+    await expect(toggle).toBeChecked();
+    await expect(page.locator("#configuration-controls")).toBeVisible();
+    await expect(page.locator("#configuration-status")).toContainText("Start the camera");
+    await page.locator("#configuration-movement").selectOption("left_sweep");
+    await page.reload();
+    await expect(toggle).toBeChecked();
+    await expect(page.locator("#configuration-movement")).toHaveValue("left_sweep");
+    await page.locator("#preset").selectOption("reverse");
+    await expect(page.locator("#configuration-movement option:checked")).toContainText("Next");
+    const profile=await page.evaluate(async()=>{const {presetProfile}=await import("./presets.mjs");return presetProfile();});
+    await page.locator("#import").setInputFiles({name:"custom.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(profile))});
+    await expect(page.locator("#preset")).toHaveValue("custom");
+    await expect(toggle).toBeDisabled();
+    await expect(page.locator("#configuration-controls")).toBeHidden();
+    await page.locator("#preset").selectOption("normal");
+    await expect(toggle).toBeEnabled();
+    await expect(toggle).toBeChecked();
+    expect(errors).toEqual([]);
+    await page.close();
+});
+test("configuration canvas draws engine-owned regions with readable unmirrored labels",async()=>{
+    const page=await context.newPage();await page.goto(`chrome-extension://${id}/controller.html`);
+    await expect(page.locator(".command")).toHaveCount(2);
+    const result=await page.evaluate(async()=>{
+        const {MIGTracker}=await import("./mig/mig-tracker.mjs");
+        const {presetProfile}=await import("./presets.mjs");
+        const {drawConfiguration}=await import("./configuration-overlay.mjs");
+        const profile=presetProfile();const tracker=await MIGTracker.create(JSON.stringify(profile));
+        try{
+            for(let i=1;i<=20;i++){
+                const points=tracker.native.bodyBuffer();points.fill(0);
+                for(const [joint,x,y] of [[11,.65,.45],[12,.35,.45],[16,.35,.6]])points.set([x,y,0,1,0,0,0,0],joint*8);
+                tracker.native.update(i*100,i,1,0,0);
+            }
+            const canvas=document.querySelector("#configuration-overlay");
+            const drawn=drawConfiguration(canvas,{videoWidth:640,videoHeight:640},tracker,profile,"right_sweep",{start:"Start",finish:"Trigger"});
+            const pixels=canvas.getContext("2d").getImageData(0,0,640,640).data;
+            let visible=0;for(let i=3;i<pixels.length;i+=4)if(pixels[i])visible++;
+            return {drawn,visible,transform:getComputedStyle(canvas).transform};
+        }finally{tracker.dispose();}
+    });
+    expect(result.drawn).toBe(true);expect(result.visible).toBeGreaterThan(10000);expect(result.transform).toBe("none");
+    await page.close();
 });
 test("controller fits a narrow window, translates controls and retains keyboard focus during polling",async({},info)=>{
     const page=await context.newPage();await page.goto(`chrome-extension://${id}/controller.html`);

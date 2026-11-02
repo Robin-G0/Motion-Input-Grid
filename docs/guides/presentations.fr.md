@@ -14,6 +14,25 @@ avec un mouvement volontaire du poignet et les raccourcis clavier du lecteur.
 > Si elle n'avance pas, utilisez le véritable raccourci suivant du lecteur dans MIG.
 > Il dépend du logiciel, du navigateur et du mode d'affichage.
 
+## Profil prêt à utiliser à 10–15 FPS
+
+Importez [le profil tolérant](../../configs/presentation-tolerant.json) pour les
+flèches droite/gauche, ou [le profil inversé](../../configs/presentation-tolerant-reversed.json)
+pour les échanger. La main droite balaie de droite à gauche pour avancer ; la main
+gauche balaie de gauche à droite pour reculer, du point de vue de la personne.
+Ces profils utilisent toute la hauteur de la grille, des zones de départ élargies
+et jusqu'à quatre secondes pour terminer un geste. Les coordonnées suivent la
+largeur des épaules : s'éloigner ne demande pas le même déplacement en pixels.
+Gardez les épaules et le poignet en mouvement visibles.
+
+Calibrez à votre distance de présentation. Partez avec la main du côté de départ,
+traversez doucement le torse, maintenez brièvement l'arrivée puis revenez au repos.
+Les tests synthétiques couvrent 10–15 FPS, des intervalles variables et de petites
+largeurs d'épaules ; ils ne prouvent pas la précision d'une webcam à une distance
+donnée. Un intervalle supérieur à 180 ms interrompt le parcours. Une configuration
+ne rétablit pas les points absents ou peu fiables : rapprochez-vous ou améliorez
+l'éclairage si le suivi est perdu.
+
 ## Dessiner et tester un geste
 
 1. Ouvrez le [Studio web](https://robin-g0.github.io/Motion-Input-Grid/studio/) ou le

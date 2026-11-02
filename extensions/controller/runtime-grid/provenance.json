@@ -1,0 +1,13 @@
+{
+  "base_release": "MIG 1.1.0",
+  "emscripten": "4.0.15",
+  "cmake": "3.31.10",
+  "dynamic_execution": false,
+  "change": "Read-only grid accessor in src/web/bindings.cpp; recognition sources unchanged.",
+  "source_sha256": "ca89edad9fbd0aed6ff7ea38490d563cc1b9125c4a755e788531d2107d0e6376",
+  "sha256": {
+    "mig.mjs": "8b4af453d6ebdc6ae08fb7a34a5399521b4b3dc4048a26aceab888a2822acb30",
+    "mig.wasm": "c8e32ef94e73fa73de63e10b66aae75c594d84394ffe213d582476257d33eaf7",
+    "mig-tracker.mjs": "d0e9b02ae52e2c9e65aa11cf68f5219db37ae8d066c94ce9562abfd6f0c2d38f"
+  }
+}

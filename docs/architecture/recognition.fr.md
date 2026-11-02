@@ -27,6 +27,11 @@ Prenez ce décalage en compte lors du diagnostic d’un mouvement non reconnu.
 
 ## Grille et espaces
 
+Les gestes de changement de diapositive en coordonnées caméra de la présentation
+web demandent un déplacement horizontal du poignet de 7 % de la largeur de l'image
+sur au moins 100 ms, après 150 ms de suivi initial. Les deux mains et directions
+utilisent les mêmes seuils ; le défilement vertical est distinct.
+
 L'image utilise des points anatomiques normalisés non reflétés. La correction
 d'aspect stabilise les distances. Les épaules donnent axe, centre et largeur.
 Le calibrage acquiert une médiane stable ; une case vaut 20 % de la largeur

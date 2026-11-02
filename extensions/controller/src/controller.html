@@ -5,7 +5,9 @@
 <section aria-labelledby="camera-title"><h2 id="camera-title" data-copy="cameraTitle"></h2>
 <label><span data-copy="mode"></span><select id="mode"><option value="manual" data-copy="manual"></option><option value="auto" data-copy="auto"></option></select></label>
 <p class="hint" id="mode-hint"></p><div class="actions"><button id="start" class="primary" type="button"></button><button id="stop" type="button" data-copy="stop"></button><button id="calibrate" type="button" data-copy="calibrate"></button></div>
-<div class="camera"><video id="video" muted playsinline></video><canvas id="overlay" aria-hidden="true"></canvas><span id="camera-empty" data-copy="cameraOff"></span></div>
+<div class="camera"><video id="video" muted playsinline></video><canvas id="overlay" aria-hidden="true"></canvas><canvas id="configuration-overlay" aria-hidden="true"></canvas><span id="camera-empty" data-copy="cameraOff"></span></div>
+<label class="configuration-toggle"><span data-copy="displayConfiguration"></span><input id="display-configuration" type="checkbox" role="switch" aria-controls="configuration-controls" aria-describedby="configuration-help"></label>
+<div id="configuration-controls" hidden><label><span data-copy="configurationMovement"></span><select id="configuration-movement"></select></label><p class="hint" id="configuration-help" data-copy="configurationHelp"></p><p class="hint" id="configuration-status" role="status" aria-live="polite"></p></div>
 <p class="hint" data-copy="poseHint"></p></section>
 <section aria-labelledby="commands-title"><h2 id="commands-title" data-copy="commands"></h2><label><span data-copy="profile"></span><select id="preset"><option value="normal" data-copy="normal"></option><option value="reverse" data-copy="reverse"></option><option value="custom" data-copy="custom" disabled></option></select></label>
 <div id="commands"></div><p class="notice" id="key-notice" data-copy="keysHint"></p>

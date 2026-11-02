@@ -3,12 +3,14 @@
 Motion Input Grid 1.1.0 and its bundled MediaPipe assets retain their licenses
 under `mig/LICENSE` and `mig/licenses/`. Package files are pinned by package-lock.json.
 
-The build replaces two JavaScript invoker factories in the pinned MIG glue with
-static implementations, following the `DYNAMIC_EXECUTION=0` branches of
-Emscripten 4.0.15 (`src/lib/libembind.js` and `src/lib/libemval.js`).
-This removes dynamic JavaScript evaluation for Manifest V3. The original glue hash
-is checked before transformation; the WASM binary is unchanged. The replacements
-are maintained in `scripts/csp-runtime.mjs` in the source repository.
+This local build recompiles the MIG 1.1.0 sources with Emscripten 4.0.15 and
+`DYNAMIC_EXECUTION=0` for Manifest V3. The web binding adds a read-only grid accessor
+so configuration regions can be rendered using the actual engine transform.
+Recognition sources are unchanged. The glue and WASM differ from the npm release;
+their hashes and the modified binding hash are recorded in `mig/grid-provenance.json`.
+The matching sources and `scripts/rebuild-grid-runtime.py` are in the source archive.
+The older `scripts/csp-runtime.mjs` transformation is retained for historical review
+but is not applied to this rebuilt runtime.
 
 Copyright 2012 The Emscripten Authors. All rights reserved.
 

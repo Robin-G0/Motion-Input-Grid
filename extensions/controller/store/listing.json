@@ -1,0 +1,62 @@
+{
+  "prepared_on": "2026-11-01",
+  "name": "MIG Controller",
+  "version": "0.1.0",
+  "publisher": "Motion Input Grid",
+  "support_email": "robin.g0.dev@gmail.com",
+  "homepage_url": "https://robin-g0.github.io/Motion-Input-Grid/",
+  "support_url": "https://github.com/Robin-G0/Motion-Input-Grid/issues",
+  "source_url": "https://github.com/Robin-G0/Motion-Input-Grid/tree/feat/browser-controller/extensions/controller",
+  "privacy_url_after_deployment": "https://robin-g0.github.io/Motion-Input-Grid/privacy/controller/",
+  "privacy_url_status": "prepared locally; publish the site and verify anonymous access before submission",
+  "license": "Apache-2.0",
+  "license_url": "https://github.com/Robin-G0/Motion-Input-Grid/blob/feat/browser-controller/LICENSE",
+  "default_locale": "en",
+  "locales": {
+    "en": {
+      "summary": "Control browser presentations with deliberate hand movements. Camera processing stays on your device.",
+      "description_file": "listing.en.md"
+    },
+    "fr": {
+      "summary": "Pilotez vos présentations web par des mouvements volontaires des mains. La caméra est analysée sur votre appareil.",
+      "description_file": "listing.fr.md"
+    }
+  },
+  "stores": {
+    "chrome": {
+      "dashboard": "https://chrome.google.com/webstore/devconsole/",
+      "archive": "chrome/mig-controller-chrome-0.1.0.zip",
+      "suggested_category": "Productivity / Tools; use the matching category offered by the dashboard",
+      "visibility": "Public; publication remains a manual decision",
+      "minimum_browser_version": "121"
+    },
+    "firefox": {
+      "dashboard": "https://addons.mozilla.org/developers/addon/submit/",
+      "archive": "firefox/mig-controller-firefox-0.1.0.zip",
+      "source_archive": "firefox/mig-controller-sources-0.1.0.zip",
+      "suggested_slug": "mig-controller",
+      "suggested_category": "Other",
+      "experimental": true,
+      "platforms": ["Windows", "macOS", "Linux"],
+      "android": false,
+      "minimum_browser_version": "142.0",
+      "addon_id": "mig-controller@motion-input-grid.org",
+      "data_collection_permissions": {"required": ["none"]}
+    },
+    "opera": {
+      "dashboard": "https://addons.opera.com/developer/",
+      "archive": "opera/mig-controller-opera-0.1.0.zip",
+      "suggested_category": "Productivity",
+      "license_selection": "Apache License 2.0; provide the included LICENSE as the explicit distribution terms"
+    }
+  },
+  "publication": {
+    "submitted": false,
+    "signed": false,
+    "screenshots_included": false,
+    "developer_accounts_and_identity": "To complete in each dashboard; publisher display name does not replace account verification",
+    "payments": "No payment in MIG Controller. Third-party presentation providers set their own account/subscription requirements.",
+    "hardware": "Camera required; no additional MIG hardware or desktop Controller required.",
+    "countries": "Choose in the dashboards; no territory-specific restriction is implemented in the extension."
+  }
+}

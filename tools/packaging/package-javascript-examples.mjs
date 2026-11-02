@@ -72,11 +72,13 @@ await mkdir(join(destination, javascriptTests), { recursive: true });
 for (const file of ["web_tests.mjs", "web_camera_tests.mjs", "web_session_tests.mjs",
     "framework_tests.mjs", "framework_browser_tests.mjs", "browser_assets_tests.mjs",
     "javascript_server_tests.mjs", "node_archive_tests.mjs", "javascript_types.ts",
-    "javascript-types.json"]) {
+        "javascript-types.json", "presentation_profile_tests.mjs"]) {
     await copyFile(join(root, javascriptTests, file), join(destination, javascriptTests, file));
 }
 await mkdir(join(destination, "configs"), { recursive: true });
-await copyFile(join(root, "configs/default.json"), join(destination, "configs/default.json"));
+for (const name of ["default.json", "presentation-tolerant.json", "presentation-tolerant-reversed.json"]) {
+    await copyFile(join(root, "configs", name), join(destination, "configs", name));
+}
 await mkdir(join(destination, "examples/common"), { recursive: true });
 await copyFile(join(root, "examples/common/raised-hands.json"),
     join(destination, "examples/common/raised-hands.json"));

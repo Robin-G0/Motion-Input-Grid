@@ -3,10 +3,12 @@ import {MIGTracker} from "./mig/mig-tracker.mjs";
 import {presetProfile} from "./presets.mjs";
 import {profileBindings,eventKeys,keyLabel} from "./keys.mjs";
 import {copy} from "./copy.mjs";
+import {drawConfiguration,clearConfiguration} from "./configuration-overlay.mjs";
 const api=globalThis.browser??chrome,$=id=>document.getElementById(id);
 let language=navigator.language.startsWith("fr")?"fr":"en",kind="normal",overrides={},custom=null,profile,bindings=[],current=null,site=null,pending=null,busy=false,disposed=false,starting=false,connected=true;
 let keymaps={};
 let commandSignature="";
+let displayConfiguration=false,configurationMovement="right_sweep";
 const port=api.runtime.connect({name:"controller"});
 const t=key=>copy[language][key]??key;
 function message(text,error=false){if($("message").textContent!==text)$("message").textContent=text;$("message").dataset.error=String(error);}
@@ -25,13 +27,27 @@ class CameraSession extends MIGSession{
 }
 const session=new CameraSession({assetBase:api.runtime.getURL("mig/"),profileMode:true,
     onAction:event=>{const binding=bindings.find(item=>item.id===event.id);if(binding&&current?.shouldRun)send({type:"command",commands:binding.keys});},
-    onFrame:()=>{if(session.state.running)message(t(session.coordinate(11)?.confidence>.6&&session.coordinate(12)?.confidence>.6?"active":"missing"));}});
+    onFrame:()=>{if(session.state.running)message(t(session.coordinate(11)?.confidence>.6&&session.coordinate(12)?.confidence>.6?"active":"missing"));renderConfiguration();}});
 session.subscribe(state=>{
     $("camera-dot").dataset.active=String(state.running);$("camera-empty").hidden=state.running;
     $("calibrate").disabled=!state.running;send({type:"camera",running:state.running});
+    renderConfiguration();
 });
 const mapKey=()=>`${site?.id??"generic"}:${kind}`;
-function save(){return api.storage.local.set({controller:{kind,keymaps,custom,language}});}
+function save(){return api.storage.local.set({controller:{kind,keymaps,custom,language,displayConfiguration,configurationMovement}});}
+function renderConfiguration(){
+    const enabled=displayConfiguration&&kind!=="custom";
+    const canvas=$("configuration-overlay");
+    $("display-configuration").checked=displayConfiguration;
+    $("display-configuration").disabled=kind==="custom";
+    $("configuration-controls").hidden=!enabled;
+    if(!enabled||!session.state.running){if(!canvas.hidden)clearConfiguration(canvas);canvas.hidden=true;$("configuration-status").textContent=enabled?t("configurationStartCamera"):"";return;}
+    canvas.hidden=false;
+    const ready=drawConfiguration($("configuration-overlay"),$("video"),session.tracker,profile,configurationMovement,
+        {start:t("configurationStart"),finish:t("configurationFinish")});
+    const status=ready?"":t("configurationCalibrating");
+    if($("configuration-status").textContent!==status)$("configuration-status").textContent=status;
+}
 function render(){
     document.documentElement.lang=language;$("language").textContent=language==="fr"?"EN":"FR";
     for(const node of document.querySelectorAll("[data-copy]"))node.textContent=t(node.dataset.copy);
@@ -41,6 +57,9 @@ function render(){
     $("preset").value=kind;$("preset").querySelector('[value="custom"]').disabled=!custom;
     $("preset").disabled=busy;$("import").disabled=busy;
     $("target").textContent=current?.tab?`${site?.name??t("generic")} · ${new URL(current.tab.url??"https://invalid").hostname}`:t("noTarget");
+    const choices=[new Option(`${t("right")} · ${t(kind==="reverse"?"previous":"next")}`,"right_sweep"),new Option(`${t("left")} · ${t(kind==="reverse"?"next":"previous")}`,"left_sweep")];
+    $("configuration-movement").replaceChildren(...choices);$("configuration-movement").value=configurationMovement;
+    renderConfiguration();
     const signature=JSON.stringify([language,kind,bindings,busy]);
     if(signature!==commandSignature){commandSignature=signature;$("commands").replaceChildren(...bindings.map(binding=>{
         const article=document.createElement("article");article.className="command";
@@ -84,6 +103,8 @@ async function reconcile(){
 }
 const loaded=api.storage.local.get("controller").then(async stored=>{
     const settings=stored.controller;
+    displayConfiguration=settings?.displayConfiguration===true;
+    configurationMovement=settings?.configurationMovement==="left_sweep"?"left_sweep":"right_sweep";
     if(settings){language=settings.language==="fr"?"fr":"en";kind=["normal","reverse","custom"].includes(settings.kind)?settings.kind:"normal";keymaps=settings.keymaps??{};overrides=keymaps[mapKey()]??{};custom=settings.custom??null;}
     try{await apply();message(t("ready"));}catch(error){kind="normal";keymaps={};overrides={};custom=null;await apply();message(error.message,true);}
 });
@@ -107,7 +128,9 @@ port.onDisconnect.addListener(()=>{connected=false;session.stop();message(t("noT
 $("start").onclick=()=>{message(t("loading"));send({type:"configure",mode:$("mode").value,armed:true,manual:$("mode").value==="manual"});};
 $("stop").onclick=()=>{session.stop();send({type:"configure",mode:$("mode").value,armed:false,manual:false});message(t("stopped"));};
 $("mode").onchange=()=>{session.stop();send({type:"configure",mode:$("mode").value,armed:false,manual:false});};
-$("calibrate").onclick=()=>session.recalibrate();
+$("calibrate").onclick=()=>{session.recalibrate();renderConfiguration();};
+$("display-configuration").onchange=()=>{displayConfiguration=$("display-configuration").checked;renderConfiguration();save();};
+$("configuration-movement").onchange=()=>{configurationMovement=$("configuration-movement").value;renderConfiguration();save();};
 $("language").onclick=async()=>{language=language==="fr"?"en":"fr";render();await tabs();save();if(!session.state.running&&$("message").dataset.error!=="true")message(t(current?.armed?"waiting":"ready"));};
 $("preset").onchange=async()=>{kind=$("preset").value;overrides=keymaps[mapKey()]??{};try{await apply();}catch(error){message(error.message,true);}};
 $("cancel-key").onclick=()=>$("key-dialog").close();

@@ -1,0 +1,108 @@
+{
+  "schema_version": 2,
+  "tracking": {
+    "hands": false
+  },
+  "inputs": [
+    {
+      "id": "right_sweep",
+      "name": "Right hand: right → left",
+      "action": "next",
+      "space": "body",
+      "cooldown_ms": 900,
+      "max_duration_ms": 2200,
+      "keyboard": [
+        {
+          "keys": [
+            39
+          ]
+        }
+      ],
+      "action_mode": "single_press",
+      "steps": [
+        {
+          "id": "right_sweep_route",
+          "mode": "ordered",
+          "constraints": [
+            {
+              "id": "right_sweep_0",
+              "landmark": "right_wrist",
+              "cell": [
+                -9,
+                -2,
+                11,
+                15
+              ],
+              "type": "required",
+              "priority": "high",
+              "order": 1
+            },
+            {
+              "id": "right_sweep_1",
+              "landmark": "right_wrist",
+              "cell": [
+                7,
+                -2,
+                11,
+                15
+              ],
+              "type": "trigger",
+              "priority": "high",
+              "order": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "left_sweep",
+      "name": "Left hand: left → right",
+      "action": "previous",
+      "space": "body",
+      "cooldown_ms": 900,
+      "max_duration_ms": 2200,
+      "keyboard": [
+        {
+          "keys": [
+            37
+          ]
+        }
+      ],
+      "action_mode": "single_press",
+      "steps": [
+        {
+          "id": "left_sweep_route",
+          "mode": "ordered",
+          "constraints": [
+            {
+              "id": "left_sweep_0",
+              "landmark": "left_wrist",
+              "cell": [
+                7,
+                -2,
+                11,
+                15
+              ],
+              "type": "required",
+              "priority": "high",
+              "order": 1
+            },
+            {
+              "id": "left_sweep_1",
+              "landmark": "left_wrist",
+              "cell": [
+                -9,
+                -2,
+                11,
+                15
+              ],
+              "type": "trigger",
+              "priority": "high",
+              "order": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

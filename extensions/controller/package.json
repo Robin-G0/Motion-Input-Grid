@@ -9,7 +9,8 @@
     "test:browser": "playwright test",
     "test:firefox": "node scripts/test-firefox.mjs",
     "lint": "web-ext lint --source-dir dist/firefox",
-    "package": "node scripts/package.mjs"
+    "package": "node scripts/package.mjs",
+    "prepare:stores": "npm run build && npm run package && node scripts/store-assets.mjs && python scripts/prepare-store.py && python scripts/verify-store.py"
   },
   "dependencies": {
     "motion-input-grid": "1.1.0"

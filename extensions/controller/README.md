@@ -9,7 +9,9 @@ It does not send OS keys or communicate with the desktop Controller.
 > [!IMPORTANT]
 > **Initial version, test before presenting.** Installed-extension flows are tested
 > with controlled presentation pages. Real Canva, Gamma, Google Slides and PowerPoint
-> accounts, Opera and physical webcam gesture accuracy still need manual verification.
+> accounts and physical webcam gesture accuracy still need broader manual verification.
+> A user confirmed Opera + Canva controls worked, with a temporary recovery delay
+> after leaving and returning to the camera view.
 > Some viewers ignore synthetic keyboard events; the extension cannot manufacture
 > trusted hardware events or trigger browser/system shortcuts.
 
@@ -113,3 +115,22 @@ store submission and publication remain manual. Store acceptance is not guarante
 
 The source and lockfile reproduce the packages. The hash-checked CSP transformation
 and [third-party notices](src/THIRD-PARTY-NOTICES.md) document the bundled runtime.
+
+The [Chrome, Firefox and Opera submission kit](store/README.md) includes English/French
+listings, permission explanations, privacy text and reviewer source/build instructions.
+Run `npm run prepare:stores` for local ZIPs, icons, promotional artwork and verified
+source rebuilds under `dist/store-submission`. Product screenshots, publication of the
+privacy URL and developer-account actions remain with the publisher.
+# Local configuration-display build
+
+Enable **display configuration in camera** and choose a hand. Green is the Required
+start region; yellow is the Trigger region. Follow the arrow with that hand. The
+white dot is its tracked wrist. The preference and selected hand are remembered.
+Normal and Reversed presets use their active configuration; custom-profile display
+is disabled. Regions appear after calibration and clear when tracking is lost.
+
+This build uses the actual MIG engine grid through a read-only WASM accessor,
+not a second MediaPipe grid. It ships a rebuilt runtime with dynamic execution
+disabled. See `runtime-grid/provenance.json` and the source archive's `BUILD-REVIEW.md`.
+Headless camera/navigation lifecycle tests have outstanding intermittent or baseline
+failures. The configuration-display tests pass; this is a local test build.

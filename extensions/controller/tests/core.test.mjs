@@ -1,6 +1,7 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
+import {createHash} from "node:crypto";
 import {keySpec,eventKeys,profileBindings} from "../src/keys.mjs";
 import {detectSite} from "../src/sites.mjs";
 import {presetProfile} from "../src/presets.mjs";
@@ -33,10 +34,11 @@ test("automatic mode requires arming, a fresh presentation observation and the t
     for(const patch of [{armed:false},{presenting:false},{lastSeen:-5000},{tab:null},{tab:{...state.tab,active:false}},{tab:{...state.tab,url:"chrome://settings"}}])assert.equal(shouldRun({...state,...patch},1000),false);
     assert.equal(shouldRun({...state,mode:"manual",manual:true,presenting:false},1000),true);
 });
-test("packaged runtime has no eval factories; WASM bytes match the pinned SDK",async()=>{
+test("packaged runtime has no eval factories and matches the verified grid-runtime build",async()=>{
     const glue=await readFile(new URL("../dist/chromium/mig/mig.mjs",import.meta.url),"utf8");
     assert.doesNotMatch(glue,/new Function\b|\beval\s*\(/);
-    assert.deepEqual(await readFile(new URL("../dist/chromium/mig/mig.wasm",import.meta.url)),await readFile(new URL("../node_modules/motion-input-grid/runtime/mig.wasm",import.meta.url)));
+    const provenance=JSON.parse(await readFile(new URL("../runtime-grid/provenance.json",import.meta.url),"utf8"));
+    for(const [name,expected] of Object.entries(provenance.sha256))assert.equal(createHash("sha256").update(await readFile(new URL(`../dist/chromium/mig/${name}`,import.meta.url))).digest("hex"),expected);
     const tracker=await MIGTracker.create(JSON.stringify(presetProfile()));
     try{assert.equal(JSON.parse(tracker.exportJSON()).inputs.length,2);assert.equal(tracker.coordinate(11),null);assert.throws(()=>tracker.importJSON('{"schema_version":0}'));}finally{tracker.dispose();}
 });
