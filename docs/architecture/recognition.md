@@ -8,6 +8,10 @@
 
 ## Grid and coordinate spaces
 
+The web presentation's camera-space slide gestures require horizontal wrist travel
+of 7% of the image width over at least 100 ms, after 150 ms of initial tracking.
+Both hands and directions use the same thresholds; vertical scrolling is separate.
+
 The image carries normalized unmirrored anatomical indices. Aspect correction
 prevents horizontal camera dimensions changing distances. Valid shoulders provide
 a torso axis, center and width. Calibration collects a stable median baseline;
@@ -43,6 +47,12 @@ finger rules apply with their own stability/grace. Missing fingers never bypass 
 Normal variants arbitrate ambiguous same-wrist hits; Test isolates an input.
 After activation, terminal conditions expose `output_active` independently of
 the persistent Test highlight. Release/rearm and cooldown prevent duplicate events.
+
+Release is observed during cooldown, while recognition remains suppressed. After
+an accepted action, visibly leaving every terminal region (including Low tolerances)
+can rearm a direct return to the start without a sampled neutral frame. A missing
+point or lost finger sign alone is not that release. Test mode retains its result
+latch, and paths performed during cooldown are not queued for later execution.
 
 ### Hand assignment and commands
 

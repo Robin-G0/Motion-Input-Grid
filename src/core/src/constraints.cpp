@@ -235,24 +235,52 @@ void Engine::recognise_constraints(const Frame& frame, bool sweep_continuous,
             if (progress.output_active) {
                 progress.output_active = sustaining();
             }
-            if (time < candidate.ready_after) {
-                candidate.previous_valid.fill(false);
-                continue;
-            }
+            const auto terminal_released = [&] {
+                if (candidate.completed_step < 0) {
+                    return false;
+                }
+                const auto& groups = candidate.sustain_groups[candidate.completed_step];
+                if (groups.empty()) {
+                    return false;
+                }
+                for (auto root : groups) {
+                    for (auto index : candidate.groups[root]) {
+                        const auto& region = *candidate.constraints[index];
+                        // A lost landmark or sign is not proof of leaving the finish.
+                        if (!visible[region.landmark] || hit(region, false) >= 0) {
+                            return false;
+                        }
+                        for (auto alternative : candidate.alternatives[index]) {
+                            const auto& low = *candidate.constraints[alternative];
+                            if (!visible[low.landmark] || hit(low, false) >= 0) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+                return true;
+            };
             if (!continuous && progress.active) {
                 progress.failed = true;
                 progress.active = false;
                 candidate.locked = true;
             }
-            if (candidate.locked && !progress.output_active && !test_mode_ && !first_reached()) {
+            if (candidate.locked && !progress.output_active && !test_mode_ &&
+                (!first_reached() || terminal_released())) {
                 std::fill(progress.constraints.begin(), progress.constraints.end(),
                           ConstraintStatus::Missing);
                 progress.step = 0;
                 progress.failed = progress.triggered = progress.active = false;
                 candidate.locked = false;
+                candidate.completed_step = -1;
                 candidate.held_since = -1;
                 std::fill(candidate.interaction_since.begin(), candidate.interaction_since.end(),
                           -1);
+            }
+            // Observe release during cooldown, but never retain or emit its path.
+            if (time < candidate.ready_after) {
+                candidate.previous_valid.fill(false);
+                continue;
             }
             if (!candidate.locked && !progress.active && first_reached() &&
                 finger_match(input.fingers)) {
@@ -365,6 +393,7 @@ void Engine::recognise_constraints(const Frame& frame, bool sweep_continuous,
                         emitted = true;
                         for (auto& paired : generic_[motion_index]) {
                             paired.ready_after = time + input.cooldown_ms;
+                            paired.completed_step = int(step_index);
                         }
                     }
                     // Lock the opposite variant too; one configured input emits once.

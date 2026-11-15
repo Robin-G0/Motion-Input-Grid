@@ -17,6 +17,7 @@ engine in your own project.
 | I want to… | Guide |
 | --- | --- |
 | Create or test a profile in the browser | [Motion Input Grid Studio Web](guides/studio-web.md) |
+| Control a web presentation with the experimental extension | [MIG Controller browser extension](guides/browser-controller.md) |
 | Draw a movement and assign a shortcut | [Motion Input Grid Studio](guides/configurator.md) |
 | Run my profile while using another application | [Motion Input Grid Controller](guides/controller.md) |
 | Try a camera demo without setting up a profile | [Standalone examples](../examples/README.md) |

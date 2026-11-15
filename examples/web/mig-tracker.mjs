@@ -73,6 +73,9 @@ export class MIGTracker {
     trackHands() {
         return this.native.trackHands();
     }
+    grid(space = "body") {
+        return this.native.grid(space === "calibrated");
+    }
     gesture(anatomicalSide) {
         return this.native.gesture(anatomicalSide);
     }

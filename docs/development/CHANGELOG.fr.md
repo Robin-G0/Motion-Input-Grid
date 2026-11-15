@@ -4,6 +4,9 @@
 
 ## Non publié
 
+- Ajouter les paquets expérimentaux MIG Controller pour navigateur : gestes illustrés,
+  touches modifiables, profils limités à la page, caméra manuelle/automatique,
+  icônes grise/rouge et catégorie CI dédiée aux extensions.
 - Sélectionner les contrôles CI selon les composants modifiés, en conservant les
   dépendances partagées, la validation complète manuelle/des releases et la barrière de publication du site.
 - La capture est une option d'ajout d'un mouvement à un profil, à côté du dessin.

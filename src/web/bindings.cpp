@@ -118,6 +118,20 @@ public:
     bool track_hands() const {
         return engine_->configuration().track_hands;
     }
+    emscripten::val grid(bool reference) const {
+        const auto& grid = reference ? engine_->reference_grid() : engine_->grid();
+        if (!grid.valid) {
+            return emscripten::val::null();
+        }
+        auto result = emscripten::val::object();
+        result.set("centerX", grid.center.x);
+        result.set("centerY", grid.center.y);
+        result.set("axisX", grid.axis.x);
+        result.set("axisY", grid.axis.y);
+        result.set("scale", grid.scale);
+        result.set("aspect", frame_.aspect);
+        return result;
+    }
     int gesture(int side) const {
         return side >= 0 && side < 2
                    ? int(mig::observed_gesture(frame_.fingers[side], frame_.hand_contacts[side]))
@@ -173,6 +187,7 @@ EMSCRIPTEN_BINDINGS(mig) {
         .function("eventId", &WebTracker::event_id)
         .function("active", &WebTracker::active)
         .function("trackHands", &WebTracker::track_hands)
+        .function("grid", &WebTracker::grid)
         .function("gesture", &WebTracker::gesture)
         .function("coordinate", &WebTracker::coordinate)
         .function("handCoordinate", &WebTracker::hand_coordinate)

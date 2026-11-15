@@ -8,6 +8,7 @@ sans rapport apparaissent comme ignorées.
 
 | Zone modifiée | Contrôles sélectionnés |
 | --- | --- |
+| `extensions/**` | Compilation de l'extension, tests unitaires/WASM, contrôles dans Chromium/Firefox, lint et paquets ZIP |
 | `site/**` | Compilation du site, tests Node, Chromium et Firefox ; publication Pages sur `main` après succès |
 | Markdown, `docs/**`, validateur documentaire | Tests documentaires, traductions et liens locaux |
 | `src/apps/**`, `src/controller/**`, `tests/apps/**` | Compilations natives Windows et Linux, plus tests du SDK portable qui incluent les en-têtes partagés des applications |
@@ -42,7 +43,7 @@ liée à une API. Le **résumé du job** affiche les contrôles sélectionnés.
 
 La CI générale expose **Affected checks passed**, qui échoue si la détection ou
 un contrôle sélectionné échoue ou est annulé. Les compilations ignorées sont admises.
-Les workflows du site et de la documentation gardent leurs propres contrôles.
+Les workflows du site, de la documentation et des extensions gardent leurs propres contrôles.
 La protection des branches se configure séparément des fichiers de workflow.
 
 Pour valider un changement des filtres en local :

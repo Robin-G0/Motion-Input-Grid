@@ -1,0 +1,62 @@
+name: Test and package browser extensions
+
+on:
+    push:
+    pull_request:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: extensions-${{ github.event_name }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    changes:
+        uses: ./.github/workflows/changes.yml
+    controller:
+        needs: changes
+        if: needs.changes.outputs.extensions == 'true'
+        runs-on: ubuntu-24.04
+        timeout-minutes: 15
+        env:
+            LIBGL_ALWAYS_SOFTWARE: '1'
+        defaults:
+            run:
+                working-directory: extensions/controller
+        steps:
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  persist-credentials: false
+            - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+              with:
+                  node-version: '24'
+                  cache: npm
+                  cache-dependency-path: extensions/controller/package-lock.json
+            - run: npm ci --ignore-scripts --no-audit --no-fund
+            - run: npm run build
+            - run: npm test
+            - run: npm run lint
+            - run: npx playwright install --with-deps chromium firefox
+            - name: Install display-backed software graphics
+              run: sudo apt-get install --no-install-recommends -y xvfb xauth libgl1-mesa-dri libglx-mesa0 libegl-mesa0
+            - name: Test installed Chromium extension and browser command isolation
+              run: xvfb-run --auto-servernum npm run test:browser
+            - name: Test installed Firefox extension and real model loading
+              run: xvfb-run --auto-servernum npm run test:firefox
+            - run: npm run package
+            - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: mig-controller-browser-extensions
+                  path: extensions/controller/dist/packages/*.zip
+                  retention-days: 7
+                  if-no-files-found: error
+            - name: Save failed browser traces
+              if: failure()
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: extension-test-results
+                  path: extensions/controller/test-results/
+                  retention-days: 7
+                  if-no-files-found: ignore

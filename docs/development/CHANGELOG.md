@@ -4,6 +4,9 @@
 
 ## Unreleased
 
+- Add experimental MIG Controller browser extension packages with illustrated,
+  rebindable presets, browser-only profile keys, manual/automatic camera lifecycle,
+  grey/red toolbar icons and a separate extension CI category.
 - Select CI checks from changed components, preserving shared dependency coverage,
   complete manual/release validation and the site deployment gate.
 - Capture is an option when adding a movement to a profile, alongside manual drawing.

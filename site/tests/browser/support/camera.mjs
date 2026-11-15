@@ -71,7 +71,7 @@ export async function swipeHand(page, action, landmark = 15, wait = true) {
         await page.clock.runFor(150);
         await page.evaluate(({ horizontal, sign, progress }) => {
             window.demoCamera.wrist = horizontal
-                ? { x: .5 + sign * .1 * progress, y: .5 }
+                ? { x: .5 + sign * .075 * progress, y: .5 }
                 : { x: .5, y: .5 + sign * .24 * progress };
             window.demoCamera.frame(true);
         }, { horizontal, sign, progress });

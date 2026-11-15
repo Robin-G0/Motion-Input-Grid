@@ -164,6 +164,7 @@ private:
         std::vector<std::int64_t> interaction_since;
         std::int64_t started{-1}, held_since{-1}, ready_after{};
         bool locked{};
+        int completed_step{-1};
         bool interaction_only{};
     };
     void compile_constraints(GenericCandidate& candidate, const Motion& input);

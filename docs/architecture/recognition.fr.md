@@ -27,6 +27,11 @@ Prenez ce décalage en compte lors du diagnostic d’un mouvement non reconnu.
 
 ## Grille et espaces
 
+Les gestes de changement de diapositive en coordonnées caméra de la présentation
+web demandent un déplacement horizontal du poignet de 7 % de la largeur de l'image
+sur au moins 100 ms, après 150 ms de suivi initial. Les deux mains et directions
+utilisent les mêmes seuils ; le défilement vertical est distinct.
+
 L'image utilise des points anatomiques normalisés non reflétés. La correction
 d'aspect stabilise les distances. Les épaules donnent axe, centre et largeur.
 Le calibrage acquiert une médiane stable ; une case vaut 20 % de la largeur
@@ -62,6 +67,13 @@ stabilité et grâce ; une observation manquante ne contourne pas une règle.
 Les variantes normales arbitrent les ambiguïtés de même poignet ; Test isole
 l'input. `output_active` décrit les conditions terminales actuelles, séparément
 du surlignage Test persistant. Réarmement et cooldown empêchent les doublons.
+
+Le relâchement est observé pendant le cooldown, sans permettre la reconnaissance.
+Après une action acceptée, quitter visiblement toutes les régions terminales
+(tolérances Low comprises) permet de réarmer un retour direct au départ, même sans
+image intermédiaire neutre. Un point absent ou un signe de doigts perdu ne suffit
+pas à établir cette sortie. Test conserve son résultat ; un parcours effectué
+pendant le cooldown n'est pas mis en attente pour être exécuté ensuite.
 
 ### Attribution des mains et commandes
 

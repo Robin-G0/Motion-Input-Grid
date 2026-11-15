@@ -1,0 +1,146 @@
+{
+    "controls": {
+        "post_gesture_delay_ms": 1000,
+        "recalibrate": {
+            "gesture": "none",
+            "hand": "left"
+        },
+        "record_toggle": {
+            "gesture": "none",
+            "hand": "left"
+        },
+        "restart": {
+            "gesture": "none",
+            "hand": "left"
+        },
+        "validation_ms": 250
+    },
+    "inputs": [
+        {
+            "action": "next",
+            "action_mode": "single_press",
+            "constraints": [],
+            "cooldown_ms": 900,
+            "fingers": [],
+            "id": "right_sweep",
+            "keyboard": [
+                {
+                    "keys": [
+                        39
+                    ]
+                }
+            ],
+            "max_duration_ms": 0,
+            "mirror": false,
+            "name": "Right hand: right → left",
+            "recordings": [],
+            "repeat_interval_ms": 200,
+            "space": "body",
+            "steps": [
+                {
+                    "constraints": [
+                        {
+                            "cell": [
+                                -9,
+                                -9,
+                                12,
+                                27
+                            ],
+                            "fingers": [],
+                            "id": "right_sweep_0",
+                            "landmark": "right_wrist",
+                            "order": 1,
+                            "priority": "high",
+                            "tolerance_for": "",
+                            "type": "required"
+                        },
+                        {
+                            "cell": [
+                                6,
+                                -9,
+                                12,
+                                27
+                            ],
+                            "fingers": [],
+                            "id": "right_sweep_1",
+                            "landmark": "right_wrist",
+                            "order": 2,
+                            "priority": "high",
+                            "tolerance_for": "",
+                            "type": "trigger"
+                        }
+                    ],
+                    "fingers": [],
+                    "hold_ms": 0,
+                    "id": "right_sweep_route",
+                    "mode": "ordered"
+                }
+            ]
+        },
+        {
+            "action": "previous",
+            "action_mode": "single_press",
+            "constraints": [],
+            "cooldown_ms": 900,
+            "fingers": [],
+            "id": "left_sweep",
+            "keyboard": [
+                {
+                    "keys": [
+                        37
+                    ]
+                }
+            ],
+            "max_duration_ms": 0,
+            "mirror": false,
+            "name": "Left hand: left → right",
+            "recordings": [],
+            "repeat_interval_ms": 200,
+            "space": "body",
+            "steps": [
+                {
+                    "constraints": [
+                        {
+                            "cell": [
+                                6,
+                                -9,
+                                12,
+                                27
+                            ],
+                            "fingers": [],
+                            "id": "left_sweep_0",
+                            "landmark": "left_wrist",
+                            "order": 1,
+                            "priority": "high",
+                            "tolerance_for": "",
+                            "type": "required"
+                        },
+                        {
+                            "cell": [
+                                -9,
+                                -9,
+                                12,
+                                27
+                            ],
+                            "fingers": [],
+                            "id": "left_sweep_1",
+                            "landmark": "left_wrist",
+                            "order": 2,
+                            "priority": "high",
+                            "tolerance_for": "",
+                            "type": "trigger"
+                        }
+                    ],
+                    "fingers": [],
+                    "hold_ms": 0,
+                    "id": "left_sweep_route",
+                    "mode": "ordered"
+                }
+            ]
+        }
+    ],
+    "schema_version": 2,
+    "tracking": {
+        "hands": false
+    }
+}

@@ -7,6 +7,7 @@ job still runs to select checks; unrelated build jobs appear as skipped.
 
 | Changed area | Checks selected |
 | --- | --- |
+| `extensions/**` | Browser extension build, unit/WASM tests, installed Chromium/Firefox checks, lint and ZIP packaging |
 | `site/**` | Site build, Node tests, Chromium and Firefox; Pages deployment on `main` after success |
 | Markdown, `docs/**`, documentation checker | Documentation tests, translations and local links |
 | `src/apps/**`, `src/controller/**`, `tests/apps/**` | Windows and Linux native builds, plus portable SDK tests that include shared app headers |
@@ -40,7 +41,7 @@ Each run shows its selected checks in the **job summary**.
 
 The general CI exposes **Affected checks passed**, which fails if detection or
 any selected build check fails or is cancelled. Skipped build jobs are accepted.
-Documentation and site workflows retain their own checks. Repository branch
+Documentation, site and extension workflows retain their own checks. Repository branch
 protection settings are managed separately from these workflow files.
 
 To validate a filter change locally:

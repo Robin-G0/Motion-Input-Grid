@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import {drawOverlay} from '../../../examples/web/overlay.mjs';
+import {verifyPresentationProfiles} from './presentation_profile_tests.mjs';
 let resized = 0;
 const canvas = {
   _width: 0, _height: 0,
@@ -23,6 +24,8 @@ try {
   const config = await readFile('configs/default.json','utf8');
   assert.equal(tracker.load(config), '');
   assert.equal(tracker.trackHands(), false);
+  assert.equal(tracker.grid(false), null);
+  assert.equal(tracker.grid(true), null);
   assert.equal(JSON.parse(tracker.exportConfig()).inputs[0].id, 'left_raise');
   assert.notEqual(tracker.load('{"schema_version":1,"inputs":[]}'), '');
   assert.equal(JSON.parse(tracker.exportConfig()).inputs[0].id, 'left_raise');
@@ -40,6 +43,14 @@ try {
     }
   }
   assert.equal(actions,1);
+  const grid = tracker.grid(false), reference = tracker.grid(true);
+  assert.ok(Math.abs(grid.centerX-.5)<1e-6);
+  assert.ok(Math.abs(grid.centerY-.45)<1e-6);
+  assert.ok(Math.abs(grid.scale-.06)<1e-6);
+  assert.equal(grid.aspect,1);
+  assert.deepEqual(grid,reference);
+  tracker.recalibrate();
+  assert.equal(tracker.grid(false),null);
   const image = tracker.coordinate(15,0), world = tracker.coordinate(15,2);
   assert.ok(Math.abs(image.z-.1)<1e-6); assert.ok(Math.abs(world.y-.3)<1e-6);
   assert.equal(tracker.coordinate(100,0),null);
@@ -66,3 +77,4 @@ try {
   assert.notEqual(tracker.load(' '.repeat(1024*1024+1)),'');
   console.log('WebAssembly: config import/export, failed-import preservation, XYZ, recognition and expanded grid passed');
 } finally { tracker.delete(); }
+await verifyPresentationProfiles(createMIG);
