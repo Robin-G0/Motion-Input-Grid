@@ -68,3 +68,5 @@ Native inference remains the main profiling target. SIMD pixel conversion, estim
 thread scheduling and model quality/rate changes require hardware measurements and
 accuracy checks before adoption. Neither microbenchmarks nor blank-frame smoke tests
 establish human gesture accuracy or seated/standing performance.
+
+Browser sessions can cap inference independently of rendering, select capture constraints and disable unused overlay drawing. See [browser performance controls](../../bindings/javascript/README.md#browser-performance-controls). Pose-only sessions defer hand-model initialization. These reduce scheduled work; they do not establish lower device temperature or end-to-end latency without hardware measurement.
