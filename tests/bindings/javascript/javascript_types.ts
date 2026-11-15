@@ -10,3 +10,6 @@ const vue = useVueMIG({ onAction });
 void react.video.current;
 void vue.video.value;
 void session.importJSON("{}");
+
+const efficient = new MIGSession({maxInferenceFps:20, drawOverlay:false, videoConstraints:{width:640,height:480}, delegate:"CPU"});
+efficient.setInferenceFps(10);

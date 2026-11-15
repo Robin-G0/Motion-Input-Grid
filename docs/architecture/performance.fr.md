@@ -74,3 +74,5 @@ les **33 points corporels** : ignorer les jambes dans les règles ne réduit pas
 L'inférence reste la cible principale du profilage. SIMD, ordonnanceur et cadence/
 qualité modèle nécessitent mesures matériel et précision. Ni benchmark ni image
 vide ne prouve la précision humaine ou les performances assis/debout.
+
+Les sessions navigateur peuvent limiter la cadence d'inference, regler la capture et eviter le dessin inutile. Voir les [reglages navigateur](../../bindings/javascript/README.fr.md#reglages-de-performance-du-navigateur). Les profils sans mains reportent ce chargement. Mesurer les resultats sur le materiel reel avant de conclure sur la temperature ou la latence.

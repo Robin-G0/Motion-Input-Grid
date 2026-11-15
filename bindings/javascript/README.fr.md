@@ -132,3 +132,23 @@ Dans votre application, installez l'archive locale puis copiez les ressources :
 npm install /chemin/motion-input-grid-1.1.0.tgz
 npx --package motion-input-grid mig-copy-assets public/mig
 ```
+
+## Reglages de performance du navigateur
+
+Cette revision source ajoute des options a `MIGSession` ; verifier leur presence
+dans la version npm installee. Les valeurs par defaut restent compatibles.
+
+`maxInferenceFps: 20` limite l'inference sans mettre d'images en attente ;
+`setInferenceFps(10)` permet un menu moins couteux avec reprise gestuelle. Zero
+signifie sans plafond, sinon la plage est 1..120. Garder un intervalle compatible
+avec la continuite du moteur et verifier les gestes sur une vraie camera.
+
+`drawOverlay: false` evite le dessin de diagnostic quand l'application affiche
+ses propres zones. `videoConstraints` transmet les contraintes getUserMedia, par
+exemple `{width:640,height:480,frameRate:{ideal:20,max:30}}`. L'affichage peut
+garder sa propre cadence. `delegate: 'GPU'` est facultatif ; mesurer consommation
+et precision avant de le preferer au CPU.
+
+Un profil sans mains initialise seulement le modele Lite du corps. Un import
+qui active les mains charge ce modele a la demande ; les modeles arrives apres
+dispose sont fermes. Les evenements et onFrame restent actifs sans diagnostic.

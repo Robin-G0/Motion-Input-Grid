@@ -135,3 +135,29 @@ Install that local tarball into your application, then copy its runtime assets:
 npm install /path/to/motion-input-grid-1.1.0.tgz
 npx --package motion-input-grid mig-copy-assets public/mig
 ```
+
+## Browser performance controls
+
+The source revision adds optional controls to imperative `MIGSession`; check your
+installed npm release before using them. Existing defaults remain compatible.
+
+```js
+const session = new MIGSession({
+    assetBase: '/mig/',
+    maxInferenceFps: 20,
+    drawOverlay: false, // the application draws its own guides
+    videoConstraints: { width: 640, height: 480, frameRate: { ideal: 20, max: 30 } }
+});
+session.setInferenceFps(10); // e.g. while displaying a hands-free pause menu
+```
+
+Zero FPS means uncapped; otherwise the supported range is 1..120. The cap drops
+intermediate frames and processes the latest observation without a backlog. It
+does not change capture timestamps or recognition timers. Do not choose a cadence
+that exceeds the engine's observation-continuity gap; measure physical gestures.
+Rendering can remain smooth independently. GPU inference can be selected with
+`delegate: 'GPU'`, but compare energy use and accuracy on the actual device.
+
+Pose-only profiles load the Lite pose model without creating a hand model. A later
+hand-enabled import loads hands on demand; disposal also closes late arrivals.
+Disabling the debug overlay does not disable tracking, events or onFrame.
