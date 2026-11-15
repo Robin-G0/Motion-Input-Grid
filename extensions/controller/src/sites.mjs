@@ -11,7 +11,7 @@ export function detectSite(url) {
         const site = SITES.find(site => site.hosts.some(host => parsed.hostname === host || parsed.hostname.endsWith(`.${host}`))
             && (site.id !== "slides" || parsed.pathname.startsWith("/presentation/"))) ?? null;
         if (site?.id === "powerpoint") {
-            if (parsed.hostname.endsWith("officeapps.live.com") && !/(^|\.)powerpoint(?:-[^.]+)?\.officeapps\.live\.com$/.test(parsed.hostname)) return null;
+            if ((parsed.hostname === "officeapps.live.com" || parsed.hostname.endsWith(".officeapps.live.com")) && !/(^|\.)powerpoint(?:-[^.]+)?\.officeapps\.live\.com$/.test(parsed.hostname)) return null;
             if (/(^|\.)(sharepoint\.com|onedrive\.live\.com)$/.test(parsed.hostname)) {
                 const hint = `${decodeURIComponent(parsed.pathname)} ${[...parsed.searchParams.values()].join(" ")}`;
                 if (!/(?:\/:p:\/|\.pptx?(?:$|[\s/?#])|powerpoint)/i.test(hint)) return null;

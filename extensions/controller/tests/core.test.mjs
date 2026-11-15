@@ -23,7 +23,7 @@ test("custom profiles retain names and sequential browser keys and reject repeat
 });
 test("known domains are matched on host boundaries, and generic defaults remain arrows",()=>{
     for(const [url,id] of [["https://www.canva.com/design/1/edit","canva"],["https://gamma.app/docs/x?mode=present","gamma"],["https://docs.google.com/presentation/d/1/present","slides"],["https://powerpoint.officeapps.live.com/p/PowerPointFrame.aspx","powerpoint"]])assert.equal(detectSite(url)?.id,id);
-    for(const url of ["https://canva.com.evil.example/design/a","https://docs.google.com/document/d/x","file:///test","javascript:alert(1)","https://word-edit.officeapps.live.com/we/wordeditorframe.aspx","https://tenant.sharepoint.com/sites/finance/lists/allitems.aspx"])assert.equal(detectSite(url),null);
+    for(const url of ["https://canva.com.evil.example/design/a","https://evilofficeapps.live.com/p/x","https://powerpoint.officeapps.live.com.evil.example/p/x","https://powerpoint.officeapps.live.com@evil.example/p/x","https://docs.google.com/document/d/x","file:///test","javascript:alert(1)","https://word-edit.officeapps.live.com/we/wordeditorframe.aspx","https://tenant.sharepoint.com/sites/finance/lists/allitems.aspx"])assert.equal(detectSite(url),null);
     assert.equal(detectSite("https://tenant.sharepoint.com/_layouts/15/Doc.aspx?file=deck.pptx")?.id,"powerpoint");
     assert.deepEqual(presetProfile().inputs.map(i=>i.keyboard),[[{keys:[39]}],[{keys:[37]}]]);
     assert.deepEqual(presetProfile(true).inputs.map(i=>i.keyboard),[[{keys:[37]}],[{keys:[39]}]]);
