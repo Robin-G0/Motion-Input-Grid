@@ -98,7 +98,8 @@ try {
                         name: "bad.json", mimeType: "application/json", buffer: Buffer.from("{}")
                     });
                     if (plain) await page.locator('#status').filter({ hasText: /schema|input|invalid/i }).waitFor();
-                    else await page.getByRole("alert").waitFor();
+                    else await page.locator('p[role="alert"]')
+                        .filter({ hasText: /schema|input|invalid/i }).waitFor();
                     assert.match(await page.locator(actionsSelector).textContent(), /custom action/);
                 }
                 await page.getByRole("button", { name: plain ? "Stop camera" : "Stop", exact: true }).click();
