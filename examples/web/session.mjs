@@ -1,6 +1,9 @@
 export class MIGSession {
     constructor(options = {}) {
         this.options = options;
+        if (options.delegate != null && !["CPU", "GPU"].includes(options.delegate)) {
+            throw new RangeError("delegate must be CPU or GPU");
+        }
         this.assetBase = new URL(options.assetBase ?? "/mig/",
             globalThis.location?.href ?? "http://localhost/").href;
         this.state = { status: "Ready. Start the camera.", running: false,
@@ -10,6 +13,7 @@ export class MIGSession {
         this.profileRevision = 0;
         this.disposed = false;
         this.request = 0;
+        this.setInferenceFps(options.maxInferenceFps ?? 0);
     }
 
     subscribe(listener) {
@@ -61,7 +65,7 @@ export class MIGSession {
         ]);
         return {
             createTracker: json => tracking.MIGTracker.create(json),
-            loadModels: () => models.loadModels(this.assetBase),
+            loadModels: settings => models.loadModels(this.assetBase, settings),
             drawOverlay: overlay.drawOverlay
         };
     }
@@ -75,17 +79,19 @@ export class MIGSession {
             await this.initialize();
             if (run !== this.generation) return;
             if (!this.models) {
-                const models = await this.dependencies.loadModels();
+                const models = await this.dependencies.loadModels({ hands: this.tracker.trackHands(),
+                    delegate: this.options.delegate ?? "CPU" });
                 if (this.disposed) {
                     models.pose.close();
-                    models.hands.close();
+                    models.hands?.close();
                     return;
                 }
                 this.models = models;
             }
+            if (this.tracker.trackHands()) await this.ensureHands();
             if (run !== this.generation) return;
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: { width: 1280, height: 720 }, audio: false
+                video: this.options.videoConstraints ?? { width: 1280, height: 720 }, audio: false
             });
             if (run !== this.generation || this.disposed) {
                 stream.getTracks().forEach(track => track.stop());
@@ -98,6 +104,7 @@ export class MIGSession {
             await video.play();
             if (run !== this.generation || this.disposed) return;
             this.lastVideoTime = -1;
+            this.lastInferenceAt = null;
             this.tracker.recalibrate();
             this.publish({ running: true, status: "Lower hands, keep shoulders visible, then raise a wrist." });
             this.tick(run);
@@ -116,7 +123,10 @@ export class MIGSession {
         if (!this.stream || run !== this.generation || this.disposed) return;
         try {
             const video = this.video;
-            if (video.readyState >= 2 && video.currentTime !== this.lastVideoTime) {
+            const now = performance.now();
+            const due = this.lastInferenceAt == null || !this.maxInferenceFps ||
+                now - this.lastInferenceAt >= 1000 / this.maxInferenceFps;
+            if (due && !this.loadingHands && video.readyState >= 2 && video.currentTime !== this.lastVideoTime) {
                 this.processFrame();
             }
             if (run === this.generation && !this.disposed) {
@@ -132,13 +142,16 @@ export class MIGSession {
         const video = this.video;
         this.lastVideoTime = video.currentTime;
         const time = Math.floor(performance.now());
+        this.lastInferenceAt = performance.now();
         const body = this.models.pose.detectForVideo(video, time);
         const hands = this.tracker.trackHands()
             ? this.models.hands.detectForVideo(video, time) : null;
         const actions = [];
         this.tracker.update(body, hands, time, video.videoWidth / video.videoHeight,
             (action, id) => actions.push({ action, id }));
-        this.dependencies.drawOverlay(this.canvas, video, body, hands);
+        if (this.options.drawOverlay !== false && this.canvas) {
+            this.dependencies.drawOverlay(this.canvas, video, body, hands);
+        }
         if (actions.length) {
             this.publish({ actions, status: "Motion detected." });
             for (const event of actions) this.options.onAction?.(event);
@@ -151,6 +164,28 @@ export class MIGSession {
         return this.tracker?.coordinate(index, system) ?? null;
     }
 
+    /** Zero preserves the original uncapped behavior. Skipped frames are never queued. */
+    setInferenceFps(fps) {
+        if (!Number.isFinite(fps) || fps < 0 || fps > 120 || (fps > 0 && fps < 1)) {
+            throw new RangeError("maxInferenceFps must be 0 or between 1 and 120");
+        }
+        this.maxInferenceFps = fps;
+        this.lastInferenceAt = null;
+    }
+
+    async ensureHands() {
+        if (!this.models || this.models.hands) return;
+        if (!this.models.loadHands) throw new Error("The model loader cannot enable hand tracking");
+        if (!this.loadingHands) {
+            const models = this.models;
+            this.loadingHands = models.loadHands().then(hands => {
+                if (this.disposed || this.models !== models) hands.close();
+                else models.hands = hands;
+            }).finally(() => { this.loadingHands = null; });
+        }
+        await this.loadingHands;
+    }
+
     async importJSON(json) {
         if (new TextEncoder().encode(json).length > 1024 * 1024) {
             throw new Error("Configuration exceeds 1 MiB");
@@ -159,6 +194,11 @@ export class MIGSession {
         await this.initialize();
         if (revision !== this.profileRevision) return;
         this.tracker.importJSON(json);
+        if (this.models && this.tracker.trackHands()) {
+            try { await this.ensureHands(); }
+            catch (error) { this.stop(); this.publish({ status: error.message }); throw error; }
+        }
+        if (revision !== this.profileRevision || this.disposed) return;
         this.tracker.recalibrate();
         this.publish({ actions: [], status: "Profile imported. Recalibrating." });
     }
@@ -184,7 +224,7 @@ export class MIGSession {
         this.stop();
         this.disposed = true;
         this.models?.pose.close();
-        this.models?.hands.close();
+        this.models?.hands?.close();
         this.tracker?.dispose();
         this.listeners.clear();
     }
