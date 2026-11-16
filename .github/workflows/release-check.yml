@@ -83,7 +83,7 @@ jobs:
                       !build/releases/motion-input-grid-*-linux-x64-examples.tar.gz*
                       !build/releases/SHA256SUMS
                   # Keep inputs for debugging if assembly fails; delete after successful assembly.
-                  retention-days: 3
+                  retention-days: 1
                   if-no-files-found: error
                   compression-level: 1
 
@@ -153,7 +153,7 @@ jobs:
                       build/releases/
                       !build/releases/motion-input-grid-*-windows-x64-examples.zip*
                       !build/releases/SHA256SUMS
-                  retention-days: 3
+                  retention-days: 1
                   if-no-files-found: error
                   compression-level: 1
 
@@ -219,7 +219,7 @@ jobs:
                       build/releases/
                       !build/releases/motion-input-grid-*-javascript-examples.tar.gz*
                       !build/releases/SHA256SUMS
-                  retention-days: 3
+                  retention-days: 1
                   if-no-files-found: error
                   compression-level: 1
 
@@ -253,7 +253,7 @@ jobs:
               with:
                   name: motion-input-grid-source-and-vcpkg-candidates
                   path: build/releases/
-                  retention-days: 3
+                  retention-days: 1
                   if-no-files-found: error
                   compression-level: 1
 
@@ -290,7 +290,7 @@ jobs:
               with:
                   name: motion-input-grid-arm64-python-candidate
                   path: build/releases/
-                  retention-days: 3
+                  retention-days: 1
                   if-no-files-found: error
                   compression-level: 1
 
@@ -329,7 +329,7 @@ jobs:
                   name: motion-input-grid-release-candidates
                   path: build/release-candidates/
                   # Final candidates are reviewed and published manually.
-                  retention-days: 7
+                  retention-days: 3
                   if-no-files-found: error
                   compression-level: 1
             - name: Delete assembled intermediate Actions artifacts
