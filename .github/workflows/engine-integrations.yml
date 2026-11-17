@@ -68,7 +68,7 @@ jobs:
                   name: motion-input-grid-linux-engine-candidates
                   path: build/releases/
                   # Allow manual review and the downstream ARM64 validation job.
-                  retention-days: 7
+                  retention-days: 3
                   if-no-files-found: error
                   compression-level: 1
 
@@ -107,7 +107,7 @@ jobs:
               with:
                   name: motion-input-grid-windows-engine-candidates
                   path: build/releases/
-                  retention-days: 7
+                  retention-days: 3
                   if-no-files-found: error
                   compression-level: 1
 
