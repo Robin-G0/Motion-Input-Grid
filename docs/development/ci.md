@@ -44,10 +44,28 @@ any selected build check fails or is cancelled. Skipped build jobs are accepted.
 Documentation, site and extension workflows retain their own checks. Repository branch
 protection settings are managed separately from these workflow files.
 
+## Downloadable artifacts
+
+Pushes and pull requests build and validate packages without uploading packages or
+failure traces. WebAssembly and JavaScript checks share one runner, so there is no
+intermediate artifact transfer.
+
+To keep downloadable packages, open **Actions**, select **CI** or the browser
+extension workflow, choose **Run workflow**, and enable **publish_artifacts**.
+The checkbox defaults to off; a manual run alone only requests validation.
+Version tags beginning with `v` also publish the tested packages. Release checks
+and engine integration packaging retain their explicit release/manual triggers.
+Uploaded packages and optional failure diagnostics are retained for **one day**.
+
+**GitHub Pages remains automatic on `main` after successful site tests.** Its
+one-day deployment artifact is required to publish the site and is exempt from
+the package opt-in. The site's manual checkbox only enables failure diagnostics.
+
 To validate a filter change locally:
 
 ```sh
 python tests/tooling/ci_changes_tests.py
+python tests/tooling/workflow_artifact_tests.py
 python tools/dev/check-docs.py
 actionlint .github/workflows/changes.yml .github/workflows/ci.yml .github/workflows/docs.yml .github/workflows/pages.yml
 ```

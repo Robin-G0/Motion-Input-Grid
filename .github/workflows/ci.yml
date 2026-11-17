@@ -4,6 +4,12 @@ on:
     push:
     pull_request:
     workflow_dispatch:
+        inputs:
+            publish_artifacts:
+                description: Publish downloadable packages and diagnostic artifacts (one-day retention)
+                type: boolean
+                required: false
+                default: false
 
 permissions:
     contents: read
@@ -51,6 +57,7 @@ jobs:
               run: |
                   python3 tests/tooling/release_version_tests.py
                   python3 tests/tooling/version_resolution_tests.py
+                  python3 tests/tooling/workflow_artifact_tests.py
                   python3 tests/packaging/example_package_tests.py
                   python3 tests/packaging/wheel_record_tests.py
 
@@ -91,7 +98,7 @@ jobs:
             - name: Package accessible Windows distribution
               run: ./tools/packaging/package-distribution.ps1 -WindowsBuild build/ci-windows
             - name: Upload Windows distribution
-              if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch')
+              if: (github.event_name == 'workflow_dispatch' && inputs.publish_artifacts) || startsWith(github.ref, 'refs/tags/v')
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: motion-input-grid-windows-hands-${{ matrix.hands }}
@@ -184,18 +191,20 @@ jobs:
                   cp docs/integrations/overview.md distribution/README.md
                   tar --exclude='*/__pycache__' --exclude='*.pyc' -czf build/motion-input-grid-linux.tar.gz -C distribution linux examples bindings docs README.md
             - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-              if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch')
+              if: (github.event_name == 'workflow_dispatch' && inputs.publish_artifacts) || startsWith(github.ref, 'refs/tags/v')
               with:
                   name: motion-input-grid-linux-native
                   path: build/motion-input-grid-linux.tar.gz
                   retention-days: 1
 
     web:
-        name: WebAssembly browser SDK
+        name: WebAssembly and JavaScript integrations
         needs: changes
         if: needs.changes.outputs.web == 'true'
         runs-on: ubuntu-24.04
-        timeout-minutes: 15
+        timeout-minutes: 30
+        env:
+            NEXT_TELEMETRY_DISABLED: '1'
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
               with:
@@ -240,40 +249,8 @@ jobs:
                   cp build/native-deps/*-LICENSE distribution/web/licenses/
                   cp LICENSE distribution/web/licenses/MIG-LICENSE
                   cp docs/integrations/overview.md distribution/README.md
-            - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-              with:
-                  name: motion-input-grid-web
-                  path: distribution
-                  # Used by the JavaScript job in this run.
-                  retention-days: 1
-
-    javascript:
-        name: React, Vue and Next.js integrations
-        needs: [changes, web]
-        if: needs.changes.outputs.web == 'true'
-        runs-on: ubuntu-24.04
-        timeout-minutes: 15
-        env:
-            NEXT_TELEMETRY_DISABLED: '1'
-        steps:
-            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-              with:
-                  persist-credentials: false
-            - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-              with:
-                  node-version: '24'
-                  cache: npm
-            - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-              with:
-                  name: motion-input-grid-web
-                  path: build/web-artifact
-            - name: Prepare shared WASM assets
-              run: |
-                  mkdir -p build/web/web build/native-deps/models
-                  cp build/web-artifact/web/mig.mjs build/web-artifact/web/mig.wasm build/web/web/
-                  cp build/web-artifact/web/models/*.task build/native-deps/models/
-                  cp -r build/web-artifact/web/vision build/native-deps/
-                  cp build/web-artifact/web/licenses/* build/native-deps/
+            # Keep WASM and framework validation on the same runner. Normal CI
+            # must not upload an intermediate artifact just to transfer these files.
             - name: Install, test and build all framework examples
               run: |
                   npm ci --ignore-scripts
@@ -303,16 +280,24 @@ jobs:
                   python3 tools/release/release-checksums.py build/javascript-artifacts
                   python3 tools/release/release-checksums.py build/javascript-artifacts --check
             - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-              if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch')
+              if: (github.event_name == 'workflow_dispatch' && inputs.publish_artifacts) || startsWith(github.ref, 'refs/tags/v')
               with:
                   name: motion-input-grid-javascript
                   # Standalone examples already contain the compiled examples and runtime.
                   path: build/javascript-artifacts/
                   retention-days: 1
 
+            - name: Publish browser integration package
+              if: (github.event_name == 'workflow_dispatch' && inputs.publish_artifacts) || startsWith(github.ref, 'refs/tags/v')
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: motion-input-grid-web
+                  path: distribution
+                  retention-days: 1
+
     checks:
         name: Affected checks passed
-        needs: [changes, format, metadata, windows, portable, linux-native, web, javascript]
+        needs: [changes, format, metadata, windows, portable, linux-native, web]
         if: always()
         runs-on: ubuntu-24.04
         timeout-minutes: 5
