@@ -46,10 +46,30 @@ un contrôle sélectionné échoue ou est annulé. Les compilations ignorées so
 Les workflows du site, de la documentation et des extensions gardent leurs propres contrôles.
 La protection des branches se configure séparément des fichiers de workflow.
 
+## Artefacts téléchargeables
+
+Les push et pull requests compilent et valident les paquets sans téléverser de
+paquets ni de traces d'échec. Les contrôles WebAssembly et JavaScript partagent
+un runner : aucun artefact intermédiaire ne sert à transférer leurs fichiers.
+
+Pour conserver des paquets téléchargeables, ouvrez **Actions**, sélectionnez
+**CI** ou le workflow des extensions, puis **Run workflow** et cochez
+**publish_artifacts**. La case est décochée par défaut : un lancement manuel seul
+ne demande que la validation. Les tags de version commençant par `v` publient
+aussi les paquets testés. Les contrôles de release et le packaging des intégrations
+de moteurs gardent leurs déclenchements explicites de release ou manuels.
+Les paquets et diagnostics d'échec facultatifs sont conservés **un jour**.
+
+**GitHub Pages reste automatique sur `main` après les tests du site.** Son artefact
+de déploiement, conservé un jour, est indispensable à la publication et fait
+exception à cette règle. La case du workflow du site active seulement les
+diagnostics d'échec.
+
 Pour valider un changement des filtres en local :
 
 ```sh
 python tests/tooling/ci_changes_tests.py
+python tests/tooling/workflow_artifact_tests.py
 python tools/dev/check-docs.py
 actionlint .github/workflows/changes.yml .github/workflows/ci.yml .github/workflows/docs.yml .github/workflows/pages.yml
 ```
