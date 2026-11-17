@@ -4,6 +4,12 @@ on:
     push:
     pull_request:
     workflow_dispatch:
+        inputs:
+            publish_artifacts:
+                description: Publish downloadable packages and diagnostic artifacts (one-day retention)
+                type: boolean
+                required: false
+                default: false
 
 permissions:
     contents: read
@@ -47,16 +53,17 @@ jobs:
               run: xvfb-run --auto-servernum npm run test:firefox
             - run: npm run package
             - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              if: (github.event_name == 'workflow_dispatch' && inputs.publish_artifacts) || startsWith(github.ref, 'refs/tags/v')
               with:
                   name: mig-controller-browser-extensions
                   path: extensions/controller/dist/packages/*.zip
-                  retention-days: 7
+                  retention-days: 1
                   if-no-files-found: error
             - name: Save failed browser traces
-              if: failure()
+              if: failure() && (github.event_name == 'workflow_dispatch' && inputs.publish_artifacts)
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: extension-test-results
                   path: extensions/controller/test-results/
-                  retention-days: 7
+                  retention-days: 1
                   if-no-files-found: ignore
