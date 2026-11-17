@@ -147,5 +147,5 @@ permet de choisir un exécutable Chromium/Edge existant. Ces tests utilisent le
 vrai WASM et des observations/flux synthétiques ; ils ne vérifient pas la caméra
 physique ni la précision des gestes humains.
 `npm run test:types` vérifie les déclarations publiques. Versions compilées :
-React 19.3, Vue 3.5.43 et Next.js 16.3.8. Vérifiez votre application si elle
+React 19.3, Vue 3.5.43 et Next.js 16.4.5. Vérifiez votre application si elle
 utilise d'autres versions.

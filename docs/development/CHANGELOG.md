@@ -4,6 +4,9 @@
 
 ## Unreleased
 
+- Address Dependabot alerts with Next.js 16.4.5, Vite 8.3.3 in the browser examples
+  and node-forge 1.4.3 in the extension development lockfile.
+
 - Add experimental MIG Controller browser extension packages with illustrated,
   rebindable presets, browser-only profile keys, manual/automatic camera lifecycle,
   grey/red toolbar icons and a separate extension CI category.

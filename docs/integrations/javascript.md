@@ -157,5 +157,5 @@ install chromium`). Set `MIG_BROWSER` to an existing Chromium/Edge executable
 instead if desired. Browser tests use real WASM and synthetic observations/
 camera streams; they do not establish physical camera or gesture accuracy.
 `npm run test:types` checks the published declarations. Builds were checked with
-React 19.3, Vue 3.5.43 and Next.js 16.3.8; older peer versions require your own
+React 19.3, Vue 3.5.43 and Next.js 16.4.5; older peer versions require your own
 application verification.
