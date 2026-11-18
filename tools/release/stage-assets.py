@@ -51,6 +51,10 @@ def upload(tag, directory, final):
             if final:
                 selected.append(path)
             continue
+        if path.name.endswith(".observed-modules.json"):
+            continue  # Test diagnostics are not release downloads.
+        if path.name.endswith(".sha256") and not re.search(r"-controller-(?:windows-x64\.exe|linux-x64\.run)\.sha256$", path.name):
+            continue  # Keep existing Controller links; SHA256SUMS covers all files.
         if re.search(r"-(?:javascript|windows-x64|linux-x64)-examples\.(?:tar\.gz|zip)(?:\.sha256)?$", path.name):
             continue  # Independent examples are the published downloads.
         if not re.search(rf"(?<![0-9]){re.escape(version)}(?![0-9]|\.[0-9])", path.name):

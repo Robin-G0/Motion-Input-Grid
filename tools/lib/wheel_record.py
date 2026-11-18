@@ -87,6 +87,9 @@ def normalize_wheel(path):
                 writer.writerow((record, "", ""))
                 repaired.writestr(original.getinfo(record), output.getvalue().encode("utf-8"))
         validate_wheel(temporary)
+        # NamedTemporaryFile uses 0600. Keep the original archive's permissions
+        # so Docker-produced wheels remain readable by the host uploader.
+        os.chmod(temporary, path.stat().st_mode & 0o777)
         os.replace(temporary, path)
     finally:
         if temporary is not None:

@@ -14,6 +14,20 @@ spec.loader.exec_module(stage)
 
 
 class ReleaseStagingTests(unittest.TestCase):
+    def test_inventory_replaces_new_sidecars_and_excludes_runtime_diagnostics(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            keep = "motion-input-grid-1.2.0-controller-windows-x64.exe.sha256"
+            omit = ["motion-input-grid-1.2.0-linux-x64-sdk.tar.gz.sha256",
+                    "motion-input-grid-1.2.0-controller-windows-x64.exe.observed-modules.json"]
+            for name in [keep, *omit]:
+                (root / name).write_bytes(b"fixture")
+            with patch.object(stage, "draft"), patch.object(stage, "release_version", return_value="1.2.0"), patch.object(stage, "gh") as gh:
+                stage.upload("v1.2.0", root, False)
+                self.assertIn(str(root / keep), gh.call_args.args)
+                for name in omit:
+                    self.assertNotIn(str(root / name), gh.call_args.args)
+
     def test_relative_input_paths_are_absolute_when_gh_runs_from_repository_root(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
