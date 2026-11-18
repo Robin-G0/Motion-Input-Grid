@@ -39,7 +39,8 @@ liée à une API. Le **résumé du job** affiche les contrôles sélectionnés.
 > **Lancez un workflow manuellement pour exécuter tous ses contrôles.** Les premiers
 > push sans référence et les comparaisons Git indisponibles font aussi tout tourner
 > dans le workflow concerné. Les releases taguées continuent de valider **tous leurs
-> artefacts**. Le packaging des intégrations de moteurs conserve son déclenchement manuel.
+> artefacts**, y compris les moteurs de jeu et les extensions navigateur. Le packaging
+> des moteurs peut aussi être lancé manuellement.
 
 La CI générale expose **Affected checks passed**, qui échoue si la détection ou
 un contrôle sélectionné échoue ou est annulé. Les compilations ignorées sont admises.
@@ -55,10 +56,15 @@ un runner : aucun artefact intermédiaire ne sert à transférer leurs fichiers.
 Pour conserver des paquets téléchargeables, ouvrez **Actions**, sélectionnez
 **CI** ou le workflow des extensions, puis **Run workflow** et cochez
 **publish_artifacts**. La case est décochée par défaut : un lancement manuel seul
-ne demande que la validation. Les tags de version commençant par `v` publient
-aussi les paquets testés. Les contrôles de release et le packaging des intégrations
-de moteurs gardent leurs déclenchements explicites de release ou manuels.
+ne demande que la validation.
 Les paquets et diagnostics d'échec facultatifs sont conservés **un jour**.
+
+Les tags commençant par `v` lancent **Build validated release assets**. Chaque plateforme
+dépose ses paquets testés directement dans un **brouillon de release GitHub**, sans
+utiliser le stockage des artefacts Actions. Le dernier job vérifie les archives et crée
+l'inventaire des empreintes. La publication reste une étape distincte après la réussite
+de toutes les compilations ; npm et PyPI utilisent ces mêmes fichiers validés.
+Les workflows habituels ne tournent pas également sur les tags.
 
 **GitHub Pages reste automatique sur `main` après les tests du site.** Son artefact
 de déploiement, conservé un jour, est indispensable à la publication et fait

@@ -4,6 +4,10 @@
 
 ## Non publié
 
+## 1.2.0 - 2026-11-18
+
+- Expliquer la première extraction du runtime Windows, avec annulation et chemin du cache copiable ; harmoniser les listes déroulantes natives.
+- Déposer les fichiers de release validés directement dans un brouillon GitHub pour économiser le stockage Actions ; publier après les compilations de toutes les plateformes et la vérification des empreintes.
 - Corriger les alertes Dependabot avec Next.js 16.4.5, Vite 8.3.3 dans les exemples
   navigateur et node-forge 1.4.3 dans le lockfile de développement de l'extension.
 

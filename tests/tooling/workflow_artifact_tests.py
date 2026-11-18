@@ -56,17 +56,23 @@ class ArtifactPolicyTests(unittest.TestCase):
                     self.assertEqual(allowed(guard, "workflow_dispatch", "refs/heads/main", publish=True, failed=failed),
                                      failed if "test-results" in name else True)
 
-    def test_version_tags_can_publish_the_tested_sdk_and_extension_packages(self):
-        packages = set()
+    def test_version_tags_do_not_duplicate_release_uploads_in_routine_workflows(self):
         for workflow in ["ci.yml", "extensions.yml"]:
+            source = (WORKFLOWS / workflow).read_text(encoding="utf-8")
+            self.assertIn("branches: ['**']", source)
             for name, guard in upload_steps(workflow):
                 if "test-results" in name:
                     continue
-                self.assertTrue(allowed(guard, "push", "refs/tags/v1.2.3"), name)
-                packages.add(name)
-        self.assertEqual(packages, {"motion-input-grid-windows-hands-${{ matrix.hands }}",
-                                  "motion-input-grid-linux-native", "motion-input-grid-web",
-                                  "motion-input-grid-javascript", "mig-controller-browser-extensions"})
+                self.assertFalse(allowed(guard, "push", "refs/tags/v1.2.3"), name)
+
+    def test_release_staging_uses_draft_assets_without_actions_artifacts(self):
+        source = (WORKFLOWS / "release-check.yml").read_text(encoding="utf-8")
+        self.assertNotIn("actions/upload-artifact@", source)
+        self.assertNotIn("actions/download-artifact@", source)
+        self.assertIn("stage-assets.py --create", source)
+        self.assertIn("stage-assets.py --final", source)
+        self.assertIn('gh release download "$RELEASE_TAG"', source)
+        self.assertIn("needs: [linux, windows, javascript, source, arm64, extensions]", source)
 
     def test_pages_stays_automatic_on_main_and_never_deploys_a_pr(self):
         pages = dict(upload_steps("pages.yml"))

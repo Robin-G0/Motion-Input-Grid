@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+## 1.2.0 - 2026-11-18
+
+- Explain the first Windows runtime extraction, with cancellation and a copyable cache path; unify native dropdown controls.
+- Stage validated release files directly on a GitHub draft to avoid Actions artifact storage; publish only after all platform builds and the checksum inventory pass.
 - Address Dependabot alerts with Next.js 16.4.5, Vite 8.3.3 in the browser examples
   and node-forge 1.4.3 in the extension development lockfile.
 
