@@ -1,6 +1,7 @@
 """Protect published releases and reject stale/duplicate release outputs."""
 import importlib.util
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -13,6 +14,16 @@ spec.loader.exec_module(stage)
 
 
 class ReleaseStagingTests(unittest.TestCase):
+    def test_relative_input_paths_are_absolute_when_gh_runs_from_repository_root(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            archive = root / "motion-input-grid-1.2.0.tgz"
+            archive.write_bytes(b"fixture")
+            relative = Path(os.path.relpath(root))
+            with patch.object(stage, "draft"), patch.object(stage, "release_version", return_value="1.2.0"), patch.object(stage, "gh") as gh:
+                stage.upload("v1.2.0", relative, False)
+                self.assertIn(str(archive.resolve()), gh.call_args.args)
+
     def test_published_release_is_never_overwritten(self):
         with patch.object(stage, "gh", return_value=json.dumps({"isDraft": False, "tagName": "v1.2.0"})):
             with self.assertRaisesRegex(ValueError, "draft"):

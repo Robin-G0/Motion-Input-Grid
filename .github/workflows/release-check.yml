@@ -41,6 +41,7 @@ jobs:
                   python3 tools/release/release-version.py --sync ${RELEASE_TAG:+--tag "$RELEASE_TAG"}
                   python3 tools/dev/check-docs.py
                   python3 tests/tooling/version_resolution_tests.py
+                  python3 tests/tooling/release_staging_tests.py
 
             - name: Create or verify the release draft
               env:

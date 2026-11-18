@@ -42,6 +42,7 @@ def create(tag):
 def upload(tag, directory, final):
     draft(tag)
     version = release_version(tag)
+    directory = directory.resolve()  # gh runs from ROOT, callers may run in a subdirectory.
     selected = []
     for path in sorted(directory.iterdir()):
         if not path.is_file():
