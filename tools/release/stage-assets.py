@@ -34,9 +34,15 @@ def create(tag):
         # Creation is guarded by --verify-tag; an existing release/auth failure
         # makes gh fail rather than overwriting or publishing anything.
         gh("release", "create", tag, "--draft", "--verify-tag", "--target", commit,
-           "--title", f"Motion Input Grid {tag[1:]}", "--notes",
+           "--title", f"Motion Input Grid {tag}", "--notes",
            "Release builds and package validation are in progress. Not published yet.")
     return draft(tag)
+
+
+def notes(tag, path):
+    draft(tag)
+    gh("release", "edit", tag, "--title", f"Motion Input Grid {tag}",
+       "--notes-file", str(path.resolve()))
 
 
 def upload(tag, directory, final):
@@ -73,6 +79,7 @@ if __name__ == "__main__":
     parser.add_argument("--tag", default=os.environ.get("RELEASE_TAG"))
     parser.add_argument("--create", action="store_true")
     parser.add_argument("--final", action="store_true")
+    parser.add_argument("--notes", type=Path)
     parser.add_argument("directory", type=Path, nargs="?")
     args = parser.parse_args()
     if not args.tag or not re.fullmatch(r"v\d+\.\d+\.\d+", args.tag):
@@ -80,7 +87,9 @@ if __name__ == "__main__":
     release_version(args.tag)
     if args.create:
         create(args.tag)
+    elif args.notes:
+        notes(args.tag, args.notes)
     elif args.directory:
         upload(args.tag, args.directory, args.final)
     else:
-        parser.error("provide --create or an output directory")
+        parser.error("provide --create, --notes or an output directory")

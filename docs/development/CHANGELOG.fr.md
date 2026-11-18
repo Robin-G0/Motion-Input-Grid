@@ -4,6 +4,9 @@
 
 ## Non publié
 
+- Installer les paquets de test npm directement via Node et npm-cli.js, en préservant les chemins littéraux sans interpréteur de commandes Windows.
+- Restaurer les tableaux de téléchargement par catégorie avec tailles, liens directs et inventaire complet ; harmoniser les titres en `Motion Input Grid vX.Y.Z`.
+
 ## 1.2.0 - 2026-11-18
 
 - Expliquer la première extraction du runtime Windows, avec annulation et chemin du cache copiable ; harmoniser les listes déroulantes natives.

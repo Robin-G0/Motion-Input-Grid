@@ -58,7 +58,10 @@ Uploaded packages and optional failure diagnostics are retained for **one day**.
 Version tags beginning with `v` run **Build validated release assets**. Each platform
 uploads its tested packages directly to a **draft GitHub Release**, without using
 Actions artifact storage. The final job checks archive contents and creates the
-checksum inventory. Publication remains a separate step after every build succeeds;
+checksum inventory and categorized download tables, including direct links and sizes.
+The catalogue uses the version's changelog and rejects unlisted package files.
+Release titles and Git tags use `vX.Y.Z`; package versions use `X.Y.Z`.
+Publication remains a separate step after every build succeeds;
 npm and PyPI use those same validated files. Routine workflows do not also run on tags.
 
 **GitHub Pages remains automatic on `main` after successful site tests.** Its

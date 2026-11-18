@@ -4,6 +4,9 @@
 
 ## Unreleased
 
+- Install npm package test fixtures through Node and npm-cli.js directly, preserving literal archive paths without a Windows command shell.
+- Restore categorized release download tables with sizes, direct links and complete inventory coverage; standardize release titles as `Motion Input Grid vX.Y.Z`.
+
 ## 1.2.0 - 2026-11-18
 
 - Explain the first Windows runtime extraction, with cancellation and a copyable cache path; unify native dropdown controls.

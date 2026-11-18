@@ -62,7 +62,10 @@ Les paquets et diagnostics d'échec facultatifs sont conservés **un jour**.
 Les tags commençant par `v` lancent **Build validated release assets**. Chaque plateforme
 dépose ses paquets testés directement dans un **brouillon de release GitHub**, sans
 utiliser le stockage des artefacts Actions. Le dernier job vérifie les archives et crée
-l'inventaire des empreintes. La publication reste une étape distincte après la réussite
+l'inventaire des empreintes et les tableaux de téléchargement par catégorie, avec liens et tailles.
+Le catalogue utilise le changelog de la version et refuse les paquets non répertoriés.
+Les titres des releases et les tags Git utilisent `vX.Y.Z` ; les versions des paquets utilisent `X.Y.Z`.
+La publication reste une étape distincte après la réussite
 de toutes les compilations ; npm et PyPI utilisent ces mêmes fichiers validés.
 Les workflows habituels ne tournent pas également sur les tags.
 

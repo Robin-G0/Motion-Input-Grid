@@ -42,6 +42,7 @@ jobs:
                   python3 tools/dev/check-docs.py
                   python3 tests/tooling/version_resolution_tests.py
                   python3 tests/tooling/release_staging_tests.py
+                  python3 tests/tooling/release_catalogue_tests.py
 
             - name: Create or verify the release draft
               env:
@@ -376,4 +377,7 @@ jobs:
             - name: Upload the verified inventory to the draft
               env:
                   GH_TOKEN: ${{ github.token }}
-              run: python3 tools/release/stage-assets.py --final build/release-candidates
+              run: |
+                  python3 tools/release/stage-assets.py --final build/release-candidates
+                  python3 tools/release/release-catalogue.py build/release-candidates --output build/release-notes.md
+                  python3 tools/release/stage-assets.py --notes build/release-notes.md

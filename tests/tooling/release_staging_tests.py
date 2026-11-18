@@ -14,6 +14,15 @@ spec.loader.exec_module(stage)
 
 
 class ReleaseStagingTests(unittest.TestCase):
+    def test_catalogue_edit_checks_draft_before_updating_the_title_and_notes(self):
+        with patch.object(stage, "draft", side_effect=ValueError("published")), patch.object(stage, "gh") as gh:
+            with self.assertRaisesRegex(ValueError, "published"):
+                stage.notes("v1.2.0", Path("notes.md"))
+            gh.assert_not_called()
+        with patch.object(stage, "draft"), patch.object(stage, "gh") as gh:
+            stage.notes("v1.2.0", Path("notes.md"))
+            self.assertIn("Motion Input Grid v1.2.0", gh.call_args.args)
+
     def test_inventory_replaces_new_sidecars_and_excludes_runtime_diagnostics(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
