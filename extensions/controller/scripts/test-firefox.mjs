@@ -21,6 +21,9 @@ try{
       try{
        for(let i=0;i<100&&!document.querySelector('.command');i++)await new Promise(r=>setTimeout(r,50));
        if(document.querySelectorAll('.command').length!==2)throw new Error('Missing preset controls');
+       const context=document.createElement('canvas').getContext('webgl2');
+       if(!context)throw new Error('Firefox WebGL 2 is unavailable; run under xvfb-run with software graphics on Linux');
+       context.getExtension('WEBGL_lose_context')?.loseContext();
        await new Promise((accept,reject)=>{const clock=new Worker(browser.runtime.getURL('camera-clock.js'));clock.onmessage=()=>{clock.terminate();accept();};clock.onerror=reject;});
        const session=new MIGSession({assetBase:browser.runtime.getURL('mig/'),profileMode:true});
        await session.start(document.querySelector('video'),document.querySelector('canvas'));
@@ -29,7 +32,10 @@ try{
        if(tracks.some(t=>t.readyState!=='ended'))throw new Error('Camera not released');
        await fetch('${endpoint}',{method:'POST',body:JSON.stringify({ok:true})});
       }catch(error){await fetch('${endpoint}',{method:'POST',body:JSON.stringify({ok:false,error:error.message})});}`);
-    runner=await webExt.cmd.run({sourceDir:directory,firefox:firefox.executablePath(),noReload:true,noInput:true,args:["-headless"],
+    // Under Xvfb, Firefox needs the display-backed graphics path for real models.
+    // Forcing -headless here discards that display and can leave MediaPipe's GLctx unset.
+    const args=process.platform==="linux"&&process.env.DISPLAY?[]:["-headless"];
+    runner=await webExt.cmd.run({sourceDir:directory,firefox:firefox.executablePath(),noReload:true,noInput:true,args,
         pref:{"media.navigator.streams.fake":true,"media.navigator.permission.disabled":true}}, {shouldExitProgram:false});
     const report=await result;if(!report.ok)throw new Error(report.error);
     console.log("Firefox extension: real CSP, WASM presets, camera/model startup and track cleanup passed.");

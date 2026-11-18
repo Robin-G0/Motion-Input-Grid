@@ -4,6 +4,9 @@
 
 ## Non publié
 
+- Corriger les alertes Dependabot avec Next.js 16.4.5, Vite 8.3.3 dans les exemples
+  navigateur et node-forge 1.4.3 dans le lockfile de développement de l'extension.
+
 - Ajouter les paquets expérimentaux MIG Controller pour navigateur : gestes illustrés,
   touches modifiables, profils limités à la page, caméra manuelle/automatique,
   icônes grise/rouge et catégorie CI dédiée aux extensions.
