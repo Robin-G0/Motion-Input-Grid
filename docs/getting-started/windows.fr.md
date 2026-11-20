@@ -76,9 +76,14 @@ cmake --install build/windows --config Release --prefix install
 ```
 
 Capture préfère les modes larges jusqu'à 1280×720, ajuste toute l'image sans découpe.
-Le champ visible reste limité au capteur. Lite par défaut, --pose-full compare
-précision/coût ; --pose-lite rétablit Lite. Les deux calculent 33 points, même sans
-jambes. Comparez temps/âge/précision avec même éclairage et réglage Hands.
+Le champ visible reste limité au capteur. Lite par défaut ; `--pose-full` et
+`--pose-heavy` sélectionnent les autres variantes BlazePose, `--pose-lite` rétablit
+Lite. Le menu **View** propose le même choix et le Controller le mémorise. Lite et
+Full sont livrés ; Heavy est téléchargé une fois dans `%LOCALAPPDATA%\MIG\models`
+après vérification SHA-256 (`bootstrap-native.ps1 -IncludeHeavy` l'embarque).
+Chaque fichier de modèle est vérifié contre la version épinglée avant chargement.
+Toutes les variantes calculent 33 points, même sans jambes. Comparez temps/âge/
+précision avec même éclairage et réglage Hands.
 
 ## Dessiner
 

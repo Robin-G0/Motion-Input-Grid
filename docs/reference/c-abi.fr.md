@@ -72,6 +72,10 @@ hauteur après poll réussi. Pixels non reflétés valides jusqu'à prochain pol
 import/destroy ; timeout/échec invalident l'aperçu. Une requête n'ouvre pas la caméra.
 `Tracker.camera_image()` copie sur le thread propriétaire avant la boîte UI.
 Les anciens SDK fonctionnent avec observations, mais les vues caméra demandent
-cette extension. `TryCoordinate` C# accepte un buffer réutilisé de quatre floats,
+cette extension. L'extension additive `mig_camera_start_model(tracker, runtime,
+index, model)` choisit la variante BlazePose de la capture native : `"lite"` (défaut
+de `mig_camera_start`), `"full"` ou `"heavy"`. Le fichier doit être livré dans
+`runtime/models` ou déjà présent dans le cache utilisateur ; l'ABI ne télécharge
+jamais. Python l'expose via `start_camera(runtime, index, model="full")`. `TryCoordinate` C# accepte un buffer réutilisé de quatre floats,
 valide seulement si true. `SyntheticFrames.WriteLeftRaise` montre la réutilisation.
 [Exemples](../../examples/README.fr.md).

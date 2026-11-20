@@ -194,4 +194,25 @@ void validate(const Configuration& config) {
         }
     }
 }
+bool uses_hand_observations(const Configuration& config) noexcept {
+    const auto any_constraint_uses_hands = [](const std::vector<SpatialConstraint>& list) {
+        return std::any_of(list.begin(), list.end(), [](const SpatialConstraint& constraint) {
+            return constraint.type == ConstraintType::Interaction || !constraint.fingers.empty();
+        });
+    };
+    for (const auto& input : config.motions) {
+        if (!input.fingers.empty() || any_constraint_uses_hands(input.constraints)) {
+            return true;
+        }
+        for (const auto& step : input.steps) {
+            if (!step.fingers.empty() || any_constraint_uses_hands(step.constraints)) {
+                return true;
+            }
+        }
+    }
+    const auto& controls = config.controls;
+    return controls.restart.gesture != Gesture::None ||
+           controls.recalibrate.gesture != Gesture::None ||
+           controls.record_toggle.gesture != Gesture::None;
+}
 } // namespace mig

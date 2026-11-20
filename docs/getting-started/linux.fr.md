@@ -50,6 +50,12 @@ compilation et tests après installation des prérequis.
 - **Caméra :** `--camera N` sélectionne `/dev/videoN`. Capture V4L2 YUYV
   single-plane et permissions sont nécessaires. **Start** ouvre explicitement
   la caméra ; arrêtez une application avant d'ouvrir l'autre.
+- **Modèle de pose :** `--pose-lite` (défaut), `--pose-full` ou `--pose-heavy`
+  choisit la variante BlazePose ; **View → Pose model** propose le même choix et
+  le Controller le mémorise. Heavy n'est pas livré : les applications le
+  téléchargent une fois en HTTPS, vérifient son SHA-256 et le gardent dans
+  `$XDG_DATA_HOME/mig/models` (`~/.local/share/mig/models` par défaut).
+  `--include-heavy` sur le script de préparation l'embarque à la place.
 
 ## Espace de travail et dessin
 

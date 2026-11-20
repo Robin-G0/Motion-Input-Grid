@@ -5,7 +5,8 @@ import { useMIG as useVueMIG } from "motion-input-grid/vue";
 const onAction = (event: MIGAction): void => { console.log(event.action, event.id); };
 const session = new MIGSession({ assetBase: "/mig/", onAction });
 session.subscribe(state => console.log(state.actions, state.running));
-const react = useReactMIG({ onAction });
+const react = useReactMIG({ onAction, poseModel: "lite", poseModels: ["lite", "heavy"] });
+void react.setPoseModel("heavy");
 const vue = useVueMIG({ onAction });
 void react.video.current;
 void vue.video.value;
@@ -13,3 +14,5 @@ void session.importJSON("{}");
 
 const efficient = new MIGSession({maxInferenceFps:20, drawOverlay:false, videoConstraints:{width:640,height:480}, delegate:"CPU"});
 efficient.setInferenceFps(10);
+const precise = new MIGSession({ poseModel: "full", poseModels: ["lite", "full"] });
+void precise.setPoseModel("lite").then(() => console.log(precise.state.poseModel, precise.poseModels));

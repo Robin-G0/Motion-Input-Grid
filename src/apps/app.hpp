@@ -179,7 +179,10 @@ enum {
     CompactView,
     OpenView,
     ProfileManagement,
-    ClearFingers
+    ClearFingers,
+    PoseModelLite,
+    PoseModelFull,
+    PoseModelHeavy
 };
 struct Snapshot {
     std::shared_ptr<const VideoFrame> video;
@@ -338,6 +341,8 @@ struct App {
     void request_restart(bool calibration);
     void request_record();
     void set_preview_hands(bool enabled);
+    // Restarts a running session so the inference thread loads the new model.
+    void set_pose_model(PoseModel model);
     void wake_and_stop_workers();
     void capture_loop();
     void inference_loop();

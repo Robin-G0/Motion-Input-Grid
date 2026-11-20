@@ -175,7 +175,7 @@ test("pose-only sessions defer hands and late hand loading cannot revive a dispo
             loadHands: () => { ++handLoads; return pending.promise; } };
     } });
     await f.session.start(f.video, f.canvas);
-    assert.deepEqual(settings, { hands: false, delegate: "CPU" });
+    assert.deepEqual(settings, { hands: false, delegate: "CPU", poseModel: "lite" });
     assert.equal(handLoads, 0);
     const importing = f.session.importJSON(JSON.stringify({ schema_version: 2, tracking: { hands: true }, inputs: [] }));
     await new Promise(resolve => setImmediate(resolve));
@@ -195,4 +195,65 @@ test("lazy hand loading resumes an imported hand profile and does not load twice
     await f.session.importJSON(json); await f.session.importJSON(json);
     ++f.video.currentTime; f.tick(); assert.equal(loads, 1); assert.equal(f.session.state.running, true);
     f.session.dispose();
+});
+
+test("developers bound the model choice and a user switch loads the model without stopping the camera", async () => {
+    assert.throws(() => new MIGSession({ poseModels: ["lite", "medium"] }), RangeError);
+    assert.throws(() => new MIGSession({ poseModels: ["lite"], poseModel: "full" }), RangeError);
+    assert.throws(() => new MIGSession({ poseModels: [] }), RangeError);
+    let settings;
+    const loads = [];
+    const closed = [];
+    const f = fixture({ profileMode: true, poseModels: ["lite", "full"], loadModels: async value => {
+        settings = value;
+        const models = { pose: { detectForVideo: () => ({}), close: () => closed.push("pose") }, hands: null,
+            loadHands: async () => ({ detectForVideo: () => ({}), close() {} }),
+            loadPose: async name => { loads.push(name); models.poseModel = name; } };
+        return models;
+    } });
+    assert.equal(f.session.state.poseModel, "lite");
+    assert.deepEqual(f.session.poseModels, ["lite", "full"]);
+    await assert.rejects(f.session.setPoseModel("heavy"), RangeError);
+    await f.session.setPoseModel("full");
+    assert.equal(f.session.state.poseModel, "full");
+    await f.session.start(f.video, f.canvas);
+    assert.equal(settings.poseModel, "full");
+    assert.deepEqual(loads, []);
+    const before = f.counters().updates;
+    const switching = f.session.setPoseModel("lite");
+    assert.equal(f.session.state.busy, true);
+    ++f.video.currentTime; f.tick();
+    assert.equal(f.counters().updates, before, "frames wait for the new model");
+    await switching;
+    assert.deepEqual(loads, ["lite"]);
+    assert.equal(f.session.state.poseModel, "lite");
+    assert.equal(f.session.state.running, true);
+    assert.equal(f.session.state.busy, false);
+    ++f.video.currentTime; f.tick();
+    assert.equal(f.counters().updates, before + 1);
+    await f.session.setPoseModel("lite");
+    assert.deepEqual(loads, ["lite"], "re-selecting the active model loads nothing");
+    f.session.dispose();
+    assert.deepEqual(closed, ["pose"]);
+});
+
+test("a model switch that fails keeps the session usable and a switch during disposal publishes nothing", async () => {
+    const pending = deferred();
+    let published = 0;
+    const f = fixture({ profileMode: true, loadModels: async () => ({ pose: { detectForVideo: () => ({}), close() {} },
+        hands: null, loadHands: async () => ({}), loadPose: name => name === "heavy" ? Promise.reject(new Error("offline")) : pending.promise }) });
+    await f.session.start(f.video, f.canvas);
+    await assert.rejects(f.session.setPoseModel("heavy"), /offline/);
+    assert.equal(f.session.state.poseModel, "lite");
+    assert.equal(f.session.state.running, true);
+    assert.equal(f.session.state.busy, false);
+    const switching = f.session.setPoseModel("full");
+    await assert.rejects(f.session.setPoseModel("full"), /in progress/);
+    f.session.subscribe(() => ++published);
+    f.session.dispose();
+    published = 0;
+    pending.resolve();
+    await switching;
+    assert.equal(published, 0);
+    assert.equal(f.session.state.poseModel, "lite");
 });

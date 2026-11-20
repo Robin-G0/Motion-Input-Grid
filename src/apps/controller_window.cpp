@@ -58,6 +58,11 @@ void view_menu(App& app) {
     add(VerifyView, L"Verify bindings (keyboard paused)", app.controller_verify);
     add(CompactView, L"Compact background window", app.controller_compact);
     add(Theme, L"Dark mode", app.dark);
+    AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
+    add(PoseModelLite, L"Lite pose model (fastest)", app.pose_model == PoseModel::Lite);
+    add(PoseModelFull, L"Full pose model", app.pose_model == PoseModel::Full);
+    add(PoseModelHeavy, L"Heavy pose model (most precise, downloaded once)",
+        app.pose_model == PoseModel::Heavy);
     RECT anchor{};
     GetWindowRect(GetDlgItem(app.window, ViewMenu), &anchor);
     const auto chosen =
@@ -227,6 +232,10 @@ void App::controller_view(int command) {
     } else if (command == Theme) {
         dark = !dark;
         update_theme();
+    } else if (command == PoseModelLite || command == PoseModelFull || command == PoseModelHeavy) {
+        set_pose_model(command == PoseModelLite   ? PoseModel::Lite
+                       : command == PoseModelFull ? PoseModel::Full
+                                                  : PoseModel::Heavy);
     }
     preview_enabled = controller_camera && !controller_compact && !IsIconic(window);
     layout();

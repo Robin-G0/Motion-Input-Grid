@@ -43,6 +43,13 @@ int main(int argc, char** argv) {
                   restored.entries()[first].name == "Renamed game" &&
                   restored.load(first) == original,
               "Profile selection/name/copy did not survive restart.");
+        check(restored.pose_model().empty(), "No pose model is stored until chosen.");
+        restored.set_pose_model("heavy");
+        rejects([&] { restored.set_pose_model("Heavy!"); });
+        Profiles reopened(directory / "managed");
+        reopened.restore();
+        check(reopened.pose_model() == "heavy" && reopened.selected() == int(first),
+              "The chosen pose model did not survive restart.");
         restored.export_file(second, source);
         check(mig::load_configuration(source) == original, "Export changed the configuration.");
         std::ofstream(source) << "invalid JSON";

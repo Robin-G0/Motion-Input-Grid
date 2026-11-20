@@ -16,6 +16,7 @@ int run_application(int argc, wchar_t** argv) {
 #endif
         unsigned index = 0;
         PoseModel pose_model = PoseModel::Lite;
+        bool explicit_model = false;
         auto profile = directory / L"configs/default.json";
         bool explicit_profile = false;
         for (int i = 1; i < argc; ++i) {
@@ -24,8 +25,13 @@ int run_application(int argc, wchar_t** argv) {
                 track_hands = true;
             } else if (arg == L"--pose-full") {
                 pose_model = PoseModel::Full;
+                explicit_model = true;
             } else if (arg == L"--pose-lite") {
                 pose_model = PoseModel::Lite;
+                explicit_model = true;
+            } else if (arg == L"--pose-heavy") {
+                pose_model = PoseModel::Heavy;
+                explicit_model = true;
 #ifdef MIG_APP_TESTS
             } else if (arg == L"--infer-test") {
                 infer_test = true;
@@ -54,7 +60,7 @@ int run_application(int argc, wchar_t** argv) {
             } else {
                 std::cout << "Usage: motion-input-grid-[studio|controller] [--config file.json] "
                              "[--camera "
-                             "index] [--hands] [--pose-lite|--pose-full]"
+                             "index] [--hands] [--pose-lite|--pose-full|--pose-heavy]"
 #ifdef MIG_APP_TESTS
                              " [--infer-test|--hands-test|--camera-test|--ui-test|--session-test]"
 #endif
@@ -123,6 +129,12 @@ int run_application(int argc, wchar_t** argv) {
         }
         app.pose_model = pose_model;
         if constexpr (!editor) {
+            // The command line overrides the Controller's remembered choice.
+            const auto remembered =
+                app.profiles ? parse_pose_model(app.profiles->pose_model()) : std::nullopt;
+            if (remembered && !explicit_model) {
+                app.pose_model = *remembered;
+            }
             if (track_hands && !session_test) {
                 throw std::runtime_error(
                     "Controller hand tracking is configured by tracking.hands in "

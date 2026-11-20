@@ -76,6 +76,9 @@ def load_library(path=None):
         function.argtypes = arguments
     if library.mig_abi_version() != 1 or library.mig_packet_size() != ctypes.sizeof(Packet):
         raise RuntimeError("Incompatible MIG native library/packet ABI")
+    if function := getattr(library, "mig_camera_start_model", None):
+        function.restype = integer
+        function.argtypes = [handle, string, unsigned, string]
     if function := getattr(library, "mig_camera_image", None):
         function.restype = ctypes.c_int
         function.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.POINTER(ctypes.c_uint8)),
@@ -164,10 +167,21 @@ class Tracker:
         self._require_open()
         self.library.mig_reset(self.handle, int(recalibrate))
 
-    def start_camera(self, runtime_directory, index=0):
+    def start_camera(self, runtime_directory, index=0, model=None):
+        """Start native capture; model is "lite" (default), "full" or "heavy".
+
+        Models other than the bundled ones must already be in the user model cache;
+        the SDK never downloads. Older SDKs only support the default model.
+        """
         self._require_open()
         runtime = str(Path(runtime_directory).resolve()).encode("utf-8")
-        self._check(self.library.mig_camera_start(self.handle, runtime, index))
+        if model is None:
+            self._check(self.library.mig_camera_start(self.handle, runtime, index))
+            return
+        function = getattr(self.library, "mig_camera_start_model", None)
+        if function is None:
+            raise RuntimeError("This MIG SDK lacks pose model selection; rebuild or update the SDK.")
+        self._check(function(self.handle, runtime, index, str(model).encode("utf-8")))
 
     def poll_camera(self):
         """Synchronous native capture/inference. None on timeout, Packet otherwise.

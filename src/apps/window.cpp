@@ -471,6 +471,15 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM wp, LPARAM lp) {
                     add(ViewHands,
                         app.show_hands ? L"Hide hand detections" : L"Show hand detections");
                     add(ViewDots, app.show_dots ? L"Hide body dots" : L"Show body dots");
+                    add(PoseModelLite, app.pose_model == PoseModel::Lite
+                                           ? L"Pose model: Lite (current)"
+                                           : L"Pose model: Lite (fastest)");
+                    add(PoseModelFull, app.pose_model == PoseModel::Full
+                                           ? L"Pose model: Full (current)"
+                                           : L"Pose model: Full");
+                    add(PoseModelHeavy, app.pose_model == PoseModel::Heavy
+                                            ? L"Pose model: Heavy (current)"
+                                            : L"Pose model: Heavy (most precise, downloaded once)");
                 }
                 RECT anchor{};
                 GetWindowRect(GetDlgItem(window, id), &anchor);
@@ -602,6 +611,13 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM wp, LPARAM lp) {
             case Theme:
                 app.dark = !app.dark;
                 app.update_theme();
+                break;
+            case PoseModelLite:
+            case PoseModelFull:
+            case PoseModelHeavy:
+                app.set_pose_model(id == PoseModelLite   ? PoseModel::Lite
+                                   : id == PoseModelFull ? PoseModel::Full
+                                                         : PoseModel::Heavy);
                 break;
             case Logs:
                 app.toggle_logs();

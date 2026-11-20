@@ -1,4 +1,6 @@
+#include "../apps/tracking_policy.hpp"
 #include "controller_window.hpp"
+#include "pose_models.hpp"
 #include <QAction>
 
 namespace mig::linux_ui {
@@ -12,13 +14,18 @@ void ControllerWindow::start() {
         report("Import a profile before starting.");
         return;
     }
-    try {
-        capture_.start(config_, runtime_, camera_);
-        running_ = true;
-        report("Starting camera; keep shoulders visible for calibration.");
-    } catch (const std::exception& error) {
-        report(error.what());
-    }
+    ensure_pose_model(
+        this, runtime_, pose_model_, [this](const QString& text) { report(text); },
+        [this] {
+            try {
+                capture_.start(config_, runtime_, camera_,
+                               {pose_model_, app::hand_inference_required(config_)});
+                running_ = true;
+                report("Starting camera; keep shoulders visible for calibration.");
+            } catch (const std::exception& error) {
+                report(error.what());
+            }
+        });
 }
 void ControllerWindow::stop() {
     capture_.stop();

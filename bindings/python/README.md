@@ -60,8 +60,9 @@ with Tracker(None, profile) as tracker:
 | Positions | Unmirrored anatomical MediaPipe indices; zero confidence for missing points |
 | Ownership | One thread per tracker; use `close()` or a context manager |
 
-`start_camera(runtime_directory)` and `poll_camera()` optionally use a native
-camera-enabled SDK plus its MediaPipe runtime and models. Poll already updates
+`start_camera(runtime_directory, index=0, model=None)` and `poll_camera()` optionally use a native
+camera-enabled SDK plus its MediaPipe runtime and models; `model` selects
+`"lite"` (default), `"full"` or `"heavy"` when that file is available locally. Poll already updates
 recognition; consume `events()` afterward without submitting the frame twice.
 Action callbacks are logical events; keyboard injection is the host's choice.
 

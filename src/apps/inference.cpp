@@ -1,7 +1,9 @@
 #include "app.hpp"
+#include "model_download.hpp"
 namespace mig::app {
 void App::inference_loop() {
     try {
+        ensure_pose_model(directory, pose_model, [this](std::string text) { message(text); });
         Pose pose(directory, false, pose_model);
         Configuration initial;
         int test_index;
@@ -49,7 +51,8 @@ void App::inference_loop() {
             std::uint64_t revision{};
             {
                 std::lock_guard lock(state_mutex);
-                request_hands = hand_tracking_requested(config);
+                request_hands =
+                    editor ? hand_tracking_requested(config) : hand_inference_required(config);
                 revision = profile_revision;
                 test_index = testing;
                 allow_recording = recording_allowed;
@@ -154,7 +157,8 @@ void App::inference_loop() {
             {
                 std::lock_guard lock(state_mutex);
                 if (revision != profile_revision || reload || recalibrate || restart_requested ||
-                    request_hands != hand_tracking_requested(config)) {
+                    request_hands != (editor ? hand_tracking_requested(config)
+                                             : hand_inference_required(config))) {
                     continue;
                 }
                 snapshot = result;

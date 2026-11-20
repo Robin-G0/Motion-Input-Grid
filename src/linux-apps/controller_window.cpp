@@ -1,4 +1,5 @@
 #include "controller_window.hpp"
+#include "pose_models.hpp"
 #include "theme.hpp"
 #include <QAction>
 #include <QEvent>
@@ -162,6 +163,26 @@ void ControllerWindow::build_views() {
     theme->setCheckable(true);
     theme->setChecked(true);
     connect(theme, &QAction::toggled, this, [this](bool enabled) { apply_theme(enabled); });
+    pose_model_actions_ = add_pose_model_menu(
+        view, pose_model_, [this](native::PoseModel model) { set_pose_model(model); });
+}
+void ControllerWindow::set_pose_model(native::PoseModel model) {
+    check_pose_model(pose_model_actions_, model);
+    if (model == pose_model_) {
+        return;
+    }
+    pose_model_ = model;
+    try {
+        profiles_.set_pose_model(std::string(native::pose_model_info(model).name));
+    } catch (const std::exception& error) {
+        report(error.what());
+    }
+    if (running_) {
+        start();
+    } else {
+        report(QString::fromStdString(std::string(native::pose_model_info(model).label)) +
+               " pose model selected.");
+    }
 }
 void ControllerWindow::set_camera(bool enabled) {
     canvas_->setVisible(enabled && !compact_);

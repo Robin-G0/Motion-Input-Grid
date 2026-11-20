@@ -68,6 +68,23 @@ void App::set_preview_hands(bool enabled) {
     }
 }
 
+void App::set_pose_model(PoseModel model) {
+    if (model == pose_model) {
+        return;
+    }
+    pose_model = model;
+    if constexpr (!editor) {
+        if (profiles) {
+            profiles->set_pose_model(std::string(pose_model_info(model).name));
+        }
+    }
+    if (running) {
+        start();
+    } else {
+        message(std::string(pose_model_info(model).label) + " pose model selected.");
+    }
+}
+
 App::~App() {
     stop();
     if (font) {

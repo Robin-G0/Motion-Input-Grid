@@ -55,6 +55,11 @@ MIG_C_API void mig_reset(mig_tracker* tracker, int recalibrate);
    poll: -1 failure, 0 timeout, 1 new packet. Packet is filled AND recognized;
    use mig_event_count afterwards, do not call update again on that packet. */
 MIG_C_API int mig_camera_start(mig_tracker* tracker, const char* runtime, unsigned index);
+/* Additive ABI-1 extension: same as mig_camera_start with a pose model name
+   ("lite", "full" or "heavy"). NULL or empty keeps the default "lite". The model
+   must be bundled in runtime/models or already present in the user model cache. */
+MIG_C_API int mig_camera_start_model(mig_tracker* tracker, const char* runtime, unsigned index,
+                                     const char* model);
 MIG_C_API int mig_camera_poll(mig_tracker* tracker, mig_packet* packet);
 /* Borrowed packed RGB24 preview, unmirrored, valid until the next poll/stop/import
    or destroy. Returns 1 present, 0 unavailable/invalid. Copy on the owning thread

@@ -153,8 +153,9 @@ and watch for action feedback. Use the [hand tracking guide](hands.md) for signs
 and finger conditions. Close one application's camera before opening the other's.
 
 Keyboard output starts disabled. The Motion Input Grid Controller guide explains how to enable it
-and use Single press, Hold and Repeat. **View** controls the theme, preview overlays
-and logs. The [configuration reference](../reference/configuration.md) describes
+and use Single press, Hold and Repeat. **View** controls the theme, preview overlays,
+logs and the **Pose model** (Lite by default; Heavy downloads once, see the
+[Controller views](controller.md#views)). The [configuration reference](../reference/configuration.md) describes
 all saved fields and action modes.
 
 > [!TIP]

@@ -7,6 +7,7 @@
 #include <QCoreApplication>
 #include <QIcon>
 #include <iostream>
+#include <optional>
 int main(int argc, char** argv) {
     QApplication application(argc, argv);
     application.setDesktopFileName(MIG_APP_NAME);
@@ -16,6 +17,7 @@ int main(int argc, char** argv) {
         std::string config;
         unsigned camera = 0;
         bool test = false;
+        std::optional<mig::native::PoseModel> pose_model;
         for (int index = 1; index < argc; ++index) {
             const std::string option = argv[index];
             if (option == "--runtime" && index + 1 < argc) {
@@ -28,9 +30,13 @@ int main(int argc, char** argv) {
                 config = argv[++index];
             } else if (option == "--camera" && index + 1 < argc) {
                 camera = unsigned(std::stoul(argv[++index]));
+            } else if (option.starts_with("--pose-") &&
+                       mig::native::parse_pose_model(option.substr(7))) {
+                pose_model = mig::native::parse_pose_model(option.substr(7));
             } else {
                 throw std::runtime_error("Usage: " MIG_APP_NAME
-                                         " [--runtime DIR] [--config JSON] [--camera N]");
+                                         " [--runtime DIR] [--config JSON] [--camera N] "
+                                         "[--pose-lite|--pose-full|--pose-heavy]");
             }
         }
 #ifdef MIG_CONTROLLER
@@ -38,6 +44,9 @@ int main(int argc, char** argv) {
 #else
         mig::linux_ui::Window window(runtime, camera);
 #endif
+        if (pose_model) {
+            window.set_pose_model(*pose_model);
+        }
         if (!config.empty()) {
             window.load(config);
         }

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MIGSession } from "./index.mjs";
 
-export function useMIG({ assetBase, profileMode = false, onAction } = {}) {
+export function useMIG({ assetBase, profileMode = false, onAction, poseModel, poseModels } = {}) {
     const session = useRef(null);
     const video = useRef(null);
     const canvas = useRef(null);
@@ -13,7 +13,7 @@ export function useMIG({ assetBase, profileMode = false, onAction } = {}) {
 
     useEffect(() => { actionHandler.current = onAction; }, [onAction]);
     useEffect(() => {
-        const current = new MIGSession({ assetBase, profileMode,
+        const current = new MIGSession({ assetBase, profileMode, poseModel, poseModels,
             onAction: event => actionHandler.current?.(event) });
         session.current = current;
         const unsubscribe = current.subscribe(setState);
@@ -25,11 +25,12 @@ export function useMIG({ assetBase, profileMode = false, onAction } = {}) {
             close();
             session.current = null;
         };
-    }, [assetBase, profileMode]);
+    }, [assetBase, profileMode, poseModel, poseModels?.join()]);
 
     return { ...state, video, canvas,
         start: () => session.current?.start(video.current, canvas.current),
         stop: () => session.current?.stop(),
         recalibrate: () => session.current?.recalibrate(),
-        importJSON: json => session.current?.importJSON(json) };
+        importJSON: json => session.current?.importJSON(json),
+        setPoseModel: name => session.current?.setPoseModel(name) };
 }

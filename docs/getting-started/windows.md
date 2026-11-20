@@ -76,10 +76,14 @@ cmake --install build/windows --config Release --prefix install
 
 Capture prefers supported widescreen modes up to 1280x720. Both previews fit the
 complete image; sensor field of view cannot be expanded beyond source pixels.
-Lite is default; --pose-full compares accuracy/cost, --pose-lite selects Lite.
-Both estimate 33 body landmarks even when legs are outside the frame. Compare
-inference time/result age and accuracy with equal lighting/Hands settings; no
-seated/standing speedup is assumed.
+Lite is default; `--pose-full` and `--pose-heavy` select the other BlazePose
+variants, `--pose-lite` restores Lite. **View** offers the same choice; the
+Controller remembers it. Lite and Full are bundled, Heavy is downloaded once into
+`%LOCALAPPDATA%\MIG\models` after a SHA-256 check (`bootstrap-native.ps1
+-IncludeHeavy` bundles it instead). Every model file is verified against the
+pinned release before loading. All variants estimate 33 body landmarks even when
+legs are outside the frame. Compare inference time/result age and accuracy with
+equal lighting/Hands settings; no seated/standing speedup is assumed.
 
 ## Workspace and drawing
 

@@ -1,14 +1,21 @@
 export interface MIGAction { action: string; id: string }
+/** BlazePose GHUM variants: lite (fastest), full (balanced), heavy (most precise). */
+export type MIGPoseModel = "lite" | "full" | "heavy";
 export interface MIGState {
     status: string;
     running: boolean;
     busy: boolean;
     actions: MIGAction[];
+    poseModel: MIGPoseModel;
 }
 export interface MIGOptions {
     assetBase?: string;
     profileMode?: boolean;
     onAction?: (event: MIGAction) => void;
+    /** Default model; lite is bundled, full and heavy download once. */
+    poseModel?: MIGPoseModel;
+    /** Models the application allows; defaults to all three. */
+    poseModels?: MIGPoseModel[];
 }
 export class MIGSession {
     constructor(options?: MIGSessionOptions);
@@ -20,6 +27,10 @@ export class MIGSession {
     importJSON(json: string): Promise<void>;
     coordinate(index: number, system?: number): MIGCoordinate | null;
     setInferenceFps(fps: number): void;
+    /** Models the user may choose, from `poseModels`. */
+    readonly poseModels: MIGPoseModel[];
+    /** Loads the model on demand (verified and cached) and keeps the camera running. */
+    setPoseModel(name: MIGPoseModel): Promise<void>;
     dispose(): void;
 }
 export interface MIGCoordinate { x: number; y: number; z: number; confidence: number }
@@ -29,5 +40,6 @@ export interface MIGSessionOptions extends MIGOptions {
     maxInferenceFps?: number;
     drawOverlay?: boolean;
     videoConstraints?: MediaTrackConstraints;
+    /** GPU falls back to CPU when WebGL inference is unavailable. */
     delegate?: "CPU" | "GPU";
 }

@@ -1,7 +1,9 @@
 param(
     [string]$Destination = "$PSScriptRoot/../../build/native-deps",
     [ValidateSet('x64', 'ARM64')][string]$Architecture = 'x64',
-    [switch]$SkipHands
+    [switch]$SkipHands,
+    # The Heavy pose model is downloaded on demand by the applications; bundle it only when asked.
+    [switch]$IncludeHeavy
 )
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/../lib/download.ps1"
@@ -60,6 +62,11 @@ Get-MigArtifact -Uri 'https://storage.googleapis.com/mediapipe-models/pose_landm
 Get-MigArtifact -Uri 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task' `
     -Destination "$root/models/pose_landmarker_lite.task" `
     -Sha256 '59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a'
+if ($IncludeHeavy) {
+    Get-MigArtifact -Uri 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task' `
+        -Destination "$root/models/pose_landmarker_heavy.task" `
+        -Sha256 '64437af838a65d18e5ba7a0d39b465540069bc8aae8308de3e318aad31fcbc7b'
+}
 if (-not $SkipHands) {
     Get-MigArtifact -Uri 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task' `
         -Destination "$root/models/hand_landmarker.task" `

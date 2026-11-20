@@ -1,4 +1,5 @@
 #pragma once
+#include "models.hpp"
 #include <filesystem>
 #include <memory>
 #include <mig/core/engine.hpp>
@@ -7,11 +8,13 @@
 #include <mig/hands/frame.hpp>
 #endif
 namespace mig::native {
-enum class PoseModel { Full, Lite };
 class Pose {
 public:
+    // Loads libmediapipe from `directory` and the pose model through
+    // locate_pose_model(); every model file is checked against its pinned digest.
     explicit Pose(const std::filesystem::path& directory, bool enable_hands = false,
                   PoseModel model = PoseModel::Full);
+    PoseModel model() const noexcept;
     ~Pose();
     // Call only from the inference owner thread. Disable releases the hand task immediately.
     void set_hands_enabled(bool enabled);

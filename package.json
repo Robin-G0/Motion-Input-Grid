@@ -12,7 +12,7 @@
     ],
     "scripts": {
         "prepare:javascript": "node tools/web/prepare-javascript.mjs",
-        "test": "node --test tests/bindings/javascript/web_session_tests.mjs tests/bindings/javascript/framework_tests.mjs tests/bindings/javascript/javascript_server_tests.mjs tests/bindings/javascript/node_archive_tests.mjs",
+        "test": "node --test tests/bindings/javascript/web_session_tests.mjs tests/bindings/javascript/web_models_tests.mjs tests/bindings/javascript/framework_tests.mjs tests/bindings/javascript/javascript_server_tests.mjs tests/bindings/javascript/node_archive_tests.mjs",
         "test:types": "tsc -p tests/bindings/javascript/javascript-types.json",
         "test:browser": "node tests/bindings/javascript/framework_browser_tests.mjs",
         "test:assets": "node tests/bindings/javascript/browser_assets_tests.mjs",

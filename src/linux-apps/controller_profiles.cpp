@@ -1,6 +1,7 @@
 #include "../apps/authoring.hpp"
 #include "controller_window.hpp"
 #include "import_review.hpp"
+#include "pose_models.hpp"
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QSignalBlocker>
@@ -31,6 +32,10 @@ void validate_profile(const Configuration& profile) {
 void ControllerWindow::restore_profiles() {
     try {
         profiles_.restore();
+        if (const auto remembered = native::parse_pose_model(profiles_.pose_model())) {
+            pose_model_ = *remembered;
+            check_pose_model(pose_model_actions_, pose_model_);
+        }
         if (profiles_.selected() >= 0) {
             auto proposed = profiles_.load(std::size_t(profiles_.selected()));
             validate_profile(proposed);

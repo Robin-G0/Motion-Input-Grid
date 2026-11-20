@@ -15,7 +15,7 @@ foreach(app IN ITEMS configurator controller)
     if(NOT MIG_BUILD_${APP_UPPER})
         continue()
     endif()
-    set(app_sources main.cpp platform.cpp runtime.cpp capture.cpp inference.cpp
+    set(app_sources main.cpp platform.cpp runtime.cpp capture.cpp inference.cpp model_download.cpp
         keyboard.cpp controls.cpp theme.cpp scrollbars.cpp import_review.cpp)
     if(app STREQUAL "configurator")
         list(APPEND app_sources window.cpp renderer.cpp key_editor.cpp editor.cpp
@@ -30,7 +30,7 @@ foreach(app IN ITEMS configurator controller)
     if(app STREQUAL "configurator")
         target_compile_definitions(${app_target} PRIVATE MIG_CONFIGURATOR)
     endif()
-    target_link_libraries(${app_target} PRIVATE mig-native mig-format comdlg32 gdi32 user32 dwmapi shell32 comctl32 uxtheme)
+    target_link_libraries(${app_target} PRIVATE mig-native mig-format comdlg32 gdi32 user32 dwmapi shell32 comctl32 uxtheme winhttp)
     if(app STREQUAL "controller")
         target_link_libraries(${app_target} PRIVATE mig-controller-profiles)
     endif()

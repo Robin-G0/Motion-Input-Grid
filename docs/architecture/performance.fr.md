@@ -68,9 +68,25 @@ de fuite dans l'estimateur tiers.
 Mesurez séparément **capture, âge du résultat, inférence, affichage et latence caméra-touche** sur le matériel cible.
 La reconnaissance et les sorties natives rejettent les résultats âgés de plus de **250 ms** ;
 les commandes gestuelles ont une limite de **500 ms**. Les applications utilisent Lite CPU
-par défaut ; la classe native `Pose` utilise Full par défaut. Les deux modèles prédisent
+par défaut ; la classe native `Pose` utilise Full par défaut. Utilisateurs et développeurs
+peuvent choisir Lite, Full ou Heavy (voir le [guide Controller](../guides/controller.fr.md#affichage)
+et le [guide npm](../../bindings/javascript/README.fr.md#choix-du-modele-de-pose)). Toutes les variantes prédisent
 les **33 points corporels** : ignorer les jambes dans les règles ne réduit pas le travail du modèle.
 [Guide officiel](https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker).
+
+| Variante | Taille | Coût attendu | Usage |
+| --- | --- | --- | --- |
+| Lite | 5,8 Mo, livrée | Latence minimale | Défaut ; suffit aux parcours poignets/épaules |
+| Full | 9,4 Mo, livrée en natif, téléchargée à la demande dans le navigateur | Environ deux fois Lite | Points plus stables quand le CPU le permet |
+| Heavy | 30,7 Mo, téléchargée à la demande et mise en cache | Plusieurs fois Lite | Points les plus précis ; la précision n'implique pas des commandes plus fiables |
+
+Les fichiers sont vérifiés avec leur SHA-256 épinglé avant chargement et les
+téléchargements sont publiés atomiquement après vérification. Le temps d'inférence
+dépend surtout du modèle et du délégué : le natif utilise le CPU, le navigateur
+peut demander `GPU` (WebGL) et revient au CPU en cas d'échec. Les Controllers
+n'exécutent le modèle des mains que si un profil utilise règles de doigts, signes
+ou commandes manuelles (`uses_hand_observations`), ce qui retire un second graphe
+par image pour les profils corps seul.
 L'inférence reste la cible principale du profilage. SIMD, ordonnanceur et cadence/
 qualité modèle nécessitent mesures matériel et précision. Ni benchmark ni image
 vide ne prouve la précision humaine ou les performances assis/debout.

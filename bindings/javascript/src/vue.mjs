@@ -25,5 +25,6 @@ export function useMIG(options = {}) {
         start: () => session?.start(video.value, canvas.value),
         stop: () => session?.stop(),
         recalibrate: () => session?.recalibrate(),
-        importJSON: json => session?.importJSON(json) };
+        importJSON: json => session?.importJSON(json),
+        setPoseModel: name => session?.setPoseModel(name) };
 }

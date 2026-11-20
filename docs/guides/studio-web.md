@@ -128,6 +128,9 @@ later. No compiler, Python or desktop Studio installation is needed.
 Images are processed on your device. Initial loading downloads models and the
 engine; camera access requires HTTPS or localhost. The website does not install
 itself for offline use and cannot type into other applications.
+When the published engine offers several BlazePose variants, **Display & privacy**
+shows a **Pose model** choice: Lite (fast, default), Full or Heavy (precise,
+downloaded once and cached by the browser). Changing it keeps the camera running.
 
 Grid-only mode supports zoom and scrolling. Notes are separate from gesture
 regions. Copy/paste duplicates selected regions; Ctrl+A, Ctrl+Z and Ctrl+Y select,

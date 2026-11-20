@@ -21,6 +21,10 @@ public:
     void export_file(std::size_t index, const std::filesystem::path& destination) const;
     const std::vector<Profile>& entries() const noexcept;
     int selected() const noexcept;
+    // Pose model identifier chosen in the Controller ("lite", "full", "heavy");
+    // empty when the user never chose one. Applications parse and validate it.
+    const std::string& pose_model() const noexcept;
+    void set_pose_model(std::string name);
 
 private:
     void persist(const std::vector<Profile>& entries, int selected) const;
@@ -28,6 +32,7 @@ private:
     std::filesystem::path directory_;
     std::vector<Profile> entries_;
     int selected_{-1};
+    std::string pose_model_;
 };
 std::filesystem::path user_directory();
 } // namespace mig::controller

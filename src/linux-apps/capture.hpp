@@ -25,19 +25,25 @@ struct Snapshot {
     InputProgress progress, mirrored_progress;
     int inspected{-1};
 };
+struct CaptureOptions {
+    native::PoseModel model{native::PoseModel::Lite};
+    bool hands{}; // Whether the hand model runs; the caller applies its policy.
+};
 // Single owning worker, one latest snapshot: slow rendering never queues images.
 // Stop/join before changing the profile; old recognition cannot cross that barrier.
 class Capture {
 public:
     ~Capture();
-    void start(Configuration config, std::string runtime, unsigned camera);
+    void start(Configuration config, std::string runtime, unsigned camera,
+               CaptureOptions options = {});
     void stop();
     bool take(Snapshot& snapshot);
     std::atomic<bool> preview_enabled{true};
     std::atomic<int> verification{-1};
 
 private:
-    void run(Configuration config, const std::string& runtime, unsigned camera);
+    void run(Configuration config, const std::string& runtime, unsigned camera,
+             CaptureOptions options);
     std::jthread worker_;
     std::atomic<bool> stopping_{};
     std::mutex mutex_;

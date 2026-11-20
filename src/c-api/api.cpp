@@ -245,14 +245,24 @@ void mig_reset(mig_tracker* tracker, int recalibrate) {
     }
     clear_observations(*tracker);
 }
-int mig_camera_start(mig_tracker* tracker, const char* runtime, [[maybe_unused]] unsigned index) {
+int mig_camera_start(mig_tracker* tracker, const char* runtime, unsigned index) {
+    return mig_camera_start_model(tracker, runtime, index, nullptr);
+}
+int mig_camera_start_model(mig_tracker* tracker, const char* runtime,
+                           [[maybe_unused]] unsigned index, const char* model) {
     return guarded([&]() -> int {
         require(tracker && runtime, "Tracker or runtime is null");
 #ifdef MIG_C_NATIVE
+        auto variant = mig::native::PoseModel::Lite;
+        if (model && *model) {
+            const auto parsed = mig::native::parse_pose_model(model);
+            require(parsed.has_value(), "Pose model must be lite, full or heavy");
+            variant = *parsed;
+        }
         mig_camera_stop(tracker);
         auto capture_runtime = std::make_unique<mig::native::CaptureRuntime>();
         auto pose = std::make_unique<mig::native::Pose>(
-            runtime, tracker->engine->configuration().track_hands, mig::native::PoseModel::Lite);
+            runtime, tracker->engine->configuration().track_hands, variant);
         auto camera = std::make_unique<mig::native::Camera>(index);
         tracker->capture_runtime = std::move(capture_runtime);
         tracker->pose = std::move(pose);

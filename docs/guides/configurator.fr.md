@@ -164,7 +164,8 @@ d'ouvrir celle de l'autre.
 
 La sortie clavier est désactivée au lancement. Le guide du Motion Input Grid Controller explique
 comment l'activer et utiliser Single press, Hold et Repeat. **View** règle le thème,
-les calques de l'aperçu et les logs. La [référence de configuration](../reference/configuration.fr.md)
+les calques de l'aperçu, les logs et le **Pose model** (Lite par défaut ; Heavy se
+télécharge une fois, voir l'[affichage du Controller](controller.fr.md#affichage)). La [référence de configuration](../reference/configuration.fr.md)
 décrit les champs enregistrés et les modes d'action.
 
 > [!TIP]

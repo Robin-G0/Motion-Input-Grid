@@ -158,6 +158,24 @@ that exceeds the engine's observation-continuity gap; measure physical gestures.
 Rendering can remain smooth independently. GPU inference can be selected with
 `delegate: 'GPU'`, but compare energy use and accuracy on the actual device.
 
-Pose-only profiles load the Lite pose model without creating a hand model. A later
+Pose-only profiles load the pose model without creating a hand model. A later
 hand-enabled import loads hands on demand; disposal also closes late arrivals.
 Disabling the debug overlay does not disable tracking, events or onFrame.
+
+## Pose model selection
+
+`poseModel` picks the BlazePose variant (`'lite'`, default and bundled; `'full'`;
+`'heavy'`) and `poseModels` lists the variants your users may choose. Every model
+is verified against its pinned SHA-256; Full and Heavy are fetched once from
+Google's model storage, then kept in Cache Storage so later sessions work offline.
+Copy `pose_landmarker_full.task` or `pose_landmarker_heavy.task` next to the lite
+model in `public/mig/models/` to serve them yourself without any external request.
+`setPoseModel(name)` switches live without stopping the camera and rejects names
+outside `poseModels`; `state.poseModel` reports the active model. Heavy is the
+slowest: measure on the target device before preferring it, since MIG only needs
+reliable wrists, elbows and shoulders.
+
+```js
+const session = new MIGSession({ assetBase: '/mig/', poseModel: 'full', poseModels: ['lite', 'full'] });
+await session.setPoseModel('lite'); // keeps the camera and recognition running
+```

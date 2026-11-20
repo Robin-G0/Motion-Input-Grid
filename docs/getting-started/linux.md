@@ -46,6 +46,11 @@ Qt/X11; release archives bundle their shared dependencies/plugins/fonts. See
 Use `--camera N` for `/dev/videoN`;
 single-plane YUYV V4L2 and camera permissions are required. Start explicitly opens
 capture; stop one application before starting the other.
+`--pose-lite` (default), `--pose-full` or `--pose-heavy` selects the BlazePose
+variant; **View → Pose model** offers the same choice and the Controller remembers
+it. Heavy is not bundled: the applications download it once over HTTPS, verify its
+SHA-256 and keep it in `$XDG_DATA_HOME/mig/models` (default `~/.local/share/mig/models`).
+Pass `--include-heavy` to the bootstrap script to bundle it instead.
 
 ## Workspace and drawing
 

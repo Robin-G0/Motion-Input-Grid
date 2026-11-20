@@ -61,8 +61,9 @@ with Tracker(None, profile) as tracker:
 | Positions | Indices MediaPipe anatomiques, sans miroir ; confiance nulle si absent |
 | Propriété | Un thread par tracker ; fermer avec `close()` ou un context manager |
 
-`start_camera(runtime_directory)` et `poll_camera()` utilisent éventuellement
-un SDK natif avec son runtime MediaPipe et ses modèles. `poll_camera()` effectue
+`start_camera(runtime_directory, index=0, model=None)` et `poll_camera()` utilisent éventuellement
+un SDK natif avec son runtime MediaPipe et ses modèles ; `model` choisit
+`"lite"` (défaut), `"full"` ou `"heavy"` si ce fichier est disponible localement. `poll_camera()` effectue
 déjà la reconnaissance : lisez ensuite `events()` sans soumettre la frame à nouveau.
 Les viewers demandent l'extension `mig_camera_image` ; `Tracker.camera_image()`
 copie les pixels. Les callbacks sont des événements logiques ; l'application

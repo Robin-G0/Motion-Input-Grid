@@ -123,6 +123,17 @@ au profil. **Dark mode** permet de choisir le thème clair ou sombre.
 Les barres de défilement des listes, menus déroulants et journaux suivent le thème
 choisi sous Windows et Linux, dans Motion Input Grid Controller comme dans Motion Input Grid Studio.
 
+**Pose model** choisit la variante BlazePose : **Lite** (par défaut, la plus rapide),
+**Full** (équilibrée) ou **Heavy** (la plus précise, la plus lente). Lite et Full
+sont livrés avec le Controller ; Heavy est téléchargé une seule fois depuis le
+stockage de modèles de Google, vérifié avec son SHA-256 épinglé puis conservé dans
+votre dossier utilisateur pour fonctionner hors ligne. Le choix est mémorisé et une
+session en cours redémarre avec le nouveau modèle. Heavy augmente nettement le délai
+d'inférence sur un portable ; MIG n'a besoin que de poignets, coudes et épaules
+fiables : essayez Lite ou Full et mesurez avant de préférer Heavy.
+Le Controller n'exécute le modèle des mains que si le profil utilise réellement des
+règles de doigts, des signes ou des commandes manuelles, même avec `tracking.hands`.
+
 **Compact background window** réduit Motion Input Grid Controller à une petite fenêtre avec
 un bouton **Open**. Le suivi et la sortie clavier activée continuent. **Open**
 restaure la fenêtre précédente. La réduction dans la barre des tâches laisse

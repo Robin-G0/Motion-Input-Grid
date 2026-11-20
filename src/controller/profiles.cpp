@@ -5,6 +5,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <set>
+#include <utility>
 #ifdef _WIN32
 #include <shlobj.h>
 #endif
@@ -20,6 +21,11 @@ void validate_name(const std::string& name) {
 void validate_id(const std::string& id) {
     if (id.empty() || id.size() > 16 || id.find_first_not_of("0123456789") != id.npos) {
         throw std::runtime_error("Invalid saved profile identifier.");
+    }
+}
+void validate_model_name(const std::string& name) {
+    if (name.size() > 16 || name.find_first_not_of("abcdefghijklmnopqrstuvwxyz") != name.npos) {
+        throw std::runtime_error("Invalid saved pose model name.");
     }
 }
 } // namespace
@@ -90,14 +96,20 @@ void Profiles::restore() {
     if (!selected.is_number_integer() || selected < -1 || selected >= int(entries.size())) {
         throw std::runtime_error("Invalid selected profile.");
     }
+    std::string pose_model = document.value("pose_model", "");
+    validate_model_name(pose_model);
     entries_ = std::move(entries);
     selected_ = selected.get<int>();
+    pose_model_ = std::move(pose_model);
 }
 void Profiles::persist(const std::vector<Profile>& entries, int selected) const {
     nlohmann::json document{
         {"version", 1}, {"selected", selected}, {"profiles", nlohmann::json::array()}};
     for (const auto& entry : entries) {
         document["profiles"].push_back({{"id", entry.id}, {"name", entry.name}});
+    }
+    if (!pose_model_.empty()) {
+        document["pose_model"] = pose_model_;
     }
     std::filesystem::create_directories(directory_);
     format::detail::replace_document(directory_ / "profiles.json", document.dump(4) + "\n");
@@ -167,5 +179,18 @@ const std::vector<Profile>& Profiles::entries() const noexcept {
 }
 int Profiles::selected() const noexcept {
     return selected_;
+}
+const std::string& Profiles::pose_model() const noexcept {
+    return pose_model_;
+}
+void Profiles::set_pose_model(std::string name) {
+    validate_model_name(name);
+    const auto previous = std::exchange(pose_model_, std::move(name));
+    try {
+        persist(entries_, selected_);
+    } catch (...) {
+        pose_model_ = previous;
+        throw;
+    }
 }
 } // namespace mig::controller

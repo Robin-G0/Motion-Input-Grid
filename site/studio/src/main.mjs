@@ -3,7 +3,7 @@ import { ThemeToggle } from "../../src/ui/theme.mjs";
 import { cameraError } from "../../src/camera/camera.mjs";
 import { copy } from "./copy.mjs";
 import { MAX_BYTES, landmarks, clone, id, newInput, starter, parseProfile, parseDraft, regions, scopedRegions, cellRect, rectangle, addRegion, pasteRegions, ProfileHistory } from "./profile.mjs";
-import { createStudioSession, validateProfile, disposeValidator, PreviewGrid, trackedPoint } from "./camera.mjs";
+import { createStudioSession, validateProfile, disposeValidator, availablePoseModels, PreviewGrid, trackedPoint } from "./camera.mjs";
 import { GridEditor, drawPreview, selectionRect, transformSelection, RegionHighlights } from "./grid.mjs";
 import { Journal } from "./journal.mjs";
 import { NoteLayer, LiveNoteBrush, previewCell } from "./notes.mjs";
@@ -31,6 +31,7 @@ let editorPreview = "grid";
 let gridZoom = 1;
 let regionClipboard = null;
 let previewOnly = false;
+let poseModel = "lite";
 const cameraVisible = () => view === "test" || (view === "edit" && editorPreview === "camera");
 const draftHint = document.createElement("p"); draftHint.id = "camera-draft-hint"; draftHint.className = "hint"; draftHint.setAttribute("role", "status"); draftHint.hidden = true; $("camera-message").after(draftHint);
 const cameraParts = [$("test-stage"), $("camera-message"), draftHint, document.querySelector(".test-actions"), $("note-feedback"), document.querySelector(".preview-settings")].map(node => {
@@ -264,6 +265,7 @@ function render() {
     $("header-stop").hidden = (!session?.state.running && !busy) || cameraVisible();
     $("header-stop").textContent = t(busy ? "cancelCamera" : "activeCamera");
     $("recalibrate").disabled = busy || !session?.state.running;
+    $("pose-model").disabled = busy; $("pose-model").value = poseModel;
     $("live-badge").textContent = t(session?.state.running ? "online" : "offline");
     $("live-badge").dataset.live = String(!!session?.state.running);
     $("camera-placeholder").hidden = !!session?.state.running;
@@ -538,7 +540,7 @@ async function startTest() {
         const configuration = await cameraConfiguration(json, view === "edit");
         if (token !== operation) return;
         json = configuration.json; previewOnly = configuration.previewOnly;
-        candidate = await createStudioSession(onAction, onFrame, cameraVisible);
+        candidate = await createStudioSession(onAction, onFrame, cameraVisible, poseModel);
         if (token !== operation) { candidate.dispose(); return; }
         session = candidate;
         geometry.reset(); lastPaint = lastDebug = -Infinity; trackingState = null;
@@ -775,6 +777,12 @@ $("quick-test").addEventListener("click", () => {
     tour.schedule();
 });
 $("stop-test").addEventListener("click", () => stopTest());
+$("pose-model").addEventListener("change", async () => {
+    poseModel = $("pose-model").value;
+    if (!session?.state.running) return;
+    try { await session.setPoseModel(poseModel); journal.add("info", `${t("poseModel")}: ${t(`pose${poseModel[0].toUpperCase()}${poseModel.slice(1)}`)}`); }
+    catch (error) { poseModel = session.state.poseModel ?? poseModel; render(); cameraMessage(cameraError(error.message), true); journal.add("error", error.message); }
+});
 $("recalibrate").addEventListener("click", () => { brush.cancel(); gridBrush.cancel(); session?.recalibrate(); geometry.reset(); trackingState = null; cameraMessage("recalibrating"); journal.add("info", t("recalibrating")); });
 $("mirror-preview").addEventListener("change", () => { brush.cancel(); gridBrush.cancel(); editor.cancel(); render(); repaintPreview(); });
 $("log-level").addEventListener("change", () => { journal.level = $("log-level").value; journal.render(); });
@@ -883,6 +891,7 @@ $("landmark").addEventListener("change",()=>{creationLandmark=$("landmark").valu
 $("export-dialog").addEventListener("close",()=>{if(guided){guided=false;tour.schedule();}});
 renderLanguage();
 try { notes.load(localStorage.getItem(notesKey)); } catch { /* Invalid notes never block a profile. */ }
+availablePoseModels().then(names => { $("pose-model-field").hidden = names.length < 2; });
 // A saved draft may be unfinished. Validate its editable shape here, and keep
 // native execution validation for imports, exports and camera tests.
 try {

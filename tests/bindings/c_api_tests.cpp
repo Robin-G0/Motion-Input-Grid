@@ -22,6 +22,12 @@ int main() {
     check(!mig_camera_image(tracker, &pixels, &width, &height) && !pixels && !width && !height,
           "Preview available without camera");
     check(!mig_camera_image(nullptr, nullptr, &width, &height), "Invalid preview query");
+    check(mig_camera_start_model(tracker, "missing-runtime", 0, "unknown") == -1 &&
+              std::strlen(mig_last_error()) > 0,
+          "Unknown pose model name accepted");
+    check(mig_camera_start_model(nullptr, "missing-runtime", 0, "lite") == -1,
+          "Null tracker accepted for model capture");
+    mig_camera_stop(tracker);
     const auto size = mig_export(tracker, nullptr, 0);
     std::vector<char> original(size), after(size);
     check(mig_export(tracker, original.data(), size) == size, "Export failed");

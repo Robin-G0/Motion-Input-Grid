@@ -4,11 +4,12 @@ namespace mig::linux_ui {
 Capture::~Capture() {
     stop();
 }
-void Capture::start(Configuration config, std::string runtime, unsigned camera) {
+void Capture::start(Configuration config, std::string runtime, unsigned camera,
+                    CaptureOptions options) {
     stop();
     stopping_ = false;
-    worker_ = std::jthread([this, config = std::move(config), runtime = std::move(runtime),
-                            camera] { run(config, runtime, camera); });
+    worker_ = std::jthread([this, config = std::move(config), runtime = std::move(runtime), camera,
+                            options] { run(config, runtime, camera, options); });
 }
 void Capture::stop() {
     stopping_ = true;
@@ -28,9 +29,10 @@ bool Capture::take(Snapshot& snapshot) {
     pending_ = false;
     return true;
 }
-void Capture::run(Configuration config, const std::string& runtime, unsigned index) {
+void Capture::run(Configuration config, const std::string& runtime, unsigned index,
+                  CaptureOptions options) {
     try {
-        native::Pose pose(runtime, config.track_hands, native::PoseModel::Lite);
+        native::Pose pose(runtime, options.hands, options.model);
         native::Camera camera(index);
         Engine engine(config);
         GestureControls controls(config.controls);

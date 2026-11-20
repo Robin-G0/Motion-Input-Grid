@@ -3,6 +3,7 @@
 #include "../controller/profiles.hpp"
 #include "canvas.hpp"
 #include "keyboard.hpp"
+#include <QActionGroup>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QLabel>
@@ -16,6 +17,8 @@ public:
     ControllerWindow(std::string runtime, unsigned camera, bool diagnostic = false);
     ~ControllerWindow();
     void load(const std::string& path);
+    // Remembers the choice and restarts a running session with the new model.
+    void set_pose_model(native::PoseModel model);
 #ifdef MIG_APP_TESTS
     bool ui_test();
 #endif
@@ -58,8 +61,10 @@ private:
     QCheckBox* keyboard_switch_{};
     QAction* camera_action_{};
     QAction* verification_action_{};
+    QActionGroup* pose_model_actions_{};
     std::string runtime_;
     unsigned camera_{};
+    native::PoseModel pose_model_{native::PoseModel::Lite};
     bool running_{}, compact_{}, verification_{}, dialog_open_{};
     QSize expanded_size_;
     std::array<bool, 64> active_{};

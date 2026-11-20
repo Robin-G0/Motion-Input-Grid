@@ -1,6 +1,7 @@
 #include "window.hpp"
 #include "../apps/authoring.hpp"
 #include "import_review.hpp"
+#include "pose_models.hpp"
 #include "theme.hpp"
 #include <QAction>
 #include <QButtonGroup>
@@ -115,6 +116,21 @@ void Window::build_menus() {
     theme->setCheckable(true);
     theme->setChecked(true);
     connect(theme, &QAction::toggled, this, [this](bool checked) { apply_theme(checked); });
+    pose_model_actions_ = add_pose_model_menu(
+        view, pose_model_, [this](native::PoseModel model) { set_pose_model(model); });
+}
+void Window::set_pose_model(native::PoseModel model) {
+    check_pose_model(pose_model_actions_, model);
+    if (model == pose_model_) {
+        return;
+    }
+    pose_model_ = model;
+    if (running_) {
+        start();
+    } else {
+        report(QString::fromStdString(std::string(native::pose_model_info(model).label)) +
+               " pose model selected.");
+    }
 }
 void Window::build_sidebar() {
     pages_ = new QStackedWidget(this);
@@ -889,12 +905,21 @@ void Window::start() {
     stop();
     try {
         validate(config_);
-        capture_.start(config_, runtime_, camera_);
-        running_ = true;
-        report("Starting camera; keep shoulders visible for calibration.");
     } catch (const std::exception& error) {
         report(error.what());
+        return;
     }
+    ensure_pose_model(
+        this, runtime_, pose_model_, [this](const QString& text) { report(text); },
+        [this] {
+            try {
+                capture_.start(config_, runtime_, camera_, {pose_model_, config_.track_hands});
+                running_ = true;
+                report("Starting camera; keep shoulders visible for calibration.");
+            } catch (const std::exception& error) {
+                report(error.what());
+            }
+        });
 }
 void Window::stop() {
     capture_.stop();

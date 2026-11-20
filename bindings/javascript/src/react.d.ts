@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import type { MIGOptions, MIGState } from "./index.js";
+import type { MIGOptions, MIGPoseModel, MIGState } from "./index.js";
 export interface MIGReact extends MIGState {
     video: RefObject<HTMLVideoElement | null>;
     canvas: RefObject<HTMLCanvasElement | null>;
@@ -7,5 +7,6 @@ export interface MIGReact extends MIGState {
     stop(): void;
     recalibrate(): void;
     importJSON(json: string): Promise<void> | undefined;
+    setPoseModel(name: MIGPoseModel): Promise<void> | undefined;
 }
 export function useMIG(options?: MIGOptions): MIGReact;

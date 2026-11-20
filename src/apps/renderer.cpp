@@ -168,10 +168,10 @@ void App::paint(HDC dc) {
 #endif
         write(client.right - 316, client.bottom - 62, hand_status);
         write(24, client.bottom - 66,
-              std::wstring(pose_model == PoseModel::Lite ? L"Pose Lite" : L"Pose Full") +
-                  L"  |  inference " + std::to_wstring(int(result->inference_ms)) +
-                  L" ms  |  result age " + std::to_wstring(now_ms() - result->pose.timestamp_ms) +
-                  L" ms" + (result->recording ? L"  |  RECORDING" : L"") +
+              L"Pose " + wide(std::string(pose_model_info(pose_model).label)) + L"  |  inference " +
+                  std::to_wstring(int(result->inference_ms)) + L" ms  |  result age " +
+                  std::to_wstring(now_ms() - result->pose.timestamp_ms) + L" ms" +
+                  (result->recording ? L"  |  RECORDING" : L"") +
                   (result->waiting ? L"  |  Waiting to resume" : L""));
     }
     const auto status_brush = CreateSolidBrush(palette().surface);

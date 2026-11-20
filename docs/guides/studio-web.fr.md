@@ -133,6 +133,10 @@ ou Studio de bureau à installer.
 Les images sont traitées sur votre appareil. Le chargement initial télécharge
 les modèles et le moteur ; la caméra nécessite HTTPS ou localhost. Le site ne
 s’installe pas pour fonctionner hors ligne et ne tape pas dans vos applications.
+Quand le moteur publié propose plusieurs variantes BlazePose, **Affichage &
+confidentialité** affiche un choix **Modèle de pose** : Lite (rapide, par défaut),
+Full ou Heavy (précis, téléchargé une fois et mis en cache par le navigateur).
+Le changement garde la caméra active.
 
 La grille seule permet le zoom et le défilement. Les notes sont séparées des zones.
 Le copier-coller duplique les zones sélectionnées ; Ctrl+A, Ctrl+Z et Ctrl+Y

@@ -16,7 +16,27 @@ export async function validateProfile(text) {
 }
 export function disposeValidator() { validator?.dispose(); validator = null; validatorPromise = null; }
 
-export async function createStudioSession(onAction, onFrame, shouldProcess = () => true) {
+// Pose model names the published runtime can load; older runtimes only ship Lite.
+export async function availablePoseModels(load = () => import(new URL("models.mjs", assetBase).href)) {
+    try {
+        const names = Object.keys((await load()).poseModels ?? {});
+        return names.length > 1 ? names : [];
+    } catch { return []; }
+}
+
+// Preserve the entire frame and its aspect ratio on every device, including
+// after a live pose model change replaces the task.
+export function boundStudioModels(loaded) {
+    loaded.pose = boundedPose(loaded.pose);
+    loaded.hands = boundedPose(loaded.hands);
+    const loadPose = loaded.loadPose;
+    if (loadPose) {
+        loaded.loadPose = async name => { await loadPose.call(loaded, name); loaded.pose = boundedPose(loaded.pose); };
+    }
+    return loaded;
+}
+
+export async function createStudioSession(onAction, onFrame, shouldProcess = () => true, poseModel = "lite") {
     const [{ MIGSession }, { MIGTracker }, models] = await Promise.all([
         import(new URL("session.mjs", assetBase).href),
         import(new URL("mig-tracker.mjs", assetBase).href),
@@ -29,16 +49,10 @@ export async function createStudioSession(onAction, onFrame, shouldProcess = () 
             super.processFrame();
         }
     }
-    return new Session({ assetBase, profileMode: true, onAction, onFrame,
+    return new Session({ assetBase, profileMode: true, onAction, onFrame, poseModel,
         dependencies: {
             createTracker: json => MIGTracker.create(json),
-            loadModels: async () => {
-                const loaded = await models.loadModels(assetBase);
-                // Preserve the entire frame and its aspect ratio on every device.
-                loaded.pose = boundedPose(loaded.pose);
-                loaded.hands = boundedPose(loaded.hands);
-                return loaded;
-            },
+            loadModels: async settings => boundStudioModels(await models.loadModels(assetBase, settings)),
             drawOverlay: () => {} // Studio draws the selected profile, not a generic skeleton.
         }
     });

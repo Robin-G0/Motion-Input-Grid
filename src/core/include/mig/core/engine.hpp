@@ -187,4 +187,7 @@ private:
                                bool contact_continuous) noexcept;
 };
 void validate(const Configuration& config);
+// True when a finger rule, interaction cell or hand command binding needs hand
+// observations. Hosts can skip hand inference for profiles that only track the body.
+bool uses_hand_observations(const Configuration& config) noexcept;
 } // namespace mig

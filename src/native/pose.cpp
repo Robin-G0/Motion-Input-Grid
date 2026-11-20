@@ -36,6 +36,7 @@ struct Pose::Impl {
 #else
     void* module{};
 #endif
+    PoseModel model{};
     MpPoseLandmarkerPtr handle{};
     decltype(&MpPoseLandmarkerCreate) create{};
     decltype(&MpPoseLandmarkerClose) close{};
@@ -108,9 +109,15 @@ Pose::Pose(const std::filesystem::path& dir, bool enable_hands, PoseModel model_
     impl_->symbol(impl_->close_result, "MpPoseLandmarkerCloseResult");
     impl_->symbol(impl_->image_create, "MpImageCreateFromUint8Data");
     impl_->symbol(impl_->image_free, "MpImageFree");
-    const auto model = utf8_path(impl_->directory / (model_variant == PoseModel::Lite
-                                                         ? "models/pose_landmarker_lite.task"
-                                                         : "models/pose_landmarker_full.task"));
+    const auto& info = pose_model_info(model_variant);
+    const auto model_file = locate_pose_model(impl_->directory, model_variant);
+    if (model_file.empty()) {
+        throw std::runtime_error(std::string(info.label) +
+                                 " pose model is not installed: download it or choose another");
+    }
+    verify_model_file(model_file, info.asset);
+    impl_->model = model_variant;
+    const auto model = utf8_path(model_file);
     PoseLandmarkerOptions options{};
     options.base_options.model_asset_path = model.c_str();
     options.base_options.delegate = CPU;
@@ -146,12 +153,14 @@ void Pose::set_hands_enabled(bool enabled) {
         impl_->symbol(impl_->hand_close, "MpHandLandmarkerClose");
         impl_->symbol(impl_->hand_detect, "MpHandLandmarkerDetectForVideo");
         impl_->symbol(impl_->hand_close_result, "MpHandLandmarkerCloseResult");
-        const auto hand_model = utf8_path(impl_->directory / "models/hand_landmarker.task");
+        const auto hand_file = impl_->directory / "models" / hand_model.file;
+        verify_model_file(hand_file, hand_model);
+        const auto hand_path = utf8_path(hand_file);
         HandLandmarkerOptions hand_options{};
         hand_options.base_options.delegate = CPU;
         hand_options.base_options.host_environment = HOST_ENVIRONMENT_UNKNOWN;
         hand_options.base_options.host_system = options_host_system();
-        hand_options.base_options.model_asset_path = hand_model.c_str();
+        hand_options.base_options.model_asset_path = hand_path.c_str();
         hand_options.running_mode = VIDEO;
         hand_options.num_hands = 2;
         MpHandLandmarkerPtr new_handle{};
@@ -170,6 +179,9 @@ void Pose::set_hands_enabled(bool enabled) {
         throw std::runtime_error("Hand tracking was disabled at build time");
     }
 #endif
+}
+PoseModel Pose::model() const noexcept {
+    return impl_->model;
 }
 bool Pose::hands_enabled() const noexcept {
 #ifdef MIG_NATIVE_HANDS

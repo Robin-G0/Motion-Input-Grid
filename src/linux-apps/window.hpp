@@ -2,6 +2,7 @@
 #include "../apps/action_output.hpp"
 #include "canvas.hpp"
 #include "keyboard.hpp"
+#include <QActionGroup>
 #include <QCheckBox>
 #include <QListWidget>
 #include <QMainWindow>
@@ -22,6 +23,8 @@ public:
     bool ui_test();
 #endif
     void load(const std::string& path);
+    // Restarts a running session with the new model.
+    void set_pose_model(native::PoseModel model);
 
 private:
     void build_menus();
@@ -76,6 +79,8 @@ private:
     QTimer timer_;
     std::string runtime_;
     unsigned camera_{};
+    native::PoseModel pose_model_{native::PoseModel::Lite};
+    QActionGroup* pose_model_actions_{};
     bool running_{}, dark_{true}, editing_full_grid_{true};
     std::array<bool, 64> active_{};
     std::array<std::int64_t, 64> flashed_{};

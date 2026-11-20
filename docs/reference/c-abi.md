@@ -78,6 +78,12 @@ the preview. Querying never opens a camera. Python `Tracker.camera_image()` copi
 the bytes on the tracker owner thread before publishing them to a GUI worker mailbox.
 Older SDKs remain usable for observations; these camera viewers need the extension.
 
+The additive `mig_camera_start_model(tracker, runtime, index, model)` extension
+selects the BlazePose variant for native capture: `"lite"` (also the default of
+`mig_camera_start`), `"full"` or `"heavy"`. The file must be bundled in
+`runtime/models` or already present in the user model cache; the ABI never
+downloads. Python exposes it as `start_camera(runtime, index, model="full")`.
+
 The .NET `TryCoordinate` overload accepts a reusable four-float buffer; its contents
 are valid only when the method returns true. Hosts can reuse packet arrays between
 updates. `SyntheticFrames.WriteLeftRaise` demonstrates that ownership pattern.

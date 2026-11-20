@@ -149,6 +149,24 @@ exemple `{width:640,height:480,frameRate:{ideal:20,max:30}}`. L'affichage peut
 garder sa propre cadence. `delegate: 'GPU'` est facultatif ; mesurer consommation
 et precision avant de le preferer au CPU.
 
-Un profil sans mains initialise seulement le modele Lite du corps. Un import
+Un profil sans mains initialise seulement le modele du corps. Un import
 qui active les mains charge ce modele a la demande ; les modeles arrives apres
 dispose sont fermes. Les evenements et onFrame restent actifs sans diagnostic.
+
+## Choix du modele de pose
+
+`poseModel` choisit la variante BlazePose (`'lite'`, defaut et livree ; `'full'` ;
+`'heavy'`) et `poseModels` liste les variantes que vos utilisateurs peuvent
+choisir. Chaque modele est verifie avec son SHA-256 epingle ; Full et Heavy sont
+telecharges une fois depuis le stockage de modeles de Google puis conserves dans
+Cache Storage pour les sessions hors ligne. Copiez `pose_landmarker_full.task` ou
+`pose_landmarker_heavy.task` a cote du modele lite dans `public/mig/models/` pour
+les servir vous-meme sans requete externe. `setPoseModel(name)` change de modele
+sans arreter la camera et refuse les noms hors de `poseModels` ; `state.poseModel`
+indique le modele actif. Heavy est le plus lent : mesurez sur l'appareil cible
+avant de le preferer, MIG n'ayant besoin que de poignets, coudes et epaules fiables.
+
+```js
+const session = new MIGSession({ assetBase: '/mig/', poseModel: 'full', poseModels: ['lite', 'full'] });
+await session.setPoseModel('lite'); // la camera et la reconnaissance continuent
+```

@@ -28,7 +28,7 @@ int run_inference_test(const std::filesystem::path& directory, bool track_hands,
         }
 #endif
     }
-    std::cout << "Native MediaPipe: " << (model == PoseModel::Lite ? "Lite, " : "Full, ")
+    std::cout << "Native MediaPipe: " << pose_model_info(model).label << ", "
               << (track_hands ? "body + hands" : "body only")
               << ", 9 blank-frame inferences and 3 create/close cycles passed. No Python.\n";
     return 0;
@@ -55,10 +55,13 @@ int run_camera_test(const std::filesystem::path& directory, unsigned index, bool
             throw std::runtime_error("Camera diagnostic timed out");
         }
         if (camera.read(frame)) {
+            const auto started = now_ms();
             const auto result =
                 pose.infer(frame.rgb, frame.width, frame.height, frame.capture_ms, ++i);
             std::cout << "Camera frame " << i << ": " << frame.width << 'x' << frame.height
-                      << ", nose confidence=" << result.points[0].confidence << '\n';
+                      << ", nose confidence=" << result.points[0].confidence << ", "
+                      << pose_model_info(model).label << " inference " << now_ms() - started
+                      << " ms\n";
 #ifdef MIG_NATIVE_HANDS
             if (track_hands) {
                 std::cout << "Hands detected: " << pose.hand_frame().count << '\n';

@@ -4,6 +4,15 @@
 
 ## Unreleased
 
+- Select the BlazePose variant (Lite, Full or Heavy) in the desktop Studio and
+  Controller **View** menus, through `--pose-lite|--pose-full|--pose-heavy`, in
+  `MIGSession` (`poseModel`, `poseModels`, `setPoseModel`) and through the
+  additive `mig_camera_start_model` C ABI entry point. Heavy downloads once over
+  HTTPS, is verified against its pinned SHA-256 and is cached for offline use;
+  every model file is verified before loading. The Controller remembers its choice.
+- Controllers run the hand model only for profiles that use finger rules, hand
+  signs or hand commands; browser sessions fall back from GPU to CPU inference.
+
 - Address Dependabot alerts with Next.js 16.4.5, Vite 8.3.3 in the browser examples
   and node-forge 1.4.3 in the extension development lockfile.
 

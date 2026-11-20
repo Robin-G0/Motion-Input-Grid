@@ -68,6 +68,14 @@ def run(library):
             except RuntimeError:
                 pass
             tracker.stop_camera()
+        if hasattr(tracker.library, "mig_camera_start_model"):
+            for model in ("heavy", "invalid"):
+                try:
+                    tracker.start_camera(ROOT / "build/missing-runtime", model=model)
+                    raise AssertionError("Missing runtime or invalid model accepted")
+                except RuntimeError:
+                    pass
+            tracker.stop_camera()
     tracker.close()
     try:
         tracker.coordinate(15)

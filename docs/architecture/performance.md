@@ -60,9 +60,25 @@ For webcam performance, measure capture timestamps, result age, inference time,
 rendering and capture-to-key latency on the target hardware. Native controllers
 reject recognition older than 250 ms; command gestures use a 500 ms freshness cap.
 Desktop applications default to the Lite CPU model; the native `Pose` class defaults
-to Full. Compare them under the same capture conditions. Both models
+to Full. Users and developers can select Lite, Full or Heavy (see the
+[Controller guide](../guides/controller.md#views) and the
+[npm guide](../../bindings/javascript/README.md#pose-model-selection)). All variants
 predict all 33 pose joints; ignoring leg constraints does not reduce the model's work.
 See the [official pose model guide](https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker).
+
+| Variant | File size | Expected cost | Use |
+| --- | --- | --- | --- |
+| Lite | 5.8 MB, bundled | Lowest latency | Default; sufficient for wrist/shoulder routes |
+| Full | 9.4 MB, bundled natively, fetched on demand in browsers | Roughly twice Lite | Steadier landmarks when CPU headroom exists |
+| Heavy | 30.7 MB, fetched on demand and cached | Several times Lite | Most precise landmarks; precision does not imply more reliable commands |
+
+Model files are verified against their pinned SHA-256 before loading, and
+downloads are published atomically after verification. Inference time is
+dominated by the model and the delegate: the native build uses the CPU delegate,
+the browser can request `GPU` (WebGL) and falls back to CPU when it fails.
+Controllers skip the hand model unless a profile uses finger rules, hand signs
+or hand commands (`uses_hand_observations`), which removes a second task
+graph from each frame for body-only profiles.
 
 Native inference remains the main profiling target. SIMD pixel conversion, estimator
 thread scheduling and model quality/rate changes require hardware measurements and
