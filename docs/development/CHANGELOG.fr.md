@@ -13,6 +13,8 @@
 - Ajouter au site une page **Modèles** qui compare Lite, Full et Heavy sur les
   mêmes images (temps d'inférence, couverture du haut du corps, tremblement des
   poignets et épaules) ; les exemples natifs SDL2/SFML acceptent `--pose lite|full|heavy`.
+- Compiler le runtime WebAssembly sans exécution dynamique de code pour que les
+  extensions et les pages à CSP stricte chargent le paquet publié sans modification.
 - Les Controllers n'exécutent le modèle des mains que pour les profils utilisant
   règles de doigts, signes ou commandes manuelles ; les sessions navigateur reviennent
   du GPU au CPU en cas d'échec.

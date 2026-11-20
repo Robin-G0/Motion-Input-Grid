@@ -17,6 +17,8 @@ drawOverlay(canvas, video, {landmarks: []}, null);
 drawOverlay(canvas, video, {landmarks: []}, null);
 assert.equal(resized, 2, 'Stable video dimensions must not resize the overlay each frame');
 const modulePath = process.argv[2] ?? 'build/web/web/mig.mjs';
+assert.doesNotMatch(await readFile(modulePath, 'utf8'), /new Function|eval\s*\(/,
+  'The published glue must run under a strict CSP without dynamic code execution');
 const {default:createMIG} = await import(pathToFileURL(modulePath));
 const module = await createMIG();
 const tracker = new module.Tracker();
