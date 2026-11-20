@@ -891,7 +891,9 @@ $("landmark").addEventListener("change",()=>{creationLandmark=$("landmark").valu
 $("export-dialog").addEventListener("close",()=>{if(guided){guided=false;tour.schedule();}});
 renderLanguage();
 try { notes.load(localStorage.getItem(notesKey)); } catch { /* Invalid notes never block a profile. */ }
-availablePoseModels().then(names => { $("pose-model-field").hidden = names.length < 2; });
+// Probe after load: a pending runtime import would otherwise delay the page's load event.
+const showPoseModels = () => availablePoseModels().then(names => { $("pose-model-field").hidden = names.length < 2; });
+if (document.readyState === "complete") showPoseModels(); else addEventListener("load", showPoseModels, { once: true });
 // A saved draft may be unfinished. Validate its editable shape here, and keep
 // native execution validation for imports, exports and camera tests.
 try {
