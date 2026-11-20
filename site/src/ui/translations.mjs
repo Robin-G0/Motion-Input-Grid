@@ -154,6 +154,7 @@ export const translations = {
         finaleLink: "Voir sur GitHub",
         footerDescription: "Motion Input Grid, un projet de",
         repository: "GitHub",
+        models: "Modèles",
         downloads: "Téléchargements"
     },
     en: {
@@ -287,6 +288,7 @@ export const translations = {
         finaleLink: "View on GitHub",
         footerDescription: "Motion Input Grid, a project by",
         repository: "GitHub",
+        models: "Models",
         downloads: "Downloads"
     }
 };

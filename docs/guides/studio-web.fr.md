@@ -137,6 +137,9 @@ Quand le moteur publié propose plusieurs variantes BlazePose, **Affichage &
 confidentialité** affiche un choix **Modèle de pose** : Lite (rapide, par défaut),
 Full ou Heavy (précis, téléchargé une fois et mis en cache par le navigateur).
 Le changement garde la caméra active.
+La page **Modèles** du site exécute les variantes côte à côte sur les mêmes images
+et affiche temps d'inférence, couverture du haut du corps et tremblement des
+poignets et épaules.
 
 La grille seule permet le zoom et le défilement. Les notes sont séparées des zones.
 Le copier-coller duplique les zones sélectionnées ; Ctrl+A, Ctrl+Z et Ctrl+Y

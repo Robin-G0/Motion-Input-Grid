@@ -6,6 +6,7 @@
 namespace demo {
 struct Options {
     std::string config, runtime;
+    std::string pose_model{"lite"}; // lite, full or heavy; must be local
     unsigned camera{};
     bool smoke{}, hands{}, synthetic{};
     std::filesystem::path assets;
@@ -45,6 +46,8 @@ struct Options {
                 hands = true;
             } else if (arg == "--runtime" && i + 1 < argc) {
                 runtime = argv[++i];
+            } else if (arg == "--pose" && i + 1 < argc) {
+                pose_model = argv[++i];
             } else if (arg == "--camera" && i + 1 < argc) {
                 camera = unsigned(std::stoul(argv[++i]));
             } else {

@@ -10,6 +10,9 @@
   additive `mig_camera_start_model`. Heavy est téléchargé une fois en HTTPS, vérifié
   avec son SHA-256 épinglé puis mis en cache hors ligne ; chaque fichier de modèle
   est vérifié avant chargement. Le Controller mémorise son choix.
+- Ajouter au site une page **Modèles** qui compare Lite, Full et Heavy sur les
+  mêmes images (temps d'inférence, couverture du haut du corps, tremblement des
+  poignets et épaules) ; les exemples natifs SDL2/SFML acceptent `--pose lite|full|heavy`.
 - Les Controllers n'exécutent le modèle des mains que pour les profils utilisant
   règles de doigts, signes ou commandes manuelles ; les sessions navigateur reviennent
   du GPU au CPU en cas d'échec.

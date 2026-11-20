@@ -1,0 +1,20 @@
+/* Pose model comparison: reuses the Studio test layout and the shared tokens. */
+.models-main { padding-top: 32px; }
+.models-main > .lead { margin: 0 0 28px; }
+.models-layout { grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
+.models-layout .test-stage { width: 100%; aspect-ratio: 16 / 9; }
+.model-panel h2 { margin-bottom: 8px; }
+.model-panel > .field { margin: 14px 0; }
+.model-list { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 10px; }
+.model-card { border: 1px solid var(--border); border-left: 3px solid var(--model-color); background: var(--surface); border-radius: 3px; padding: 12px 14px; }
+.model-choice { font-size: 13px; color: var(--ink); }
+.model-choice strong { font-weight: 600; }
+.model-size { margin-left: auto; color: var(--muted); font: 11px Consolas, monospace; }
+.model-swatch { width: 10px; height: 10px; border-radius: 50%; background: var(--model-color); flex-shrink: 0; }
+.model-status { margin: 4px 0 8px; }
+.model-status[data-error="true"] { color: var(--forbidden); }
+.model-metrics { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; margin: 0; font-size: 11px; }
+.model-metrics dt { color: var(--muted); }
+.model-metrics dd { margin: 0; text-align: right; font: 11px Consolas, monospace; color: var(--ink); }
+.model-about summary { font-size: 12px; color: var(--accent); cursor: pointer; min-height: 32px; }
+@media (max-width: 900px) { .models-layout { grid-template-columns: 1fr; } }

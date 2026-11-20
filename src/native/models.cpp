@@ -141,7 +141,16 @@ std::filesystem::path model_cache_directory() {
 #endif
 }
 std::filesystem::path locate_pose_model(const std::filesystem::path& runtime, PoseModel model) {
-    return locate_pose_model(runtime, model, model_cache_directory());
+    // A bundled model must load even where no user data folder exists (services, CI).
+    const auto bundled = runtime / "models" / pose_model_info(model).asset.file;
+    if (std::filesystem::is_regular_file(bundled)) {
+        return bundled;
+    }
+    try {
+        return locate_pose_model(runtime, model, model_cache_directory());
+    } catch (const std::runtime_error&) {
+        return {};
+    }
 }
 std::filesystem::path locate_pose_model(const std::filesystem::path& runtime, PoseModel model,
                                         const std::filesystem::path& cache) {

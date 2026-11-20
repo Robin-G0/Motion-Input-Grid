@@ -60,6 +60,10 @@ partagé à la racine dans l'archive groupée. Les lanceurs Linux règlent les c
 des bibliothèques, polices et plugins Qt depuis leur emplacement. Les DLL Windows
 restent à côté des exécutables. Conservez tous ces dossiers.
 
+`--pose lite|full|heavy` choisit la variante BlazePose (Lite par défaut).
+Les archives ne livrent que Lite ; Full ou Heavy doivent être dans `runtime/models`
+ou dans le cache utilisateur rempli par Studio ou Controller.
+
 Externe : Windows x64 et runtime VC++, ou Linux x64 avec glibc 2.35+ et affichage
 graphique ; webcam pour le suivi réel. Développement facultatif : CMake 3.25+,
 compilateur C++20, SDK MIG et bibliothèques de développement graphiques.

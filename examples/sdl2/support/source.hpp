@@ -28,9 +28,12 @@ public:
     explicit Source(const Options& options, bool track_hands, bool hand_preview = true) {
         if (!options.synthetic) {
             capture_runtime_ = std::make_unique<mig::native::CaptureRuntime>();
+            const auto model = mig::native::parse_pose_model(options.pose_model);
+            if (!model) {
+                throw std::runtime_error("--pose must be lite, full or heavy");
+            }
             pose_ = std::make_unique<mig::native::Pose>(
-                options.runtime, track_hands || (hand_preview && options.hands),
-                mig::native::PoseModel::Lite);
+                options.runtime, track_hands || (hand_preview && options.hands), *model);
             camera_ = std::make_unique<mig::native::Camera>(options.camera);
         } else {
             video_.width = 320;

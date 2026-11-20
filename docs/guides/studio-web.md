@@ -131,6 +131,8 @@ itself for offline use and cannot type into other applications.
 When the published engine offers several BlazePose variants, **Display & privacy**
 shows a **Pose model** choice: Lite (fast, default), Full or Heavy (precise,
 downloaded once and cached by the browser). Changing it keeps the camera running.
+The website's **Models** page runs the variants side by side on the same camera
+images and reports inference time, upper-body coverage and wrist/shoulder jitter.
 
 Grid-only mode supports zoom and scrolling. Notes are separate from gesture
 regions. Copy/paste duplicates selected regions; Ctrl+A, Ctrl+Z and Ctrl+Y select,

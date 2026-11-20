@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Comparez les modèles de pose Lite, Full et Heavy de Motion Input Grid avec votre caméra.">
+    <meta name="theme-color" content="#0b101a" media="(prefers-color-scheme: dark)"><meta name="theme-color" content="#f7f4ed" media="(prefers-color-scheme: light)">
+    <title>Motion Input Grid · Modèles de pose</title>
+    <link rel="icon" type="image/png" sizes="48x48" href="../favicon.png">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="shortcut icon" href="../favicon.ico">
+    <link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="../studio/styles.css"><link rel="stylesheet" href="./styles.css">
+    <script src="../src/ui/page-start.js"></script><script type="module" src="./src/main.mjs"></script>
+</head>
+<body class="studio models-page">
+    <a class="skip-link" href="#models-main" data-copy="skip">Aller à la comparaison</a>
+    <header class="header"><a class="brand" href="../"><img class="brand-mark" src="../favicon.svg" width="36" height="36" alt=""><span>Motion Input Grid<span class="brand-caption" data-copy="caption">Modèles de pose</span></span></a>
+        <nav aria-label="Navigation"><a href="../" data-copy="presentation">La présentation</a><a href="../studio/">Studio</a><button class="theme-toggle" id="theme-toggle" type="button"></button><div class="languages" aria-label="Language / Langue"><button type="button" data-language="fr" lang="fr" aria-pressed="true">FR</button><button type="button" data-language="en" lang="en" aria-pressed="false">EN</button></div></nav>
+    </header>
+    <main class="studio-main models-main" id="models-main">
+        <p class="eyebrow">BLAZEPOSE GHUM · LITE / FULL / HEAVY</p>
+        <h1 data-copy="title">Comparez les modèles de pose.</h1>
+        <p class="lead" data-copy="intro"></p>
+        <div class="test-layout models-layout">
+            <div class="camera-column">
+                <div class="test-stage" id="stage" data-mirror="true"><video id="video" muted playsinline aria-hidden="true"></video><canvas id="overlay" aria-hidden="true"></canvas><div class="camera-placeholder" id="placeholder"><p data-copy="placeholder"></p></div></div>
+                <p class="camera-message" id="message" role="status" aria-live="polite"></p>
+                <div class="test-actions"><button class="button primary" id="start" type="button" data-copy="start">Activer la caméra</button><button class="button danger" id="stop" type="button" data-copy="stop" hidden>Arrêter</button><button class="text-button" id="reset" type="button" data-copy="reset"></button></div>
+                <p class="privacy" data-copy="privacy"></p>
+            </div>
+            <section class="model-panel" aria-labelledby="results-title">
+                <h2 id="results-title" data-copy="results">Mesures</h2>
+                <p class="hint" data-copy="resultsHint"></p>
+                <label class="field"><span data-copy="delegate">Calcul</span><select id="delegate"><option value="CPU">CPU</option><option value="GPU" data-copy="gpu"></option></select></label>
+                <ul class="model-list" id="model-list"></ul>
+                <details class="model-about"><summary data-copy="aboutTitle"></summary><p class="hint" data-copy="about"></p></details>
+            </section>
+        </div>
+    </main>
+    <noscript><p class="feedback">Activez JavaScript pour comparer les modèles.</p></noscript>
+</body>
+</html>

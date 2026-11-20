@@ -10,6 +10,9 @@
   additive `mig_camera_start_model` C ABI entry point. Heavy downloads once over
   HTTPS, is verified against its pinned SHA-256 and is cached for offline use;
   every model file is verified before loading. The Controller remembers its choice.
+- Add a **Models** page to the website that compares Lite, Full and Heavy on the
+  same camera images (inference time, upper-body coverage, wrist and shoulder
+  jitter); native SDL2/SFML examples accept `--pose lite|full|heavy`.
 - Controllers run the hand model only for profiles that use finger rules, hand
   signs or hand commands; browser sessions fall back from GPU to CPU inference.
 

@@ -60,6 +60,10 @@ combined archives share it at their root. Linux launchers set their library,
 font and Qt plugin paths relative to themselves. Windows graphics DLLs sit
 beside the executables. Keep these folders together; launch from any working directory.
 
+`--pose lite|full|heavy` selects the BlazePose variant (Lite by default).
+Archives bundle Lite only; Full or Heavy must be present in `runtime/models`
+or in the user model cache filled by Studio or Controller.
+
 External: Windows x64 and VC++ runtime, or Linux x64 with glibc 2.35+ and a
 desktop display; webcam for real tracking. Optional development: CMake 3.25+,
 C++20 compiler, installed MIG SDK and graphics development libraries.
