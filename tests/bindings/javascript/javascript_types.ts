@@ -1,4 +1,4 @@
-import { MIGSession, type MIGAction } from "motion-input-grid";
+import { MIGSession, gridPoint, type MIGAction, type MIGGrid } from "motion-input-grid";
 import { useMIG as useReactMIG } from "motion-input-grid/react";
 import { useMIG as useVueMIG } from "motion-input-grid/vue";
 
@@ -16,3 +16,5 @@ const efficient = new MIGSession({maxInferenceFps:20, drawOverlay:false, videoCo
 efficient.setInferenceFps(10);
 const precise = new MIGSession({ poseModel: "full", poseModels: ["lite", "full"] });
 void precise.setPoseModel("lite").then(() => console.log(precise.state.poseModel, precise.poseModels));
+const engineGrid: MIGGrid | null = session.grid("calibrated");
+if (engineGrid) console.log(gridPoint(engineGrid, 4.5, 3.5).x);

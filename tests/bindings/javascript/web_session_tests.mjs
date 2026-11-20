@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { MIGSession } from "../../../examples/web/session.mjs";
+import { MIGSession, gridPoint } from "../../../examples/web/session.mjs";
 
 function deferred() {
     let resolve;
@@ -257,3 +257,24 @@ test("a model switch that fails keeps the session usable and a switch during dis
     assert.equal(published, 0);
     assert.equal(f.session.state.poseModel, "lite");
 });
+
+test("the session exposes the engine grid and projects cells as the engine does", async () => {
+    const f = fixture({ profileMode: true });
+    const spaces = [];
+    f.tracker.grid = space => { spaces.push(space); return space === "body" ? { centerX: .9, centerY: .45, axisX: 1, axisY: 0, scale: .06, aspect: 2 } : null; };
+    assert.equal(f.session.grid(), null, "no engine before initialisation");
+    await f.session.start(f.video, f.canvas);
+    const grid = f.session.grid();
+    assert.deepEqual(spaces, ["body"]);
+    assert.equal(f.session.grid("calibrated"), null);
+    assert.throws(() => f.session.grid("camera"), RangeError);
+    const centre = gridPoint(grid, 4.5, 3.5);
+    assert.ok(Math.abs(centre.x - .45) < 1e-12 && Math.abs(centre.y - .45) < 1e-12);
+    const corner = gridPoint(grid, 7, 1.5);
+    assert.ok(Math.abs(corner.x - (.9 + 2.5 * .06) / 2) < 1e-12 && Math.abs(corner.y - (.45 - 2 * .06)) < 1e-12);
+    const turned = gridPoint({ ...grid, axisX: 0, axisY: 1 }, 5.5, 3.5);
+    assert.ok(Math.abs(turned.x - .45) < 1e-12 && Math.abs(turned.y - .51) < 1e-12, "the grid turns with the shoulders");
+    f.session.dispose();
+    assert.equal(f.session.grid(), null);
+});
+

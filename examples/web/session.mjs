@@ -1,4 +1,16 @@
 const poseModelNames = ["lite", "full", "heavy"];
+const gridSpaces = ["body", "calibrated"];
+
+/**
+ * Unmirrored normalized image position of a grid coordinate, projected exactly
+ * as the engine does: cell (4.5, 3.5) is the shoulder midpoint, x follows the
+ * shoulders. Use whole numbers for cell corners, e.g. [x, y] and [x + w, y + h].
+ */
+export function gridPoint(grid, column, row) {
+    const u = (column - 4.5) * grid.scale, v = (row - 3.5) * grid.scale;
+    return { x: (grid.centerX + grid.axisX * u - grid.axisY * v) / grid.aspect,
+        y: grid.centerY + grid.axisY * u + grid.axisX * v };
+}
 
 export class MIGSession {
     constructor(options = {}) {
@@ -169,6 +181,17 @@ export class MIGSession {
             for (const event of actions) this.options.onAction?.(event);
         }
         this.options.onFrame?.(this);
+    }
+
+    /**
+     * The engine's own grid ("body" follows the shoulders, "calibrated" keeps the
+     * calibration anchor), already smoothed; null before calibration or after
+     * tracking loss. Draw guides with gridPoint() instead of recomputing it.
+     */
+    grid(space = "body") {
+        if (!gridSpaces.includes(space)) throw new RangeError('space must be "body" or "calibrated"');
+        if (this.disposed) return null;
+        return this.tracker?.grid(space) ?? null;
     }
 
     coordinate(index, system = 0) {

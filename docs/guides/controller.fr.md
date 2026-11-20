@@ -33,10 +33,10 @@ Utilisez le [Motion Input Grid Studio](configurator.fr.md) pour dessiner ou modi
 
 Téléchargez pour votre système. Le même paquet contient le Studio et le Controller :
 
-| Système | Télécharger v1.1.0 | Ouvrir après extraction |
+| Système | Télécharger v1.3.0 | Ouvrir après extraction |
 | --- | --- | --- |
-| Windows x64 | [Télécharger ZIP](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) | `windows/motion-input-grid-controller.exe` |
-| Linux x64 | [Télécharger tar.gz](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) | `./motion-input-grid-controller` |
+| Windows x64 | [Télécharger ZIP](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.3.0#user-content-mig-v1-3-0-desktop-applications) | `windows/motion-input-grid-controller.exe` |
+| Linux x64 | [Télécharger tar.gz](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.3.0#user-content-mig-v1-3-0-desktop-applications) | `./motion-input-grid-controller` |
 
 Ces chemins partent du dossier principal de l'archive extraite. Sous Windows,
 ouvrez l'exécutable. Sous Linux, ouvrez un terminal dans ce dossier et lancez

@@ -26,6 +26,8 @@ export class MIGSession {
     recalibrate(): void;
     importJSON(json: string): Promise<void>;
     coordinate(index: number, system?: number): MIGCoordinate | null;
+    /** Smoothed engine grid; null before calibration or after tracking loss. */
+    grid(space?: "body" | "calibrated"): MIGGrid | null;
     setInferenceFps(fps: number): void;
     /** Models the user may choose, from `poseModels`. */
     readonly poseModels: MIGPoseModel[];
@@ -34,6 +36,10 @@ export class MIGSession {
     dispose(): void;
 }
 export interface MIGCoordinate { x: number; y: number; z: number; confidence: number }
+/** Engine grid in aspect-corrected image space (x is multiplied by `aspect`). */
+export interface MIGGrid { centerX: number; centerY: number; axisX: number; axisY: number; scale: number; aspect: number }
+/** Unmirrored normalized image position of a grid coordinate, as the engine projects it. */
+export function gridPoint(grid: MIGGrid, column: number, row: number): { x: number; y: number };
 export interface MIGSessionOptions extends MIGOptions {
     onFrame?: (session: MIGSession) => void;
     /** 0 keeps uncapped inference; otherwise 1..120. Never queues skipped frames. */

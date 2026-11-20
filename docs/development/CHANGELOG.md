@@ -2,7 +2,7 @@
 
 [English](CHANGELOG.md) | [Français](CHANGELOG.fr.md)
 
-## Unreleased
+## 1.3.0 - 2026-11-20
 
 - Select the BlazePose variant (Lite, Full or Heavy) in the desktop Studio and
   Controller **View** menus, through `--pose-lite|--pose-full|--pose-heavy`, in
@@ -13,6 +13,11 @@
 - Add a **Models** page to the website that compares Lite, Full and Heavy on the
   same camera images (inference time, upper-body coverage, wrist and shoulder
   jitter); native SDL2/SFML examples accept `--pose lite|full|heavy`.
+- Expose the engine's smoothed grid as `MIGSession.grid(space)` and project cells
+  with `gridPoint(grid, column, row)`, so camera guides match recognition exactly
+  without copying engine constants into JavaScript.
+- Build the WebAssembly runtime without dynamic code execution so browser
+  extensions and strict-CSP pages can load the published package unchanged.
 - Controllers run the hand model only for profiles that use finger rules, hand
   signs or hand commands; browser sessions fall back from GPU to CPU inference.
 - Install npm package test fixtures through Node and npm-cli.js directly, preserving literal archive paths without a Windows command shell.

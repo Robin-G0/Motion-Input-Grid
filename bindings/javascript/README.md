@@ -132,7 +132,7 @@ The tarball includes WASM, model files, runtime modules, declarations and licens
 Install that local tarball into your application, then copy its runtime assets:
 
 ```sh
-npm install /path/to/motion-input-grid-1.1.0.tgz
+npm install /path/to/motion-input-grid-1.3.0.tgz
 npx --package motion-input-grid mig-copy-assets public/mig
 ```
 
@@ -161,6 +161,24 @@ Rendering can remain smooth independently. GPU inference can be selected with
 Pose-only profiles load the pose model without creating a hand model. A later
 hand-enabled import loads hands on demand; disposal also closes late arrivals.
 Disabling the debug overlay does not disable tracking, events or onFrame.
+
+## Draw the engine grid
+
+`session.grid(space)` returns the grid the engine actually tests, already smoothed:
+`'body'` (default) follows the shoulders, `'calibrated'` keeps the calibration
+anchor. It is `null` before calibration and after tracking loss, so hide guides
+then. `gridPoint(grid, column, row)` projects a grid coordinate to unmirrored
+normalized image coordinates; mirror `x` yourself if the preview is mirrored.
+Do not recompute or re-smooth the grid in JavaScript: its constants belong to the engine.
+
+```js
+import { MIGSession, gridPoint } from 'motion-input-grid';
+const grid = session.grid(movement.space ?? 'calibrated');
+if (grid) {
+    const [x, y, w, h] = region.cell;
+    const corners = [[x, y], [x + w, y], [x + w, y + h], [x, y + h]].map(([c, r]) => gridPoint(grid, c, r));
+}
+```
 
 ## Pose model selection
 

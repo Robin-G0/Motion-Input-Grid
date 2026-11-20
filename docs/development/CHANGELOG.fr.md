@@ -2,7 +2,7 @@
 
 [English](CHANGELOG.md) | [Français](CHANGELOG.fr.md)
 
-## Non publié
+## 1.3.0 - 2026-11-20
 
 - Choisir la variante BlazePose (Lite, Full ou Heavy) dans les menus **View** de
   Studio et Controller, via `--pose-lite|--pose-full|--pose-heavy`, dans
@@ -13,6 +13,11 @@
 - Ajouter au site une page **Modèles** qui compare Lite, Full et Heavy sur les
   mêmes images (temps d'inférence, couverture du haut du corps, tremblement des
   poignets et épaules) ; les exemples natifs SDL2/SFML acceptent `--pose lite|full|heavy`.
+- Exposer la grille lissée du moteur via `MIGSession.grid(space)` et projeter les
+  cellules avec `gridPoint(grid, column, row)`, pour que les guides caméra
+  correspondent exactement à la reconnaissance sans recopier ses constantes en JavaScript.
+- Compiler le runtime WebAssembly sans exécution dynamique de code pour que les
+  extensions et les pages à CSP stricte chargent le paquet publié sans modification.
 - Les Controllers n'exécutent le modèle des mains que pour les profils utilisant
   règles de doigts, signes ou commandes manuelles ; les sessions navigateur reviennent
   du GPU au CPU en cas d'échec.
