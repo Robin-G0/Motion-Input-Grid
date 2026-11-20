@@ -16,7 +16,13 @@
 - Les Controllers n'exécutent le modèle des mains que pour les profils utilisant
   règles de doigts, signes ou commandes manuelles ; les sessions navigateur reviennent
   du GPU au CPU en cas d'échec.
+- Installer les paquets de test npm directement via Node et npm-cli.js, en préservant les chemins littéraux sans interpréteur de commandes Windows.
+- Restaurer les tableaux de téléchargement par catégorie avec tailles, liens directs et inventaire complet ; harmoniser les titres en `Motion Input Grid vX.Y.Z`.
 
+## 1.2.0 - 2026-11-18
+
+- Expliquer la première extraction du runtime Windows, avec annulation et chemin du cache copiable ; harmoniser les listes déroulantes natives.
+- Déposer les fichiers de release validés directement dans un brouillon GitHub pour économiser le stockage Actions ; publier après les compilations de toutes les plateformes et la vérification des empreintes.
 - Corriger les alertes Dependabot avec Next.js 16.4.5, Vite 8.3.3 dans les exemples
   navigateur et node-forge 1.4.3 dans le lockfile de développement de l'extension.
 

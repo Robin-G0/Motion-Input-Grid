@@ -15,7 +15,13 @@
   jitter); native SDL2/SFML examples accept `--pose lite|full|heavy`.
 - Controllers run the hand model only for profiles that use finger rules, hand
   signs or hand commands; browser sessions fall back from GPU to CPU inference.
+- Install npm package test fixtures through Node and npm-cli.js directly, preserving literal archive paths without a Windows command shell.
+- Restore categorized release download tables with sizes, direct links and complete inventory coverage; standardize release titles as `Motion Input Grid vX.Y.Z`.
 
+## 1.2.0 - 2026-11-18
+
+- Explain the first Windows runtime extraction, with cancellation and a copyable cache path; unify native dropdown controls.
+- Stage validated release files directly on a GitHub draft to avoid Actions artifact storage; publish only after all platform builds and the checksum inventory pass.
 - Address Dependabot alerts with Next.js 16.4.5, Vite 8.3.3 in the browser examples
   and node-forge 1.4.3 in the extension development lockfile.
 

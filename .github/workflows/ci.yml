@@ -2,6 +2,7 @@ name: Build, test and format
 
 on:
     push:
+        branches: ['**']
     pull_request:
     workflow_dispatch:
         inputs:
@@ -58,6 +59,8 @@ jobs:
                   python3 tests/tooling/release_version_tests.py
                   python3 tests/tooling/version_resolution_tests.py
                   python3 tests/tooling/workflow_artifact_tests.py
+                  python3 tests/tooling/release_staging_tests.py
+                  python3 tests/tooling/release_catalogue_tests.py
                   python3 tests/packaging/example_package_tests.py
                   python3 tests/packaging/wheel_record_tests.py
 
@@ -98,7 +101,7 @@ jobs:
             - name: Package accessible Windows distribution
               run: ./tools/packaging/package-distribution.ps1 -WindowsBuild build/ci-windows
             - name: Upload Windows distribution
-              if: (github.event_name == 'workflow_dispatch' && inputs.publish_artifacts) || startsWith(github.ref, 'refs/tags/v')
+              if: (github.event_name == 'workflow_dispatch' && inputs.publish_artifacts)
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: motion-input-grid-windows-hands-${{ matrix.hands }}
@@ -191,7 +194,7 @@ jobs:
                   cp docs/integrations/overview.md distribution/README.md
                   tar --exclude='*/__pycache__' --exclude='*.pyc' -czf build/motion-input-grid-linux.tar.gz -C distribution linux examples bindings docs README.md
             - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-              if: (github.event_name == 'workflow_dispatch' && inputs.publish_artifacts) || startsWith(github.ref, 'refs/tags/v')
+              if: (github.event_name == 'workflow_dispatch' && inputs.publish_artifacts)
               with:
                   name: motion-input-grid-linux-native
                   path: build/motion-input-grid-linux.tar.gz
@@ -280,7 +283,7 @@ jobs:
                   python3 tools/release/release-checksums.py build/javascript-artifacts
                   python3 tools/release/release-checksums.py build/javascript-artifacts --check
             - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-              if: (github.event_name == 'workflow_dispatch' && inputs.publish_artifacts) || startsWith(github.ref, 'refs/tags/v')
+              if: (github.event_name == 'workflow_dispatch' && inputs.publish_artifacts)
               with:
                   name: motion-input-grid-javascript
                   # Standalone examples already contain the compiled examples and runtime.
@@ -288,7 +291,7 @@ jobs:
                   retention-days: 1
 
             - name: Publish browser integration package
-              if: (github.event_name == 'workflow_dispatch' && inputs.publish_artifacts) || startsWith(github.ref, 'refs/tags/v')
+              if: (github.event_name == 'workflow_dispatch' && inputs.publish_artifacts)
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: motion-input-grid-web

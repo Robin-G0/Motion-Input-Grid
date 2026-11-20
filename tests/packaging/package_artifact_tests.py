@@ -64,7 +64,17 @@ def verify(path):
                    for name in names), "Missing MediaPipe runtime license"
         assert any(name.endswith("licenses/nlohmann-LICENSE") and files[name].strip()
                    for name in names), "Missing nlohmann runtime license"
-    if "vcpkg-overlay" in path.name:
+    if "-browser-extension-" in path.name:
+        manifest = json.loads(files["manifest.json"])
+        assert manifest["manifest_version"] == 3
+        assert manifest["name"] == "MIG Controller"
+        assert manifest["permissions"] == ["storage", "activeTab", "scripting"]
+        assert files["mig/mig.wasm"][:4] == b"\0asm"
+        assert files["mig/LICENSE"].strip() and files["LICENSE"].strip()
+        assert "'wasm-unsafe-eval'" in manifest["content_security_policy"]["extension_pages"]
+        assert "controller.html" in files and "content.js" in files
+        assert not any(name.startswith(("store/", "tests/")) for name in names)
+    elif "vcpkg-overlay" in path.name:
         source = next(data.decode() for name, data in files.items() if name.endswith("source.cmake"))
         assert re.search(r'MIG_SOURCE_SHA512 "[0-9a-f]{128}"', source)
         port = next(data for name, data in files.items() if name.endswith("motion-input-grid/vcpkg.json"))

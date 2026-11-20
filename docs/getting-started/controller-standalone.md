@@ -88,3 +88,15 @@ corruption, injected junctions and concurrent first launches. Its child process
 PATH contains only Windows folders. It records the actual loaded DLLs and rejects
 modules outside the validated cache and Windows. See the
 [Windows dependency inventory](../reference/windows-runtime-dependencies.md).
+
+## First Windows launch and cleanup
+
+When the cache is missing or fails validation, a small window explains the local runtime before extraction. Its read-only field shows the exact resolved `%LOCALAPPDATA%\MotionInputGrid\runtime\<payload-sha256>\` directory. **Copy path** copies it; **Continue** prepares and starts the Controller. Closing this window cancels installation. A valid cached runtime starts directly, with no repeated notice. Deleting the runtime or detecting corruption brings the notice back before rebuilding. Close MIG before deleting runtime folders; profiles are stored separately and are not removed by runtime cleanup.
+
+Cache validation, compiled hashes, atomic staging/publication and held file locks remain unchanged. No extra dismissal marker can make an incomplete installation valid. Exact diagnostic-only invocations (`--help`, `--ui-test`, `--infer-test`, `--hands-test`, `--session-test`) skip onboarding so unattended checks remain possible. Normal application launches show it when installation is needed.
+
+```powershell
+python tests/packaging/runtime_notice_tests.py build/releases/motion-input-grid-1.1.0-controller-windows-x64.exe
+```
+
+This test opens real windows with an isolated profile library and verifies cancellation, the read-only resolved path, Copy path, first installation, silent reuse without rewrites and reinstallation after an incomplete cache. Diagnostic builds alone support `MIG_TEST_PROFILE_DIRECTORY` to isolate interactive tests and screenshot capture; ordinary builds use the normal profile library.

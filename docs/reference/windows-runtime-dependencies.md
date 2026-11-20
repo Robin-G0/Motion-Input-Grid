@@ -83,6 +83,9 @@ loaded modules. On the checked host, 76 observed modules came only from the
 validated cache or Windows, including native MediaPipe inference. No modules
 from a developer directory were accepted. The launcher is audited separately;
 its `/MT` CRT is static and its remaining imports are Windows components.
+The first-install window adds only Windows UI facilities: the launcher's complete
+direct import list is `bcrypt.dll`, `gdi32.dll`, `kernel32.dll`, `ole32.dll`,
+`shell32.dll` and `user32.dll`. It still has no dynamic Visual C++ CRT dependency.
 
 Static PE analysis cannot enumerate arbitrary plugins/drivers selected by Windows
 when a real camera is opened. Runtime observation samples the diagnostics rather

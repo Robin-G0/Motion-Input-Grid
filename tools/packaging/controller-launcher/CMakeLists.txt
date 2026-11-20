@@ -11,6 +11,6 @@ add_executable(mig-controller-portable WIN32 main.cpp runtime_cache.cpp
 target_include_directories(mig-controller-portable PRIVATE "${PAYLOAD_DIRECTORY}")
 target_compile_features(mig-controller-portable PRIVATE cxx_std_20)
 target_compile_definitions(mig-controller-portable PRIVATE UNICODE _UNICODE NOMINMAX WIN32_LEAN_AND_MEAN)
-target_link_libraries(mig-controller-portable PRIVATE ole32 user32 bcrypt)
+target_link_libraries(mig-controller-portable PRIVATE ole32 user32 bcrypt shell32 gdi32)
 set_property(TARGET mig-controller-portable PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 target_compile_options(mig-controller-portable PRIVATE /W4 /utf-8)

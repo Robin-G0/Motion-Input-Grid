@@ -1,5 +1,6 @@
 #pragma once
 #include <filesystem>
+#include <functional>
 #include <vector>
 #include <windows.h>
 
@@ -31,4 +32,6 @@ struct CachedRuntime {
     std::vector<FileHandle> guards;
 };
 
-CachedRuntime prepare_runtime(HINSTANCE instance);
+CachedRuntime
+prepare_runtime(HINSTANCE instance,
+                const std::function<void(const std::filesystem::path&)>& before_install = {});

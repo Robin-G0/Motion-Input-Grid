@@ -83,6 +83,10 @@ et observent les modules chargés. Les 76 modules observés provenaient du cache
 validé ou de Windows, y compris pendant l’inférence MediaPipe. Aucun module
 de développement extérieur n’a été accepté. Le lanceur est audité séparément :
 son CRT `/MT` reste statique et ses autres imports proviennent de Windows.
+La fenêtre de première installation utilise seulement les composants Windows.
+La liste complète des imports directs du lanceur est `bcrypt.dll`, `gdi32.dll`,
+`kernel32.dll`, `ole32.dll`, `shell32.dll` et `user32.dll`. Le lanceur ne dépend
+toujours d’aucun CRT Visual C++ dynamique.
 
 L’analyse PE ne peut pas énumérer tous les plugins ou pilotes choisis par Windows
 à l’ouverture d’une vraie caméra. L’observation couvre les diagnostics, pas tous

@@ -3,6 +3,7 @@ import base64
 import csv
 import hashlib
 import io
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -58,6 +59,15 @@ class WheelRecordTests(unittest.TestCase):
     def test_valid_wheel(self):
         self.make_wheel()
         validate_wheel(self.wheel)
+
+    @unittest.skipIf(os.name == "nt", "POSIX artifact permissions")
+    def test_normalization_preserves_archive_read_permissions(self):
+        for mode in (0o644, 0o640):
+            with self.subTest(mode=oct(mode)):
+                self.make_wheel()
+                self.wheel.chmod(mode)
+                normalize_wheel(self.wheel)
+                self.assertEqual(self.wheel.stat().st_mode & 0o777, mode)
 
     def test_published_directory_and_crcrlf_regression(self):
         original = self.make_wheel(directories=True)

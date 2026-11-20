@@ -471,17 +471,20 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM wp, LPARAM lp) {
                     add(ViewHands,
                         app.show_hands ? L"Hide hand detections" : L"Show hand detections");
                     add(ViewDots, app.show_dots ? L"Hide body dots" : L"Show body dots");
-                    add(PoseModelLite, app.pose_model == PoseModel::Lite
-                                           ? L"Pose model: Lite (current)"
-                                           : L"Pose model: Lite (fastest)");
-                    add(PoseModelFull, app.pose_model == PoseModel::Full
-                                           ? L"Pose model: Full (current)"
-                                           : L"Pose model: Full");
-                    add(PoseModelHeavy, app.pose_model == PoseModel::Heavy
-                                            ? L"Pose model: Heavy (current)"
-                                            : L"Pose model: Heavy (most precise, downloaded once)");
+                    // Short labels fit the owner-drawn menu; the check marks the active model.
+                    for (const auto [command, model, name] :
+                         {std::tuple{PoseModelLite, PoseModel::Lite, L"Pose model: Lite (fast)"},
+                          {PoseModelFull, PoseModel::Full, L"Pose model: Full"},
+                          {PoseModelHeavy, PoseModel::Heavy, L"Pose model: Heavy (precise)"}}) {
+                        AppendMenuW(menu, MF_OWNERDRAW | (app.pose_model == model ? MF_CHECKED : 0),
+                                    command, name);
+                    }
                 }
                 RECT anchor{};
+                MENUINFO style{sizeof(style)};
+                style.fMask = MIM_BACKGROUND;
+                style.hbrBack = app.surface_brush;
+                SetMenuInfo(menu, &style);
                 GetWindowRect(GetDlgItem(window, id), &anchor);
                 const auto chosen = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_LEFTALIGN, anchor.left,
                                                    anchor.bottom, 0, window, nullptr);
@@ -634,7 +637,7 @@ LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM wp, LPARAM lp) {
         case WM_MEASUREITEM: {
             auto& item = *reinterpret_cast<MEASUREITEMSTRUCT*>(lp);
             item.itemHeight = item.CtlType == ODT_MENU ? 32 : 24;
-            item.itemWidth = 250;
+            item.itemWidth = 330;
             return TRUE;
         }
         case WM_CTLCOLORSTATIC:

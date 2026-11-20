@@ -9,6 +9,14 @@ int App::controller_ui_test() {
     };
     check(!GetDlgItem(window, NewMotion) && !GetDlgItem(window, EditMenu),
           "Controller must not expose authoring controls.");
+    check(profile_management, "An empty library must show Import profile on first opening.");
+    SendMessageW(window, WM_COMMAND, ProfileManagement, 0);
+    const auto combo = GetDlgItem(window, ProfileList);
+    check((GetWindowLongW(combo, GWL_STYLE) & CBS_OWNERDRAWFIXED) &&
+              SendMessageW(combo, CB_GETITEMHEIGHT, 0, 0) == 30 &&
+              SendMessageW(combo, CB_GETEXTENDEDUI, 0, 0) &&
+              SendMessageW(combo, WM_GETFONT, 0, 0) == reinterpret_cast<LRESULT>(font),
+          "Profile dropdown must use the shared themed control, font and item spacing.");
     check(!(GetWindowLongW(GetDlgItem(window, ProfileName), GWL_STYLE) & WS_VISIBLE),
           "Profile management must be collapsed while running movements.");
     SendMessageW(window, WM_COMMAND, ProfileManagement, 0);

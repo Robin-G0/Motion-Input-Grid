@@ -36,8 +36,8 @@ Each run shows its selected checks in the **job summary**.
 > [!TIP]
 > **Launch a workflow manually to run its complete validation.** First pushes with
 > no baseline, or unavailable Git comparisons, also run all of that workflow's checks.
-> Tagged releases still build and validate **every release artifact**. Engine
-> integration packaging retains its existing manual trigger.
+> Tagged releases build and validate **every release artifact**, including game-engine
+> integrations and browser extensions. Engine packaging can also run manually.
 
 The general CI exposes **Affected checks passed**, which fails if detection or
 any selected build check fails or is cancelled. Skipped build jobs are accepted.
@@ -53,9 +53,16 @@ intermediate artifact transfer.
 To keep downloadable packages, open **Actions**, select **CI** or the browser
 extension workflow, choose **Run workflow**, and enable **publish_artifacts**.
 The checkbox defaults to off; a manual run alone only requests validation.
-Version tags beginning with `v` also publish the tested packages. Release checks
-and engine integration packaging retain their explicit release/manual triggers.
 Uploaded packages and optional failure diagnostics are retained for **one day**.
+
+Version tags beginning with `v` run **Build validated release assets**. Each platform
+uploads its tested packages directly to a **draft GitHub Release**, without using
+Actions artifact storage. The final job checks archive contents and creates the
+checksum inventory and categorized download tables, including direct links and sizes.
+The catalogue uses the version's changelog and rejects unlisted package files.
+Release titles and Git tags use `vX.Y.Z`; package versions use `X.Y.Z`.
+Publication remains a separate step after every build succeeds;
+npm and PyPI use those same validated files. Routine workflows do not also run on tags.
 
 **GitHub Pages remains automatic on `main` after successful site tests.** Its
 one-day deployment artifact is required to publish the site and is exempt from

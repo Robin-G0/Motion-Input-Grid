@@ -120,20 +120,25 @@ void App::draw_control(const DRAWITEMSTRUCT& item) {
         }
     } else if (item.CtlType == ODT_MENU) {
         const auto brush =
-            CreateSolidBrush((item.itemState & ODS_SELECTED) ? colors.primary : colors.surface);
+            CreateSolidBrush((item.itemState & ODS_SELECTED) ? colors.selected : colors.surface);
         FillRect(dc, &item.rcItem, brush);
         DeleteObject(brush);
         auto rect = item.rcItem;
-        rect.left += 12;
-        SetTextColor(dc, (item.itemState & ODS_SELECTED) ? RGB(255, 255, 255) : colors.text);
+        rect.left += 34;
+        SetTextColor(dc, (item.itemState & ODS_DISABLED) ? colors.muted : colors.text);
+        if (item.itemState & ODS_CHECKED) {
+            auto mark = item.rcItem;
+            mark.left += 10;
+            DrawTextW(dc, L"\u2713", -1, &mark, DT_SINGLELINE | DT_VCENTER);
+        }
         DrawTextW(dc, reinterpret_cast<const wchar_t*>(item.itemData), -1, &rect,
                   DT_SINGLELINE | DT_VCENTER);
     } else if (item.CtlType == ODT_COMBOBOX) {
-        const auto brush =
-            CreateSolidBrush((item.itemState & ODS_SELECTED) ? colors.primary : colors.surface);
+        const bool combo_selected = (item.itemState & ODS_SELECTED) != 0;
+        const auto brush = CreateSolidBrush(combo_selected ? colors.selected : colors.surface);
         FillRect(dc, &item.rcItem, brush);
         DeleteObject(brush);
-        SetTextColor(dc, (item.itemState & ODS_SELECTED) ? RGB(255, 255, 255) : colors.text);
+        SetTextColor(dc, (item.itemState & ODS_DISABLED) ? colors.muted : colors.text);
         std::wstring value;
         if (item.itemID != UINT(-1)) {
             const auto length = SendMessageW(item.hwndItem, CB_GETLBTEXTLEN, item.itemID, 0);
@@ -144,7 +149,7 @@ void App::draw_control(const DRAWITEMSTRUCT& item) {
             }
         }
         auto rect = item.rcItem;
-        rect.left += 8;
+        rect.left += 12;
         DrawTextW(dc, value.c_str(), -1, &rect, DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
     } else if (item.CtlID == LayerList) {
         const auto layers = ui::layers(draft);

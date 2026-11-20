@@ -2,11 +2,40 @@
 #include "scrollbars.hpp"
 #include <commctrl.h>
 #include <dwmapi.h>
+#include <uxtheme.h>
 namespace mig::app {
 App* application{};
 namespace {
+LRESULT CALLBACK combo_popup(HWND window, UINT message, WPARAM wp, LPARAM lp, UINT_PTR id,
+                             DWORD_PTR) {
+    if (message == WM_NCPAINT) {
+        const auto dc = GetWindowDC(window);
+        RECT rect{};
+        GetWindowRect(window, &rect);
+        OffsetRect(&rect, -rect.left, -rect.top);
+        const auto brush = CreateSolidBrush(application->palette().border);
+        FrameRect(dc, &rect, brush);
+        DeleteObject(brush);
+        ReleaseDC(window, dc);
+        return 0;
+    }
+    if (message == WM_NCDESTROY) {
+        RemoveWindowSubclass(window, combo_popup, id);
+    }
+    return DefSubclassProc(window, message, wp, lp);
+}
 LRESULT CALLBACK modern_control(HWND window, UINT message, WPARAM wp, LPARAM lp, UINT_PTR id,
                                 DWORD_PTR) {
+    if (id == 2 && (message == WM_SETFOCUS || message == WM_KILLFOCUS || message == CB_SETCURSEL ||
+                    message == CB_SHOWDROPDOWN || message == WM_ENABLE || message == WM_KEYUP ||
+                    message == WM_LBUTTONUP)) {
+        const auto result = DefSubclassProc(window, message, wp, lp);
+        InvalidateRect(window, nullptr, FALSE);
+        return result;
+    }
+    if (id == 2 && message == WM_NCPAINT) {
+        return 0;
+    }
     if (message == WM_ERASEBKGND) {
         // The custom combo painter covers its entire client area in WM_PAINT.
         if (id != 2) {
@@ -40,14 +69,20 @@ LRESULT CALLBACK modern_control(HWND window, UINT message, WPARAM wp, LPARAM lp,
         RECT rect{};
         GetClientRect(window, &rect);
         const auto& app = *application;
-        FillRect(dc, &rect, app.surface_brush);
-        const auto pen = CreatePen(
-            PS_SOLID, 1, GetFocus() == window ? app.palette().accent : app.palette().border);
+        const auto colors = app.palette();
+        const bool focused = GetFocus() == window;
+        const bool hover = GetPropW(window, L"MIGHover") != nullptr;
+        const bool disabled = !IsWindowEnabled(window);
+        FillRect(dc, &rect, app.background_brush);
+        const auto fill =
+            CreateSolidBrush(id == 2 && hover && !disabled ? colors.hover : colors.surface);
+        const auto pen =
+            CreatePen(PS_SOLID, 1, (focused || hover) && !disabled ? colors.accent : colors.border);
         const auto old = SelectObject(dc, pen);
-        const auto brush = SelectObject(dc, GetStockObject(NULL_BRUSH));
+        const auto brush = SelectObject(dc, fill);
         RoundRect(dc, 0, 0, rect.right, rect.bottom, 6, 6);
         SelectObject(dc, app.font);
-        SetTextColor(dc, app.palette().text);
+        SetTextColor(dc, disabled ? colors.muted : colors.text);
         SetBkMode(dc, TRANSPARENT);
         wchar_t value[256]{};
         GetWindowTextW(window, value, 256);
@@ -61,6 +96,7 @@ LRESULT CALLBACK modern_control(HWND window, UINT message, WPARAM wp, LPARAM lp,
         SelectObject(dc, brush);
         SelectObject(dc, old);
         DeleteObject(pen);
+        DeleteObject(fill);
         if (message == WM_PAINT) {
             EndPaint(window, &paint);
         }
@@ -92,14 +128,18 @@ HWND control(HWND parent, const wchar_t* type, const wchar_t* text, int id, int 
                           0);
     }
     if (std::wstring_view(type) == L"COMBOBOX") {
+        SetWindowTheme(child, L"", L"");
         SendMessageW(child, CB_SETITEMHEIGHT, WPARAM(-1), 24);
-        SendMessageW(child, CB_SETITEMHEIGHT, 0, 24);
+        SendMessageW(child, CB_SETITEMHEIGHT, 0, 30);
+        SendMessageW(child, CB_SETEXTENDEDUI, TRUE, 0);
     }
     const auto colors = application->palette();
     const ScrollbarColors scroll{colors.surface, colors.border, colors.muted};
     theme_scrollbars(child, scroll);
     COMBOBOXINFO info{sizeof(info)};
     if (GetComboBoxInfo(child, &info) && info.hwndList) {
+        SetWindowTheme(info.hwndList, L"", L"");
+        SetWindowSubclass(info.hwndList, combo_popup, 1, 0);
         theme_scrollbars(info.hwndList, scroll);
     }
     return child;

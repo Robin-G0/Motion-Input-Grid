@@ -2,7 +2,17 @@
 
 namespace mig::app {
 void App::restore_profiles() {
-    profiles = std::make_unique<controller::Profiles>(controller::user_directory());
+    auto profile_directory = controller::user_directory();
+#ifdef MIG_APP_TESTS
+    // Interactive UI tests and screenshot capture must never touch the user's
+    // real profile library. This override is absent from non-diagnostic builds.
+    wchar_t isolated[32768]{};
+    const auto length = GetEnvironmentVariableW(L"MIG_TEST_PROFILE_DIRECTORY", isolated, 32768);
+    if (length && length < 32768 && std::filesystem::path(isolated).is_absolute()) {
+        profile_directory = isolated;
+    }
+#endif
+    profiles = std::make_unique<controller::Profiles>(profile_directory);
     try {
         profiles->restore();
         if (profiles->selected() >= 0) {

@@ -157,7 +157,7 @@ def main():
             write_payload_manifest(payload)
             generated = work / "generated"
             payload_hash = windows_resources(payload, generated)
-            subprocess.run([arguments.cmake, "-S", str(ROOT / "tools/packaging/controller-launcher"), "-B", str(work / "build"), "-A", "x64", f"-DPAYLOAD_DIRECTORY={generated}"], check=True)
+            subprocess.run([arguments.cmake, "-S", str(ROOT / "tools/packaging/controller-launcher"), "-B", str(work / "build"), "-A", "x64", f"-DPAYLOAD_DIRECTORY={generated.as_posix()}"], check=True)
             subprocess.run([arguments.cmake, "--build", str(work / "build"), "--config", "Release"], check=True)
             # The static-CRT launcher must also resolve solely through Windows.
             launcher_dependencies = audit_windows(work / "build/Release")
