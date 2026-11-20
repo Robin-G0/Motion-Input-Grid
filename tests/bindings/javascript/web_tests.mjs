@@ -3,6 +3,7 @@ import {readFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import {drawOverlay} from '../../../examples/web/overlay.mjs';
 import {verifyPresentationProfiles} from './presentation_profile_tests.mjs';
+import {gridPoint} from '../../../examples/web/session.mjs';
 let resized = 0;
 const canvas = {
   _width: 0, _height: 0,
@@ -51,6 +52,26 @@ try {
   assert.ok(Math.abs(grid.scale-.06)<1e-6);
   assert.equal(grid.aspect,1);
   assert.deepEqual(grid,reference);
+  const close = (point, x, y) => Math.abs(point.x-x)<1e-5 && Math.abs(point.y-y)<1e-5;
+  assert.ok(close(gridPoint(grid,7,3.5),.65,.45) && close(gridPoint(grid,2,3.5),.35,.45),
+    'gridPoint must place the shoulders where the engine measured them');
+  // Tilted shoulders in a 16:9 image: the projection must follow rotation and aspect.
+  const tilted = new module.Tracker();
+  try {
+    assert.equal(tilted.load(config), '');
+    const aspect = 16/9, left = {x:.6,y:.5}, right = {x:.4,y:.44};
+    for(let t=20;t<=1400;t+=20) {
+      const points = tilted.bodyBuffer(); points.fill(0);
+      points.set([left.x,left.y,0,1,0,0,0,0],11*8); points.set([right.x,right.y,0,1,0,0,0,0],12*8);
+      tilted.update(t,t/20,aspect,0,0);
+    }
+    const engineGrid = tilted.grid(false);
+    const width = Math.hypot((left.x-right.x)*aspect,left.y-right.y);
+    const half = width/2/engineGrid.scale;
+    assert.ok(Math.abs(engineGrid.scale-width*.2)<1e-5);
+    assert.ok(close(gridPoint(engineGrid,4.5+half,3.5),left.x,left.y), 'anatomical left shoulder');
+    assert.ok(close(gridPoint(engineGrid,4.5-half,3.5),right.x,right.y), 'anatomical right shoulder');
+  } finally { tilted.delete(); }
   tracker.recalibrate();
   assert.equal(tracker.grid(false),null);
   const image = tracker.coordinate(15,0), world = tracker.coordinate(15,2);

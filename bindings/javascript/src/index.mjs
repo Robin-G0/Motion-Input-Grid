@@ -1,1 +1,1 @@
-export { MIGSession } from "../runtime/session.mjs";
+export { MIGSession, gridPoint } from "../runtime/session.mjs";

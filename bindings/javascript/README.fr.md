@@ -153,6 +153,25 @@ Un profil sans mains initialise seulement le modele du corps. Un import
 qui active les mains charge ce modele a la demande ; les modeles arrives apres
 dispose sont fermes. Les evenements et onFrame restent actifs sans diagnostic.
 
+## Dessiner la grille du moteur
+
+`session.grid(space)` renvoie la grille que le moteur teste reellement, deja
+lissee : `'body'` (defaut) suit les epaules, `'calibrated'` garde l'ancrage de
+calibration. Elle vaut `null` avant la calibration et apres une perte de suivi :
+masquez alors les guides. `gridPoint(grid, column, row)` projette une coordonnee
+de grille en coordonnees d'image normalisees non reflechies ; inversez `x` si
+l'apercu est en miroir. Ne recalculez ni ne relissez la grille en JavaScript :
+ses constantes appartiennent au moteur.
+
+```js
+import { MIGSession, gridPoint } from 'motion-input-grid';
+const grid = session.grid(movement.space ?? 'calibrated');
+if (grid) {
+    const [x, y, w, h] = region.cell;
+    const corners = [[x, y], [x + w, y], [x + w, y + h], [x, y + h]].map(([c, r]) => gridPoint(grid, c, r));
+}
+```
+
 ## Choix du modele de pose
 
 `poseModel` choisit la variante BlazePose (`'lite'`, defaut et livree ; `'full'` ;

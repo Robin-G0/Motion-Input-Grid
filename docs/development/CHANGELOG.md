@@ -13,6 +13,9 @@
 - Add a **Models** page to the website that compares Lite, Full and Heavy on the
   same camera images (inference time, upper-body coverage, wrist and shoulder
   jitter); native SDL2/SFML examples accept `--pose lite|full|heavy`.
+- Expose the engine's smoothed grid as `MIGSession.grid(space)` and project cells
+  with `gridPoint(grid, column, row)`, so camera guides match recognition exactly
+  without copying engine constants into JavaScript.
 - Build the WebAssembly runtime without dynamic code execution so browser
   extensions and strict-CSP pages can load the published package unchanged.
 - Controllers run the hand model only for profiles that use finger rules, hand
