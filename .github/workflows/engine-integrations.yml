@@ -119,8 +119,8 @@ jobs:
         steps:
             - name: Install ARM64 integration validation tools
               run: |
-                  apt-get update
-                  DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y git ca-certificates python3 libstdc++6 libfontconfig1 libx11-6 libxcursor1 libxinerama1 libxrandr2 libxi6 libgl1
+                  apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update
+                  DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 install --no-install-recommends -y git ca-certificates python3 libstdc++6 libfontconfig1 libx11-6 libxcursor1 libxinerama1 libxrandr2 libxi6 libgl1
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
               with:
                   persist-credentials: false

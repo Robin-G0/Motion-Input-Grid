@@ -36,8 +36,8 @@ jobs:
                   persist-credentials: false
             - name: Install clang-format 16
               run: |
-                  sudo apt-get update
-                  sudo apt-get install --no-install-recommends -y clang-format-16
+                  sudo apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update
+                  sudo apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 install --no-install-recommends -y clang-format-16
             - name: Check first-party C++ against .clang-format
               shell: bash
               run: |
@@ -124,8 +124,8 @@ jobs:
                   persist-credentials: false
             - name: Install portable build dependencies
               run: |
-                  sudo apt-get update
-                  sudo apt-get install --no-install-recommends -y ninja-build nlohmann-json3-dev
+                  sudo apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update
+                  sudo apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 install --no-install-recommends -y ninja-build nlohmann-json3-dev
             - name: Configure without Windows or MediaPipe
               run: >-
                   cmake -S . -B build/ci-portable -G Ninja
@@ -150,15 +150,17 @@ jobs:
         needs: changes
         if: needs.changes.outputs.linux == 'true'
         runs-on: ubuntu-24.04
-        timeout-minutes: 20
+        # The build and smoke tests take about 5 minutes; the rest is headroom for a slow Ubuntu mirror.
+        timeout-minutes: 35
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
               with:
                   persist-credentials: false
             - name: Install SDK and graphics build dependencies
+              timeout-minutes: 15
               run: |
-                  sudo apt-get update
-                  sudo apt-get install --no-install-recommends -y cmake ninja-build g++ python3 libsdl2-dev libsdl2-ttf-dev libsfml-dev libegl1 libgles2 qt6-base-dev libxtst-dev python3-tk python3-pygame python3-pil python3-pil.imagetk xvfb xauth xdotool
+                  sudo apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 update
+                  sudo apt-get -o Acquire::Retries=5 -o Acquire::http::Timeout=30 install --no-install-recommends -y cmake ninja-build g++ python3 libsdl2-dev libsdl2-ttf-dev libsfml-dev libegl1 libgles2 qt6-base-dev libxtst-dev python3-tk python3-pygame python3-pil python3-pil.imagetk xvfb xauth xdotool
             - name: Bootstrap official Linux artifacts
               run: python3 tools/bootstrap/bootstrap-native-linux.py
             - name: Build and test native Linux runtime
