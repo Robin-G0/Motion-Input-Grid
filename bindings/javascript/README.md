@@ -132,7 +132,7 @@ The tarball includes WASM, model files, runtime modules, declarations and licens
 Install that local tarball into your application, then copy its runtime assets:
 
 ```sh
-npm install /path/to/motion-input-grid-1.1.0.tgz
+npm install /path/to/motion-input-grid-1.3.0.tgz
 npx --package motion-input-grid mig-copy-assets public/mig
 ```
 

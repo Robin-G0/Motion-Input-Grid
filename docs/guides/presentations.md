@@ -2,7 +2,7 @@
 
 [English](presentations.md) | [Français](presentations.fr.md)
 
-**Download Studio + Controller:** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-desktop-applications).
+**Download Studio + Controller:** [Windows x64 (zip)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.3.0#user-content-mig-v1-3-0-desktop-applications) · [Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.3.0#user-content-mig-v1-3-0-desktop-applications).
 
 Use a deliberate wrist movement to advance **Canva, PowerPoint, PDF and other
 presentation / slideshow formats**, through the keyboard shortcuts of the viewer.

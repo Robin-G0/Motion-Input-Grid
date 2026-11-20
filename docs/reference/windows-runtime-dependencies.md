@@ -12,7 +12,7 @@ See [cache architecture and usage](../getting-started/controller-standalone.md).
 
 ## Application DLL closure
 
-For the checked v1.1.0 Controller and MediaPipe binaries, every required non-OS
+For the checked v1.3.0 Controller and MediaPipe binaries, every required non-OS
 DLL is embedded and validated in the hash-addressed runtime directory:
 
 | File | Purpose |
@@ -74,7 +74,7 @@ absent on the host are reported explicitly, not treated as bundled dependencies.
 ```powershell
 python tests/packaging/controller_package_tests.py
 python tests/packaging/pe_dependency_tests.py
-python tests/packaging/controller_runtime_tests.py build/releases/motion-input-grid-1.1.0-controller-windows-x64.exe
+python tests/packaging/controller_runtime_tests.py build/releases/motion-input-grid-1.3.0-controller-windows-x64.exe
 ```
 
 The final EXE runs from a folder containing only that file. Runtime tests restrict

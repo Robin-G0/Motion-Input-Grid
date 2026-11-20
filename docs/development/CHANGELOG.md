@@ -2,7 +2,7 @@
 
 [English](CHANGELOG.md) | [Français](CHANGELOG.fr.md)
 
-## Unreleased
+## 1.3.0 - 2026-11-20
 
 - Select the BlazePose variant (Lite, Full or Heavy) in the desktop Studio and
   Controller **View** menus, through `--pose-lite|--pose-full|--pose-heavy`, in

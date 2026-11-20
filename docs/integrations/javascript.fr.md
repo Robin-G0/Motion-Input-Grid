@@ -23,7 +23,7 @@ Motion Input Grid Studio, affichant chaque action acceptée avec son identifiant
 
 ## Lancer les exemples
 
-**Télécharger un exemple prêt à lancer :** [HTML](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-web-examples) · [React](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-react-examples) · [Vue](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-vue-examples) · [Next.js](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-next-examples).
+**Télécharger un exemple prêt à lancer :** [HTML](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.3.0#user-content-mig-v1-3-0-web-examples) · [React](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.3.0#user-content-mig-v1-3-0-react-examples) · [Vue](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.3.0#user-content-mig-v1-3-0-vue-examples) · [Next.js](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.3.0#user-content-mig-v1-3-0-next-examples).
 Extrayez le paquet, puis lancez `run.cmd` ou `sh run.sh` à sa racine
 avec Node 22.12+. Ouvrez l’URL affichée. Les commandes ci-dessous concernent les sources.
 
@@ -59,7 +59,7 @@ npm run build:examples
 npm run package:examples
 ```
 
-`build/releases/motion-input-grid-1.1.0-javascript-examples.tar.gz` contient sources, docs,
+`build/releases/motion-input-grid-1.3.0-javascript-examples.tar.gz` contient sources, docs,
 pages compilées, export statique Next.js, modèles, WASM, licences et manifeste
 SHA256. Après extraction : `node examples/react/run.mjs` (ou Vue/Next).
 Ouvrez `http://localhost:8820`, fermez avec Ctrl+C avant de lancer un autre exemple.
@@ -82,7 +82,7 @@ npx mig-copy-assets public/mig
 ```
 
 WASM et modèles sont inclus, sans compilation Emscripten. Alternative hors ligne :
-`npm install /chemin/motion-input-grid-1.1.0.tgz`, puis la même commande de copie
+`npm install /chemin/motion-input-grid-1.3.0.tgz`, puis la même commande de copie
 des ressources. Voir le [guide npm](../../bindings/javascript/README.fr.md). React expose `useMIG` dans `motion-input-grid/react`,
 Vue dans `motion-input-grid/vue`. Reliez leurs refs vidéo/canvas, méthodes
 `start`, `stop`, `recalibrate`, `importJSON` et état aux contrôles de l'interface.

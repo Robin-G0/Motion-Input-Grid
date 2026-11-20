@@ -24,7 +24,7 @@ No new configuration schema or framework-specific recognition logic is added.
 
 ## Run an example
 
-**Download a ready-to-run example:** [HTML](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-web-examples) · [React](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-react-examples) · [Vue](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-vue-examples) · [Next.js](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.1.0#user-content-mig-v1-1-0-next-examples).
+**Download a ready-to-run example:** [HTML](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.3.0#user-content-mig-v1-3-0-web-examples) · [React](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.3.0#user-content-mig-v1-3-0-react-examples) · [Vue](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.3.0#user-content-mig-v1-3-0-vue-examples) · [Next.js](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.3.0#user-content-mig-v1-3-0-next-examples).
 Extract it, then run `run.cmd` or `sh run.sh` at its root with Node 22.12+.
 Open the displayed URL. The commands below are for source development.
 
@@ -62,7 +62,7 @@ npm run build:examples
 npm run package:examples
 ```
 
-`build/releases/motion-input-grid-1.1.0-javascript-examples.tar.gz` contains source, docs,
+`build/releases/motion-input-grid-1.3.0-javascript-examples.tar.gz` contains source, docs,
 compiled React/Vue pages, Next.js static export, WASM, models, licenses and a
 SHA256 manifest. Extract it and run one script, with no dependency installation:
 
@@ -90,7 +90,7 @@ npx mig-copy-assets public/mig
 ```
 
 The package includes WASM and models; no Emscripten build is needed. As an offline
-alternative, install a release `.tgz` with `npm install /path/to/motion-input-grid-1.1.0.tgz`,
+alternative, install a release `.tgz` with `npm install /path/to/motion-input-grid-1.3.0.tgz`,
 then copy its assets with the same command. See the [npm guide](../../bindings/javascript/README.md). React uses:
 
 ```jsx

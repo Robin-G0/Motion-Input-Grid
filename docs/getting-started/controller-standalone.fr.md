@@ -77,7 +77,7 @@ Pour un bundle natif extrait avec ses dépendances :
 ```sh
 python3 tools/packaging/package-controller.py --platform linux --source /path/to/extracted-native-bundle
 python3 tests/packaging/controller_package_tests.py
-python3 tests/packaging/controller_runtime_tests.py build/releases/motion-input-grid-1.1.0-controller-linux-x64.run
+python3 tests/packaging/controller_runtime_tests.py build/releases/motion-input-grid-1.3.0-controller-linux-x64.run
 ```
 
 Les fichiers sont versionnés avec un SHA-256. Les workflows des candidats vérifient
@@ -99,7 +99,7 @@ Si le cache manque ou échoue à la validation, une fenêtre explique le runtime
 Les empreintes compilées, la validation, la publication atomique et les verrous restent inchangés. Aucun marqueur d’acceptation ne peut valider une installation incomplète. Les invocations de diagnostic seules (`--help`, `--ui-test`, `--infer-test`, `--hands-test`, `--session-test`) omettent cette fenêtre pour permettre les tests automatiques.
 
 ```powershell
-python tests/packaging/runtime_notice_tests.py build/releases/motion-input-grid-1.1.0-controller-windows-x64.exe
+python tests/packaging/runtime_notice_tests.py build/releases/motion-input-grid-1.3.0-controller-windows-x64.exe
 ```
 
 Ce test utilise les vraies fenêtres et une bibliothèque de profils isolée : annulation, chemin réel non modifiable, copie, installation initiale, réutilisation sans réécriture et reconstruction. Les compilations avec diagnostics permettent seules `MIG_TEST_PROFILE_DIRECTORY` pour isoler les tests interactifs et les captures. Les compilations ordinaires conservent leur emplacement habituel.

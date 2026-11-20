@@ -12,7 +12,7 @@ l’[architecture du cache](../getting-started/controller-standalone.fr.md).
 
 ## Fermeture des DLL applicatives
 
-Pour les binaires Controller et MediaPipe v1.1.0 vérifiés, toutes les DLL non
+Pour les binaires Controller et MediaPipe v1.3.0 vérifiés, toutes les DLL non
 système requises sont incluses et validées dans le dossier adressé par hash :
 
 | Fichier | Rôle |
@@ -74,7 +74,7 @@ optionnels de Windows absents sont signalés explicitement.
 ```powershell
 python tests/packaging/controller_package_tests.py
 python tests/packaging/pe_dependency_tests.py
-python tests/packaging/controller_runtime_tests.py build/releases/motion-input-grid-1.1.0-controller-windows-x64.exe
+python tests/packaging/controller_runtime_tests.py build/releases/motion-input-grid-1.3.0-controller-windows-x64.exe
 ```
 
 L’EXE est testé depuis un dossier ne contenant que lui. Le PATH enfant ne contient

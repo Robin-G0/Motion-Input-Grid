@@ -74,7 +74,7 @@ repackage an extracted dependency-complete native bundle:
 ```sh
 python3 tools/packaging/package-controller.py --platform linux --source /path/to/extracted-native-bundle
 python3 tests/packaging/controller_package_tests.py
-python3 tests/packaging/controller_runtime_tests.py build/releases/motion-input-grid-1.1.0-controller-linux-x64.run
+python3 tests/packaging/controller_runtime_tests.py build/releases/motion-input-grid-1.3.0-controller-linux-x64.run
 ```
 
 Outputs are versioned with SHA-256 sidecars. Candidate workflows test the bundle
@@ -96,7 +96,7 @@ When the cache is missing or fails validation, a small window explains the local
 Cache validation, compiled hashes, atomic staging/publication and held file locks remain unchanged. No extra dismissal marker can make an incomplete installation valid. Exact diagnostic-only invocations (`--help`, `--ui-test`, `--infer-test`, `--hands-test`, `--session-test`) skip onboarding so unattended checks remain possible. Normal application launches show it when installation is needed.
 
 ```powershell
-python tests/packaging/runtime_notice_tests.py build/releases/motion-input-grid-1.1.0-controller-windows-x64.exe
+python tests/packaging/runtime_notice_tests.py build/releases/motion-input-grid-1.3.0-controller-windows-x64.exe
 ```
 
 This test opens real windows with an isolated profile library and verifies cancellation, the read-only resolved path, Copy path, first installation, silent reuse without rewrites and reinstallation after an incomplete cache. Diagnostic builds alone support `MIG_TEST_PROFILE_DIRECTORY` to isolate interactive tests and screenshot capture; ordinary builds use the normal profile library.
