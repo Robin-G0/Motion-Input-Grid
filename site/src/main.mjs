@@ -407,7 +407,7 @@ function stopCamera() {
     const hero = element("welcome");
     hero.classList.remove("camera-open");
     cameraCard.hidden = true;
-    for (const selector of ["h1", ".lead", ".privacy"]) hero.querySelector(selector).hidden = false;
+    for (const selector of ["h1", ".privacy"]) hero.querySelector(selector).hidden = false;
     if (document.activeElement === document.body) element("start-assisted").focus({ preventScroll: true });
 }
 
@@ -461,7 +461,6 @@ function releaseCamera() {
 function revealCamera() {
     const hero = element("welcome");
     hero.querySelector("h1").hidden = true;
-    hero.querySelector(".lead").hidden = true;
     hero.querySelector(".privacy").hidden = true;
     if (hero.classList.contains("camera-open")) return;
     const copy = hero.querySelector(".hero-copy");

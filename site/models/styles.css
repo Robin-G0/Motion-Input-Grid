@@ -1,6 +1,5 @@
 /* Pose model comparison: reuses the Studio test layout and the shared tokens. */
 .models-main { padding-top: 32px; }
-.models-main > .lead { margin: 0 0 28px; }
 .models-layout { grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
 .models-layout .test-stage { width: 100%; aspect-ratio: 16 / 9; }
 .model-panel h2 { margin-bottom: 8px; }

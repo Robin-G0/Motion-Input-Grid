@@ -108,7 +108,7 @@ test("assistance positions both hands, teaches gestures, then guides slides and 
     await expect(assistant).toHaveAttribute("data-step", "ribbonBack");
     await swipeHand(page, "previous_slide");
     await expect(assistant).toHaveAttribute("data-step", "gift");
-    await expect(page.locator("#slide-title")).toHaveText("One gesture, one action.");
+    await expect(page.locator("#slide-title")).toHaveText("Resume the presentation");
     expect(await page.locator("#slide").evaluate(node => getComputedStyle(node).backgroundImage))
         .toBe("none");
     await finishRibbonAnimation(page);

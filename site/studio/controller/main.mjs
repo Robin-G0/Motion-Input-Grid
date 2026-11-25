@@ -1,9 +1,7 @@
 import {latestControllerDownloads} from "../src/controller-downloads.mjs";
 const texts={
     "en": {
-        "title": "Turn your gestures into key presses",
-        "intro": "Download the Controller, import your profile and use your gestures in your applications.",
-        "file": "Keep the mig-profile.json file exported from Studio.",
+        "title": "Install MIG Controller",
         "back": "Back to Studio",
         "download": "Download the Controller",
         "release": "View the latest available release",
@@ -26,9 +24,7 @@ const texts={
         "import": "Click Import profile, select mig-profile.json and check the listed keys. Choose Import reviewed profile. Later, find Import profile under Manage profile."
     },
     "fr": {
-        "title": "Passez de vos gestes aux touches",
-        "intro": "Téléchargez le Controller, importez votre profil et utilisez vos gestes dans vos applications.",
-        "file": "Gardez le fichier mig-profile.json exporté depuis Studio.",
+        "title": "Installer MIG Controller",
         "back": "Retour au Studio",
         "download": "Télécharger le Controller",
         "release": "Voir la dernière version disponible",

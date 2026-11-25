@@ -37,16 +37,12 @@
         <main>
             <section class="hero section" id="welcome">
                 <div class="hero-copy">
-                    <p class="eyebrow"><span data-text="tagline">Le mouvement devient une interface.</span></p>
                     <h1 data-text="invitation">Pilotez cette page d’un geste.</h1>
-                    <p class="lead" data-text="introduction">MIG transforme les gestes détectés par webcam en actions.</p>
-                    <ul class="hero-facts" aria-label="Motion Input Grid"><li data-text="factBrowser">Dans votre navigateur</li><li data-text="factSource">Code ouvert · Apache 2.0</li><li data-text="factEngine">Moteur C++ · WebAssembly</li></ul>
                     <p id="phone-note" class="manual-hint" hidden></p>
                     <div class="camera-actions">
                         <button class="button secondary" id="start-camera" type="button" data-text="start">Activer la caméra</button>
                         <div class="guided-start">
-                            <button class="button primary" id="start-assisted" type="button" data-text="startAssisted" aria-describedby="start-assisted-hint"></button>
-                            <span id="start-assisted-hint" data-text="startAssistedHint"></span>
+                            <button class="button primary" id="start-assisted" type="button" data-text="startAssisted">Essayer avec le guide</button>
                         </div>
                         <button class="button secondary" id="assistance-toggle" type="button" data-text="assistance" hidden></button>
                         <button class="button secondary" id="stop-camera" type="button" data-text="stop" hidden></button>
@@ -57,10 +53,9 @@
                         <a href="#presentation" data-text="continueManual"></a>
                     </div>
                     <p class="camera-placement" id="camera-placement" data-text="cameraPlacement" hidden></p>
-                    <p class="privacy"><span data-text="privacy">Avec votre accord, la caméra s’active. Les images restent sur votre appareil.</span> <a href="https://github.com/Robin-G0/Motion-Input-Grid/tree/main/site" data-link="source" data-text="source">Code source du site</a></p>
+                    <p class="privacy" data-text="privacy">Vidéo traitée sur votre appareil, sans enregistrement.</p>
                 </div>
                 <figure class="motion-study">
-                    <div class="study-heading"><span data-text="studyHeading"></span><span aria-hidden="true">FIG. 01</span></div>
                     <svg viewBox="0 0 420 420" role="img" data-label="studyDescription">
                         <defs><pattern id="study-grid" x="30" y="30" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M60 0H0V60" fill="none" stroke="currentColor" stroke-width="1"/></pattern></defs>
                         <g class="study-grid"><rect x="30" y="30" width="360" height="360" fill="url(#study-grid)"/><path d="M30 30H390V390H30Z" fill="none"/></g>
@@ -71,7 +66,7 @@
                         <g class="study-nodes"><circle cx="120" cy="300" r="5"/><circle cx="240" cy="180" r="5"/><circle cx="360" cy="60" r="5"/></g>
                         <g class="study-labels"><text x="111" y="319">1</text><text x="231" y="199">2</text><text x="351" y="79">3</text></g>
                     </svg>
-                    <figcaption><span data-text="studyCaption"></span><span class="study-key"><i aria-hidden="true"></i><span data-text="studyKey"></span></span></figcaption>
+                    <figcaption data-text="studyCaption">Exemple de geste défini sur la grille</figcaption>
                 </figure>
                 <aside class="camera-card" hidden>
                     <div class="camera-preview">
@@ -97,7 +92,6 @@
             </section>
 
             <section class="section slideshow-section" id="presentation" tabindex="-1" aria-labelledby="slideshow-title">
-                <p class="eyebrow" data-text="slideshowEyebrow"></p>
                 <h2 id="slideshow-title" data-text="slideshowTitle"></h2>
                 <p class="manual-hint" data-text="manualNavigation"></p>
                 <div class="slide" id="slide" tabindex="0" role="region" aria-labelledby="slideshow-title" aria-roledescription="carousel">
@@ -136,7 +130,6 @@
             </section>
 
             <section class="section presence-section" id="presence-demo" aria-labelledby="presence-title">
-                <p class="eyebrow" data-text="presenceEyebrow"></p>
                 <h2 id="presence-title" data-text="presenceTitle"></h2>
                 <p class="lead" data-text="presenceDescription"></p>
                 <p class="manual-hint" data-text="presenceNote"></p>
@@ -145,10 +138,7 @@
             </section>
 
             <section class="section finale" id="finale" hidden aria-labelledby="finale-title">
-                <p class="eyebrow" data-text="finaleEyebrow"></p>
                 <h2 id="finale-title" data-text="finaleTitle"></h2>
-                <p data-text="finaleDescription"></p>
-                <p data-text="finaleStar"></p>
                 <a class="button secondary" href="https://github.com/Robin-G0/Motion-Input-Grid" data-link="repository" data-text="finaleLink">Voir le dépôt</a>
                 <a class="button primary" href="https://github.com/Robin-G0/Motion-Input-Grid/releases/latest" data-link="downloads" data-text="downloads">Télécharger MIG</a>
                 <a class="button secondary" href="https://github.com/Robin-G0/Motion-Input-Grid/blob/main/docs/index.md" data-link="documentation" data-text="documentation">Lire la documentation</a>

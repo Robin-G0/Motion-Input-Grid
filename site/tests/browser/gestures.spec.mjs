@@ -91,7 +91,7 @@ test("central starts can finish outside the central frame through sweeps and nat
     await mockCamera(page);
     await page.clock.install();
     await page.goto("./");
-    await expect(page.locator("#start-assisted-hint")).toHaveText("Recommandé pour une première visite");
+    await expect(page.locator("#start-assisted")).toHaveAccessibleName("Essayer avec le guide");
     await page.locator("#start-camera").click();
     await holdHandsInFrame(page);
     await focusPresentation(page);

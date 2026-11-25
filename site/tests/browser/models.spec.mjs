@@ -34,7 +34,7 @@ test("the Models tab compares the bundled model live and explains offline downlo
     await fakePoseCamera(page);
     await page.goto("./");
     await page.getByRole("navigation").getByRole("link", { name: "Modèles" }).click();
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Comparez les modèles de pose.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Comparer les modèles BlazePose");
     const lite = page.locator('.model-card[data-model="lite"]');
     const heavy = page.locator('.model-card[data-model="heavy"]');
     await expect(lite.getByRole("checkbox")).toBeChecked();
@@ -55,7 +55,7 @@ test("the Models tab compares the bundled model live and explains offline downlo
     await expect(lite.locator(".model-status")).toHaveText("Fourni · CPU");
 
     await page.getByRole("button", { name: "EN", exact: true }).click();
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Compare the pose models.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Compare BlazePose models");
     await expect(heavy.locator(".model-status")).toContainText("unavailable offline");
 
     await page.locator("#delegate").selectOption("GPU");

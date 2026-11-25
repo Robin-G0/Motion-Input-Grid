@@ -78,18 +78,18 @@ test("gift contents stay hidden until entering; leaving removes the temporary sl
     await focusPresentation(page);
     await swipeHand(page, "next_slide");
     await expect(page.locator(".carousel-track .slide")).toHaveCount(1);
-    await expect(page.locator(".carousel-track")).not.toContainText("Un geste, une action.");
+    await expect(page.locator(".carousel-track")).not.toContainText("Reprendre la présentation");
     await page.clock.runFor(900);
     await swipeHand(page, "previous_slide");
-    await expect(page.locator("#slide-title")).toHaveText("Un geste, une action.");
-    await expect(page.locator("#slide-description")).toContainText("La reconnaissance");
+    await expect(page.locator("#slide-title")).toHaveText("Reprendre la présentation");
+    await expect(page.locator("#slide-description")).toContainText("la flèche pour avancer");
     await expect(page.locator("#history-illustration")).toBeHidden();
     await expect(page.locator("#slide")).toHaveCSS("animation-name", "none");
     await page.emulateMedia({ reducedMotion: "reduce" });
     await expect(page.locator("#slide")).toHaveCSS("animation-name", "none");
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.getByRole("button", { name: "EN", exact: true }).click();
-    await expect(page.locator("#slide-title")).toHaveText("One gesture, one action.");
+    await expect(page.locator("#slide-title")).toHaveText("Resume the presentation");
     await finishRibbonAnimation(page);
     await page.clock.runFor(3000);
     for (const theme of ["light", "dark"]) {
@@ -196,7 +196,7 @@ test("the evolving grid presents detection, cancellation, then a one-second thum
     await expect(cell("cancel")).toBeHidden();
     await expect(cell("condition")).toBeHidden();
     await expect(outcome).toBeEmpty();
-    await expect(page.locator(".hero [data-text=tagline]")).toHaveText("Movement becomes an interface.");
+    await expect(page.locator(".hero h1")).toHaveText("Control this page with a gesture.");
     await page.getByRole("button", { name: "FR", exact: true }).click();
     await finishRibbonAnimation(page);
     await page.locator("#presentation").scrollIntoViewIfNeeded();

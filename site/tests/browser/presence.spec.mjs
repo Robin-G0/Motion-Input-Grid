@@ -36,13 +36,13 @@ test("gestures advance and reverse the presentation; departure and return reveal
     const finale = await page.locator("#finale").boundingBox();
     expect(finale.y).toBeGreaterThanOrEqual(0);
     expect(finale.y + finale.height).toBeLessThanOrEqual(await page.evaluate(() => innerHeight));
-    await expect(page.locator('[data-text="finaleStar"]')).toHaveText("Si le projet vous a plu, n’hésitez pas à lui laisser une ⭐ sur GitHub !");
+    await expect(page.locator("#finale-title")).toHaveText("Utiliser Motion Input Grid");
     await page.getByRole("button", { name: "EN", exact: true }).click();
     await expect(page).toHaveTitle("Motion Input Grid | Webcam Gesture Recognition");
-    await expect(page.locator('[data-text="finaleStar"]')).toHaveText("If you enjoyed the project, feel free to leave a ⭐ on GitHub!");
+    await expect(page.locator("#finale-title")).toHaveText("Use Motion Input Grid");
     await page.getByRole("button", { name: "FR", exact: true }).click();
     await expect(page).toHaveTitle("Motion Input Grid | Reconnaissance de gestes par webcam");
-    await expect(page.locator('[data-text="finaleStar"]')).toHaveText("Si le projet vous a plu, n’hésitez pas à lui laisser une ⭐ sur GitHub !");
+    await expect(page.locator("#finale-title")).toHaveText("Utiliser Motion Input Grid");
     expect(await page.evaluate(() => window.demoCamera.state.running)).toBe(true);
     await expect(page.locator("#hands-tip")).toBeHidden();
     await expect(page.locator("#departure-tip")).toBeHidden();

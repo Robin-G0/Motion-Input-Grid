@@ -9,7 +9,7 @@ for (const phone of [false, true]) {
             await mockCamera(page);
             await page.emulateMedia({ reducedMotion: "reduce" });
             await page.goto("./");
-            await expect(page.locator("#start-assisted-hint")).not.toBeEmpty();
+            await expect(page.locator("#start-assisted")).toBeVisible();
             await expect(page.locator(".camera-card")).toBeHidden();
             await page.locator("#start-assisted").click();
             await expect(page.locator("#assistance")).toHaveAttribute("data-step", "privacy");
