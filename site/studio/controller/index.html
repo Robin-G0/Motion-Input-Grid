@@ -1,10 +1,22 @@
 <!doctype html>
-<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>MIG Controller</title><link rel="icon" href="../../favicon.svg"><link rel="stylesheet" href="../../styles.css"><link rel="stylesheet" href="../styles.css"><script src="../../src/ui/page-start.js"></script><script type="module" src="./main.mjs"></script></head>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Téléchargez Motion Input Grid Controller pour Windows ou Linux et associez vos gestes à des raccourcis clavier. Suivez le guide pour importer et tester votre profil.">
+    <link rel="canonical" href="https://robin-g0.github.io/Motion-Input-Grid/studio/controller/">
+    <title>Motion Input Grid Controller | Configurer des raccourcis par geste</title>
+    <link rel="icon" href="../../favicon.svg">
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="../styles.css">
+    <script src="../../src/ui/page-start.js"></script>
+    <script type="module" src="./main.mjs"></script>
+</head>
 <body class="studio"><header class="header"><a class="brand" href="../">Motion Input Grid · Studio</a><nav><button type="button" data-language="fr">FR</button><button type="button" data-language="en">EN</button></nav></header>
-<main class="studio-main controller-handoff"><a href="../" data-copy="back"></a><h1 data-copy="title"></h1><p class="lead" data-copy="intro"></p><p data-copy="file"></p>
-<section aria-labelledby="downloads-title"><h2 id="downloads-title" data-copy="download"></h2><p id="release-status" role="status"></p><div class="card-actions"><a id="windows-download" class="button primary" hidden>Windows x64 · .exe</a><a id="linux-download" class="button primary" hidden>Linux x64 · .run</a><a id="release-link" class="button secondary" href="https://github.com/Robin-G0/Motion-Input-Grid/releases/latest" data-copy="release"></a></div><p class="hint" data-copy="linuxNote"></p>
+<main class="studio-main controller-handoff"><a href="../" data-copy="back">Retour au Studio</a><h1 data-copy="title">Passez de vos gestes aux touches</h1><p class="lead" data-copy="intro">Téléchargez le Controller, importez votre profil et utilisez vos gestes dans vos applications.</p><p data-copy="file">Gardez le fichier mig-profile.json exporté depuis Studio.</p>
+<section aria-labelledby="downloads-title"><h2 id="downloads-title" data-copy="download">Télécharger le Controller</h2><p id="release-status" role="status"></p><div class="card-actions"><a id="windows-download" class="button primary" hidden>Windows x64 · .exe</a><a id="linux-download" class="button primary" hidden>Linux x64 · .run</a><a id="release-link" class="button secondary" href="https://github.com/Robin-G0/Motion-Input-Grid/releases/latest" data-copy="release">Voir la dernière version disponible</a></div><p class="hint" data-copy="linuxNote">Sous Linux, la sortie clavier nécessite X11.</p>
 <ol class="controller-steps">
-<li><h2 data-copy="openTitle"></h2><img src="./images/open.png" width="620" height="700" data-alt="openAlt" alt=""><p data-copy="open"></p><details><summary data-copy="smartTitle"></summary><p data-copy="smart"></p></details></li>
-<li><h2 data-copy="importTitle"></h2><img src="./images/import.png" width="760" height="600" data-alt="importAlt" alt=""><p data-copy="import"></p></li>
-<li><h2 data-copy="activateTitle"></h2><img src="./images/activate.png" width="620" height="700" data-alt="activateAlt" alt=""><p data-copy="activate"></p></li>
-</ol><p class="hint" data-copy="illustration"></p></section><a class="button secondary" href="../" data-copy="back"></a></main></body></html>
+<li><h2 data-copy="openTitle">1. Ouvrez le Controller</h2><img src="./images/open.png" width="620" height="700" data-alt="openAlt" alt="Controller Windows avec le bouton Import profile et la sortie clavier désactivée."><p data-copy="open">Lancez le fichier téléchargé. Sur Windows, le premier lancement indique où sera stocké le moteur local.</p><details><summary data-copy="smartTitle">Alerte SmartScreen sur Windows ?</summary><p data-copy="smart">Vérifiez que le fichier provient de la release officielle et comparez son empreinte avec le fichier SHA256SUMS avant de l’ouvrir.</p></details></li>
+<li><h2 data-copy="importTitle">2. Importez votre profil</h2><img src="./images/import.png" width="760" height="600" data-alt="importAlt" alt="Fenêtre de vérification qui associe le mouvement HI à la touche flèche droite."><p data-copy="import">Cliquez sur Import profile, choisissez mig-profile.json et vérifiez les touches avant de valider.</p></li>
+<li><h2 data-copy="activateTitle">3. Démarrez et testez vos gestes</h2><img src="./images/activate.png" width="620" height="700" data-alt="activateAlt" alt="Controller après l’import du profil HI, avec la sortie clavier activée."><p data-copy="activate">Cliquez sur Start et testez le geste avec la sortie clavier désactivée. Activez-la ensuite et revenez à votre application.</p></li>
+</ol><p class="hint" data-copy="illustration">Captures de l’application Windows. La disposition Linux peut différer.</p></section><a class="button secondary" href="../" data-copy="back">Retour au Studio</a></main></body></html>

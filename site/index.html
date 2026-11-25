@@ -4,10 +4,11 @@
     <meta charset="utf-8">
     <meta name="google-site-verification" content="AYYth6U-XyzggHgdrgbTU_SXQcgxRwvbFpexqpaSGHI" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Essayez Motion Input Grid : pilotez une présentation avec vos gestes, directement dans votre navigateur.">
+    <meta name="description" content="Motion Input Grid est un moteur open source de reconnaissance de gestes par webcam. Essayez la démo, créez un profil ou intégrez MIG dans un jeu ou une application.">
+    <link rel="canonical" href="https://robin-g0.github.io/Motion-Input-Grid/">
     <meta name="theme-color" content="#0b101a" media="(prefers-color-scheme: dark)">
     <meta name="theme-color" content="#f7f4ed" media="(prefers-color-scheme: light)">
-    <title>Motion Input Grid</title>
+    <title>Motion Input Grid | Reconnaissance de gestes par webcam</title>
     <link rel="icon" type="image/png" sizes="48x48" href="./favicon.png">
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <link rel="shortcut icon" href="./favicon.ico">
@@ -25,7 +26,7 @@
                 <a href="#presentation" data-text="explore">Découvrir</a>
                 <a href="./studio/">Studio</a>
                 <a href="./models/" data-text="models">Modèles</a>
-                <a data-link="repository" data-text="repository">Repository</a>
+                <a href="https://github.com/Robin-G0/Motion-Input-Grid" data-link="repository" data-text="repository">Dépôt GitHub</a>
                 <button class="theme-toggle" id="theme-toggle" type="button"></button>
                 <div class="languages" aria-label="Language / Langue">
                     <button type="button" data-language="fr" lang="fr" aria-pressed="true">FR</button>
@@ -38,8 +39,8 @@
                 <div class="hero-copy">
                     <p class="eyebrow"><span data-text="tagline">Le mouvement devient une interface.</span></p>
                     <h1 data-text="invitation">Pilotez cette page d’un geste.</h1>
-                    <p class="lead" data-text="introduction"></p>
-                    <ul class="hero-facts" aria-label="Motion Input Grid"><li data-text="factBrowser"></li><li data-text="factSource"></li><li data-text="factEngine"></li></ul>
+                    <p class="lead" data-text="introduction">MIG transforme les gestes détectés par webcam en actions.</p>
+                    <ul class="hero-facts" aria-label="Motion Input Grid"><li data-text="factBrowser">Dans votre navigateur</li><li data-text="factSource">Code ouvert · Apache 2.0</li><li data-text="factEngine">Moteur C++ · WebAssembly</li></ul>
                     <p id="phone-note" class="manual-hint" hidden></p>
                     <div class="camera-actions">
                         <button class="button secondary" id="start-camera" type="button" data-text="start">Activer la caméra</button>
@@ -50,13 +51,13 @@
                         <button class="button secondary" id="assistance-toggle" type="button" data-text="assistance" hidden></button>
                         <button class="button secondary" id="stop-camera" type="button" data-text="stop" hidden></button>
                     </div>
-                    <a class="manual-link" href="#presentation" data-text="exploreManual"></a>
+                    <a class="manual-link" href="#presentation" data-text="exploreManual">Découvrir sans caméra</a>
                     <div class="camera-feedback" id="camera-feedback" hidden>
                         <p id="camera-feedback-message" role="status" aria-live="polite" aria-atomic="true"></p>
                         <a href="#presentation" data-text="continueManual"></a>
                     </div>
                     <p class="camera-placement" id="camera-placement" data-text="cameraPlacement" hidden></p>
-                    <p class="privacy"><span data-text="privacy"></span> <a data-link="source" data-text="source"></a></p>
+                    <p class="privacy"><span data-text="privacy">Avec votre accord, la caméra s’active. Les images restent sur votre appareil.</span> <a href="https://github.com/Robin-G0/Motion-Input-Grid/tree/main/site" data-link="source" data-text="source">Code source du site</a></p>
                 </div>
                 <figure class="motion-study">
                     <div class="study-heading"><span data-text="studyHeading"></span><span aria-hidden="true">FIG. 01</span></div>
@@ -148,9 +149,9 @@
                 <h2 id="finale-title" data-text="finaleTitle"></h2>
                 <p data-text="finaleDescription"></p>
                 <p data-text="finaleStar"></p>
-                <a class="button secondary" data-link="repository" data-text="finaleLink"></a>
-                <a class="button primary" data-link="downloads" data-text="downloads"></a>
-                <a class="button secondary" data-link="documentation" data-text="documentation"></a>
+                <a class="button secondary" href="https://github.com/Robin-G0/Motion-Input-Grid" data-link="repository" data-text="finaleLink">Voir le dépôt</a>
+                <a class="button primary" href="https://github.com/Robin-G0/Motion-Input-Grid/releases/latest" data-link="downloads" data-text="downloads">Télécharger MIG</a>
+                <a class="button secondary" href="https://github.com/Robin-G0/Motion-Input-Grid/blob/main/docs/index.md" data-link="documentation" data-text="documentation">Lire la documentation</a>
                 <a class="button secondary" href="./studio/">MIG Studio</a>
                 <button class="button danger" id="finale-stop-camera" type="button" data-text="stop" hidden></button>
             </section>
@@ -160,12 +161,12 @@
             <div class="gesture-tip" id="cover-camera-tip" role="status" hidden><span class="gesture-pictogram hand-cover" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#gesture-hand"/></svg></span><span class="visually-hidden" data-text="coverShort"></span><p class="visually-hidden" data-text="coverCamera"></p></div>
         </main>
         <footer class="footer">
-            <p><span data-text="footerDescription"></span> <a data-link="github">Robin-G0</a>.</p>
+            <p><span data-text="footerDescription">Motion Input Grid est un projet open source de</span> <a href="https://github.com/Robin-G0" data-link="github">Robin-G0</a>.</p>
             <nav data-label="navigation">
-                <a data-link="repository" data-text="repository"></a>
-                <a data-link="downloads" data-text="downloads"></a>
-                <a data-link="linkedin">LinkedIn ↗</a>
-                <a data-link="github">GitHub ↗</a>
+                <a href="https://github.com/Robin-G0/Motion-Input-Grid" data-link="repository" data-text="repository">Dépôt GitHub</a>
+                <a href="https://github.com/Robin-G0/Motion-Input-Grid/releases/latest" data-link="downloads" data-text="downloads">Téléchargements</a>
+                <a href="https://www.linkedin.com/in/robin-g0/" data-link="linkedin">LinkedIn ↗</a>
+                <a href="https://github.com/Robin-G0" data-link="github">GitHub ↗</a>
             </nav>
         </footer>
     </div>

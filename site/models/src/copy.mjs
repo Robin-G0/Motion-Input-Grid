@@ -2,7 +2,7 @@ export const copy = {
     fr: {
         skip: "Aller à la comparaison", caption: "Modèles de pose", presentation: "La présentation",
         title: "Comparez les modèles de pose.",
-        intro: "Lite, Full et Heavy analysent les mêmes images de votre caméra. Comparez leur coût et la stabilité des épaules, coudes et poignets que MIG utilise.",
+        intro: "Comparez la vitesse et la stabilité de Lite, Full et Heavy sur les mêmes images.",
         start: "Activer la caméra", stop: "Arrêter", reset: "Remettre les mesures à zéro",
         placeholder: "Activez la caméra, gardez vos épaules visibles et bougez les bras.",
         privacy: "La vidéo et les mesures restent sur votre appareil. Lite est fourni ; Full et Heavy sont téléchargés une fois depuis le stockage de modèles de Google, vérifiés (SHA-256) puis gardés dans ce navigateur.",
@@ -32,7 +32,7 @@ export const copy = {
     en: {
         skip: "Skip to the comparison", caption: "Pose models", presentation: "The presentation",
         title: "Compare the pose models.",
-        intro: "Lite, Full and Heavy analyse the same camera images. Compare their cost and the stability of the shoulders, elbows and wrists that MIG uses.",
+        intro: "Compare the speed and stability of Lite, Full and Heavy on the same frames.",
         start: "Start camera", stop: "Stop", reset: "Reset measurements",
         placeholder: "Start the camera, keep your shoulders visible and move your arms.",
         privacy: "Video and measurements stay on your device. Lite is bundled; Full and Heavy are downloaded once from Google’s model storage, verified (SHA-256) and kept in this browser.",

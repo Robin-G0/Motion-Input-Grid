@@ -2,6 +2,8 @@
 *.txt
 NEXT.md
 NEXT-report.md
+CODEBASE_REVIEW.md
+CODE_QUALITY_AUDIT.md
 !requirements.txt
 !CMakeLists.txt
 !examples/common/licenses/LICENSE.*.txt

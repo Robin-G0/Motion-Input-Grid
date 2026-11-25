@@ -2,8 +2,10 @@
 
 [English](readme.md) | [Français](docs/fr/readme.fr.md)
 
-Motion Input Grid is an open-source motion input framework. It turns tracked body
-movements into configurable actions for websites, desktop applications and games.
+Motion Input Grid (MIG) is an open-source gesture recognition engine. It maps
+body movements tracked by a webcam to configurable actions. Use the desktop
+Controller for keyboard shortcuts or integrate the engine into a website,
+desktop application or game using the C++, Python or JavaScript SDK.
 
 ## [<img src="site/favicon-dark.svg" width="32" height="32" alt=""> Explore the presentation website](https://robin-g0.github.io/Motion-Input-Grid/)
 
@@ -21,7 +23,7 @@ keyboard shortcuts to a desktop application.
 | Start here | What you can do |
 | --- | --- |
 | **[Browser Studio / configuration editor](https://robin-g0.github.io/Motion-Input-Grid/studio/)** | Create, import and test a profile, then export JSON. No installation. |
-| **Motion Input Grid Controller (desktop)** | [Download for Windows x64 (ZIP)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.3.0#user-content-mig-v1-3-0-desktop-applications) · [Download for Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.3.0#user-content-mig-v1-3-0-desktop-applications) - includes Studio for profile editing. |
+| **Motion Input Grid Controller (desktop)** | [Desktop downloads for Windows and Linux](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.3.0#user-content-mig-v1-3-0-desktop-applications). Choose the full bundle to include Studio for profile editing. |
 
 MIG is in early development. Desktop Linux applications and game-engine
 integrations still need wider testing; check the [support matrix](docs/reference/support.md).
@@ -40,7 +42,7 @@ integrations still need wider testing; check the [support matrix](docs/reference
    keyboard binding with **Assign keys** in web Studio or desktop Studio.
 2. Test with the camera, then export or save the JSON profile. The
    [browser Studio guide](docs/guides/studio-web.md) explains editing and live feedback.
-3. Download the Controller above and extract the **whole archive**. Stop the
+3. Download the full desktop bundle above and extract the **whole archive**. Stop the
    Studio's camera, open the Controller and import your JSON.
 4. Start tracking and keep both shoulders visible for calibration. Check that
    the movement lights up with **Keyboard output off**, then enable it and focus

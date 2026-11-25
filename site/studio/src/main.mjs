@@ -367,7 +367,8 @@ function render() {
     tour?.schedule();
 }
 function renderLanguage() {
-    document.title = "Motion Input Grid Studio";
+    document.title = language === "fr" ? "Motion Input Grid Studio | Créer et tester des profils de gestes"
+        : "Motion Input Grid Studio | Create and Test Gesture Profiles";
     document.documentElement.lang = language;
     for (const node of document.querySelectorAll("[data-i18n]")) node.textContent = t(node.dataset.i18n);
     for (const node of document.querySelectorAll("[data-label]")) { node.setAttribute("aria-label", t(node.dataset.label)); node.title = t(node.dataset.label); }

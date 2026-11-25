@@ -54,7 +54,15 @@ const texts={
 let language=new URLSearchParams(location.search).get("lang") ?? (navigator.language.startsWith("fr")?"fr":"en");
 if(!texts[language])language="en";
 let status="loading";
-function render(){document.documentElement.lang=language;for(const node of document.querySelectorAll("[data-copy]"))node.textContent=texts[language][node.dataset.copy];for(const node of document.querySelectorAll("[data-alt]"))node.alt=texts[language][node.dataset.alt];document.getElementById("release-status").textContent=texts[language][status];for(const node of document.querySelectorAll("[data-language]"))node.setAttribute("aria-pressed",String(node.dataset.language===language));}
+function render(){
+    document.documentElement.lang=language;
+    document.title=language==="fr" ? "Motion Input Grid Controller | Configurer des raccourcis par geste"
+        : "Motion Input Grid Controller | Set Up Gesture Shortcuts";
+    for(const node of document.querySelectorAll("[data-copy]"))node.textContent=texts[language][node.dataset.copy];
+    for(const node of document.querySelectorAll("[data-alt]"))node.alt=texts[language][node.dataset.alt];
+    document.getElementById("release-status").textContent=texts[language][status];
+    for(const node of document.querySelectorAll("[data-language]"))node.setAttribute("aria-pressed",String(node.dataset.language===language));
+}
 for(const button of document.querySelectorAll("[data-language]"))button.onclick=()=>{language=button.dataset.language;render();};
 render();
 try{

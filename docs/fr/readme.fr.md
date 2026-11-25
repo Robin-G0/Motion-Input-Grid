@@ -2,9 +2,11 @@
 
 [English](../../readme.md) | [Français](readme.fr.md)
 
-Motion Input Grid est un framework open source d'entrée par le mouvement. Il
-transforme les mouvements corporels suivis en actions configurables pour les
-sites web, applications de bureau et jeux.
+Motion Input Grid (MIG) est un moteur open source de reconnaissance de gestes.
+Il associe les mouvements du corps suivis par webcam à des actions configurables.
+Utilisez le Controller de bureau pour déclencher des raccourcis clavier ou
+intégrez le moteur à un site, une application ou un jeu avec les SDK C++, Python
+ou JavaScript.
 
 ## [<img src="../../site/favicon-dark.svg" width="32" height="32" alt=""> Découvrez le site de présentation](https://robin-g0.github.io/Motion-Input-Grid/)
 
@@ -22,7 +24,7 @@ actions dans votre projet ou envoyez des raccourcis à une application de bureau
 | Commencer ici | Ce que vous pouvez faire |
 | --- | --- |
 | **[Studio web / éditeur de configuration](https://robin-g0.github.io/Motion-Input-Grid/studio/)** | Créer, importer et tester un profil, puis exporter le JSON. Sans installation. |
-| **Motion Input Grid Controller (bureau)** | [Télécharger pour Windows x64 (ZIP)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.3.0#user-content-mig-v1-3-0-desktop-applications) · [Télécharger pour Linux x64 (tar.gz)](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.3.0#user-content-mig-v1-3-0-desktop-applications) - Studio inclus pour éditer les profils. |
+| **Motion Input Grid Controller (bureau)** | [Téléchargements de bureau pour Windows et Linux](https://github.com/Robin-G0/Motion-Input-Grid/releases/tag/v1.3.0#user-content-mig-v1-3-0-desktop-applications). Choisissez le pack complet pour inclure Studio et modifier les profils. |
 
 MIG débute son développement. Les applications Linux et les intégrations aux
 moteurs de jeu nécessitent encore davantage de tests ; consultez les
@@ -43,7 +45,7 @@ moteurs de jeu nécessitent encore davantage de tests ; consultez les
    **Associer des touches** dans le Studio web ou dans le Studio de bureau.
 2. Testez avec la caméra, puis exportez ou enregistrez le profil JSON. Le
    [guide du Studio web](../guides/studio-web.fr.md) explique l'édition et le retour visuel.
-3. Téléchargez le Controller ci-dessus et extrayez **toute l'archive**. Arrêtez la
+3. Téléchargez le pack complet ci-dessus et extrayez **toute l'archive**. Arrêtez la
    caméra du Studio, ouvrez le Controller et importez votre JSON.
 4. Démarrez le suivi et gardez les deux épaules visibles pour le calibrage.
    Vérifiez la reconnaissance avec **Keyboard output désactivé**, puis activez-le

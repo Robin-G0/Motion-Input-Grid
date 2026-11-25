@@ -262,6 +262,8 @@ function renderModels() {
 
 function render() {
     document.documentElement.lang = language;
+    document.title = language === "fr" ? "Comparer BlazePose Lite, Full et Heavy | Motion Input Grid"
+        : "Compare BlazePose Lite, Full and Heavy | Motion Input Grid";
     for (const node of document.querySelectorAll("[data-copy]")) node.textContent = t(node.dataset.copy);
     for (const button of document.querySelectorAll("[data-language]")) {
         button.setAttribute("aria-pressed", String(button.dataset.language === language));
