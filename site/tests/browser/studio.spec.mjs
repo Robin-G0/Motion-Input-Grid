@@ -733,10 +733,12 @@ test("Controller handoff has direct latest downloads, three actual application s
     const base="https://github.com/Robin-G0/Motion-Input-Grid/releases/download/v2/";
     await page.route("https://api.github.com/repos/Robin-G0/Motion-Input-Grid/releases/latest",route=>route.fulfill({json:{assets:["motion-input-grid-controller-windows-x64.exe","motion-input-grid-controller-linux-x64.run"].map(name=>({name,browser_download_url:base+name}))}}));
     await page.goto("./studio/controller/?lang=en");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Install MIG Controller");
     await expect(page.locator("#windows-download")).toHaveAttribute("href",base+"motion-input-grid-controller-windows-x64.exe");
     await expect(page.locator("#linux-download")).toBeVisible();await expect(page.locator(".controller-steps img")).toHaveCount(3);
     await expect.poll(()=>page.locator(".controller-steps img").evaluateAll(images=>images.every(img=>img.complete&&img.naturalWidth>500&&img.src.endsWith(".png")))).toBe(true);
-    await page.getByRole("button",{name:"FR",exact:true}).click();await expect(page.locator("h1")).toContainText("gestes");
+    await page.getByRole("button",{name:"FR",exact:true}).click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Installer MIG Controller");
     await page.unrouteAll();await page.route("https://api.github.com/**",route=>route.abort());
     await page.reload();await expect(page.locator("#release-status")).toContainText("could not be verified");
     await expect(page.locator("#release-link")).toBeVisible();
